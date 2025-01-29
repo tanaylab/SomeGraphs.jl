@@ -1,0 +1,11 @@
+name = "SomeGraphs"
+uuid = "eb091223-14cb-4747-ac22-0b59a9f2afeb"
+authors = ["Oren Ben-Kiki <oren@ben-kiki.org>"]
+version = "0.1.0"
+
+[deps]
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+
+[compat]
+Reexport = "1"
+julia = "1.11"
