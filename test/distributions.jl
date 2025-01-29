@@ -89,7 +89,7 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                 graph.configuration.value_bands.high.line.color = "blue"
 
                 graph.configuration.value_bands.low.offset = 50
-                graph.configuration.value_bands.high.offset = 120
+                graph.data.value_bands.high_offset = 120
 
                 test_html(graph, "$(plurality).$(kind).vertical_fills.html")
                 return nothing
@@ -100,7 +100,7 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
 
                 graph.configuration.value_bands.low.offset = 50
                 graph.configuration.value_bands.middle.offset = 80
-                graph.configuration.value_bands.high.offset = 120
+                graph.data.value_bands.high_offset = 120
 
                 @assert !graph.configuration.value_bands.low.line.is_filled
                 @assert !graph.configuration.value_bands.middle.line.is_filled
@@ -125,7 +125,7 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                 graph.configuration.value_bands.high.line.color = "blue"
 
                 graph.configuration.value_bands.low.offset = 50
-                graph.configuration.value_bands.high.offset = 120
+                graph.data.value_bands.high_offset = 120
 
                 test_html(graph, "$(plurality).$(kind).horizontal_fills.html")
                 return nothing

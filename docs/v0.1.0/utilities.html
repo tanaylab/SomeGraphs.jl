@@ -435,6 +435,7 @@ plotly_figure(traces::AbstractVector{&lt;:GenericTrace}, layout::Layout)::Plotly
 <code class="language-julia hljs">horizontal_bands_shapes(
     axis_configuration::AxisConfiguration,
     scaled_values_range::AbstractVector{&lt;:Real},
+    bands_data::BandsData,
     bands_configuration::BandsConfiguration
 )::AbstractVector{&lt;:Shape}
 </code>
@@ -463,6 +464,7 @@ plotly_figure(traces::AbstractVector{&lt;:GenericTrace}, layout::Layout)::Plotly
 <code class="language-julia hljs">vertical_bands_shapes(
     axis_configuration::AxisConfiguration,
     scaled_values_range::AbstractVector{&lt;:Real},
+    bands_data::BandsData,
     bands_configuration::BandsConfiguration
 )::AbstractVector{&lt;:Shape}
 </code>

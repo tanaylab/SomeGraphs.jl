@@ -146,6 +146,34 @@
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraph" href="#SomeGraphs.Distributions.DistributionGraph">
+<code>SomeGraphs.Distributions.DistributionGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A graph for visualizing a single distribution. See 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
+<code>DistributionGraphData
+</code>
+</a> and 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
+<code>DistributionGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Distributions.DistributionConfiguration" href="#SomeGraphs.Distributions.DistributionConfiguration">
 <code>SomeGraphs.Distributions.DistributionConfiguration
 </code>
@@ -207,34 +235,6 @@ end
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraph" href="#SomeGraphs.Distributions.DistributionGraph">
-<code>SomeGraphs.Distributions.DistributionGraph
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>A graph for visualizing a single distribution. See 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
-<code>DistributionGraphData
-</code>
-</a> and 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
-<code>DistributionGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
 <a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphConfiguration" href="#SomeGraphs.Distributions.DistributionGraphConfiguration">
 <code>SomeGraphs.Distributions.DistributionGraphConfiguration
 </code>
@@ -282,6 +282,7 @@ end
     trace_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{&lt;:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
+    value_bands::BandsData = BandsData()
 end
 </code>
 </pre>
@@ -293,7 +294,7 @@ end
 <code>trace_axis_title
 </code>. The optional 
 <code>distribution_name
-</code> is used as the tick value for the distribution.
+</code> is used as the tick value for the distribution. You can also specify the bands offsets here if they are more of a data than a configuration parameter in the specific graph. This will override whatever is specified in the configuration.
 </p>
 </div>
 </section>

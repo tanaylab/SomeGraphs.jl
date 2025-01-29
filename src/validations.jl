@@ -97,12 +97,14 @@ abstract type Validated end
 """
     validate(context::ValidationContext, value::Validated)::Nothing end
     validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
+    validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing end
 
 Validate the `value` which was accessed via the `context`, possibly using some `extra` informative. Will throw
 `ArgumentError` if the value isn't valid.
 """
 function validate(context::ValidationContext, value::Validated)::Nothing end  # NOLINT
 function validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end  # NOLINT
+function validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing end  # NOLINT
 
 """
     validate_in(validation::Function, context::ValidationContext, where::Union{AbstractString, Integer})::Nothing

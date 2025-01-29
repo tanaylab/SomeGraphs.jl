@@ -120,7 +120,7 @@ function Validations.validate(
         return validate(context, configuration.value_axis)
     end
     validate_in(context, "value_bands") do
-        return validate(context, configuration.value_bands, configuration.value_axis)
+        return validate(context, configuration.value_bands, "value_axis", configuration.value_axis)
     end
 
     return nothing
@@ -190,10 +190,13 @@ end
         trace_axis_title::Maybe{AbstractString} = nothing
         distribution_values::AbstractVector{<:Real} = Float32[]
         distribution_name::Maybe{AbstractString} = nothing
+        value_bands::BandsData = BandsData()
     end
 
 By default, all the titles are empty. You can specify the overall `figure_title` as well as the `value_axis_title` and
-the `trace_axis_title`. The optional `distribution_name` is used as the tick value for the distribution.
+the `trace_axis_title`. The optional `distribution_name` is used as the tick value for the distribution. You can also
+specify the bands offsets here if they are more of a data than a configuration parameter in the specific graph. This
+will override whatever is specified in the configuration.
 """
 @kwdef mutable struct DistributionGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -201,6 +204,7 @@ the `trace_axis_title`. The optional `distribution_name` is used as the tick val
     trace_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{<:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
+    value_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionGraphData)::Maybe{AbstractString}
@@ -525,6 +529,7 @@ function distribution_layout(;
             shapes = horizontal_bands_shapes(
                 graph.configuration.value_axis,
                 scaled_values_range,
+                graph.data.value_bands,
                 graph.configuration.value_bands,
             )
         end
@@ -548,6 +553,7 @@ function distribution_layout(;
             shapes = vertical_bands_shapes(
                 graph.configuration.value_axis,
                 scaled_values_range,
+                graph.data.value_bands,
                 graph.configuration.value_bands,
             )
         end

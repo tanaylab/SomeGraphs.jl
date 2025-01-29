@@ -2,8 +2,8 @@
 
 ```@docs
 SomeGraphs.Distributions
-SomeGraphs.Distributions.DistributionConfiguration
 SomeGraphs.Distributions.DistributionGraph
+SomeGraphs.Distributions.DistributionConfiguration
 SomeGraphs.Distributions.DistributionGraphConfiguration
 SomeGraphs.Distributions.DistributionGraphData
 SomeGraphs.Distributions.distribution_graph

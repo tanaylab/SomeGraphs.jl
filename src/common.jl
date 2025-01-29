@@ -8,6 +8,7 @@ export AbstractGraphData
 export AxisConfiguration
 export BandConfiguration
 export BandsConfiguration
+export BandsData
 export DashedLine
 export FigureConfiguration
 export Graph
@@ -23,6 +24,9 @@ export SolidLine
 export ValuesOrientation
 export VerticalValues
 export save_graph
+export ContinuousColors
+export CategoricalColors
+export ColorsConfiguration
 
 using Base.Multimedia
 using PlotlyJS
@@ -168,7 +172,7 @@ function Validations.validate(context::ValidationContext, margins_configuration:
         ("top", margins_configuration.top),
     )
         validate_in(context, field) do
-            return validate_is_above(context, value, 0)
+            return validate_is_at_least(context, value, 0)
         end
     end
     return nothing
@@ -206,18 +210,18 @@ the grid and/or ticks for an even cleaner (but less informative) look, and the `
     show_ticks::Bool = true
 end
 
-function Validations.validate(context::ValidationContext, graph_configuration::FigureConfiguration)::Nothing
+function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
     validate_in(context, "margins") do
-        return validate(context, graph_configuration.margins)
+        return validate(context, figure_configuration.margins)
     end
     validate_in(context, "width") do
-        return validate_is_above(context, graph_configuration.width, 0)
+        return validate_is_above(context, figure_configuration.width, 0)
     end
     validate_in(context, "height") do
-        return validate_is_above(context, graph_configuration.height, 0)
+        return validate_is_above(context, figure_configuration.height, 0)
     end
     validate_in(context, "grid_color") do
-        return validate_is_color(context, graph_configuration.grid_color)
+        return validate_is_color(context, figure_configuration.grid_color)
     end
     return nothing
 end
@@ -273,7 +277,7 @@ function Validations.validate(context::ValidationContext, axis_configuration::Ax
 
     if axis_configuration.log_scale === nothing
         if axis_configuration.log_regularization != 0
-            throw(  # UNTESTED
+            throw(
                 ArgumentError(
                     "non-zero non-log $(location(context)).log_regularization: $(axis_configuration.log_regularization)",
                 ),
@@ -284,13 +288,13 @@ function Validations.validate(context::ValidationContext, axis_configuration::Ax
             return validate_is_at_least(context, axis_configuration.log_regularization, 0)
         end
         if axis_configuration.minimum !== nothing
-            validate_in(context, "(minimum + log_regularization)") do  # UNTESTED
-                return validate_is_above(context, axis_configuration.minimum + axis_configuration.log_regularization, 0)  # UNTESTED
+            validate_in(context, "(minimum + log_regularization)") do
+                return validate_is_above(context, axis_configuration.minimum + axis_configuration.log_regularization, 0)
             end
         end
         if axis_configuration.maximum !== nothing
-            validate_in(context, "(maximum + log_regularization)") do  # UNTESTED
-                return validate_is_above(context, axis_configuration.maximum + axis_configuration.log_regularization, 0)  # UNTESTED
+            validate_in(context, "(maximum + log_regularization)") do
+                return validate_is_above(context, axis_configuration.maximum + axis_configuration.log_regularization, 0)
             end
         end
     end
@@ -353,15 +357,6 @@ The `offset` specifies the band's defining line position. We allow up to three b
 render its defining line. The low and high bands are defined the region below and above their defining line's `offset`.
 If both are defined, the middle band `offset` defines the center line of the band; the band can still be filled even if
 this offset is not specified.
-
-!!! note
-
-    Whether the offset is a part of the data or the configuration depends on the kind of graph. In some graphs the bands
-    are defined by constant offsets (e.g., some maximal fold factor to mark in/significant change), in which case, the
-    offset is more of a configuration parameter. In other cases the bands are defined by some quantile of the data, in
-    which case the offset is more of a data parameter. Allowing for both would cause ambiguities and confusion. We
-    decided to make the offset a configuration parameter for simplicity and since the first scenario is more common in
-    our graphs.
 """
 @kwdef mutable struct BandConfiguration <: Validated
     offset::Maybe{Real} = nothing
@@ -371,11 +366,12 @@ end
 function Validations.validate(
     context::ValidationContext,
     band_configuration::BandConfiguration,
+    axis_field::AbstractString,
     axis_configuration::AxisConfiguration,
 )::Nothing
     if axis_configuration.log_scale !== nothing && band_configuration.offset !== nothing
-        validate_in(context, "(offset + log_regularization)") do  # UNTESTED
-            return validate_is_above(context, band_configuration.offset + axis_configuration.log_regularization, 0)  # UNTESTED
+        validate_in(context, "offset + $(location(context[1:end - 1])).$(axis_field).log_regularization") do
+            return validate_is_above(context, band_configuration.offset + axis_configuration.log_regularization, 0)
         end
     end
 
@@ -406,12 +402,13 @@ end
 function Validations.validate(
     context::ValidationContext,
     bands_configuration::BandsConfiguration,
+    axis_field::AbstractString,
     axis_configuration::AxisConfiguration,
 )::Nothing
     for (field, band_configuration) in
         (("low", bands_configuration.low), ("middle", bands_configuration.middle), ("high", bands_configuration.high))
         validate_in(context, field) do
-            return validate(context, band_configuration, axis_configuration)
+            return validate(context, band_configuration, axis_field, axis_configuration)
         end
     end
 
@@ -438,6 +435,446 @@ function Validations.validate(
         "high.offset",
         bands_configuration.high.offset,
     )
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct BandsData
+        low_offset::Maybe{Real} = nothing
+        middle_offset::Maybe{Real} = nothing
+        high_offset::Maybe{Real} = nothing
+    end
+
+Override or specify the offsets for tha bands in the data instead of the configuration. Similarly to colors, whether the
+offset is a data or a configuration parameters depends on the specific graph.
+"""
+@kwdef mutable struct BandsData
+    low_offset::Maybe{Real} = nothing
+    middle_offset::Maybe{Real} = nothing
+    high_offset::Maybe{Real} = nothing
+end
+
+"""
+A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make
+it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`.
+"""
+ContinuousColors =
+    Union{AbstractVector{<:Pair{<:Real, <:AbstractString}}, AbstractVector{<:Tuple{<:Real, <:AbstractString}}}
+
+"""
+A categorical colors palette, mapping string values to colors. We also allow specifying tuples instead of pairs to make
+it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`.
+"""
+CategoricalColors = Union{
+    AbstractVector{<:Pair{<:AbstractString, <:AbstractString}},
+    AbstractVector{<:Tuple{<:AbstractString, <:AbstractString}},
+}
+
+"""
+    @kwdef mutable struct ColorsConfiguration <: Validated
+        show_legend::Bool = false
+        color_axis::AxisConfiguration = AxisConfiguration()
+        reverse::Bool = false
+        colors_palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+    end
+
+Configure how to color some values. The `colors_palette` is applied; this can be:
+
+  - The name of a standard [Plotly palette](https://plotly.com/python/builtin-colorscales/) (see [`NAMED_COLOR_PALETTES`](@ref));
+  - A vector of (value, color) tuples for a continuous (numeric value) scale;
+  - Or a vector of (value, color) for a categorical (string value) scale.
+
+If `show_legend` is set, then the colors will be shown (in the legend or as a color bar, as appropriate).
+
+The `color_axis` can be used to tweak (continuous) colors. Specifically, the values to be converted to color are
+modified according to the `log_scale` and/or `percent` flags. This is also done to the values specified in an explicit
+continuous colors pallete.
+
+In Plotly's API, a color pallete is always specified to cover the values between 0 and 1, and it linearly maps some
+range of colors to this unit range. You can control the mapping of the values to be colored by using `color_axis` to
+modify the values (`log_scale`, `percent`) and also specify the specific range of color values to map to the unit range
+(`minimum`, `maximum`).
+
+When specifying an explict continuous colors pallete, we must map its lowest value to 0 and the highest value to 1 (and
+the values must be in non-decreasing order). In this case, there's no point in specifying `minimum` and `maximum` in the
+`color_axis`, as these are already encoded in the pallete itself.
+"""
+@kwdef mutable struct ColorsConfiguration <: Validated
+    show_legend::Bool = false
+    color_axis::AxisConfiguration = AxisConfiguration()
+    colors_palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+end
+
+function continuous_colors(colors::AbstractVector{<:AbstractString})::ContinuousColors  # ONLY SEEMS UNTESTED
+    size = length(colors)
+    return [((index - 1) / (size - 1)) => color for (index, color) in enumerate(colors)]
+end
+
+"""
+Builtin color palattes from [Plotly](https://plotly.com/python/builtin-colorscales/), both linear: `Blackbody`,
+`Bluered`, `Blues`, `Cividis`, `Earth`, `Electric`, `Greens`, `Greys`, `Hot`, `Jet`, `Picnic`, `Portland`, `Rainbow`,
+`RdBu`, `Reds`, `Viridis`, `YlGnBu`, `YlOrRd` and cyclical: `Twilight`, `IceFire`, `Edge`, `Phase`, `HSV`, `mrybm`,
+`mygbm`.
+
+The `_r` (reversed) variants are not included as explicit entries in the dictionary; they are computed on-the-fly if
+used.
+
+!!! note
+
+    You would think we could just give the builtin color palette names to plotly, but it turns out that "builtin" in
+    Python plotly doesn't mean "builtin" in JavaScript plotly, because "reasons". We therefore have to copy their
+    definition here. An upside of having this dictionary is that you are free to insert additional named palettes into
+    and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
+"""
+NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
+    "Twilight" => continuous_colors([
+        "#e2d9e2",
+        "#9ebbc9",
+        "#6785be",
+        "#5e43a5",
+        "#421257",
+        "#471340",
+        "#8e2c50",
+        "#ba6657",
+        "#ceac94",
+        "#e2d9e2",
+    ]),
+    "IceFire" => continuous_colors([
+        "#000000",
+        "#001f4d",
+        "#003786",
+        "#0e58a8",
+        "#217eb8",
+        "#30a4ca",
+        "#54c8df",
+        "#9be4ef",
+        "#e1e9d1",
+        "#f3d573",
+        "#e7b000",
+        "#da8200",
+        "#c65400",
+        "#ac2301",
+        "#820000",
+        "#4c0000",
+        "#000000",
+    ]),
+    "Edge" => continuous_colors([
+        "#313131",
+        "#3d019d",
+        "#3810dc",
+        "#2d47f9",
+        "#2593ff",
+        "#2adef6",
+        "#60fdfa",
+        "#aefdff",
+        "#f3f3f1",
+        "#fffda9",
+        "#fafd5b",
+        "#f7da29",
+        "#ff8e25",
+        "#f8432d",
+        "#d90d39",
+        "#97023d",
+        "#313131",
+    ]),
+    "Phase" => continuous_colors([
+        "rgb(167, 119, 12)",
+        "rgb(197, 96, 51)",
+        "rgb(217, 67, 96)",
+        "rgb(221, 38, 163)",
+        "rgb(196, 59, 224)",
+        "rgb(153, 97, 244)",
+        "rgb(95, 127, 228)",
+        "rgb(40, 144, 183)",
+        "rgb(15, 151, 136)",
+        "rgb(39, 153, 79)",
+        "rgb(119, 141, 17)",
+        "rgb(167, 119, 12)",
+    ]),
+    "HSV" => continuous_colors([
+        "#ff0000",
+        "#ffa700",
+        "#afff00",
+        "#08ff00",
+        "#00ff9f",
+        "#00b7ff",
+        "#0010ff",
+        "#9700ff",
+        "#ff00bf",
+        "#ff0000",
+    ]),
+    "mrybm" => continuous_colors([
+        "#f884f7",
+        "#f968c4",
+        "#ea4388",
+        "#cf244b",
+        "#b51a15",
+        "#bd4304",
+        "#cc6904",
+        "#d58f04",
+        "#cfaa27",
+        "#a19f62",
+        "#588a93",
+        "#2269c4",
+        "#3e3ef0",
+        "#6b4ef9",
+        "#956bfa",
+        "#cd7dfe",
+        "#f884f7",
+    ]),
+    "mygbm" => continuous_colors([
+        "#ef55f1",
+        "#fb84ce",
+        "#fbafa1",
+        "#fcd471",
+        "#f0ed35",
+        "#c6e516",
+        "#96d310",
+        "#61c10b",
+        "#31ac28",
+        "#439064",
+        "#3d719a",
+        "#284ec8",
+        "#2e21ea",
+        "#6324f5",
+        "#9139fa",
+        "#c543fa",
+        "#ef55f1",
+    ]),
+    "Blackbody" =>
+        continuous_colors(["rgb(0,0,0)", "rgb(230,0,0)", "rgb(230,210,0)", "rgb(255,255,255)", "rgb(160,200,255)"]),
+    "Bluered" => continuous_colors(["rgb(0,0,255)", "rgb(255,0,0)"]),
+    "Blues" => continuous_colors([
+        "rgb(5,10,172)",
+        "rgb(40,60,190)",
+        "rgb(70,100,245)",
+        "rgb(90,120,245)",
+        "rgb(106,137,247)",
+        "rgb(220,220,220)",
+    ]),
+    "Cividis" => continuous_colors([
+        "rgb(0,32,76)",
+        "rgb(0,42,102)",
+        "rgb(0,52,110)",
+        "rgb(39,63,108)",
+        "rgb(60,74,107)",
+        "rgb(76,85,107)",
+        "rgb(91,95,109)",
+        "rgb(104,106,112)",
+        "rgb(117,117,117)",
+        "rgb(131,129,120)",
+        "rgb(146,140,120)",
+        "rgb(161,152,118)",
+        "rgb(176,165,114)",
+        "rgb(192,177,109)",
+        "rgb(209,191,102)",
+        "rgb(225,204,92)",
+        "rgb(243,219,79)",
+        "rgb(255,233,69)",
+    ]),
+    "Earth" => continuous_colors([
+        "rgb(0,0,130)",
+        "rgb(0,180,180)",
+        "rgb(40,210,40)",
+        "rgb(230,230,50)",
+        "rgb(120,70,20)",
+        "rgb(255,255,255)",
+    ]),
+    "Electric" => continuous_colors([
+        "rgb(0,0,0)",
+        "rgb(30,0,100)",
+        "rgb(120,0,100)",
+        "rgb(160,90,0)",
+        "rgb(230,200,0)",
+        "rgb(255,250,220)",
+    ]),
+    "Greens" => continuous_colors([
+        "rgb(0,68,27)",
+        "rgb(0,109,44)",
+        "rgb(35,139,69)",
+        "rgb(65,171,93)",
+        "rgb(116,196,118)",
+        "rgb(161,217,155)",
+        "rgb(199,233,192)",
+        "rgb(229,245,224)",
+        "rgb(247,252,245)",
+    ]),
+    "Greys" => continuous_colors(["rgb(0,0,0)", "rgb(255,255,255)"]),
+    "Hot" => continuous_colors(["rgb(0,0,0)", "rgb(230,0,0)", "rgb(255,210,0)", "rgb(255,255,255)"]),
+    "Jet" => continuous_colors([
+        "rgb(0,0,131)",
+        "rgb(0,60,170)",
+        "rgb(5,255,255)",
+        "rgb(255,255,0)",
+        "rgb(250,0,0)",
+        "rgb(128,0,0)",
+    ]),
+    "Picnic" => continuous_colors([
+        "rgb(0,0,255)",
+        "rgb(51,153,255)",
+        "rgb(102,204,255)",
+        "rgb(153,204,255)",
+        "rgb(204,204,255)",
+        "rgb(255,255,255)",
+        "rgb(255,204,255)",
+        "rgb(255,153,255)",
+        "rgb(255,102,204)",
+        "rgb(255,102,102)",
+        "rgb(255,0,0)",
+    ]),
+    "Portland" => continuous_colors([
+        "rgb(12,51,131)",
+        "rgb(10,136,186)",
+        "rgb(242,211,56)",
+        "rgb(242,143,56)",
+        "rgb(217,30,30)",
+    ]),
+    "Rainbow" => continuous_colors([
+        "rgb(150,0,90)",
+        "rgb(0,0,200)",
+        "rgb(0,25,255)",
+        "rgb(0,152,255)",
+        "rgb(44,255,150)",
+        "rgb(151,255,0)",
+        "rgb(255,234,0)",
+        "rgb(255,111,0)",
+        "rgb(255,0,0)",
+    ]),
+    "RdBu" => continuous_colors([
+        "rgb(5,10,172)",
+        "rgb(106,137,247)",
+        "rgb(190,190,190)",
+        "rgb(220,170,132)",
+        "rgb(230,145,90)",
+        "rgb(178,10,28)",
+    ]),
+    "Reds" => continuous_colors(["rgb(220,220,220)", "rgb(245,195,157)", "rgb(245,160,105)", "rgb(178,10,28)"]),
+    "Viridis" => continuous_colors([
+        "#440154",
+        "#48186a",
+        "#472d7b",
+        "#424086",
+        "#3b528b",
+        "#33638d",
+        "#2c728e",
+        "#26828e",
+        "#21918c",
+        "#1fa088",
+        "#28ae80",
+        "#3fbc73",
+        "#5ec962",
+        "#84d44b",
+        "#addc30",
+        "#d8e219",
+        "#fde725",
+    ]),
+    "YlGnBu" => continuous_colors([
+        "rgb(8,29,88)",
+        "rgb(37,52,148)",
+        "rgb(34,94,168)",
+        "rgb(29,145,192)",
+        "rgb(65,182,196)",
+        "rgb(127,205,187)",
+        "rgb(199,233,180)",
+        "rgb(237,248,217)",
+        "rgb(255,255,217)",
+    ]),
+    "YlOrRd" => continuous_colors([
+        "rgb(128,0,38)",
+        "rgb(189,0,38)",
+        "rgb(227,26,28)",
+        "rgb(252,78,42)",
+        "rgb(253,141,60)",
+        "rgb(254,178,76)",
+        "rgb(254,217,118)",
+        "rgb(255,237,160)",
+        "rgb(255,255,204)",
+    ]),
+])
+
+function Validations.validate(
+    context::ValidationContext,
+    colors_configuration::ColorsConfiguration,
+)::Maybe{AbstractString}
+    validate_in(context, "color_axis") do
+        return validate(context, colors_configuration.color_axis)
+    end
+
+    colors_palette = colors_configuration.colors_palette
+    if colors_palette isa AbstractString
+        if endswith(colors_palette, "_r")
+            named_palette = get(NAMED_COLOR_PALETTES, colors_palette[1:(end - 2)], nothing)
+        else
+            named_palette = get(NAMED_COLOR_PALETTES, colors_palette, nothing)
+        end
+        if named_palette === nothing
+            throw(ArgumentError("invalid $(location(context)).colors_palette: $(colors_palette)"))
+        end
+        colors_palette = named_palette
+
+    elseif colors_palette isa AbstractVector
+        validate_vector_is_not_empty(context, "colors_palette", colors_palette)
+
+        values = [entry[1] for entry in colors_palette]
+        for (index, (low_value, high_value)) in enumerate(zip(values[1:(end - 1)], values[2:end]))
+            if low_value > high_value
+                throw(
+                    ArgumentError(
+                        "pallete value $(location(context)).colors_palette[$(index)].value: $(low_value)\n" *
+                        "is above value $(location(context)).colors_palette[$(index + 1)].value: $(high_value)",
+                    ),
+                )
+            end
+        end
+
+        validate_vector_entries(context, "colors_palette", colors_palette) do _, (_, color)
+            validate_in(context, "color") do
+                return validate_is_color(context, color)
+            end
+        end
+
+        if eltype(colors_palette) <: Union{Pair{<:Real, <:AbstractString}, Tuple{<:Real, <:AbstractString}}
+            if colors_configuration.color_axis.minimum !== nothing
+                throw(
+                    ArgumentError(
+                        "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
+                        "and explicit $(location(context)).color_axis.minimum: $(colors_configuration.color_axis.minimum)",
+                    ),
+                )
+            end
+
+            if colors_configuration.color_axis.maximum !== nothing
+                throw(
+                    ArgumentError(
+                        "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
+                        "and explicit $(location(context)).color_axis.maximum: $(colors_configuration.color_axis.maximum)",
+                    ),
+                )
+            end
+
+            cmin = minimum([value for (value, _) in colors_palette])
+            cmax = maximum([value for (value, _) in colors_palette])
+            validate_is_range(
+                context,
+                "minimum(colors_palette[*].value)",
+                cmin,
+                "maximum(colors_palette[*].value)",
+                cmax,
+            )
+
+            if colors_configuration.color_axis.log_scale !== nothing
+                index = argmin(colors_palette)  # NOJET
+                validate_in(context, "(colors_palette[$(index)].value + color_axis.log_regularization)") do
+                    return validate_is_above(
+                        context,
+                        colors_palette[index][1] + colors_configuration.color_axis.log_regularization,
+                        0,
+                    )
+                end
+            end
+        end
+    end
 
     return nothing
 end

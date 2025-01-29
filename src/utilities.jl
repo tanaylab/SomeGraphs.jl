@@ -155,6 +155,7 @@ end
     vertical_bands_shapes(
         axis_configuration::AxisConfiguration,
         scaled_values_range::AbstractVector{<:Real},
+        bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
 
@@ -164,13 +165,17 @@ because Plotly.
 function vertical_bands_shapes(
     axis_configuration::AxisConfiguration,
     scaled_values_range::AbstractVector{<:Real},
+    bands_data::BandsData,
     bands_configuration::BandsConfiguration,
 )::AbstractVector{<:Shape}
     shapes = Vector{Shape}()
 
-    scaled_low_offset = scale_axis_value(axis_configuration, bands_configuration.low.offset)
-    scaled_middle_offset = scale_axis_value(axis_configuration, bands_configuration.middle.offset)
-    scaled_high_offset = scale_axis_value(axis_configuration, bands_configuration.high.offset)
+    scaled_low_offset =
+        scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
+    scaled_middle_offset =
+        scale_axis_value(axis_configuration, prefer_data(bands_data.middle_offset, bands_configuration.middle.offset))
+    scaled_high_offset =
+        scale_axis_value(axis_configuration, prefer_data(bands_data.high_offset, bands_configuration.high.offset))
 
     for (band_configuration, scaled_offset) in (
         (bands_configuration.low, scaled_low_offset),
@@ -195,7 +200,7 @@ function vertical_bands_shapes(
         end
     end
 
-    if bands_configuration.low.offset !== nothing && bands_configuration.low.line.is_filled
+    if scaled_low_offset !== nothing && bands_configuration.low.line.is_filled
         push!(
             shapes,
             Shape(
@@ -213,9 +218,7 @@ function vertical_bands_shapes(
         )
     end
 
-    if bands_configuration.low.offset !== nothing &&
-       bands_configuration.high.offset !== nothing &&
-       bands_configuration.middle.line.is_filled
+    if scaled_low_offset !== nothing && scaled_high_offset !== nothing && bands_configuration.middle.line.is_filled
         push!(
             shapes,
             Shape(
@@ -233,7 +236,7 @@ function vertical_bands_shapes(
         )
     end
 
-    if bands_configuration.high.offset !== nothing && bands_configuration.high.line.is_filled
+    if scaled_high_offset !== nothing && bands_configuration.high.line.is_filled
         push!(
             shapes,
             Shape(
@@ -258,6 +261,7 @@ end
     horizontal_bands_shapes(
         axis_configuration::AxisConfiguration,
         scaled_values_range::AbstractVector{<:Real},
+        bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
 
@@ -267,13 +271,17 @@ because Plotly.
 function horizontal_bands_shapes(
     axis_configuration::AxisConfiguration,
     scaled_values_range::AbstractVector{<:Real},
+    bands_data::BandsData,
     bands_configuration::BandsConfiguration,
 )::AbstractVector{<:Shape}
     shapes = Vector{Shape}()
 
-    scaled_low_offset = scale_axis_value(axis_configuration, bands_configuration.low.offset)
-    scaled_middle_offset = scale_axis_value(axis_configuration, bands_configuration.middle.offset)
-    scaled_high_offset = scale_axis_value(axis_configuration, bands_configuration.high.offset)
+    scaled_low_offset =
+        scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
+    scaled_middle_offset =
+        scale_axis_value(axis_configuration, prefer_data(bands_data.middle_offset, bands_configuration.middle.offset))
+    scaled_high_offset =
+        scale_axis_value(axis_configuration, prefer_data(bands_data.high_offset, bands_configuration.high.offset))
 
     for (band_configuration, scaled_offset) in (
         (bands_configuration.low, scaled_low_offset),
@@ -298,7 +306,7 @@ function horizontal_bands_shapes(
         end
     end
 
-    if bands_configuration.low.offset !== nothing && bands_configuration.low.line.is_filled
+    if scaled_low_offset !== nothing && bands_configuration.low.line.is_filled
         push!(
             shapes,
             Shape(
@@ -316,9 +324,7 @@ function horizontal_bands_shapes(
         )
     end
 
-    if bands_configuration.low.offset !== nothing &&
-       bands_configuration.high.offset !== nothing &&
-       bands_configuration.middle.line.is_filled
+    if scaled_low_offset !== nothing && scaled_high_offset !== nothing && bands_configuration.middle.line.is_filled
         push!(
             shapes,
             Shape(
@@ -336,7 +342,7 @@ function horizontal_bands_shapes(
         )
     end
 
-    if bands_configuration.high.offset !== nothing && bands_configuration.high.line.is_filled
+    if scaled_high_offset !== nothing && bands_configuration.high.line.is_filled
         push!(
             shapes,
             Shape(
@@ -364,6 +370,14 @@ end
 function fill_color(line_color::AbstractString)::AbstractString
     rgba = parse(RGBA, line_color)
     return hex(RGBA(rgba.r, rgba.g, rgba.b, rgba.alpha * 0.5), :RRGGBBAA)
+end
+
+function prefer_data(data_value::Any, configuration_value::Any)::Any
+    if data_value !== nothing
+        return data_value
+    else
+        return configuration_value
+    end
 end
 
 end  # module
