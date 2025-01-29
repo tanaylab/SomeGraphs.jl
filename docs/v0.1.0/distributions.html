@@ -1,0 +1,637 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Distributions · SomeGraphs.jl v0.1.0
+</title>
+<meta name="title" content="Distributions · SomeGraphs.jl v0.1.0"/>
+<meta property="og:title" content="Distributions · SomeGraphs.jl v0.1.0"/>
+<meta property="twitter:title" content="Distributions · SomeGraphs.jl v0.1.0"/>
+<meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<script data-outdated-warner src="assets/warner.js">
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
+<script>documenterBaseURL="."
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
+</script>
+<script src="search_index.js">
+</script>
+<script src="siteinfo.js">
+</script>
+<script src="../versions.js">
+</script>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
+<script src="assets/themeswap.js">
+</script>
+</head>
+<body>
+<div id="documenter">
+<nav class="docs-sidebar">
+<div class="docs-package-name">
+<span class="docs-autofit">
+<a href="index.html">SomeGraphs.jl v0.1.0
+</a>
+</span>
+</div>
+<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
+</button>
+<ul class="docs-menu">
+<li>
+<a class="tocitem" href="index.html">SomeGraphs
+</a>
+</li>
+<li>
+<a class="tocitem" href="validations.html">Validations
+</a>
+</li>
+<li>
+<a class="tocitem" href="common.html">Common
+</a>
+</li>
+<li>
+<a class="tocitem" href="utilities.html">Utilities
+</a>
+</li>
+</ul>
+<div class="docs-version-selector field has-addons">
+<div class="control">
+<span class="docs-label button is-static is-size-7">Version
+</span>
+</div>
+<div class="docs-selector control is-expanded">
+<div class="select is-fullwidth is-size-7">
+<select id="documenter-version-selector">
+</select>
+</div>
+</div>
+</div>
+</nav>
+<div class="docs-main">
+<header class="docs-navbar">
+<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
+</a>
+<nav class="breadcrumb">
+<ul class="is-hidden-mobile">
+<li class="is-active">
+<a href="distributions.html">Distributions
+</a>
+</li>
+</ul>
+<ul class="is-hidden-tablet">
+<li class="is-active">
+<a href="distributions.html">Distributions
+</a>
+</li>
+</ul>
+</nav>
+<div class="docs-right">
+<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
+<span class="docs-icon fa-brands">
+</span>
+<span class="docs-label is-hidden-touch">GitHub
+</span>
+</a>
+<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
+</a>
+<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
+</a>
+</div>
+</header>
+<article class="content" id="documenter-page">
+<h1 id="Distributions">
+<a class="docs-heading-anchor" href="#Distributions">Distributions
+</a>
+<a id="Distributions-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Distributions" title="Permalink">
+</a>
+</h1>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions" href="#SomeGraphs.Distributions">
+<code>SomeGraphs.Distributions
+</code>
+</a> — 
+<span class="docstring-category">Module
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Graphs for showing probability distributions.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionConfiguration" href="#SomeGraphs.Distributions.DistributionConfiguration">
+<code>SomeGraphs.Distributions.DistributionConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct DistributionConfiguration &lt;: Validated
+    values_orientation::ValuesOrientation = HorizontalValues
+    show_box::Bool = false
+    show_violin::Bool = false
+    show_curve::Bool = true
+    show_outliers::Bool = false
+    color::Maybe{AbstractString} = nothing
+end
+</code>
+</pre>
+<p>Configure the style of a distribution graph.
+</p>
+<p>The 
+<code>values_orientation
+</code> controls which axis is used for the values (the other axis is used for the density). By default the values are shown on the Y axis (vertical values).
+</p>
+<p>If 
+<code>show_box
+</code>, show a box graph.
+</p>
+<p>If 
+<code>show_violin
+</code>, show a violin graph.
+</p>
+<p>If 
+<code>show_curve
+</code>, show a density curve. This is the default.
+</p>
+<p>You can combine the above; however, a density curve is just the positive side of a violin graph, so you can&#39;t combine the two.
+</p>
+<p>In addition to the (combination) of the above, if 
+<code>show_outliers
+</code>, also show the extreme (outlier) points.
+</p>
+<p>The 
+<code>color
+</code> is chosen automatically by default. When showing multiple distributions, you can override it per each one in the 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
+<code>DistributionsGraphData
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraph" href="#SomeGraphs.Distributions.DistributionGraph">
+<code>SomeGraphs.Distributions.DistributionGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A graph for visualizing a single distribution. See 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
+<code>DistributionGraphData
+</code>
+</a> and 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
+<code>DistributionGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphConfiguration" href="#SomeGraphs.Distributions.DistributionGraphConfiguration">
+<code>SomeGraphs.Distributions.DistributionGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct DistributionGraphConfiguration &lt;: AbstractGraphConfiguration
+    figure::FigureConfiguration = FigureConfiguration()
+    distribution::DistributionConfiguration = DistributionConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration()
+    value_bands::BandsConfiguration = BandsConfiguration()
+end
+</code>
+</pre>
+<p>Configure a graph for showing a single distribution.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphData" href="#SomeGraphs.Distributions.DistributionGraphData">
+<code>SomeGraphs.Distributions.DistributionGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct DistributionGraphData &lt;: AbstractGraphData
+    figure_title::Maybe{AbstractString} = nothing
+    value_axis_title::Maybe{AbstractString} = nothing
+    trace_axis_title::Maybe{AbstractString} = nothing
+    distribution_values::AbstractVector{&lt;:Real} = Float32[]
+    distribution_name::Maybe{AbstractString} = nothing
+end
+</code>
+</pre>
+<p>By default, all the titles are empty. You can specify the overall 
+<code>figure_title
+</code> as well as the 
+<code>value_axis_title
+</code> and the 
+<code>trace_axis_title
+</code>. The optional 
+<code>distribution_name
+</code> is used as the tick value for the distribution.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.distribution_graph" href="#SomeGraphs.Distributions.distribution_graph">
+<code>SomeGraphs.Distributions.distribution_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distribution_graph(;
+    [figure_title::Maybe{AbstractString} = nothing,
+    value_axis_title::Maybe{AbstractString} = nothing,
+    trace_axis_title::Maybe{AbstractString} = nothing,
+    distribution_values::AbstractVector{&lt;:Real} = Float32[],
+    distribution_name::Maybe{AbstractString} = nothing],
+)::DistributionGraph
+</code>
+</pre>
+<p>Create a 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraph">
+<code>DistributionGraph
+</code>
+</a> by initializing only the 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
+<code>DistributionGraphData
+</code>
+</a> fields.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraph" href="#SomeGraphs.Distributions.DistributionsGraph">
+<code>SomeGraphs.Distributions.DistributionsGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A graph for visualizing multiple distributions. See 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
+<code>DistributionsGraphData
+</code>
+</a> and 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration">
+<code>DistributionsGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraphConfiguration" href="#SomeGraphs.Distributions.DistributionsGraphConfiguration">
+<code>SomeGraphs.Distributions.DistributionsGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct DistributionsGraphConfiguration &lt;: AbstractGraphConfiguration
+    figure::FigureConfiguration = FigureConfiguration()
+    distribution::DistributionConfiguration = DistributionConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration()
+    show_legend::Bool = false
+    overlay_distributions::Bool = false
+    distributions_gap::Maybe{Real} = nothing
+end
+</code>
+</pre>
+<p>Configure a graph for showing multiple distributions.
+</p>
+<p>This is similar to 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
+<code>DistributionGraphConfiguration
+</code>
+</a>, with additions to deal with having multiple distributions.
+</p>
+<p>If 
+<code>show_legend
+</code>, we add a legend listing the distributions. If 
+<code>overlay_distributions
+</code>, we plot the distributions on top of one another. Otherwise, 
+<code>distributions_gap
+</code> can be used to adjust the amount of space between the distribution plots.
+</p>
+<div class="admonition is-info">
+<header class="admonition-header">Note
+</header>
+<div class="admonition-body">
+<p>Adjusting the 
+<code>distributions_gap
+</code> will end badly if using 
+<code>show_curve
+</code>, because Plotly.
+</p>
+</div>
+</div>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraphData" href="#SomeGraphs.Distributions.DistributionsGraphData">
+<code>SomeGraphs.Distributions.DistributionsGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct DistributionsGraphData &lt;: AbstractGraphData
+    figure_title::Maybe{AbstractString} = nothing
+    value_axis_title::Maybe{AbstractString} = nothing
+    trace_axis_title::Maybe{AbstractString} = nothing
+    legend_title::Maybe{AbstractString} = nothing
+    distributions_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Float32}[]
+    distributions_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+end
+</code>
+</pre>
+<p>The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall 
+<code>figure_title
+</code> as well as the 
+<code>value_axis_title
+</code>, the 
+<code>trace_axis_title
+</code> and the 
+<code>legend_title
+</code> (if 
+<code>show_legend
+</code> is set). If specified, the 
+<code>distributions_names
+</code> and/or the 
+<code>distributions_colors
+</code> vectors must contain the same number of elements as the number of vectors in the 
+<code>distributions_values
+</code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.distributions_graph" href="#SomeGraphs.Distributions.distributions_graph">
+<code>SomeGraphs.Distributions.distributions_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distributions_graph(;
+    [figure_title::Maybe{AbstractString} = nothing,
+    value_axis_title::Maybe{AbstractString} = nothing,
+    trace_axis_title::Maybe{AbstractString} = nothing,
+    legend_title::Maybe{AbstractString} = nothing,
+    distributions_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Float32}[],
+    distributions_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing],
+)::DistributionsGraph
+</code>
+</pre>
+<p>Create a 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph">
+<code>DistributionsGraph
+</code>
+</a> by initializing only the 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
+<code>DistributionsGraphData
+</code>
+</a> fields.
+</p>
+</div>
+</section>
+</article>
+<h2 id="Index">
+<a class="docs-heading-anchor" href="#Index">Index
+</a>
+<a id="Index-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
+</a>
+</h2>
+<ul>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions">
+<code>SomeGraphs.Distributions
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionConfiguration">
+<code>SomeGraphs.Distributions.DistributionConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraph">
+<code>SomeGraphs.Distributions.DistributionGraph
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
+<code>SomeGraphs.Distributions.DistributionGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
+<code>SomeGraphs.Distributions.DistributionGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph">
+<code>SomeGraphs.Distributions.DistributionsGraph
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration">
+<code>SomeGraphs.Distributions.DistributionsGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
+<code>SomeGraphs.Distributions.DistributionsGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.distribution_graph">
+<code>SomeGraphs.Distributions.distribution_graph
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.distributions_graph">
+<code>SomeGraphs.Distributions.distributions_graph
+</code>
+</a>
+</li>
+</ul>
+</article>
+<nav class="docs-footer">
+<p class="footer-message">Powered by 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> and the 
+<a href="https://julialang.org/">Julia Programming Language
+</a>.
+</p>
+</nav>
+</div>
+<div class="modal" id="documenter-settings">
+<div class="modal-background">
+</div>
+<div class="modal-card">
+<header class="modal-card-head">
+<p class="modal-card-title">Settings
+</p>
+<button class="delete">
+</button>
+</header>
+<section class="modal-card-body">
+<p>
+<label class="label">Theme
+</label>
+<div class="select">
+<select id="documenter-themepicker">
+<option value="auto">Automatic (OS)
+</option>
+<option value="documenter-light">documenter-light
+</option>
+<option value="documenter-dark">documenter-dark
+</option>
+<option value="catppuccin-latte">catppuccin-latte
+</option>
+<option value="catppuccin-frappe">catppuccin-frappe
+</option>
+<option value="catppuccin-macchiato">catppuccin-macchiato
+</option>
+<option value="catppuccin-mocha">catppuccin-mocha
+</option>
+</select>
+</div>
+</p>
+<hr/>
+<p>This document was generated with 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> version 1.8.0. Using Julia version 1.11.3.
+</p>
+</section>
+<footer class="modal-card-foot">
+</footer>
+</div>
+</div>
+</div>
+</body>
+</html>

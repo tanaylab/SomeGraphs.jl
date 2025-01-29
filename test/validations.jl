@@ -51,6 +51,14 @@ nested_test("validations") do
                 is not below: 1
             """) validate_is_below(context, 1, 1)
         end
+
+        nested_test("range") do
+            validate_is_range(context, "minimum", 0, "maximum", 1)
+            @test_throws dedent("""
+                range low limit foo.minimum: 1
+                is not below high limit foo.maximum: 1
+            """) validate_is_range(context, "minimum", 1, "maximum", 1)
+        end
     end
 
     nested_test("color") do
@@ -68,23 +76,29 @@ nested_test("validations") do
         vector = [0, 1]
 
         nested_test("length") do
-            validate_vector_length(context, vector, 2)
+            validate_vector_length(context, "bar", vector, "baz", 2)
             @test_throws dedent("""
-                invalid length of foo: 2
-                is different from expected length: 1
-            """) validate_vector_length(context, vector, 1)
+                invalid length of foo.bar: 2
+                is different from length of foo.baz: 1
+            """) validate_vector_length(context, "bar", vector, "baz", 1)
+        end
+
+        nested_test("empty") do
+            validate_vector_is_not_empty(context, "bar", vector)
+            vector = Int[]
+            @test_throws "empty vector foo.bar" validate_vector_is_not_empty(context, "bar", vector)
         end
 
         nested_test("entries") do
-            validate_vector_entries(context, vector) do index, value
+            validate_vector_entries(context, "bar", vector) do index, value
                 return validate_is_at_most(context, value, 1)
             end
 
             @test_throws dedent("""
-                too high foo[2]: 1
+                too high foo.bar[2]: 1
                 is not below: 1
             """) begin
-                validate_vector_entries(context, vector) do index, value
+                validate_vector_entries(context, "bar", vector) do index, value
                     return validate_is_below(context, value, 1)
                 end
             end
@@ -97,23 +111,29 @@ nested_test("validations") do
         matrix = [5 4 3; 2 1 0]
 
         nested_test("size") do
-            validate_matrix_size(context, matrix, (2, 3))
+            validate_matrix_size(context, "bar", matrix, "baz", (2, 3))
             @test_throws dedent("""
-                invalid size of foo: (2, 3)
-                is different from expected size: (3, 2)
-            """) validate_matrix_size(context, matrix, (3, 2))
+                invalid size of foo.bar: (2, 3)
+                is different from size of foo.baz: (3, 2)
+            """) validate_matrix_size(context, "bar", matrix, "baz", (3, 2))
+        end
+
+        nested_test("empty") do
+            validate_matrix_is_not_empty(context, "bar", matrix)
+            matrix = Matrix{Float32}(undef, 0, 3)
+            @test_throws "empty matrix foo.bar size: (0, 3)" validate_matrix_is_not_empty(context, "bar", matrix)
         end
 
         nested_test("entries") do
-            validate_matrix_entries(context, matrix) do row, column, value
+            validate_matrix_entries(context, "bar", matrix) do row, column, value
                 return validate_is_at_least(context, value, 0)
             end
 
             @test_throws dedent("""
-                too low foo[2, 3]: 0
+                too low foo.bar[2, 3]: 0
                 is not above: 0
             """) begin
-                validate_matrix_entries(context, matrix) do row, column, value
+                validate_matrix_entries(context, "bar", matrix) do row, column, value
                     return validate_is_above(context, value, 0)
                 end
             end

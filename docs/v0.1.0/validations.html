@@ -68,6 +68,14 @@
 </li>
 </ul>
 </li>
+<li>
+<a class="tocitem" href="common.html">Common
+</a>
+</li>
+<li>
+<a class="tocitem" href="utilities.html">Utilities
+</a>
+</li>
 </ul>
 <div class="docs-version-selector field has-addons">
 <div class="control">
@@ -143,44 +151,6 @@
 </p>
 <p>We therefore provide a framework here for validating the objects and generate a hopefully informative error message if anything is wrong. This can be used by the UI to validate the data without worrying about the details.
 </p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Validations.Maybe" href="#SomeGraphs.Validations.Maybe">
-<code>SomeGraphs.Validations.Maybe
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">Maybe{T} = Union{T, Nothing}
-</code>
-</pre>
-<p>The type to use when maybe there is a value, maybe there isn&#39;t. This is exactly as if writing the explicit 
-<code>Union
-</code> with 
-<code>Nothing
-</code> but is shorter and more readable. This is extremely common.
-</p>
-<div class="admonition is-info">
-<header class="admonition-header">Note
-</header>
-<div class="admonition-body">
-<p>This is replicated from 
-<code>DataAxesFormats
-</code> to avoid making it a dependency. We do not export it but use it extensively in the type signatures.
-</p>
-</div>
-</div>
 </div>
 </section>
 </article>
@@ -285,6 +255,36 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 </code> informative. Will throw 
 <code>ArgumentError
 </code> if the value isn&#39;t valid.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_in" href="#SomeGraphs.Validations.validate_in">
+<code>SomeGraphs.Validations.validate_in
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_in(validation::Function, context::ValidationContext, where::Union{AbstractString, Integer})::Nothing
+</code>
+</pre>
+<p>Invoke the 
+<code>validation
+</code> function with the 
+<code>context
+</code> updated to include some 
+<code>where
+</code>.
 </p>
 </div>
 </section>
@@ -405,6 +405,40 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_is_range" href="#SomeGraphs.Validations.validate_is_range">
+<code>SomeGraphs.Validations.validate_is_range
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_is_range(
+    context::ValidationContext,
+    low_where::AbstractString,
+    low_value::Maybe{Real},
+    high_where::AbstractString,
+    high_value::Maybe{Real},
+)::Nothing
+</code>
+</pre>
+<p>Validate that if both 
+<code>low_value
+</code> and 
+<code>high_value
+</code> are specified, they define a non-empty range.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Validations.validate_is_color" href="#SomeGraphs.Validations.validate_is_color">
 <code>SomeGraphs.Validations.validate_is_color
 </code>
@@ -431,6 +465,38 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_vector_is_not_empty" href="#SomeGraphs.Validations.validate_vector_is_not_empty">
+<code>SomeGraphs.Validations.validate_vector_is_not_empty
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_vector_is_not_empty(
+    context::ValidationContext,
+    [field::AbstractString,]
+    vector::AbstractVector
+)::Nothing
+</code>
+</pre>
+<p>Validate that a 
+<code>field
+</code> containing a 
+<code>vector
+</code> has at least one entry.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Validations.validate_vector_length" href="#SomeGraphs.Validations.validate_vector_length">
 <code>SomeGraphs.Validations.validate_vector_length
 </code>
@@ -443,14 +509,24 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">validate_vector_length(context::ValidationContext, vector::Maybe{AbstractVector}, expected_length::Integer)::Nothing
+<code class="language-julia hljs">validate_vector_length(
+    context::ValidationContext,
+    field::AbstractString,
+    vector::Maybe{AbstractVector},
+    expected_base::AbstractString,
+    expected_length::Integer
+)::Nothing
 </code>
 </pre>
 <p>Validate that a 
+<code>field
+</code> containing a 
 <code>vector
-</code> has the 
+</code> has (if it is specified) the 
 <code>expected_length
-</code> (if it is specified).
+</code> of an 
+<code>expected_base
+</code> field.
 </p>
 </div>
 </section>
@@ -471,14 +547,53 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">validate_vector_entries(validation::Function, context::ValidationContext, vector::Maybe{AbstractVector})::Nothing
+<code class="language-julia hljs">validate_vector_entries(
+    validation::Function,
+    context::ValidationContext,
+    field::AbstractString,
+    vector::Maybe{AbstractVector}
+)::Nothing
 </code>
 </pre>
 <p>Validate all the entries of a 
+<code>field
+</code> containing a 
 <code>vector
 </code> using the 
 <code>validation
 </code> function. It is given the entry&#39;s index, and its value. The context is updated to include the index for the duration of the function.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_matrix_is_not_empty" href="#SomeGraphs.Validations.validate_matrix_is_not_empty">
+<code>SomeGraphs.Validations.validate_matrix_is_not_empty
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_matrix_is_not_empty(
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::AbstractMatrix
+)::Nothing
+</code>
+</pre>
+<p>Validate that a 
+<code>field
+</code> containing a 
+<code>matrix
+</code> has at least one entry.
 </p>
 </div>
 </section>
@@ -499,14 +614,23 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">validate_matrix_size(context::ValidationContext, matrix::Maybe{AbstractMatrix}, expected_size::Tuple{Integer, Integer})::Nothing
+<code class="language-julia hljs">validate_matrix_size(
+    context::ValidationContext,
+    matrix::Maybe{AbstractMatrix},
+    field::AbstractString,
+    expected_size::Tuple{Integer, Integer}
+)::Nothing
 </code>
 </pre>
 <p>Validate that a 
+<code>field
+</code> containing 
 <code>matrix
-</code> has the 
+</code> has (if it is specified) the 
 <code>expected_size
-</code> (if it is specified).
+</code> of a 
+<code>base_field
+</code>.
 </p>
 </div>
 </section>
@@ -527,10 +651,17 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">validate_matrix_entries(validation::Function, context::ValidationContext, matrix::Maybe{AbstractMatrix})::Nothing
+<code class="language-julia hljs">validate_matrix_entries(
+    validation::Function,
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::Maybe{AbstractMatrix}
+)::Nothing
 </code>
 </pre>
 <p>Validate all the entries of a 
+<code>field
+</code> containing a 
 <code>matrix
 </code> using the 
 <code>validation
@@ -555,12 +686,6 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 </a>
 </li>
 <li>
-<a href="validations.html#SomeGraphs.Validations.Maybe">
-<code>SomeGraphs.Validations.Maybe
-</code>
-</a>
-</li>
-<li>
 <a href="validations.html#SomeGraphs.Validations.Validated">
 <code>SomeGraphs.Validations.Validated
 </code>
@@ -581,6 +706,12 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 <li>
 <a href="validations.html#SomeGraphs.Validations.validate">
 <code>SomeGraphs.Validations.validate
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_in">
+<code>SomeGraphs.Validations.validate_in
 </code>
 </a>
 </li>
@@ -615,8 +746,20 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 </a>
 </li>
 <li>
+<a href="validations.html#SomeGraphs.Validations.validate_is_range">
+<code>SomeGraphs.Validations.validate_is_range
+</code>
+</a>
+</li>
+<li>
 <a href="validations.html#SomeGraphs.Validations.validate_matrix_entries">
 <code>SomeGraphs.Validations.validate_matrix_entries
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_matrix_is_not_empty">
+<code>SomeGraphs.Validations.validate_matrix_is_not_empty
 </code>
 </a>
 </li>
@@ -633,6 +776,12 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 </a>
 </li>
 <li>
+<a href="validations.html#SomeGraphs.Validations.validate_vector_is_not_empty">
+<code>SomeGraphs.Validations.validate_vector_is_not_empty
+</code>
+</a>
+</li>
+<li>
 <a href="validations.html#SomeGraphs.Validations.validate_vector_length">
 <code>SomeGraphs.Validations.validate_vector_length
 </code>
@@ -642,6 +791,8 @@ validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
 </article>
 <nav class="docs-footer">
 <a class="docs-footer-prevpage" href="index.html">« SomeGraphs
+</a>
+<a class="docs-footer-nextpage" href="common.html">Common »
 </a>
 <div class="flexbox-break">
 </div>

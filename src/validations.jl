@@ -12,17 +12,22 @@ anything is wrong. This can be used by the UI to validate the data without worry
 """
 module Validations
 
+export Validated
 export ValidationContext
 export location
 export validate
+export validate_in
 export validate_is_above
 export validate_is_at_least
 export validate_is_at_most
 export validate_is_below
 export validate_is_color
+export validate_is_range
 export validate_matrix_entries
+export validate_matrix_is_not_empty
 export validate_matrix_size
 export validate_vector_entries
+export validate_vector_is_not_empty
 export validate_vector_length
 
 using Colors
@@ -81,7 +86,7 @@ function location(context::ValidationContext)::AbstractString
         push!(text, "]")
     end
 
-    return join(text)
+    return join(text)  # NOJET
 end
 
 """
@@ -98,6 +103,20 @@ Validate the `value` which was accessed via the `context`, possibly using some `
 """
 function validate(context::ValidationContext, value::Validated)::Nothing end  # NOLINT
 function validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end  # NOLINT
+
+"""
+    validate_in(validation::Function, context::ValidationContext, where::Union{AbstractString, Integer})::Nothing
+
+Invoke the `validation` function with the `context` updated to include some `where`.
+"""
+function validate_in(validation::Function, context::ValidationContext, where::Union{AbstractString, Integer})::Nothing
+    push!(context, where)
+    try
+        validation()
+    finally
+        pop!(context)  # NOJET
+    end
+end
 
 """
     validate_is_at_least(context::ValidationContext, value::Maybe{Real}, minimum::Real)::Nothing
@@ -164,20 +183,28 @@ function validate_is_color(context::ValidationContext, color::Maybe{AbstractStri
 end
 
 """
-    validate_vector_length(context::ValidationContext, vector::Maybe{AbstractVector}, expected_length::Integer)::Nothing
+    validate_is_range(
+        context::ValidationContext,
+        low_where::AbstractString,
+        low_value::Maybe{Real},
+        high_where::AbstractString,
+        high_value::Maybe{Real},
+    )::Nothing
 
-Validate that a `vector` has the `expected_length` (if it is specified).
+Validate that if both `low_value` and `high_value` are specified, they define a non-empty range.
 """
-function validate_vector_length(
+function validate_is_range(
     context::ValidationContext,
-    vector::Maybe{AbstractVector},
-    expected_length::Integer,
+    low_where::AbstractString,
+    low_value::Maybe{Real},
+    high_where::AbstractString,
+    high_value::Maybe{Real},
 )::Nothing
-    if vector !== nothing && length(vector) != expected_length
+    if low_value !== nothing && high_value !== nothing && low_value >= high_value
         throw(
             ArgumentError(
-                "invalid length of $(location(context)): $(length(vector))\n" *
-                "is different from expected length: $(expected_length)",
+                "range low limit $(location(context)).$(low_where): $(low_value)\n" *
+                "is not below high limit $(location(context)).$(high_where): $(high_value)",
             ),
         )
     end
@@ -185,41 +212,132 @@ function validate_vector_length(
 end
 
 """
-    validate_vector_entries(validation::Function, context::ValidationContext, vector::Maybe{AbstractVector})::Nothing
+    validate_vector_length(
+        context::ValidationContext,
+        field::AbstractString,
+        vector::Maybe{AbstractVector},
+        expected_base::AbstractString,
+        expected_length::Integer
+    )::Nothing
 
-Validate all the entries of a `vector` using the `validation` function. It is given the entry's index, and its value.
-The context is updated to include the index for the duration of the function.
+Validate that a `field` containing a `vector` has (if it is specified) the `expected_length` of an `expected_base` field.
+"""
+function validate_vector_length(
+    context::ValidationContext,
+    field::AbstractString,
+    vector::Maybe{AbstractVector},
+    expected_base::AbstractString,
+    expected_length::Integer,
+)::Nothing
+    if vector !== nothing && length(vector) != expected_length
+        throw(
+            ArgumentError(
+                "invalid length of $(location(context)).$(field): $(length(vector))\n" *
+                "is different from length of $(location(context)).$(expected_base): $(expected_length)",
+            ),
+        )
+    end
+    return nothing
+end
+
+"""
+    validate_vector_is_not_empty(
+        context::ValidationContext,
+        [field::AbstractString,]
+        vector::AbstractVector
+    )::Nothing
+
+Validate that a `field` containing a `vector` has at least one entry.
+"""
+function validate_vector_is_not_empty(
+    context::ValidationContext,
+    field::AbstractString,
+    vector::AbstractVector,
+)::Nothing
+    validate_in(context, field) do
+        return validate_vector_is_not_empty(context, vector)
+    end
+    return nothing
+end
+
+function validate_vector_is_not_empty(context::ValidationContext, vector::AbstractVector)::Nothing
+    if length(vector) == 0
+        throw(ArgumentError("empty vector $(location(context))"))
+    end
+    return nothing
+end
+
+"""
+    validate_vector_entries(
+        validation::Function,
+        context::ValidationContext,
+        field::AbstractString,
+        vector::Maybe{AbstractVector}
+    )::Nothing
+
+Validate all the entries of a `field` containing a `vector` using the `validation` function. It is given the entry's
+index, and its value. The context is updated to include the index for the duration of the function.
 """
 function validate_vector_entries(
     validation::Function,
     context::ValidationContext,
+    field::AbstractString,
     vector::Maybe{AbstractVector},
 )::Nothing
-    if vector !== nothing
-        for (index, entry) in enumerate(vector)
-            push!(context, index)
-            validation(index, entry)
-            pop!(context)  # NOJET
+    validate_in(context, field) do
+        if vector !== nothing
+            for (index, entry) in enumerate(vector)
+                validate_in(context, index) do
+                    return validation(index, entry)
+                end
+            end
         end
     end
     return nothing
 end
 
 """
-    validate_matrix_size(context::ValidationContext, matrix::Maybe{AbstractMatrix}, expected_size::Tuple{Integer, Integer})::Nothing
+    validate_matrix_is_not_empty(
+        context::ValidationContext,
+        field::AbstractString,
+        matrix::AbstractMatrix
+    )::Nothing
 
-Validate that a `matrix` has the `expected_size` (if it is specified).
+Validate that a `field` containing a `matrix` has at least one entry.
+"""
+function validate_matrix_is_not_empty(
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::AbstractMatrix,
+)::Nothing
+    if size(matrix, 1) == 0 || size(matrix, 2) == 0
+        throw(ArgumentError("empty matrix $(location(context)).$(field) size: $(size(matrix))"))
+    end
+    return nothing
+end
+
+"""
+    validate_matrix_size(
+        context::ValidationContext,
+        matrix::Maybe{AbstractMatrix},
+        field::AbstractString,
+        expected_size::Tuple{Integer, Integer}
+    )::Nothing
+
+Validate that a `field` containing `matrix` has (if it is specified) the `expected_size` of a `base_field`.
 """
 function validate_matrix_size(
     context::ValidationContext,
+    field::AbstractString,
     matrix::Maybe{AbstractMatrix},
+    base_field::AbstractString,
     expected_size::Tuple{Integer, Integer},
 )::Nothing
     if matrix !== nothing && size(matrix) != expected_size
         throw(
             ArgumentError(
-                "invalid size of $(location(context)): $(size(matrix))\n" *
-                "is different from expected size: $(expected_size)",
+                "invalid size of $(location(context)).$(field): $(size(matrix))\n" *
+                "is different from size of $(location(context)).$(base_field): $(expected_size)",
             ),
         )
     end
@@ -227,26 +345,34 @@ function validate_matrix_size(
 end
 
 """
-    validate_matrix_entries(validation::Function, context::ValidationContext, matrix::Maybe{AbstractMatrix})::Nothing
+    validate_matrix_entries(
+        validation::Function,
+        context::ValidationContext,
+        field::AbstractString,
+        matrix::Maybe{AbstractMatrix}
+    )::Nothing
 
-Validate all the entries of a `matrix` using the `validation` function. It is given the entry's row and column indices,
-and its value. The context is updated to include the indices for the duration of the function.
+Validate all the entries of a `field` containing a `matrix` using the `validation` function. It is given the entry's row
+and column indices, and its value. The context is updated to include the indices for the duration of the function.
 """
 function validate_matrix_entries(
     validation::Function,
     context::ValidationContext,
+    field::AbstractString,
     matrix::Maybe{AbstractMatrix},
 )::Nothing
     if matrix !== nothing
-        n_rows, n_columns = size(matrix)
-        for row_index in 1:n_rows
-            push!(context, row_index)
-            for column_index in n_columns
-                push!(context, column_index)
-                validation(row_index, column_index, matrix[row_index, column_index])
-                pop!(context)
+        validate_in(context, field) do
+            n_rows, n_columns = size(matrix)
+            for row_index in 1:n_rows
+                validate_in(context, row_index) do
+                    for column_index in n_columns
+                        validate_in(context, column_index) do
+                            return validation(row_index, column_index, matrix[row_index, column_index])
+                        end
+                    end
+                end
             end
-            pop!(context)
         end
     end
     return nothing
