@@ -9,6 +9,10 @@ export AxisConfiguration
 export BandConfiguration
 export BandsConfiguration
 export BandsData
+export COLOR_PALETTES_LOCK
+export CategoricalColors
+export ColorsConfiguration
+export ContinuousColors
 export DashedLine
 export FigureConfiguration
 export Graph
@@ -19,19 +23,19 @@ export Log10Scale
 export Log2Scale
 export LogScale
 export MarginsConfiguration
+export NAMED_COLOR_PALETTES
 export PlotlyFigure
 export SolidLine
 export ValuesOrientation
 export VerticalValues
 export save_graph
-export ContinuousColors
-export CategoricalColors
-export ColorsConfiguration
 
 using Base.Multimedia
 using PlotlyJS
 
 using ..Validations
+using Colors
+using ColorVectorSpace
 
 import PlotlyJS.SyncPlot
 
@@ -475,7 +479,6 @@ CategoricalColors = Union{
     @kwdef mutable struct ColorsConfiguration <: Validated
         show_legend::Bool = false
         color_axis::AxisConfiguration = AxisConfiguration()
-        reverse::Bool = false
         colors_palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
     end
 
@@ -511,14 +514,168 @@ function continuous_colors(colors::AbstractVector{<:AbstractString})::Continuous
     return [((index - 1) / (size - 1)) => color for (index, color) in enumerate(colors)]
 end
 
+function reverse_pallete(pallete::ContinuousColors)::ContinuousColors
+    return reverse!([(1 - value, color) for (value, color) in pallete])
+end
+
+function zero_pallete(
+    pallete::ContinuousColors,
+    value_fraction::AbstractFloat,
+    color_fraction::AbstractFloat,
+)::ContinuousColors
+    result = Vector{Tuple{AbstractFloat, AbstractString}}()
+
+    push!(result, (0, "white"))
+    push!(result, (value_fraction - 1e-6, "white"))
+
+    is_first = true
+    previous_color = nothing
+    previous_value = nothing
+
+    for (value, color) in pallete
+        if value <= color_fraction
+            previous_color = color
+            previous_value = value
+            continue
+        end
+
+        if is_first
+            is_first = false
+            @assert previous_color !== nothing
+            @assert previous_value !== nothing
+            alpha = (color_fraction - previous_value) / (value - previous_value)
+            if alpha > 1e-6
+                previous_xyz = parse(XYZ, previous_color)
+                first_middle_xyz = parse(XYZ, color)
+                correct_xyz = previous_xyz * (1 - alpha) + first_middle_xyz * alpha
+                correct_color = "#$(hex(correct_xyz))"
+                push!(result, (value_fraction, correct_color))
+            end
+        end
+
+        value = (value - color_fraction) * (1 - value_fraction) / (1 - color_fraction) + value_fraction
+        push!(result, (value, color))
+    end
+
+    @assert !is_first
+    result[1] = (0, result[1][2])
+    result[end] = (1, result[end][2])
+    return result
+end
+
+function center_pallete(
+    pallete::ContinuousColors,
+    value_fraction::AbstractFloat,
+    color_fraction::AbstractFloat,
+)::ContinuousColors
+    result = Vector{Tuple{AbstractFloat, AbstractString}}()
+
+    is_first_in_high = true
+    is_first_in_middle = true
+    previous_color = nothing
+    previous_value = nothing
+
+    for (value, color) in pallete
+        if value <= 0.5 - color_fraction / 2
+            previous_color = color
+            previous_value = value
+            push!(result, (value * (0.5 - value_fraction / 2) / (0.5 - color_fraction / 2), color))
+            continue
+        end
+
+        if is_first_in_middle
+            is_first_in_middle = false
+            @assert previous_color !== nothing
+            @assert previous_value !== nothing
+            alpha = (0.5 - color_fraction / 2 - previous_value) / (value - previous_value)
+            if alpha > 1e-6
+                previous_xyz = parse(XYZ, previous_color)
+                first_middle_xyz = parse(XYZ, color)
+                correct_xyz = previous_xyz * (1 - alpha) + first_middle_xyz * alpha
+                correct_color = "#$(hex(correct_xyz))"
+                push!(result, (0.5 - value_fraction / 2, correct_color))
+                push!(result, (0.5 - value_fraction / 2 + 1e-6, "white"))
+                push!(result, (0.5 + value_fraction / 2 - 1e-6, "white"))
+            end
+        end
+
+        if value < 0.5 + color_fraction / 2
+            previous_color = color
+            previous_value = value
+            continue
+        end
+
+        if is_first_in_high
+            is_first_in_high = false
+            @assert previous_color !== nothing
+            @assert previous_value !== nothing
+            alpha = (0.5 + color_fraction / 2 - previous_value) / (value - previous_value)
+            if alpha > 1e-6
+                previous_xyz = parse(XYZ, previous_color)
+                first_high_xyz = parse(XYZ, color)
+                correct_xyz = previous_xyz * (1 - alpha) + first_high_xyz * alpha
+                correct_color = "#$(hex(correct_xyz))"
+                push!(result, (0.5 + value_fraction / 2, correct_color))
+            end
+        end
+
+        value = (
+            (value - (0.5 + color_fraction / 2)) * (1 - (0.5 + value_fraction / 2)) / (1 - (0.5 + color_fraction / 2)) +
+            0.5 +
+            value_fraction / 2
+        )
+        push!(result, (value, color))
+    end
+
+    @assert !is_first_in_high
+    result[1] = (0, result[1][2])
+    result[end] = (1, result[end][2])
+    return result
+end
+
+function overflow_pallete(
+    pallete::ContinuousColors,
+    value_fraction::AbstractFloat,
+    overflow_color::AbstractString,
+)::ContinuousColors
+    result = Vector{Tuple{AbstractFloat, AbstractString}}()
+
+    for (value, color) in pallete
+        push!(result, (value * (1 - value_fraction), color))
+    end
+
+    push!(result, (1 - value_fraction + 1e-6, overflow_color))
+    push!(result, (1, overflow_color))
+
+    result[1] = (0, result[1][2])
+    result[end] = (1, result[end][2])
+    return result
+end
+
+function underflow_pallete(
+    pallete::ContinuousColors,
+    value_fraction::AbstractFloat,
+    underflow_color::AbstractString,
+)::ContinuousColors
+    result = Vector{Tuple{AbstractFloat, AbstractString}}()
+
+    push!(result, (0, underflow_color))
+    push!(result, (value_fraction - 1e-6, underflow_color))
+
+    for (value, color) in pallete
+        push!(result, (value * (1 - value_fraction) + value_fraction, color))
+    end
+
+    result[1] = (0, result[1][2])
+    result[end] = (1, result[end][2])
+    return result
+end
+
 """
 Builtin color palattes from [Plotly](https://plotly.com/python/builtin-colorscales/), both linear: `Blackbody`,
 `Bluered`, `Blues`, `Cividis`, `Earth`, `Electric`, `Greens`, `Greys`, `Hot`, `Jet`, `Picnic`, `Portland`, `Rainbow`,
 `RdBu`, `Reds`, `Viridis`, `YlGnBu`, `YlOrRd` and cyclical: `Twilight`, `IceFire`, `Edge`, `Phase`, `HSV`, `mrybm`,
 `mygbm`.
-
-The `_r` (reversed) variants are not included as explicit entries in the dictionary; they are computed on-the-fly if
-used.
 
 !!! note
 
@@ -526,6 +683,38 @@ used.
     Python plotly doesn't mean "builtin" in JavaScript plotly, because "reasons". We therefore have to copy their
     definition here. An upside of having this dictionary is that you are free to insert additional named palettes into
     and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
+
+A `_r` suffix specifies reversing the order of the pallete.
+
+You can also append a final `_z:<value_fraction>:<color_fraction>` suffix to the name. This will map values in the bottom
+0..`value_fraction` of the range to white, and map the rest of the values to the top `color_fraction`..1 range of the
+palette. For example, `Blues_z:0.3:0.2` will color the bottom 30% of the values in white, and color the top 70% of the
+values to the top 80% of the `Blues` pallete.
+
+A `_c:<value_fraction>:<color_fraction>` works similarly to the `_z` suffix, except that the fractions are centered on
+0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the
+pallete has white in the middle. For example `RdBu_c:0.3:0.2` will color the 30% of the values near the 0 middle in
+white, and color the rest of the values using the top and bottom 40% of the `RdBu` pallete.
+
+An `_o:<value_fraction>:<color>` suffix maps the pallete to the range 0..`1-value_fraction`, and all the values above this
+to the `color`, to denote overflow (too high) values. For example, `Blues_o:0.01:magenta` will color all the values in
+the bottom 99% of the values range to `Blues`, and the top 1% of the range to magenta. A `_u` suffix works similarly but
+applies to the bottom range of the values.
+
+You can combine multiple suffixes together, for example `Reds_z:0.2:0.2_o:0.99:magenta` or
+`RdBu_r_c:0.2:0.2_o:0.01:magenta_u:0.01:darkgreen`.
+
+Palletes with suffixes (including `_r`) are computed on the fly and cached for future use.
+
+!!! note
+
+    The implementation of the suffixes uses `1e-6` as a color difference "too small to matter". Don't use fractions this
+    small in the prefixes or you will have a bad day.
+
+!!! note
+
+    Always hold the [`COLOR_PALETTES_LOCK`](@ref) when manually accessing the `NAMED_COLOR_PALETTES`, otherwise you
+    *will* regret it at some point.
 """
 NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
     "Twilight" => continuous_colors([
@@ -793,6 +982,14 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
     ]),
 ])
 
+"""
+A global lock to use when accessing the `NAMED_COLOR_PALETTES`. Always hold the [`COLOR_PALETTES_LOCK`](@ref) when
+manually accessing the `NAMED_COLOR_PALETTES`, otherwise you *will* regret it at some point.
+"""
+COLOR_PALETTES_LOCK = ReentrantLock()
+
+CACHED_COLOR_PALETTES = Dict{String, ContinuousColors}()
+
 function Validations.validate(
     context::ValidationContext,
     colors_configuration::ColorsConfiguration,
@@ -803,15 +1000,61 @@ function Validations.validate(
 
     colors_palette = colors_configuration.colors_palette
     if colors_palette isa AbstractString
-        if endswith(colors_palette, "_r")
-            named_palette = get(NAMED_COLOR_PALETTES, colors_palette[1:(end - 2)], nothing)
-        else
-            named_palette = get(NAMED_COLOR_PALETTES, colors_palette, nothing)
+        lock(COLOR_PALETTES_LOCK) do
+            actual_palette = get(CACHED_COLOR_PALETTES, colors_palette, nothing)
+            if actual_palette === nothing
+                parts = split(colors_palette, "_")
+
+                actual_palette = get(NAMED_COLOR_PALETTES, parts[1], nothing)
+                if actual_palette === nothing
+                    throw(ArgumentError("invalid $(location(context)).colors_palette: $(parts[1])"))
+                end
+
+                for part in parts[2:end]
+                    pieces = split(part, ":")
+                    try
+                        if pieces[1] == "r" && length(pieces) == 1
+                            actual_palette = reverse_pallete(actual_palette)
+                            continue
+                        elseif pieces[1] == "z" && length(pieces) == 3
+                            value_fraction = parse(Float32, pieces[2])
+                            color_fraction = parse(Float32, pieces[3])
+                            if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
+                                actual_palette = zero_pallete(actual_palette, value_fraction, color_fraction)
+                                continue
+                            end
+                        elseif pieces[1] == "c" && length(pieces) == 3
+                            value_fraction = parse(Float32, pieces[2])
+                            color_fraction = parse(Float32, pieces[3])
+                            if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
+                                actual_palette = center_pallete(actual_palette, value_fraction, color_fraction)
+                                continue
+                            end
+                        elseif pieces[1] == "o" && length(pieces) == 3
+                            value_fraction = parse(Float32, pieces[2])
+                            color = pieces[3]
+                            parse(Colorant, color)  # NOJET
+                            if 0 <= value_fraction < 1
+                                actual_palette = overflow_pallete(actual_palette, value_fraction, color)
+                                continue
+                            end
+                        elseif pieces[1] == "u" && length(pieces) == 3
+                            value_fraction = parse(Float32, pieces[2])
+                            color = pieces[3]
+                            parse(Colorant, color)  # NOJET
+                            if 0 <= value_fraction < 1
+                                actual_palette = underflow_pallete(actual_palette, value_fraction, color)
+                                continue
+                            end
+                        end
+                    catch
+                    end
+                    throw(ArgumentError("invalid $(location(context)).colors_palette: $(colors_palette)"))
+                end
+
+                CACHED_COLOR_PALETTES[colors_palette] = actual_palette
+            end
         end
-        if named_palette === nothing
-            throw(ArgumentError("invalid $(location(context)).colors_palette: $(colors_palette)"))
-        end
-        colors_palette = named_palette
 
     elseif colors_palette isa AbstractVector
         validate_vector_is_not_empty(context, "colors_palette", colors_palette)

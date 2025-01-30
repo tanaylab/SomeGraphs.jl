@@ -21,6 +21,7 @@ SomeGraphs.Common.ColorsConfiguration
 SomeGraphs.Common.ContinuousColors
 SomeGraphs.Common.CategoricalColors
 SomeGraphs.Common.NAMED_COLOR_PALETTES
+SomeGraphs.Common.COLOR_PALETTES_LOCK
 ```
 
 ## Index

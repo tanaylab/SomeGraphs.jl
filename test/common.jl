@@ -1,3 +1,11 @@
+function test_same_pallete(actual_pallete::ContinuousColors, expected_pallete::ContinuousColors)::Nothing
+    @test length(actual_pallete) == length(expected_pallete)
+    for ((actual_value, actual_color), (expected_value, expected_color)) in zip(actual_pallete, expected_pallete)
+        @test abs(actual_value - expected_value) < 1e-7
+        @test actual_color == expected_color
+    end
+end
+
 nested_test("common") do
     nested_test("margins") do
         margins = MarginsConfiguration()
@@ -222,6 +230,52 @@ nested_test("common") do
         end
     end
 
+    nested_test("pallete") do
+        pallete = [(0, "red"), (0.5, "green"), (1, "blue")]
+
+        nested_test("r") do
+            return test_same_pallete(
+                SomeGraphs.Common.reverse_pallete(pallete),
+                [(0, "blue"), (0.5, "green"), (1, "red")],
+            )
+        end
+
+        nested_test("z") do
+            return test_same_pallete(
+                SomeGraphs.Common.zero_pallete(pallete, 0.2, 0.4),
+                [(0.0, "white"), (0.2 - 1e-6, "white"), (0.2, "#7C7300"), (1 / 3, "green"), (1.0, "blue")],
+            )
+        end
+
+        nested_test("c") do
+            return test_same_pallete(
+                SomeGraphs.Common.center_pallete(pallete, 0.2, 0.4),
+                [
+                    (0, "red"),
+                    (0.4, "#AA6500"),
+                    (0.4 + 1e-6, "white"),
+                    (0.6 - 1e-6, "white"),
+                    (0.6, "#0065AA"),
+                    (1, "blue"),
+                ],
+            )
+        end
+
+        nested_test("o") do
+            return test_same_pallete(
+                SomeGraphs.Common.overflow_pallete(pallete, 0.2, "magenta"),
+                [(0, "red"), (0.4, "green"), (0.8, "blue"), (0.8 + 1e-6, "magenta"), (1, "magenta")],
+            )
+        end
+
+        nested_test("u") do
+            return test_same_pallete(
+                SomeGraphs.Common.underflow_pallete(pallete, 0.2, "magenta"),
+                [(0, "magenta"), (0.2 - 1e-6, "magenta"), (0.2, "red"), (0.6, "green"), (1, "blue")],
+            )
+        end
+    end
+
     nested_test("colors") do
         colors = ColorsConfiguration()
         context = ValidationContext(["colors"])
@@ -231,11 +285,108 @@ nested_test("common") do
             colors.colors_palette = "Viridis"
             validate(context, colors)
 
-            colors.colors_palette = "Viridis_r"
-            validate(context, colors)
-
-            colors.colors_palette = "Oobleck"
+            colors.colors_palette = "Oobleck_r"
             @test_throws "invalid colors.colors_palette: Oobleck" validate(context, colors)
+        end
+
+        nested_test("cached") do
+            nested_test("()") do
+                colors.colors_palette = "Reds"
+                validate(context, colors)
+                return test_same_pallete(
+                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds"],
+                    [
+                        0 => "rgb(220,220,220)",
+                        1 / 3 => "rgb(245,195,157)",
+                        2 / 3 => "rgb(245,160,105)",
+                        1 => "rgb(178,10,28)",
+                    ],
+                )
+            end
+
+            nested_test("r") do
+                colors.colors_palette = "Reds_r"
+                validate(context, colors)
+                return test_same_pallete(
+                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_r"],
+                    [
+                        (0, "rgb(178,10,28)"),
+                        (1 / 3, "rgb(245,160,105)"),
+                        (2 / 3, "rgb(245,195,157)"),
+                        (1, "rgb(220,220,220)"),
+                    ],
+                )
+            end
+
+            nested_test("z") do
+                colors.colors_palette = "Reds_z:0.2:0.4"
+                validate(context, colors)
+                return test_same_pallete(
+                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_z:0.2:0.4"],
+                    [
+                        (0, "white"),
+                        (0.2 - 1e-6, "white"),
+                        (0.2, "#F5BD94"),
+                        (5 / 9, "rgb(245,160,105)"),
+                        (1, "rgb(178,10,28)"),
+                    ],
+                )
+            end
+
+            nested_test("c") do
+                colors.colors_palette = "RdBu_r_c:0.2:0.4"
+                validate(context, colors)
+                return test_same_pallete(
+                    SomeGraphs.Common.CACHED_COLOR_PALETTES["RdBu_r_c:0.2:0.4"],
+                    [
+                        (0, "rgb(178,10,28)"),
+                        (0.8 / 3, "rgb(230,145,90)"),
+                        (0.4, "#E19E71"),
+                        (0.4 + 1e-6, "white"),
+                        (0.6 - 1e-6, "white"),
+                        (0.6, "#9BA6DD"),
+                        (2.2 / 3, "rgb(106,137,247)"),
+                        (1, "rgb(5,10,172)"),
+                    ],
+                )
+            end
+
+            nested_test("o") do
+                colors.colors_palette = "Reds_o:0.2:magenta"
+                validate(context, colors)
+                return test_same_pallete(
+                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_o:0.2:magenta"],
+                    [
+                        (0, "rgb(220,220,220)"),
+                        (0.8 / 3, "rgb(245,195,157)"),
+                        (1.6 / 3, "rgb(245,160,105)"),
+                        (0.8, "rgb(178,10,28)"),
+                        (0.8 + 1e-6, "magenta"),
+                        (1, "magenta"),
+                    ],
+                )
+            end
+
+            nested_test("u") do
+                colors.colors_palette = "Reds_u:0.2:magenta"
+                validate(context, colors)
+                return test_same_pallete(
+                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_u:0.2:magenta"],
+                    [
+                        (0, "magenta"),
+                        (0.2 - 1e-6, "magenta"),
+                        (0.2, "rgb(220,220,220)"),
+                        (1.4 / 3, "rgb(245,195,157)"),
+                        (2.2 / 3, "rgb(245,160,105)"),
+                        (1.0, "rgb(178,10,28)"),
+                    ],
+                )
+            end
+
+            nested_test("invalid") do
+                colors.colors_palette = "Reds_z:0.2:magenta"
+                @test_throws "invalid colors.colors_palette: Reds_z:0.2:magenta" validate(context, colors)
+            end
         end
 
         nested_test("order") do
