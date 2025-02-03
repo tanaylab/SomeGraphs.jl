@@ -5,12 +5,19 @@
 The goals of this are:
 
   - Provide a specific set of graphs (chosen for supporting a specific application, but covers the common types).
+
   - Generate static PNG and/or SVG files (for publishing).
   - Generate interactive graphs in Jupyter notebook, also from Python and from R (for exploration).
-  - Provide guided UI in Jupyter notebook for accessing and customizing the graphs, as well as generating standard
-    dashboards of related graphs.
   - Be reasonably efficient when the data is large.
   - Minimize dependencies (except for Plotly).
+  - Provide strongly types set of structures for specifying the graphs, where fields are as high-level ("what") as
+    possible, and are orthogonal to each other (as much as humanly possible). This is very different from Plotly
+    APIs where fields are low level ("how") and achieving "simple" effects requires changing many of them at
+    the same time.
+
+Non-goals are:
+
+  - Provide "every" graph type and/or feature.
 
 ## Architecture
 
@@ -18,14 +25,14 @@ The subset of graph types and features was picked to support a specific set of a
 attempt to be an end-all-be-all do-everything graph library. Still, basic graph types are reasonably well covered so
 this may be useful in general.
 
-The APIs were designed to be strongly typed, to allow generating UIs to control the graphs, with a focus on
-orthogonality of features. To further support wrapping this in a UI, there's also a focus on checking the data and
-providing reasonably informative error messages when something is invalid.
+The APIs were designed to be strongly typed, with a focus on orthogonality of features. This makes it natural to create
+UI widgets to control the graphs. To further support wrapping this in a UI, there's also a focus on checking the data
+and providing reasonably informative error messages when something is invalid.
 
 A graph is specified as a combination of the data (what to display) and a configuration (how to display it). For most
 things, this distinction is clear (e.g., coordinates of a point are data, the size of the graph is configuration).
-Sometimes it is less so (offset of a line to draw on top of the graph). We do the best we can. The idea is that you can
-apply the same configuration to multiple sets of data.
+Sometimes it is less so (colors). We therefore allow the data to override the configuration in cases where this depends
+on the context of the graph. The idea is that you can apply the same configuration to multiple sets of data.
 
 Each graph type has its own strongly-types data and configuration classes, with reasonable defaults. Therefore any IDE
 with auto-completion will assist you in setting a specific option. It also makes it easier to create UIs widgets to
@@ -35,15 +42,15 @@ It turns out that converting such an API to Plotly calls is way more complex tha
 flag that changes the layout of a graph showing a probability distribution function from horizontal to vertical; this
 affects almost every flag you pass to the Plotly objects as you need to rename all the X and Y related flags.
 
-Using Plotly allows us to create pretty much every type of graph we want, and has the advantage we can create a JSON
-representation of the graph which we can pass on to allow using this package from Python and R (e.g. in a Jupyter
-notebook).
+Using Plotly allows us to create pretty much every type of graph we want (though sometimes we needed to get "creative"),
+and has the advantage we can create a JSON representation of the graph which we can pass on to allow using this package
+from Python and R (e.g. in a Jupyter notebook).
 
 Choosing Plotly as the underlying graph rendering technology exposes us to some of its limitations, though. The most
-annoying ones are related to Plotly's lack of consideration to sizes of some graph elements, most importantly labels.
-This means one has to manually specify margin sizes, legend positions, gaps between sub-graphs etc., which is tedious.
-Even worse, in most cases one needs to specify these in fractions of the overall graph size, which is an unnatural unit
-for most of these.
+annoying ones are related to Plotly's lack of consideration to sizes of some graph elements - basically everything
+ourtside the graph area proper. This means one has to manually specify margin sizes, legend positions, gaps between
+sub-graphs etc., which is tedious. Even worse, in most cases one needs to specify these in fractions of the overall
+graph size, which is an unnatural unit for most of these.
 
 While the overall architecture of the code here generalizes well, the functionality here is intentionally restricted to
 what we found useful for our applications. Likewise, the amount of customization of the graphs is intentionally limited.

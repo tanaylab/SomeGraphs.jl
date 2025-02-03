@@ -73,6 +73,10 @@
 </a>
 </li>
 <li>
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+</li>
+<li>
 <a class="tocitem" href="utilities.html">Utilities
 </a>
 </li>
@@ -285,6 +289,36 @@ validate(context::ValidationContext, value::Validated, extra::Any, another::Any)
 <code>context
 </code> updated to include some 
 <code>where
+</code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_field" href="#SomeGraphs.Validations.validate_field">
+<code>SomeGraphs.Validations.validate_field
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
+validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
+validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any, another::Any)::Nothing
+</code>
+</pre>
+<p>Validate the 
+<code>value
+</code> of a 
+<code>field
 </code>.
 </p>
 </div>
@@ -551,7 +585,7 @@ validate(context::ValidationContext, value::Validated, extra::Any, another::Any)
 <code class="language-julia hljs">validate_vector_entries(
     validation::Function,
     context::ValidationContext,
-    field::AbstractString,
+    [field::AbstractString,]
     vector::Maybe{AbstractVector}
 )::Nothing
 </code>
@@ -671,6 +705,73 @@ validate(context::ValidationContext, value::Validated, extra::Any, another::Any)
 </div>
 </section>
 </article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_dict_is_not_empty" href="#SomeGraphs.Validations.validate_dict_is_not_empty">
+<code>SomeGraphs.Validations.validate_dict_is_not_empty
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_dict_is_not_empty(
+    context::ValidationContext,
+    [field::AbstractString,]
+    dict::AbstractDict,
+)::Nothing
+</code>
+</pre>
+<p>Validate that a 
+<code>field
+</code> containing a 
+<code>dict
+</code> has at least one entry.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Validations.validate_dict_entries" href="#SomeGraphs.Validations.validate_dict_entries">
+<code>SomeGraphs.Validations.validate_dict_entries
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_dict_entries(
+    validation::Function,
+    context::ValidationContext,
+    [field::AbstractString,]
+    dict::Maybe{AbstractDict}
+)::Nothing
+</code>
+</pre>
+<p>Validate all the entries of a 
+<code>field
+</code> containing a 
+<code>dict
+</code> using the 
+<code>validation
+</code> function. It is given the entry&#39;s key and value. The context is updated to include the key for the duration of the function.
+</p>
+</div>
+</section>
+</article>
 <h2 id="Index">
 <a class="docs-heading-anchor" href="#Index">Index
 </a>
@@ -707,6 +808,24 @@ validate(context::ValidationContext, value::Validated, extra::Any, another::Any)
 <li>
 <a href="validations.html#SomeGraphs.Validations.validate">
 <code>SomeGraphs.Validations.validate
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_dict_entries">
+<code>SomeGraphs.Validations.validate_dict_entries
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_dict_is_not_empty">
+<code>SomeGraphs.Validations.validate_dict_is_not_empty
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_field">
+<code>SomeGraphs.Validations.validate_field
 </code>
 </a>
 </li>

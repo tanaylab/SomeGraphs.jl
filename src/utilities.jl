@@ -1,16 +1,25 @@
 """
 Utility functions for defining graph types. We do not re-export all symbols from this sub-module to the global
-`MCGraphs` namespace.
+`MCGraphs` namespace. You can safely ignore these unless you are implementing a new graph type.
 """
 module Utilities
 
-export axis_ticksformat
-export graph_layout
-export horizontal_bands_shapes
+export axis_ticks_prefix
+export axis_ticks_suffix
+export final_scaled_range
+export expand_range!
+export patch_layout!
 export plotly_figure
+export prefer_data
+export push_diagonal_bands_shapes
+export push_horizontal_bands_shapes
+export push_vertical_bands_shapes
+export range_of
 export scale_axis_value
 export scale_axis_values
-export vertical_bands_shapes
+export scale_size_values
+export validate_colors
+export validate_graph_bands
 
 using Colors
 using PlotlyJS
@@ -19,9 +28,167 @@ using Reexport
 using ..Validations
 using ..Common
 
+import .Common.Maybe
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
-@reexport import .Validations.Maybe
+
+"""
+    validate_graph_bands(
+        field::AbstractString,
+        bands_configuration::BandsConfiguration,
+        bands_data::BandsData,
+        axis_configuration::AxisConfiguration,
+    )::Nothing
+
+Validate that the bands configuration and data is compatible. Assumes these are specified as the same `field` in both
+the graph's data and configuration.
+"""
+function validate_graph_bands(
+    field::AbstractString,
+    bands_configuration::BandsConfiguration,
+    bands_data::BandsData,
+    axis_configuration::AxisConfiguration,
+)::Nothing
+    if bands_configuration.middle.line.is_filled
+        if bands_configuration.low.offset === nothing && bands_data.low_offset === nothing
+            throw(
+                ArgumentError(
+                    "graph.configuration.$(field).middle.line.is_filled" *
+                    " requires graph.configuration.$(field).low.offset" *
+                    " or graph.data.$(field).low_offset",
+                ),
+            )
+        end
+        if bands_configuration.high.offset === nothing && bands_data.high_offset === nothing
+            throw(
+                ArgumentError(
+                    "graph.configuration.$(field).middle.line.is_filled" *
+                    " requires graph.configuration.$(field).high.offset" *
+                    " or graph.data.$(field).high_offset",
+                ),
+            )
+        end
+    end
+
+    if axis_configuration.log_scale !== nothing
+        validate_is_above(ValidationContext(["graph.configuration", field, "low_offset"]), bands_data.low_offset, 0)
+        validate_is_above(
+            ValidationContext(["graph.configuration", field, "middle_offset"]),
+            bands_data.middle_offset,
+            0,
+        )
+        validate_is_above(ValidationContext(["graph.configuration", field, "high_offset"]), bands_data.high_offset, 0)
+    end
+
+    return nothing
+end
+
+function validate_colors(
+    colors_data_context::ValidationContext,
+    colors_data::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}},
+    colors_configuration_context::ValidationContext,
+    colors_configuration::ColorsConfiguration,
+)::Maybe{AbstractString}
+    if colors_data isa AbstractVector{<:AbstractString}
+        if colors_configuration.colors_palette isa CategoricalColors
+            validate_vector_entries(colors_data_context, colors_data) do _, color  # NOJET
+                if color !== "" && !haskey(colors_configuration.colors_palette, color)
+                    throw(
+                        ArgumentError(
+                            "invalid $(location(colors_data_context)): $(color)\n" *
+                            "does not exist in $(location(colors_configuration_context)).colors_palette",
+                        ),
+                    )
+                end
+            end
+        elseif colors_configuration.colors_palette isa ContinuousColors
+            throw(
+                ArgumentError(
+                    "categorical colors $(location(colors_data_context))\n" *
+                    "specified for a continuous $(location(colors_configuration_context)).colors_palette",
+                ),
+            )
+        end
+
+        if colors_configuration.color_axis.minimum !== nothing ||
+           colors_configuration.color_axis.maximum !== nothing ||
+           colors_configuration.color_axis.log_scale !== nothing ||
+           colors_configuration.color_axis.percent
+            throw(
+                ArgumentError(
+                    "categorical colors $(location(colors_data_context))\n" *
+                    "specified for a continuous $(location(colors_configuration_context)).color_axis\n" *
+                    "(specified some of minimum/maximum/log_scale/percent)",
+                ),
+            )
+        end
+
+    elseif colors_data isa AbstractVector{<:Real}
+        if colors_configuration.colors_palette isa CategoricalColors
+            throw(
+                ArgumentError(
+                    "continuous colors $(location(colors_data_context))\n" *
+                    "specified for a categorical $(location(colors_configuration_context)).colors_palette",
+                ),
+            )
+        end
+
+        if colors_configuration.color_axis.log_scale !== nothing
+            validate_vector_entries(colors_data_context, colors_data) do _, color  # NOJET
+                if colors_configuration.color_axis.minimum === nothing ||
+                   color > colors_configuration.color_axis.minimum
+                    validate_in(
+                        colors_data_context,
+                        "(value + $(location(colors_configuration_context)).color_axis.log_regularization)",
+                    ) do
+                        validate_is_above(
+                            colors_data_context,
+                            color + colors_configuration.color_axis.log_regularization,
+                            0,
+                        )
+                        return nothing
+                    end
+                end
+            end
+        end
+
+    else
+        @assert colors_data === nothing
+
+        if colors_configuration.show_legend &&
+           !(colors_configuration.colors_palette isa CategoricalColors) &&
+           (colors_configuration.color_axis.minimum === nothing || colors_configuration.color_axis.maximum === nothing)
+            throw(
+                ArgumentError(
+                    "did not specify $(location(colors_data_context))\n" *
+                    "for $(location(colors_configuration_context)).show_legend",
+                ),
+            )
+        end
+    end
+
+    return nothing
+end
+
+"""
+    patch_layout!(figure_configuration::FigureConfiguration, layout::Layout)::Layout
+
+Patch a Plotly `layout` using the `figure_configuration`.
+"""
+function patch_layout!(figure_configuration::FigureConfiguration, layout::Layout)::Layout
+    layout["margin"] = Dict(
+        :l => figure_configuration.margins.left,
+        :r => figure_configuration.margins.right,
+        :t => figure_configuration.margins.top,
+        :b => figure_configuration.margins.bottom,
+    )
+
+    layout["template"] = prefer_data(figure_configuration.template, "simple_white")
+    layout["width"] = prefer_data(figure_configuration.width, nothing)
+    layout["height"] = prefer_data(figure_configuration.height, nothing)
+
+    return layout
+end
 
 """
     plotly_figure(trace::GenericTrace, layout::Layout)::PlotlyFigure
@@ -43,77 +210,57 @@ function plotly_figure(traces::AbstractVector{<:GenericTrace}, layout::Layout)::
     return plot(traces, layout)  # NOJET
 end
 
-function purge_nulls!(dict::T)::T where {T <: AbstractDict}
+function purge_nulls!(dict::AbstractDict)::Nothing
     for (_, value) in dict
         if value isa AbstractDict
             purge_nulls!(value)
         end
     end
     filter!(dict) do pair
-        return pair.second !== nothing && !(pair.second isa AbstractDict && isempty(pair.second))
+        return pair.second !== nothing &&  # NOJET
+               !(pair.second isa AbstractDict && isempty(pair.second)) &&
+               !(pair.second isa AbstractVector && (isempty(pair.second) || all(pair.second .=== nothing))) &&
+               !(pair.second isa Tuple && all(pair.second .=== nothing))
     end
-    return dict
+    return nothing
 end
 
 """
-    graph_layout(figure_configuration::FigureConfiguration, layout::Layout)::Layout
+    axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
 
-Patch a plotly `layout` with a `figure_configuration`.
+Given the `axis_configuration`, return a prefix for the ticks along that axis. This deals with log scales.
 """
-function graph_layout(figure_configuration::FigureConfiguration, layout::Layout)::Layout
-    layout["margin"] = Dict(
-        :l => figure_configuration.margins.left,
-        :r => figure_configuration.margins.right,
-        :t => figure_configuration.margins.top,
-        :b => figure_configuration.margins.bottom,
-    )
-    if figure_configuration.template !== nothing
-        layout["template"] = figure_configuration.template
-    end
-    if figure_configuration.width !== nothing
-        layout["width"] = figure_configuration.width  # UNTESTED
-    end
-    if figure_configuration.height !== nothing
-        layout["height"] = figure_configuration.height  # UNTESTED
-    end
-    return layout
-end
-
-"""
-    axis_ticksformat(axis_configuration::AxisConfiguration)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
-
-Given the `axis_configuration`, return a prefix and a suffix for the ticks along that axis. This deals with log scales
-and percent scaling.
-"""
-function axis_ticksformat(axis_configuration::AxisConfiguration)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+function axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
     if axis_configuration.log_scale == Log10Scale
-        tickprefix = "<sub>10</sub>"
+        return "<sub>10</sub>"
     elseif axis_configuration.log_scale == Log2Scale
-        tickprefix = "<sub>2</sub>"
+        return "<sub>2</sub>"
     else
         @assert axis_configuration.log_scale === nothing
-        tickprefix = nothing
+        return nothing
     end
-
-    if axis_configuration.percent
-        ticksuffix = "<sub>%</sub>"
-    else
-        ticksuffix = nothing
-    end
-
-    return (tickprefix, ticksuffix)
 end
 
 """
-    scale_axis_value(axis_configuration::AxisConfiguration, value::Maybe{Real})::Maybe{Real}
+    axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+
+Given the `axis_configuration`, return a suffix for the ticks along that axis. This deals with percent scaling.
+"""
+function axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+    if axis_configuration.percent
+        return "<sub>%</sub>"
+    else
+        return nothing
+    end
+end
+
+"""
+    scale_axis_value(axis_configuration::AxisConfiguration, value::Real)::Real
+    scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing)::Nothing
 
 Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling.
 """
-function scale_axis_value(axis_configuration::AxisConfiguration, value::Maybe{Real})::Maybe{Real}
-    if value === nothing
-        return nothing
-    end
-
+function scale_axis_value(axis_configuration::AxisConfiguration, value::Real)::Real
     if axis_configuration.percent
         scale = 100.0
     else
@@ -132,18 +279,26 @@ function scale_axis_value(axis_configuration::AxisConfiguration, value::Maybe{Re
     end
 end
 
+function scale_axis_value(::AxisConfiguration, ::Nothing)::Nothing
+    return nothing
+end
+
 """
     scale_axis_values(
         axis_configuration::AxisConfiguration,
-        values::Union{AbstractVector{<:Real},AbstractVector{<:Maybe{Real}}},
-    )::Union{AbstractVector{<:Real},AbstractVector{<:Maybe{Real}}}
+        values::AbstractVector{<:Maybe{Real}},
+    )::AbstractVector{<:Maybe{Real}}
+    scale_axis_values(
+        axis_configuration::AxisConfiguration,
+        values::Nothing,
+    )::Nothing
 
 Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling.
 """
 function scale_axis_values(
     axis_configuration::AxisConfiguration,
-    values::Union{AbstractVector{<:Real}, AbstractVector{<:Maybe{Real}}},
-)::Union{AbstractVector{<:Real}, AbstractVector{<:Maybe{Real}}}
+    values::AbstractVector{<:Maybe{Real}},
+)::AbstractVector{<:Maybe{Real}}
     if !axis_configuration.percent && axis_configuration.log_scale === nothing
         return values
     else
@@ -151,25 +306,127 @@ function scale_axis_values(
     end
 end
 
+function scale_axis_values(::AxisConfiguration, ::Nothing)::Nothing  # UNTESTED
+    return nothing
+end
+
 """
-    vertical_bands_shapes(
+    final_scaled_range(
+        implicit_scaled_range::AbstractVector{<:Maybe{Real}},
+        axis_configuration::AxisConfiguration
+    )::AbstractVector{<:Real}
+
+Compute the final range for some axis given the `implicit_scaled_range` computed from the values and the `axis_configuration`.
+"""
+function final_scaled_range(
+    implicit_scaled_range::AbstractVector{<:Maybe{Real}},
+    axis_configuration::AxisConfiguration,
+)::AbstractVector{<:Real}
+    explicit_scaled_range =
+        scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum])
+
+    scaled_range = Real[  # NOJET
+        prefer_data(explicit_scaled, implicit_scaled) for
+        (explicit_scaled, implicit_scaled) in zip(explicit_scaled_range, implicit_scaled_range)
+    ]
+
+    @assert scaled_range[1] < scaled_range[2] "empty scaled XS range"
+
+    return scaled_range
+end
+
+"""
+    scale_size_values(
+        size_configuration::SizeConfiguration,
+        axis_configuration::AxisConfiguration,
+        values::AbstractVector{<:Maybe{Real}},
+    )::AbstractVector{<:Maybe{Real}}
+    scale_size_values(
+        size_configuration::SizeConfiguration,
+        axis_configuration::AxisConfiguration,
+        values::Nothing,
+    )::Nothing
+
+Scale a vector of `values` according to the `axis_configuration` and `size_configuration`.
+"""
+function scale_size_values(
+    size_configuration::SizeConfiguration,
+    axis_configuration::AxisConfiguration,
+    values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:Maybe{Real}}}},
+)::AbstractVector{<:Maybe{Real}}
+    if axis_configuration.log_scale === nothing &&
+       size_configuration.smallest === nothing &&
+       size_configuration.largest === nothing
+        return values
+    else
+        scaled_values = scale_axis_values(axis_configuration, values)
+
+        minimum_scaled_value, maximum_scaled_value = range_of(scaled_values)
+        if minimum_scaled_value === nothing || maximum_scaled_value === nothing
+            return values
+        end
+
+        if minimum_scaled_value == maximum_scaled_value
+            maximum_scaled_value += 1
+        end
+
+        if size_configuration.smallest === nothing
+            smallest = 2
+        else
+            smallest = size_configuration.smallest
+        end
+
+        if size_configuration.largest === nothing
+            largest = smallest + 8
+        else
+            largest = size_configuration.largest
+        end
+
+        scaled_to_pixels = (largest - smallest) / (maximum_scaled_value - minimum_scaled_value)
+
+        return [
+            scaled_value === nothing ? nothing : (scaled_value - minimum_scaled_value) * scaled_to_pixels + smallest for
+            scaled_value in scaled_values
+        ]
+    end
+end
+
+function line_dash(style::LineStyle)::Maybe{AbstractString}
+    if style == SolidLine
+        return nothing
+    elseif style == DashLine
+        return "dash"
+    elseif style == DotLine
+        return "dot"
+    elseif style == DashDotLine
+        return "dashdot"
+    else
+        @assert false
+    end
+end
+
+function line_dash(::Nothing)::Nothing  # UNTESTED
+    return nothing
+end
+
+"""
+    push_vertical_bands_shapes(
+        shapes::AbstractVector{Shape},
         axis_configuration::AxisConfiguration,
         scaled_values_range::AbstractVector{<:Real},
         bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
 
-Return a vector of shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces
-because Plotly.
+Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
 """
-function vertical_bands_shapes(
+function push_vertical_bands_shapes(
+    shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     scaled_values_range::AbstractVector{<:Real},
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
-)::AbstractVector{<:Shape}
-    shapes = Vector{Shape}()
-
+)::Nothing
     scaled_low_offset =
         scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
     scaled_middle_offset =
@@ -188,7 +445,7 @@ function vertical_bands_shapes(
                 Shape(
                     "line";
                     line_color = band_configuration.line.color,
-                    line_dash = band_configuration.line.style == DashedLine ? "dash" : nothing,
+                    line_dash = line_dash(band_configuration.line.style),
                     x0 = scaled_offset,
                     x1 = scaled_offset,
                     xref = "x",
@@ -254,28 +511,28 @@ function vertical_bands_shapes(
         )
     end
 
-    return shapes
+    return nothing
 end
 
 """
-    horizontal_bands_shapes(
+    push_horizontal_bands_shapes(
+        shapes::AbstractVector{Shape},
         axis_configuration::AxisConfiguration,
         scaled_values_range::AbstractVector{<:Real},
         bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
 
-Return a vector of shapes for plotting horizontal bands. These shapes need to be places in the layout and not the traces
-because Plotly.
+Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because
+Plotly.
 """
-function horizontal_bands_shapes(
+function push_horizontal_bands_shapes(
+    shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     scaled_values_range::AbstractVector{<:Real},
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
-)::AbstractVector{<:Shape}
-    shapes = Vector{Shape}()
-
+)::Nothing
     scaled_low_offset =
         scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
     scaled_middle_offset =
@@ -294,7 +551,7 @@ function horizontal_bands_shapes(
                 Shape(
                     "line";
                     line_color = band_configuration.line.color,
-                    line_dash = band_configuration.line.style == DashedLine ? "dash" : nothing,
+                    line_dash = line_dash(band_configuration.line.style),
                     y0 = scaled_offset,
                     y1 = scaled_offset,
                     yref = "y",
@@ -360,7 +617,344 @@ function horizontal_bands_shapes(
         )
     end
 
-    return shapes
+    return nothing
+end
+
+@enum Side Left BottomLeft Bottom BottomRight Right TopRight Top TopLeft
+
+struct BandPoint
+    x::Real
+    y::Real
+    side::Side
+end
+
+"""
+    push_diagonal_bands_shapes(
+        shapes::AbstractVector{Shape},
+        x_axis_configuration::AxisConfiguration,
+        y_axis_configuration::AxisConfiguration,
+        x_scaled_values_range::AbstractVector{<:Real},
+        y_scaled_values_range::AbstractVector{<:Real},
+        bands_data::BandsData,
+        bands_configuration::BandsConfiguration
+    )::AbstractVector{<:Shape}
+
+Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+"""
+function push_diagonal_bands_shapes(  # UNTESTED
+    shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    bands_data::BandsData,
+    bands_configuration::BandsConfiguration,
+)::Nothing
+    low_band_points = push_diagonal_bands_line(
+        shapes,
+        axis_configuration,
+        x_scaled_values_range,
+        y_scaled_values_range,
+        bands_data.low_offset,
+        bands_configuration.low,
+    )
+    middle_band_points = push_diagonal_bands_line(
+        shapes,
+        axis_configuration,
+        x_scaled_values_range,
+        y_scaled_values_range,
+        bands_data.middle_offset,
+        bands_configuration.middle,
+    )
+    high_band_points = push_diagonal_bands_line(
+        shapes,
+        axis_configuration,
+        x_scaled_values_range,
+        y_scaled_values_range,
+        bands_data.high_offset,
+        bands_configuration.high,
+    )
+
+    if low_band_points !== nothing && bands_configuration.low.line.is_filled
+        push_diagonal_bands_low_fill(
+            shapes,
+            x_scaled_values_range,
+            y_scaled_values_range,
+            low_band_points,
+            bands_configuration.low,
+        )
+    end
+
+    if low_band_points !== nothing && high_band_points !== nothing && bands_configuration.middle.line.is_filled
+        push_diagonal_bands_middle_fill(
+            shapes,
+            x_scaled_values_range,
+            y_scaled_values_range,
+            low_band_points,
+            middle_band_points,
+            bands_configuration.middle,
+        )
+    end
+
+    if high_band_points !== nothing && bands_configuration.high.line.is_filled
+        push_diagonal_bands_high_fill(
+            shapes,
+            x_scaled_values_range,
+            y_scaled_values_range,
+            high_band_points,
+            bands_configuration.high,
+        )
+    end
+end
+
+function push_diagonal_bands_line(  # UNTESTED
+    shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    data_offset::Maybe{Real},
+    band_configuration::BandConfiguration,
+)::Maybe{Tuple{BandPoint, BandPoint}}
+    offset = prefer_data(data_offset, band_configuration.offset)
+    start_point = start_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
+    end_point = end_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
+    @assert (start_point === nothing) == (end_point === nothing)
+    if start_point === nothing
+        return nothing
+    end
+
+    push!(
+        shapes,
+        Shape(
+            "line";
+            line_color = band_configuration.line.color,
+            line_dash = line_dash(band_configuration.line.style),
+            y0 = start_point.y,
+            y1 = end_point.y,
+            yref = "y",
+            x0 = start_point.x,
+            x1 = end_point.x,
+            xref = "x",
+        ),
+    )
+
+    return (start_point, end_point)
+end
+
+function start_band_point(::AxisConfiguration, ::AbstractVector{<:Real}, ::AbstractVector{<:Real}, ::Nothing)::Nothing  # UNTESTED
+    return nothing
+end
+
+function start_band_point(  # UNTESTED
+    axis_configuration::AxisConfiguration,
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    offset::Real,
+)::Maybe{BandPoint}
+    scaled_offset = scale_axis_value(axis_configuration, offset)
+    bottom = [y_scaled_values_range[1] - scaled_offset, y_scaled_values_range[1]]
+    left = [x_scaled_values_range[1], x_scaled_values_range[1] + scaled_offset]
+
+    if is_in_bounds(x_scaled_values_range, y_scaled_values_range, bottom)
+        if is_in_bounds(x_scaled_values_range, y_scaled_values_range, left)
+            @assert isapprox(bottom, left)  # NOJET
+            return (bottom[1], bottom[2], BottomLeft)
+        else
+            return (bottom[1], bottom[2], Bottom)
+        end
+    elseif is_in_bounds(x_scaled_values_range, y_scaled_values_range, left)
+        return BandPoint(left[1], left[2], Left)
+    else
+        return nothing
+    end
+end
+
+function end_band_point(::AxisConfiguration, ::AbstractVector{<:Real}, ::AbstractVector{<:Real}, ::Nothing)::Nothing
+    return nothing
+end
+
+function end_band_point(
+    axis_configuration::AxisConfiguration,
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    offset::Real,
+)::Maybe{BandPoint}
+    scaled_offset = scale_axis_value(axis_configuration, offset)
+    top = [y_scaled_values_range[2] - scaled_offset, y_scaled_values_range[2]]
+    right = [x_scaled_values_range[2], x_scaled_values_range[2] + scaled_offset]
+
+    if is_in_bounds(x_scaled_values_range, y_scaled_values_range, top)
+        if is_in_bounds(x_scaled_values_range, y_scaled_values_range, right)
+            @assert isapprox(top, right)
+            return (top[1], top[2], TopRight)
+        else
+            return (top[1], top[2], Top)
+        end
+    elseif is_in_bounds(x_scaled_values_range, y_scaled_values_range, right)
+        return BandPoint(right[1], right[2], Right)
+    else
+        return nothing
+    end
+end
+
+function is_in_bounds(  # UNTESTED
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    point::AbstractVector{<:Real},
+)::Bool
+    return (x_scaled_values_range[1] <= point[1] <= x_scaled_values_range[2]) &&
+           (y_scaled_values_range[1] <= point[2] <= y_scaled_values_range[2])
+end
+
+function push_diagonal_bands_low_fill(  # UNTESTED
+    shapes::AbstractVector{Shape},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    band_points::Tuple{BandPoint, BandPoint},
+    band_configuration::BandConfiguration,
+)::Nothing
+    path_parts = AbstractString[]
+
+    to_bottom_right(path_parts, x_scaled_values_range, y_scaled_values_range)
+    if band_points[1].side == Left
+        to_bottom_left(path_parts, x_scaled_values_range, y_scaled_values_range)
+    end
+    to_start_point(path_parts, band_points)
+    to_end_point(path_parts, band_points)
+    if band_points[2].side == Top
+        to_top_right(path_parts, x_scaled_values_range, y_scaled_values_range)
+    end
+
+    push_fill_path(shapes, path_parts, band_configuration)
+    return nothing
+end
+
+function push_diagonal_bands_high_fill(  # UNTESTED
+    shapes::AbstractVector{Shape},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    band_points::Tuple{BandPoint, BandPoint},
+    band_configuration::BandConfiguration,
+)::Nothing
+    path_parts = AbstractString[]
+
+    to_top_left(path_parts, x_scaled_values_range, y_scaled_values_range)
+    if band_points[1].side == Bottom
+        to_bottom_left(path_parts, x_scaled_values_range, y_scaled_values_range)
+    end
+    to_start_point(path_parts, band_points)
+    to_end_point(path_parts, band_points)
+    if band_points[2].side == Right
+        to_top_right(path_parts, x_scaled_values_range, y_scaled_values_range)
+    end
+
+    push_fill_path(shapes, path_parts, band_configuration)
+    return nothing
+end
+
+function push_diagonal_bands_middle_fill(  # UNTESTED
+    shapes::AbstractVector{Shape},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+    low_band_points::Tuple{BandPoint, BandPoint},
+    high_band_points::Tuple{BandPoint, BandPoint},
+    band_configuration::BandConfiguration,
+)::Nothing
+    path_parts = AbstractString[]
+
+    to_start_point(path_parts, high_band_points)
+    to_end_point(path_parts, high_band_points)
+    if high_band_points[2].side == Top && low_band_points[2].side == Right
+        to_top_right(path_parts, x_scaled_values_range, y_scaled_values_range)
+    end
+    to_end_point(path_parts, low_band_points)
+    to_start_point(path_parts, low_band_points)
+    if high_band_points[1].side == Left && low_band_points[1].side == Bottom
+        to_bottom_left(path_parts, x_scaled_values_range, y_scaled_values_range)
+    end
+
+    push_fill_path(shapes, path_parts, band_configuration)
+    return nothing
+end
+
+function to_start_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing  # UNTESTED
+    push!(path_parts, isempty(path_parts) ? "M" : "L")
+    push!(path_parts, string(band_points[1].x))
+    push!(path_parts, string(band_points[1].y))
+    return nothing
+end
+
+function to_end_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing
+    push!(path_parts, isempty(path_parts) ? "M" : "L")
+    push!(path_parts, string(band_points[2].x))
+    push!(path_parts, string(band_points[2].y))
+    return nothing
+end
+
+function to_bottom_left(  # UNTESTED
+    path_parts::AbstractVector{<:AbstractString},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+)::Nothing
+    push!(path_parts, isempty(path_parts) ? "M" : "L")
+    push!(path_parts, string(x_scaled_values_range[1]))
+    push!(path_parts, string(y_scaled_values_range[1]))
+    return nothing
+end
+
+function to_bottom_right(  # UNTESTED
+    path_parts::AbstractVector{<:AbstractString},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+)::Nothing
+    push!(path_parts, isempty(path_parts) ? "M" : "L")
+    push!(path_parts, string(x_scaled_values_range[2]))
+    push!(path_parts, string(y_scaled_values_range[1]))
+    return nothing
+end
+
+function to_top_left(  # UNTESTED
+    path_parts::AbstractVector{<:AbstractString},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+)::Nothing
+    push!(path_parts, isempty(path_parts) ? "M" : "L")
+    push!(path_parts, string(x_scaled_values_range[1]))
+    push!(path_parts, string(y_scaled_values_range[2]))
+    return nothing
+end
+
+function to_top_right(  # UNTESTED
+    path_parts::AbstractVector{<:AbstractString},
+    x_scaled_values_range::AbstractVector{<:Real},
+    y_scaled_values_range::AbstractVector{<:Real},
+)::Nothing
+    push!(path_parts, isempty(path_parts) ? "M" : "L")
+    push!(path_parts, string(x_scaled_values_range[2]))
+    push!(path_parts, string(y_scaled_values_range[2]))
+    return nothing
+end
+
+function push_fill_path(  # UNTESTED
+    shapes::AbstractVector{Shape},
+    path_parts::AbstractVector{<:AbstractString},
+    band_configuration::BandConfiguration,
+)::Nothing
+    push!(path_parts, "Z")
+
+    push!(
+        shapes,
+        Shape(
+            "path";
+            layer = "below",
+            fillcolor = fill_color(band_configuration.line.color),
+            path = join(path_parts, " "),
+            line_width = 0,
+            yref = "y",
+            xref = "x",
+        ),
+    )
+
+    return nothing
 end
 
 function fill_color(::Nothing)::Nothing  # UNTESTED
@@ -372,12 +966,80 @@ function fill_color(line_color::AbstractString)::AbstractString
     return hex(RGBA(rgba.r, rgba.g, rgba.b, rgba.alpha * 0.5), :RRGGBBAA)
 end
 
+"""
+    prefer_data(data_value::Any, configuration_value::Any)::Any
+    prefer_data(data_values::AbstractVector, index::Integer, configuration_value::Any)::Any
+
+Return a value to use, prefering the data value (which may be in a vector) to the configuration value.
+"""
 function prefer_data(data_value::Any, configuration_value::Any)::Any
-    if data_value !== nothing
+    if data_value === nothing
+        return configuration_value
+    else
         return data_value
+    end
+end
+
+function prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_value::Any)::Any
+    if data_values !== nothing
+        return data_values[index]
     else
         return configuration_value
     end
+end
+
+"""
+    expand_range!(range::Maybe{AbstractVector{<:Maybe{Real}}})::Nothing
+
+Expand the range of values by 1% to allow for points and lines at the edge to be fully visible.
+"""
+function expand_range!(range::Maybe{AbstractVector{<:Maybe{Real}}})::Nothing
+    low, high = range  # NOJET
+    @assert low !== nothing
+    @assert high !== nothing
+    margins = (high - low) / 100
+    range[1] = low - margins
+    range[2] = high + margins
+    return nothing
+end
+
+"""
+    range_of(
+        values::AbstractVector{<:Maybe{Real}},
+        range::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
+    )::AbstractVector{<:Maybe{Real}}
+
+Compute the range of (scaled) values. If a range is give, it is updated in-place as well.
+"""
+function range_of(
+    values::Maybe{AbstractVector{<:Maybe{Real}}},
+    range::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
+)::AbstractVector{<:Maybe{Real}}
+    if range === nothing
+        minimum_value = nothing
+        maximum_value = nothing
+    else
+        minimum_value, maximum_value = range
+    end
+
+    if values !== nothing
+        for value in values
+            if minimum_value === nothing || (value !== nothing && value < minimum_value)
+                minimum_value = value
+            end
+            if maximum_value === nothing || (value !== nothing && value > maximum_value)
+                maximum_value = value
+            end
+        end
+    end
+
+    if range === nothing
+        range = [minimum_value, maximum_value]
+    else
+        range .= [minimum_value, maximum_value]
+    end
+
+    return range
 end
 
 end  # module

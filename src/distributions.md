@@ -4,6 +4,7 @@
 SomeGraphs.Distributions
 SomeGraphs.Distributions.DistributionGraph
 SomeGraphs.Distributions.DistributionConfiguration
+SomeGraphs.Distributions.DistributionStyle
 SomeGraphs.Distributions.DistributionGraphConfiguration
 SomeGraphs.Distributions.DistributionGraphData
 SomeGraphs.Distributions.distribution_graph

@@ -3,6 +3,8 @@ using Test
 using SomeGraphs
 using NestedTests
 
+import SomeGraphs.Common.Maybe
+
 test_prefixes(ARGS)
 abort_on_first_failure(true)
 
@@ -156,4 +158,5 @@ mkpath("actual")
 
 include("validations.jl")
 include("common.jl")
+include("utilities.jl")
 include("distributions.jl")

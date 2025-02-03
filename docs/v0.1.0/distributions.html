@@ -64,6 +64,18 @@
 <a class="tocitem" href="common.html">Common
 </a>
 </li>
+<li class="is-active">
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+<ul class="internal">
+<li>
+<a class="tocitem" href="#Index">
+<span>Index
+</span>
+</a>
+</li>
+</ul>
+</li>
 <li>
 <a class="tocitem" href="utilities.html">Utilities
 </a>
@@ -187,10 +199,7 @@
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct DistributionConfiguration &lt;: Validated
-    values_orientation::ValuesOrientation = HorizontalValues
-    show_box::Bool = false
-    show_violin::Bool = false
-    show_curve::Bool = true
+    style::DistributionStyle = CurveDistribution
     show_outliers::Bool = false
     color::Maybe{AbstractString} = nothing
 end
@@ -198,25 +207,9 @@ end
 </pre>
 <p>Configure the style of a distribution graph.
 </p>
-<p>The 
-<code>values_orientation
-</code> controls which axis is used for the values (the other axis is used for the density). By default the values are shown on the Y axis (vertical values).
-</p>
 <p>If 
-<code>show_box
-</code>, show a box graph.
-</p>
-<p>If 
-<code>show_violin
-</code>, show a violin graph.
-</p>
-<p>If 
-<code>show_curve
-</code>, show a density curve. This is the default.
-</p>
-<p>You can combine the above; however, a density curve is just the positive side of a violin graph, so you can&#39;t combine the two.
-</p>
-<p>In addition to the (combination) of the above, if 
+<code>style
+</code> uses a box, then if 
 <code>show_outliers
 </code>, also show the extreme (outlier) points.
 </p>
@@ -227,6 +220,46 @@ end
 <code>DistributionsGraphData
 </code>
 </a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionStyle" href="#SomeGraphs.Distributions.DistributionStyle">
+<code>SomeGraphs.Distributions.DistributionStyle
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Possible styles for visualizing a distribution:
+</p>
+<p>
+<code>CurveDistribution
+</code> - a density curve (the default).
+</p>
+<p>
+<code>ViolinDistribution
+</code> - same as a density curve but mirrored below the values axis.
+</p>
+<p>
+<code>BoxDistribution
+</code> - a box with whiskers to show important distribution values.
+</p>
+<p>
+<code>CurveBoxDistribution
+</code> - combine a curve and a box.
+</p>
+<p>
+<code>ViolinBoxDistribution
+</code> - combine a violin and a box.
 </p>
 </div>
 </section>
@@ -249,6 +282,7 @@ end
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct DistributionGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
+    values_orientation::ValuesOrientation = HorizontalValues
     distribution::DistributionConfiguration = DistributionConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
@@ -282,6 +316,7 @@ end
     trace_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{&lt;:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
+    distribution_color::Maybe{AbstractString} = nothing
     value_bands::BandsData = BandsData()
 end
 </code>
@@ -294,7 +329,11 @@ end
 <code>trace_axis_title
 </code>. The optional 
 <code>distribution_name
-</code> is used as the tick value for the distribution. You can also specify the bands offsets here if they are more of a data than a configuration parameter in the specific graph. This will override whatever is specified in the configuration.
+</code> is used as the name of the density axis. You can also specify the 
+<code>distribution_color
+</code> and/or 
+<code>value_bands
+</code> offsets here if they are more of a data than a configuration parameter in the specific graph. This will override whatever is specified in the configuration.
 </p>
 </div>
 </section>
@@ -384,10 +423,11 @@ end
 <code class="language-julia hljs">@kwdef mutable struct DistributionsGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
+    values_orientation::ValuesOrientation = HorizontalValues
     value_axis::AxisConfiguration = AxisConfiguration()
+    value_bands::BandsConfiguration = BandsConfiguration()
+    distributions_gap::Maybe{Real} = 0.05
     show_legend::Bool = false
-    overlay_distributions::Bool = false
-    distributions_gap::Maybe{Real} = nothing
 end
 </code>
 </pre>
@@ -400,25 +440,17 @@ end
 </a>, with additions to deal with having multiple distributions.
 </p>
 <p>If 
+<code>distributions_gap
+</code> is set to 
+<code>nothing
+</code>, overlay the distributions on top of each other. Otherwise, the distributions are plotted next to each other, with the 
+<code>distributions_gap
+</code> specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the graphs.
+</p>
+<p>If 
 <code>show_legend
-</code>, we add a legend listing the distributions. If 
-<code>overlay_distributions
-</code>, we plot the distributions on top of one another. Otherwise, 
-<code>distributions_gap
-</code> can be used to adjust the amount of space between the distribution plots.
+</code>, we add a legend listing the distributions.
 </p>
-<div class="admonition is-info">
-<header class="admonition-header">Note
-</header>
-<div class="admonition-body">
-<p>Adjusting the 
-<code>distributions_gap
-</code> will end badly if using 
-<code>show_curve
-</code>, because Plotly.
-</p>
-</div>
-</div>
 </div>
 </section>
 </article>
@@ -550,6 +582,12 @@ end
 </a>
 </li>
 <li>
+<a href="distributions.html#SomeGraphs.Distributions.DistributionStyle">
+<code>SomeGraphs.Distributions.DistributionStyle
+</code>
+</a>
+</li>
+<li>
 <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph">
 <code>SomeGraphs.Distributions.DistributionsGraph
 </code>
@@ -582,6 +620,12 @@ end
 </ul>
 </article>
 <nav class="docs-footer">
+<a class="docs-footer-prevpage" href="common.html">« Common
+</a>
+<a class="docs-footer-nextpage" href="utilities.html">Utilities »
+</a>
+<div class="flexbox-break">
+</div>
 <p class="footer-message">Powered by 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
 </a> and the 

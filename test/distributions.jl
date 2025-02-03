@@ -2,148 +2,133 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
     nested_test(kind) do
         setup()
 
-        nested_test("()") do
-            test_html(graph, "$(plurality).$(kind).html")
-            return nothing
-        end
+        for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
+            nested_test(name) do
+                graph.configuration.values_orientation = orientation
 
-        nested_test("vertical") do
-            graph.configuration.distribution.values_orientation = VerticalValues
-            test_html(graph, "$(plurality).$(kind).vertical.html")
-            return nothing
-        end
-
-        nested_test("outliers") do
-            graph.configuration.distribution.show_outliers = true
-            test_html(graph, "$(plurality).$(kind).outliers.html")
-            return nothing
-        end
-
-        nested_test("box") do
-            graph.configuration.distribution.show_box = true
-            test_html(graph, "$(plurality).$(kind).box.html")
-            return nothing
-        end
-
-        nested_test("log") do
-            nested_test("10") do
-                graph.configuration.value_axis.log_scale = Log10Scale
-                test_html(graph, "$(plurality).$(kind).log10.html")
-                return nothing
-            end
-
-            nested_test("2") do
-                graph.configuration.value_axis.log_scale = Log2Scale
-                test_html(graph, "$(plurality).$(kind).log2.html")
-                return nothing
-            end
-        end
-
-        nested_test("percent") do
-            graph.configuration.value_axis.percent = true
-
-            nested_test("()") do
-                test_html(graph, "$(plurality).$(kind).percent.html")
-                return nothing
-            end
-
-            nested_test("log") do
-                nested_test("10") do
-                    graph.configuration.value_axis.log_scale = Log10Scale
-                    test_html(graph, "$(plurality).$(kind).percent.log10.html")
+                nested_test("()") do
+                    test_html(graph, "$(plurality).$(kind).$(name).html")
                     return nothing
                 end
 
-                nested_test("2") do
-                    graph.configuration.value_axis.log_scale = Log2Scale
-                    test_html(graph, "$(plurality).$(kind).percent.log2.html")
-                    return nothing
+                nested_test("outliers") do
+                    graph.configuration.distribution.show_outliers = true
+                    if contains(kind, "box")
+                        test_html(graph, "$(plurality).$(kind).$(name).outliers.html")
+                        return nothing
+                    else
+                        @test_throws dedent(
+                            """
+            specified graph.configuration.distribution.show_outliers
+            for non-box graph.configuration.distribution.style: $(graph.configuration.distribution.style)
+        """,
+                        ) validate(ValidationContext(["graph"]), graph)
+                    end
+                end
+
+                nested_test("log") do
+                    nested_test("10") do
+                        graph.configuration.value_axis.log_scale = Log10Scale
+                        test_html(graph, "$(plurality).$(kind).$(name).log10.html")
+                        return nothing
+                    end
+
+                    nested_test("2") do
+                        graph.configuration.value_axis.log_scale = Log2Scale
+                        test_html(graph, "$(plurality).$(kind).$(name).log2.html")
+                        return nothing
+                    end
+                end
+
+                nested_test("percent") do
+                    graph.configuration.value_axis.percent = true
+
+                    nested_test("()") do
+                        test_html(graph, "$(plurality).$(kind).$(name).percent.html")
+                        return nothing
+                    end
+
+                    nested_test("log") do
+                        nested_test("10") do
+                            graph.configuration.value_axis.log_scale = Log10Scale
+                            test_html(graph, "$(plurality).$(kind).$(name).percent.log10.html")
+                            return nothing
+                        end
+
+                        nested_test("2") do
+                            graph.configuration.value_axis.log_scale = Log2Scale
+                            test_html(graph, "$(plurality).$(kind).$(name).percent.log2.html")
+                            return nothing
+                        end
+                    end
+                end
+
+                if plurality == "distribution"
+                    nested_test("value_lines") do
+                        graph.configuration.value_bands.low.offset = 50
+                        graph.data.value_bands.middle_offset = 80
+                        graph.configuration.value_bands.high.offset = 120
+
+                        @assert !graph.configuration.value_bands.low.line.is_filled
+                        @assert !graph.configuration.value_bands.middle.line.is_filled
+                        @assert !graph.configuration.value_bands.high.line.is_filled
+
+                        test_html(graph, "$(plurality).$(kind).$(name).value_lines.html")
+                        return nothing
+                    end
+
+                    nested_test("value_fills") do
+                        graph.configuration.value_bands.low.line.is_filled = true
+                        graph.configuration.value_bands.middle.line.is_filled = true
+                        graph.configuration.value_bands.high.line.is_filled = true
+
+                        graph.configuration.value_bands.low.line.style = DashDotLine
+                        graph.configuration.value_bands.middle.line.style = nothing
+                        graph.configuration.value_bands.high.line.style = DashDotLine
+
+                        graph.configuration.value_bands.low.line.color = "green"
+                        graph.configuration.value_bands.middle.line.color = "red"
+                        graph.configuration.value_bands.high.line.color = "blue"
+
+                        graph.configuration.value_bands.low.offset = 50
+                        graph.data.value_bands.high_offset = 120
+
+                        test_html(graph, "$(plurality).$(kind).$(name).value_fills.html")
+                        return nothing
+                    end
+
+                elseif plurality == "distributions"
+                    nested_test("legend") do
+                        graph.configuration.show_legend = true
+                        graph.data.distributions_names = ["Foo", "Bar"]
+                        test_html(graph, "$(plurality).$(kind).$(name).legend.html")
+                        return nothing
+                    end
+
+                    nested_test("!gap") do
+                        graph.configuration.distributions_gap = nothing
+
+                        if kind === "box"
+                            @test_throws "no graph.configuration.distributions_gap specified for box distributions" validate(
+                                ValidationContext(["graph"]),
+                                graph,
+                            )
+                        else
+                            test_html(graph, "$(plurality).$(kind).$(name).!gap.html")
+                            return nothing
+                        end
+                    end
+
+                    if kind !== "box"
+                        nested_test("legend!gap") do
+                            graph.configuration.show_legend = true
+                            graph.configuration.distributions_gap = nothing
+                            test_html(graph, "$(plurality).$(kind).$(name).legend!gap.html")
+                            return nothing
+                        end
+                    end
                 end
             end
-        end
-
-        if plurality == "distribution"
-            nested_test("vertical_lines") do
-                graph.configuration.value_bands.low.offset = 50
-                graph.configuration.value_bands.middle.offset = 80
-                graph.configuration.value_bands.high.offset = 120
-
-                @assert !graph.configuration.value_bands.low.line.is_filled
-                @assert !graph.configuration.value_bands.middle.line.is_filled
-                @assert !graph.configuration.value_bands.high.line.is_filled
-
-                return test_html(graph, "$(plurality).$(kind).vertical_lines.html")
-            end
-
-            nested_test("vertical_fills") do
-                graph.configuration.value_bands.low.line.is_filled = true
-                graph.configuration.value_bands.middle.line.is_filled = true
-                graph.configuration.value_bands.high.line.is_filled = true
-
-                graph.configuration.value_bands.low.line.style = nothing
-                graph.configuration.value_bands.middle.line.style = nothing
-                graph.configuration.value_bands.high.line.style = nothing
-
-                graph.configuration.value_bands.low.line.color = "green"
-                graph.configuration.value_bands.middle.line.color = "red"
-                graph.configuration.value_bands.high.line.color = "blue"
-
-                graph.configuration.value_bands.low.offset = 50
-                graph.data.value_bands.high_offset = 120
-
-                test_html(graph, "$(plurality).$(kind).vertical_fills.html")
-                return nothing
-            end
-
-            nested_test("horizontal_lines") do
-                graph.configuration.distribution.values_orientation = VerticalValues
-
-                graph.configuration.value_bands.low.offset = 50
-                graph.configuration.value_bands.middle.offset = 80
-                graph.data.value_bands.high_offset = 120
-
-                @assert !graph.configuration.value_bands.low.line.is_filled
-                @assert !graph.configuration.value_bands.middle.line.is_filled
-                @assert !graph.configuration.value_bands.high.line.is_filled
-
-                return test_html(graph, "$(plurality).$(kind).horizontal_lines.html")
-            end
-
-            nested_test("horizontal_fills") do
-                graph.configuration.distribution.values_orientation = VerticalValues
-
-                graph.configuration.value_bands.low.line.is_filled = true
-                graph.configuration.value_bands.middle.line.is_filled = true
-                graph.configuration.value_bands.high.line.is_filled = true
-
-                graph.configuration.value_bands.low.line.style = nothing
-                graph.configuration.value_bands.middle.line.style = nothing
-                graph.configuration.value_bands.high.line.style = nothing
-
-                graph.configuration.value_bands.low.line.color = "green"
-                graph.configuration.value_bands.middle.line.color = "red"
-                graph.configuration.value_bands.high.line.color = "blue"
-
-                graph.configuration.value_bands.low.offset = 50
-                graph.data.value_bands.high_offset = 120
-
-                test_html(graph, "$(plurality).$(kind).horizontal_fills.html")
-                return nothing
-            end
-
-        elseif plurality == "distributions"
-            nested_test("!gap") do
-                graph.configuration.distributions_gap = 0.0
-                return test_html(graph, "$(plurality).$(kind).!gap.html")
-            end
-
-            nested_test("gap") do
-                graph.configuration.distributions_gap = 0.1
-                return test_html(graph, "$(plurality).$(kind).gap.html")
-            end
-
-        else
-            @assert false
         end
     end
 
@@ -174,43 +159,17 @@ nested_test("distribution") do
               "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .figure to show the graph)"
     end
 
-    nested_test("invalid") do
-        nested_test("!show") do
-            graph.configuration.distribution.show_curve = false
-            @assert !graph.configuration.distribution.show_box
-            @assert !graph.configuration.distribution.show_violin
-            @assert !graph.configuration.distribution.show_curve
-            @test_throws (
-                "must specify at least one of: " *
-                "graph.configuration.distribution.show_box, " *
-                "graph.configuration.distribution.show_violin, " *
-                "graph.configuration.distribution.show_curve"
-            ) graph.figure
+    for (name, style) in (
+        ("curve", CurveDistribution),
+        ("curve_box", CurveBoxDistribution),
+        ("violin", ViolinDistribution),
+        ("violin_box", ViolinBoxDistribution),
+        ("box", BoxDistribution),
+    )
+        test_distributions(graph, "distribution", name) do
+            graph.configuration.distribution.style = style
+            return nothing
         end
-
-        nested_test("~show") do
-            graph.configuration.distribution.show_violin = true
-            @test_throws (
-                "must not specify both of: " *
-                "graph.configuration.distribution.show_violin, " *
-                "graph.configuration.distribution.show_curve"
-            ) graph.figure
-        end
-    end
-
-    test_distributions(graph, "distribution", "curve") do
-        graph.configuration.distribution.show_box = false
-        return graph.configuration.distribution.show_curve = true
-    end
-
-    test_distributions(graph, "distribution", "violin") do
-        graph.configuration.distribution.show_curve = false
-        return graph.configuration.distribution.show_violin = true
-    end
-
-    test_distributions(graph, "distribution", "box") do
-        graph.configuration.distribution.show_curve = false
-        return graph.configuration.distribution.show_box = true
     end
 end
 
@@ -268,36 +227,18 @@ nested_test("distributions") do
                 is different from length of graph.data.distributions_values: 2
             """) graph.figure
         end
+    end
 
-        nested_test("!distributions_gap") do
-            graph.configuration.distributions_gap = -1
-            @test_throws dedent("""
-                too low graph.configuration.distributions_gap: -1
-                is not at least: 0
-            """) graph.figure
+    for (name, style) in (
+        ("curve", CurveDistribution),
+        ("curve_box", CurveBoxDistribution),
+        ("violin", ViolinDistribution),
+        ("violin_box", ViolinBoxDistribution),
+        ("box", BoxDistribution),
+    )
+        test_distributions(graph, "distributions", name) do
+            graph.configuration.distribution.style = style
+            return nothing
         end
-
-        nested_test("~distributions_gap") do
-            graph.configuration.distributions_gap = 1
-            @test_throws dedent("""
-                too high graph.configuration.distributions_gap: 1
-                is not below: 1
-            """) graph.figure
-        end
-    end
-
-    test_distributions(graph, "distributions", "curve") do
-        graph.configuration.distribution.show_box = false
-        return graph.configuration.distribution.show_curve = true
-    end
-
-    test_distributions(graph, "distributions", "violin") do
-        graph.configuration.distribution.show_curve = false
-        return graph.configuration.distribution.show_violin = true
-    end
-
-    test_distributions(graph, "distributions", "box") do
-        graph.configuration.distribution.show_curve = false
-        return graph.configuration.distribution.show_box = true
     end
 end

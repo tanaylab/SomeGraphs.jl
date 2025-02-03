@@ -80,6 +80,40 @@ nested_test("common") do
         end
     end
 
+    nested_test("size") do
+        size = SizeConfiguration()
+        context = ValidationContext(["size"])
+        validate(context, size)
+
+        nested_test("smallest") do
+            size.smallest = -1
+            @test_throws dedent("""
+                too low size.smallest: -1
+                is not at least: 0
+            """) validate(context, size)
+        end
+
+        nested_test("largest") do
+            size.largest = 0
+            @test_throws dedent("""
+                too low size.largest: 0
+                is not above: 0
+            """) validate(context, size)
+        end
+
+        nested_test("range") do
+            size.smallest = 1
+            size.largest = 2
+            validate(context, size)
+
+            size.largest = 1
+            @test_throws dedent("""
+                range low limit size.smallest: 1
+                is not below high limit size.largest: 1
+            """) validate(context, size)
+        end
+    end
+
     nested_test("axis") do
         axis = AxisConfiguration()
         context = ValidationContext(["axis"])
@@ -111,21 +145,29 @@ nested_test("common") do
         nested_test("log_regularization+minimum") do
             axis.log_scale = Log10Scale
             axis.log_regularization = 1
+
             axis.minimum = -3
             @test_throws dedent("""
                 too low axis.(minimum + log_regularization): -2
                 is not above: 0
             """) validate(context, axis)
+
+            axis.minimum = 2
+            return validate(context, axis)
         end
 
         nested_test("log_regularization+maximum") do
             axis.log_scale = Log10Scale
             axis.log_regularization = 1
+
             axis.maximum = -3
             @test_throws dedent("""
                 too low axis.(maximum + log_regularization): -2
                 is not above: 0
             """) validate(context, axis)
+
+            axis.maximum = 2
+            return validate(context, axis)
         end
     end
 
@@ -152,15 +194,15 @@ nested_test("common") do
         axis = AxisConfiguration()
         band = BandConfiguration()
         context = ValidationContext(["root", "band"])
-        validate(context, band, "axis", axis)
+        validate(context, band, axis)
 
-        nested_test("log_regularization+offsets") do
+        nested_test("offsets") do
             axis.log_scale = Log2Scale
             band.offset = -1
             @test_throws dedent("""
-                too low root.band.offset + root.axis.log_regularization: -1
+                too low root.band.offset: -1
                 is not above: 0
-            """) validate(context, band, "axis", axis)
+            """) validate(context, band, axis)
         end
 
         nested_test("line") do
@@ -168,7 +210,7 @@ nested_test("common") do
             @test_throws dedent("""
                 too low root.band.line.width: 0
                 is not above: 0
-            """) validate(context, band, "axis", axis)
+            """) validate(context, band, axis)
         end
     end
 
@@ -176,14 +218,36 @@ nested_test("common") do
         axis = AxisConfiguration()
         bands = BandsConfiguration()
         context = ValidationContext(["root", "bands"])
-        validate(context, bands, "axis", axis)
+        validate(context, bands, axis)
 
         nested_test("low") do
             bands.low.line.width = 0
             @test_throws dedent("""
                 too low root.bands.low.line.width: 0
                 is not above: 0
-            """) validate(context, bands, "axis", axis)
+            """) validate(context, bands, axis)
+        end
+
+        nested_test("fill") do
+            bands.middle.line.is_filled = true
+
+            nested_test("!high") do
+                bands.low.offset = 0
+                @test_throws (
+                    "graph.configuration.bands.middle.line.is_filled " *
+                    "requires graph.configuration.bands.high.offset " *
+                    "or graph.data.bands.high_offset"
+                ) SomeGraphs.Utilities.validate_graph_bands("bands", bands, BandsData(), AxisConfiguration())
+            end
+
+            nested_test("!low") do
+                bands.high.offset = 0
+                @test_throws (
+                    "graph.configuration.bands.middle.line.is_filled " *
+                    "requires graph.configuration.bands.low.offset " *
+                    "or graph.data.bands.low_offset"
+                ) SomeGraphs.Utilities.validate_graph_bands("bands", bands, BandsData(), AxisConfiguration())
+            end
         end
 
         nested_test("middle") do
@@ -191,7 +255,7 @@ nested_test("common") do
             @test_throws dedent("""
                 too low root.bands.middle.line.width: 0
                 is not above: 0
-            """) validate(context, bands, "axis", axis)
+            """) validate(context, bands, axis)
         end
 
         nested_test("high") do
@@ -199,7 +263,7 @@ nested_test("common") do
             @test_throws dedent("""
                 too low root.bands.high.line.width: 0
                 is not above: 0
-            """) validate(context, bands, "axis", axis)
+            """) validate(context, bands, axis)
         end
 
         nested_test("low-middle") do
@@ -208,7 +272,7 @@ nested_test("common") do
             @test_throws dedent("""
                 range low limit root.bands.low.offset: 0
                 is not below high limit root.bands.middle.offset: 0
-            """) validate(context, bands, "axis", axis)
+            """) validate(context, bands, axis)
         end
 
         nested_test("middle-high") do
@@ -217,7 +281,7 @@ nested_test("common") do
             @test_throws dedent("""
                 range low limit root.bands.middle.offset: 0
                 is not below high limit root.bands.high.offset: 0
-            """) validate(context, bands, "axis", axis)
+            """) validate(context, bands, axis)
         end
 
         nested_test("low-high") do
@@ -226,7 +290,7 @@ nested_test("common") do
             @test_throws dedent("""
                 range low limit root.bands.low.offset: 0
                 is not below high limit root.bands.high.offset: 0
-            """) validate(context, bands, "axis", axis)
+            """) validate(context, bands, axis)
         end
     end
 
@@ -435,6 +499,21 @@ nested_test("common") do
                 too low colors.(colors_palette[1].value + color_axis.log_regularization): 0
                 is not above: 0
             """) validate(context, colors)
+
+            colors.color_axis.log_regularization = 1
+            return validate(context, colors)
+        end
+
+        nested_test("categorical") do
+            colors.colors_palette = Dict(["foo" => "red", "bar" => "green"])
+            validate(context, colors)
+
+            empty!(colors.colors_palette)
+
+            @test_throws "empty dict colors.colors_palette" validate(context, colors)
+
+            colors.colors_palette = Dict(["baz" => "Oobleck"])
+            @test_throws "invalid colors.colors_palette[baz].color: Oobleck" validate(context, colors)
         end
     end
 end

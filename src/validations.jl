@@ -16,6 +16,9 @@ export Validated
 export ValidationContext
 export location
 export validate
+export validate_dict_entries
+export validate_dict_is_not_empty
+export validate_field
 export validate_in
 export validate_is_above
 export validate_is_at_least
@@ -59,19 +62,20 @@ Convert a [`ValidationContext`](@ref) to a string for error messages.
 function location(context::ValidationContext)::AbstractString
     text = AbstractString[]
 
+    is_first = true
     last_is_index = false
     for entry in context
         if entry isa AbstractString
-            if length(text) != 0
-                if last_is_index
-                    push!(text, "].")
-                else
-                    push!(text, ".")
-                end
+            if last_is_index
+                push!(text, "]")
+            end
+            if !is_first && !startswith(entry, "[")
+                push!(text, ".")
             end
             push!(text, entry)
             last_is_index = false
         else
+            @assert !is_first
             if last_is_index
                 push!(text, ", ")
             else
@@ -80,6 +84,7 @@ function location(context::ValidationContext)::AbstractString
             push!(text, string(entry))
             last_is_index = true
         end
+        is_first = false
     end
 
     if last_is_index
@@ -102,9 +107,15 @@ abstract type Validated end
 Validate the `value` which was accessed via the `context`, possibly using some `extra` informative. Will throw
 `ArgumentError` if the value isn't valid.
 """
-function validate(context::ValidationContext, value::Validated)::Nothing end  # NOLINT
-function validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end  # NOLINT
-function validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing end  # NOLINT
+function validate(context::ValidationContext, value::Validated)::Nothing  # NOLINT # UNTESTED
+    @assert false "not implemented"
+end
+function validate(context::ValidationContext, value::Validated, extra::Any)::Nothing  # NOLINT # UNTESTED
+    @assert false "not implemented"
+end
+function validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing  # NOLINT # UNTESTED
+    @assert false "not implemented"
+end
 
 """
     validate_in(validation::Function, context::ValidationContext, where::Union{AbstractString, Integer})::Nothing
@@ -117,6 +128,37 @@ function validate_in(validation::Function, context::ValidationContext, where::Un
         validation()
     finally
         pop!(context)  # NOJET
+    end
+end
+
+"""
+    validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
+    validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
+    validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any, another::Any)::Nothing
+
+Validate the `value` of a `field`.
+"""
+function validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
+    validate_in(context, field) do
+        return validate(context, value)
+    end
+end
+
+function validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
+    validate_in(context, field) do
+        return validate(context, value, extra)
+    end
+end
+
+function validate_field(  # UNTESTED
+    context::ValidationContext,
+    field::AbstractString,
+    value::Validated,
+    extra::Any,
+    another::Any,
+)::Nothing
+    validate_in(context, field) do
+        return validate(context, value, extra, another)
     end
 end
 
@@ -263,7 +305,7 @@ function validate_vector_is_not_empty(
 end
 
 function validate_vector_is_not_empty(context::ValidationContext, vector::AbstractVector)::Nothing
-    if length(vector) == 0
+    if isempty(vector)
         throw(ArgumentError("empty vector $(location(context))"))
     end
     return nothing
@@ -273,7 +315,7 @@ end
     validate_vector_entries(
         validation::Function,
         context::ValidationContext,
-        field::AbstractString,
+        [field::AbstractString,]
         vector::Maybe{AbstractVector}
     )::Nothing
 
@@ -287,11 +329,20 @@ function validate_vector_entries(
     vector::Maybe{AbstractVector},
 )::Nothing
     validate_in(context, field) do
-        if vector !== nothing
-            for (index, entry) in enumerate(vector)
-                validate_in(context, index) do
-                    return validation(index, entry)
-                end
+        return validate_vector_entries(validation, context, vector)
+    end
+    return nothing
+end
+
+function validate_vector_entries(
+    validation::Function,
+    context::ValidationContext,
+    vector::Maybe{AbstractVector},
+)::Nothing
+    if vector !== nothing
+        for (index, entry) in enumerate(vector)
+            validate_in(context, index) do
+                return validation(index, entry)
             end
         end
     end
@@ -374,6 +425,63 @@ function validate_matrix_entries(
                         end
                     end
                 end
+            end
+        end
+    end
+    return nothing
+end
+
+"""
+    validate_dict_is_not_empty(
+        context::ValidationContext,
+        [field::AbstractString,]
+        dict::AbstractDict,
+    )::Nothing
+
+Validate that a `field` containing a `dict` has at least one entry.
+"""
+function validate_dict_is_not_empty(context::ValidationContext, field::AbstractString, dict::AbstractDict)::Nothing
+    validate_in(context, field) do
+        return validate_dict_is_not_empty(context, dict)
+    end
+    return nothing
+end
+
+function validate_dict_is_not_empty(context::ValidationContext, dict::AbstractDict)::Nothing
+    if isempty(dict)
+        throw(ArgumentError("empty dict $(location(context))"))
+    end
+    return nothing
+end
+
+"""
+    validate_dict_entries(
+        validation::Function,
+        context::ValidationContext,
+        [field::AbstractString,]
+        dict::Maybe{AbstractDict}
+    )::Nothing
+
+Validate all the entries of a `field` containing a `dict` using the `validation` function. It is given the entry's key
+and value. The context is updated to include the key for the duration of the function.
+"""
+function validate_dict_entries(
+    validation::Function,
+    context::ValidationContext,
+    field::AbstractString,
+    dict::Maybe{AbstractDict},
+)::Nothing
+    validate_in(context, field) do
+        return validate_dict_entries(validation, context, dict)
+    end
+    return nothing
+end
+
+function validate_dict_entries(validation::Function, context::ValidationContext, dict::Maybe{AbstractDict})::Nothing
+    if dict !== nothing
+        for (key, entry) in dict
+            validate_in(context, "[$(key)]") do
+                return validation(key, entry)
             end
         end
     end

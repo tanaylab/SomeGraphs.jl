@@ -10,6 +10,7 @@ SomeGraphs.Common.save_graph
 SomeGraphs.Common.FigureConfiguration
 SomeGraphs.Common.MarginsConfiguration
 SomeGraphs.Common.AxisConfiguration
+SomeGraphs.Common.SizeConfiguration
 SomeGraphs.Common.LineConfiguration
 SomeGraphs.Common.LogScale
 SomeGraphs.Common.LineStyle
@@ -22,6 +23,7 @@ SomeGraphs.Common.ContinuousColors
 SomeGraphs.Common.CategoricalColors
 SomeGraphs.Common.NAMED_COLOR_PALETTES
 SomeGraphs.Common.COLOR_PALETTES_LOCK
+SomeGraphs.Common.SubGraph
 ```
 
 ## Index

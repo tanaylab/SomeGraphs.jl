@@ -13,7 +13,9 @@ export COLOR_PALETTES_LOCK
 export CategoricalColors
 export ColorsConfiguration
 export ContinuousColors
-export DashedLine
+export DashDotLine
+export DashLine
+export DotLine
 export FigureConfiguration
 export Graph
 export HorizontalValues
@@ -25,7 +27,9 @@ export LogScale
 export MarginsConfiguration
 export NAMED_COLOR_PALETTES
 export PlotlyFigure
+export SizeConfiguration
 export SolidLine
+export SubGraph
 export ValuesOrientation
 export VerticalValues
 export save_graph
@@ -95,13 +99,9 @@ function Base.getproperty(graph::Graph, property::Symbol)::Any
 end
 
 function Validations.validate(context::ValidationContext, graph::Graph)::Nothing
-    validate_in(context, "data") do
-        return validate(context, graph.data)
-    end
-    validate_in(context, "configuration") do
-        return validate(context, graph.configuration)
-    end
-    validate_graph(graph)
+    validate_field(context, "data", graph.data)
+    validate_field(context, "configuration", graph.configuration)
+    validate_graph(graph)  # NOJET
     return nothing
 end
 
@@ -112,7 +112,7 @@ Validate that the combination of data and configuration in a graph is valid, aft
 isn't invoked manually, instead it is called by the overall `validate` of the graph. It is provided (with a default
 empty implementation) to allow for type-specific validations.
 """
-function validate_graph(::Graph)::Maybe{AbstractString}
+function validate_graph(::Graph)::Maybe{AbstractString}  # UNTESTED
     return nothing
 end
 
@@ -176,7 +176,8 @@ function Validations.validate(context::ValidationContext, margins_configuration:
         ("top", margins_configuration.top),
     )
         validate_in(context, field) do
-            return validate_is_at_least(context, value, 0)
+            validate_is_at_least(context, value, 0)
+            return nothing
         end
     end
     return nothing
@@ -187,10 +188,9 @@ end
         margins::MarginsConfiguration = MarginsConfiguration()
         width::Maybe{Int} = nothing
         height::Maybe{Int} = nothing
-        template::AbstractString = "simple_white"
+        template::Maybe{AbstractString} = nothing
         show_grid::Bool = true
-        grid_color::AbstractString = "lightgrey"
-        show_ticks::Bool = true
+        grid_color::Maybe{AbstractString} = nothing
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -199,33 +199,34 @@ Generic configuration that applies to the whole figure. Each complete [`Abstract
 The optional `width` and `height` are in pixels, that is, 1/96 of an inch. The `margins` are specified in the same
 units.
 
-By default, `show_grid` and `show_ticks` are set.
+By default, `show_grid` is set.
 
-The default `template` is "simple_white" which is the cleanest. The `show_grid` and `show_ticks` can be used to disable
-the grid and/or ticks for an even cleaner (but less informative) look, and the `grid_color` can also be changed.
+The default `template` is "simple_white" which is the cleanest (we also force the background color to white if this is
+the cae). The `show_grid` flag can be used to disable the grid for an even cleaner (but less informative) look, and the
+`grid_color` can also be changed.
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
     width::Maybe{Int} = nothing
     height::Maybe{Int} = nothing
-    template::AbstractString = "simple_white"
+    template::Maybe{AbstractString} = nothing
     show_grid::Bool = true
-    grid_color::AbstractString = "lightgrey"
-    show_ticks::Bool = true
+    grid_color::Maybe{AbstractString} = nothing
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
-    validate_in(context, "margins") do
-        return validate(context, figure_configuration.margins)
-    end
+    validate_field(context, "margins", figure_configuration.margins)
     validate_in(context, "width") do
-        return validate_is_above(context, figure_configuration.width, 0)
+        validate_is_above(context, figure_configuration.width, 0)
+        return nothing
     end
     validate_in(context, "height") do
-        return validate_is_above(context, figure_configuration.height, 0)
+        validate_is_above(context, figure_configuration.height, 0)
+        return nothing
     end
     validate_in(context, "grid_color") do
-        return validate_is_color(context, figure_configuration.grid_color)
+        validate_is_color(context, figure_configuration.grid_color)
+        return nothing
     end
     return nothing
 end
@@ -247,6 +248,39 @@ Supported log scales (when log scaling is enabled):
   - `Log2Scale` converts values to their log (base 2).
 """
 @enum LogScale Log10Scale Log2Scale
+
+"""
+    @kwdef mutable struct SizeConfiguration <: Validated
+        smallest::Maybe{Real} = nothing
+        largest::Maybe{Real} = nothing
+    end
+
+Configure the range of sizes in pixels (1/96th of an inch) to map the sizes data into. If no bounds are given, and also
+the `size_axis` scale is linear, then we assume the sizes data is just the size in pixels. Otherwise, by default we use
+2 pixels for the `smallest` size and make the `largest` size be 8 pixels larger than the `smallest` size. Sizes must be
+positive.
+
+!!! note
+
+    A zero size disables drawing the entity.
+"""
+@kwdef mutable struct SizeConfiguration <: Validated
+    smallest::Maybe{Real} = nothing
+    largest::Maybe{Real} = nothing
+end
+
+function Validations.validate(context::ValidationContext, size_configuration::SizeConfiguration)::Nothing
+    validate_in(context, "smallest") do
+        validate_is_at_least(context, size_configuration.smallest, 0)
+        return nothing
+    end
+    validate_in(context, "largest") do
+        validate_is_above(context, size_configuration.largest, 0)
+        return nothing
+    end
+    validate_is_range(context, "smallest", size_configuration.smallest, "largest", size_configuration.largest)
+    return nothing
+end
 
 """
     @kwdef mutable struct AxisConfiguration <: Validated
@@ -289,16 +323,19 @@ function Validations.validate(context::ValidationContext, axis_configuration::Ax
         end
     else
         validate_in(context, "log_regularization") do
-            return validate_is_at_least(context, axis_configuration.log_regularization, 0)
+            validate_is_at_least(context, axis_configuration.log_regularization, 0)
+            return nothing
         end
         if axis_configuration.minimum !== nothing
             validate_in(context, "(minimum + log_regularization)") do
-                return validate_is_above(context, axis_configuration.minimum + axis_configuration.log_regularization, 0)
+                validate_is_above(context, axis_configuration.minimum + axis_configuration.log_regularization, 0)
+                return nothing
             end
         end
         if axis_configuration.maximum !== nothing
             validate_in(context, "(maximum + log_regularization)") do
-                return validate_is_above(context, axis_configuration.maximum + axis_configuration.log_regularization, 0)
+                validate_is_above(context, axis_configuration.maximum + axis_configuration.log_regularization, 0)
+                return nothing
             end
         end
     end
@@ -311,9 +348,11 @@ Styles of drawing a line
 
   - `SolidLine` draws a solid line (the default).
 
-  - `DashedLine` draws a dashed line.
+  - `DashLine` draws a dashed line.
+  - `DotLine` draws a dotted line.
+  - `DashDotLine` draws a dash-dotted line.
 """
-@enum LineStyle SolidLine DashedLine
+@enum LineStyle SolidLine DashLine DotLine DashDotLine
 
 """
     @kwdef mutable struct LineConfiguration <: Validated
@@ -340,10 +379,12 @@ end
 
 function Validations.validate(context::ValidationContext, line_configuration::LineConfiguration)::Nothing
     validate_in(context, "width") do
-        return validate_is_above(context, line_configuration.width, 0)
+        validate_is_above(context, line_configuration.width, 0)
+        return nothing
     end
     validate_in(context, "color") do
-        return validate_is_color(context, line_configuration.color)
+        validate_is_color(context, line_configuration.color)
+        return nothing
     end
     return nothing
 end
@@ -370,18 +411,16 @@ end
 function Validations.validate(
     context::ValidationContext,
     band_configuration::BandConfiguration,
-    axis_field::AbstractString,
     axis_configuration::AxisConfiguration,
 )::Nothing
-    if axis_configuration.log_scale !== nothing && band_configuration.offset !== nothing
-        validate_in(context, "offset + $(location(context[1:end - 1])).$(axis_field).log_regularization") do
-            return validate_is_above(context, band_configuration.offset + axis_configuration.log_regularization, 0)
+    if axis_configuration.log_scale !== nothing
+        validate_in(context, "offset") do
+            validate_is_above(context, band_configuration.offset, 0)
+            return nothing
         end
     end
 
-    validate_in(context, "line") do
-        return validate(context, band_configuration.line)
-    end
+    validate_field(context, "line", band_configuration.line)
 
     return nothing
 end
@@ -396,24 +435,23 @@ end
 Configure the partition of the graph up to three band regions. The `low` and `high` bands are for the "outer" regions
 (so their lines are at their border, dashed by default) and the `middle` band is for the "inner" region between them (so
 its line is inside it, solid by default).
+
+If `show_legend`, then a legend showing the bands will be shown.
 """
 @kwdef mutable struct BandsConfiguration <: Validated
-    low::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DashedLine))
+    low::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DotLine))
     middle::BandConfiguration = BandConfiguration()
-    high::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DashedLine))
+    high::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DashLine))
 end
 
 function Validations.validate(
     context::ValidationContext,
     bands_configuration::BandsConfiguration,
-    axis_field::AbstractString,
     axis_configuration::AxisConfiguration,
 )::Nothing
     for (field, band_configuration) in
         (("low", bands_configuration.low), ("middle", bands_configuration.middle), ("high", bands_configuration.high))
-        validate_in(context, field) do
-            return validate(context, band_configuration, axis_field, axis_configuration)
-        end
+        validate_field(context, field, band_configuration, axis_configuration)
     end
 
     validate_is_range(
@@ -450,8 +488,7 @@ end
         high_offset::Maybe{Real} = nothing
     end
 
-Override or specify the offsets for tha bands in the data instead of the configuration. Similarly to colors, whether the
-offset is a data or a configuration parameters depends on the specific graph.
+Specify data for bands.
 """
 @kwdef mutable struct BandsData
     low_offset::Maybe{Real} = nothing
@@ -461,19 +498,16 @@ end
 
 """
 A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make
-it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`.
+it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`. The
+`legend_title` is only used if `show_legend` is set in the configuration.
 """
 ContinuousColors =
     Union{AbstractVector{<:Pair{<:Real, <:AbstractString}}, AbstractVector{<:Tuple{<:Real, <:AbstractString}}}
 
 """
-A categorical colors palette, mapping string values to colors. We also allow specifying tuples instead of pairs to make
-it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`.
+A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown.
 """
-CategoricalColors = Union{
-    AbstractVector{<:Pair{<:AbstractString, <:AbstractString}},
-    AbstractVector{<:Tuple{<:AbstractString, <:AbstractString}},
-}
+CategoricalColors = Dict{<:AbstractString, <:AbstractString}
 
 """
     @kwdef mutable struct ColorsConfiguration <: Validated
@@ -994,9 +1028,7 @@ function Validations.validate(
     context::ValidationContext,
     colors_configuration::ColorsConfiguration,
 )::Maybe{AbstractString}
-    validate_in(context, "color_axis") do
-        return validate(context, colors_configuration.color_axis)
-    end
+    validate_field(context, "color_axis", colors_configuration.color_axis)
 
     colors_palette = colors_configuration.colors_palette
     if colors_palette isa AbstractString
@@ -1056,8 +1088,8 @@ function Validations.validate(
             end
         end
 
-    elseif colors_palette isa AbstractVector
-        validate_vector_is_not_empty(context, "colors_palette", colors_palette)
+    elseif colors_palette isa ContinuousColors
+        validate_vector_is_not_empty(context, "colors_palette", colors_palette)  # NOJET
 
         values = [entry[1] for entry in colors_palette]
         for (index, (low_value, high_value)) in enumerate(zip(values[1:(end - 1)], values[2:end]))
@@ -1071,55 +1103,74 @@ function Validations.validate(
             end
         end
 
-        validate_vector_entries(context, "colors_palette", colors_palette) do _, (_, color)
+        validate_vector_entries(context, "colors_palette", colors_palette) do _, (_, color)  # NOJET
             validate_in(context, "color") do
-                return validate_is_color(context, color)
+                validate_is_color(context, color)
+                return nothing
             end
         end
 
-        if eltype(colors_palette) <: Union{Pair{<:Real, <:AbstractString}, Tuple{<:Real, <:AbstractString}}
-            if colors_configuration.color_axis.minimum !== nothing
-                throw(
-                    ArgumentError(
-                        "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
-                        "and explicit $(location(context)).color_axis.minimum: $(colors_configuration.color_axis.minimum)",
-                    ),
-                )
-            end
-
-            if colors_configuration.color_axis.maximum !== nothing
-                throw(
-                    ArgumentError(
-                        "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
-                        "and explicit $(location(context)).color_axis.maximum: $(colors_configuration.color_axis.maximum)",
-                    ),
-                )
-            end
-
-            cmin = minimum([value for (value, _) in colors_palette])
-            cmax = maximum([value for (value, _) in colors_palette])
-            validate_is_range(
-                context,
-                "minimum(colors_palette[*].value)",
-                cmin,
-                "maximum(colors_palette[*].value)",
-                cmax,
+        if colors_configuration.color_axis.minimum !== nothing
+            throw(
+                ArgumentError(
+                    "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
+                    "and explicit $(location(context)).color_axis.minimum: $(colors_configuration.color_axis.minimum)",
+                ),
             )
+        end
 
-            if colors_configuration.color_axis.log_scale !== nothing
-                index = argmin(colors_palette)  # NOJET
-                validate_in(context, "(colors_palette[$(index)].value + color_axis.log_regularization)") do
-                    return validate_is_above(
-                        context,
-                        colors_palette[index][1] + colors_configuration.color_axis.log_regularization,
-                        0,
-                    )
-                end
+        if colors_configuration.color_axis.maximum !== nothing
+            throw(
+                ArgumentError(
+                    "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
+                    "and explicit $(location(context)).color_axis.maximum: $(colors_configuration.color_axis.maximum)",
+                ),
+            )
+        end
+
+        cmin = minimum([value for (value, _) in colors_palette])
+        cmax = maximum([value for (value, _) in colors_palette])
+        validate_is_range(context, "minimum(colors_palette[*].value)", cmin, "maximum(colors_palette[*].value)", cmax)
+
+        if colors_configuration.color_axis.log_scale !== nothing
+            index = argmin(colors_palette)  # NOJET
+            validate_in(context, "(colors_palette[$(index)].value + color_axis.log_regularization)") do
+                validate_is_above(
+                    context,
+                    colors_palette[index][1] + colors_configuration.color_axis.log_regularization,
+                    0,
+                )
+                return nothing
+            end
+        end
+
+    elseif colors_palette isa CategoricalColors
+        validate_dict_is_not_empty(context, "colors_palette", colors_palette)  # NOJET
+
+        validate_dict_entries(context, "colors_palette", colors_palette) do _, color  # NOJET
+            validate_in(context, "color") do
+                validate_is_color(context, color)
+                return nothing
             end
         end
     end
 
     return nothing
+end
+
+"""
+    @kwdef struct SubGraph
+        index::Integer
+        overlay::Bool
+    end
+
+Identify one sub-graph out of a set of adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used top
+initialize some values such as the legend group title). If `overlay` then the sub-graphs are plotted on top of each
+other, which affects axis parameters.
+"""
+@kwdef struct SubGraph
+    index::Integer
+    overlay::Bool
 end
 
 end  # module

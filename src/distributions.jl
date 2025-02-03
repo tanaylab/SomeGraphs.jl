@@ -3,11 +3,17 @@ Graphs for showing probability distributions.
 """
 module Distributions
 
+export BoxDistribution
+export CurveBoxDistribution
+export CurveDistribution
 export DistributionConfiguration
 export DistributionGraphConfiguration
 export DistributionGraphData
+export DistributionStyle
 export DistributionsGraphConfiguration
 export DistributionsGraphData
+export ViolinBoxDistribution
+export ViolinDistribution
 export distribution_graph
 export distributions_graph
 
@@ -17,42 +23,39 @@ using ..Common
 using ..Utilities
 using ..Validations
 
-import ..Utilities.Maybe  # For static analysis.
+import ..Validations.Maybe
+
+"""
+Possible styles for visualizing a distribution:
+
+`CurveDistribution` - a density curve (the default).
+
+`ViolinDistribution` - same as a density curve but mirrored below the values axis.
+
+`BoxDistribution` - a box with whiskers to show important distribution values.
+
+`CurveBoxDistribution` - combine a curve and a box.
+
+`ViolinBoxDistribution` - combine a violin and a box.
+"""
+@enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution CurveBoxDistribution ViolinBoxDistribution
 
 """
     @kwdef mutable struct DistributionConfiguration <: Validated
-        values_orientation::ValuesOrientation = HorizontalValues
-        show_box::Bool = false
-        show_violin::Bool = false
-        show_curve::Bool = true
+        style::DistributionStyle = CurveDistribution
         show_outliers::Bool = false
         color::Maybe{AbstractString} = nothing
     end
 
 Configure the style of a distribution graph.
 
-The `values_orientation` controls which axis is used for the values (the other axis is used for the density). By default
-the values are shown on the Y axis (vertical values).
-
-If `show_box`, show a box graph.
-
-If `show_violin`, show a violin graph.
-
-If `show_curve`, show a density curve. This is the default.
-
-You can combine the above; however, a density curve is just the positive side of a violin graph, so you can't combine
-the two.
-
-In addition to the (combination) of the above, if `show_outliers`, also show the extreme (outlier) points.
+If `style` uses a box, then if `show_outliers`, also show the extreme (outlier) points.
 
 The `color` is chosen automatically by default. When showing multiple distributions, you can override it per each one in
 the [`DistributionsGraphData`](@ref).
 """
 @kwdef mutable struct DistributionConfiguration <: Validated
-    values_orientation::ValuesOrientation = HorizontalValues
-    show_box::Bool = false
-    show_violin::Bool = false
-    show_curve::Bool = true
+    style::DistributionStyle = CurveDistribution
     show_outliers::Bool = false
     color::Maybe{AbstractString} = nothing
 end
@@ -61,29 +64,19 @@ function Validations.validate(
     context::ValidationContext,
     distribution_configuration::DistributionConfiguration,
 )::Maybe{AbstractString}
-    if !distribution_configuration.show_box &&
-       !distribution_configuration.show_violin &&
-       !distribution_configuration.show_curve
+    if distribution_configuration.show_outliers &&
+       !(distribution_configuration.style in (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution))
         throw(
             ArgumentError(
-                "must specify at least one of: " *
-                "$(location(context)).show_box, " *
-                "$(location(context)).show_violin, " *
-                "$(location(context)).show_curve",
-            ),
-        )
-    end
-
-    if distribution_configuration.show_violin && distribution_configuration.show_curve
-        throw(
-            ArgumentError(
-                "must not specify both of: " * "$(location(context)).show_violin, " * "$(location(context)).show_curve",
+                "specified $(location(context)).show_outliers\n" *
+                "for non-box $(location(context)).style: $(distribution_configuration.style)",
             ),
         )
     end
 
     validate_in(context, "color") do
-        return validate_is_color(context, distribution_configuration.color)
+        validate_is_color(context, distribution_configuration.color)
+        return nothing
     end
 
     return nothing
@@ -92,6 +85,7 @@ end
 """
     @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
+        values_orientation::ValuesOrientation = HorizontalValues
         distribution::DistributionConfiguration = DistributionConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration()
         value_bands::BandsConfiguration = BandsConfiguration()
@@ -102,6 +96,7 @@ Configure a graph for showing a single distribution.
 @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
+    values_orientation::ValuesOrientation = HorizontalValues
     value_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
 end
@@ -110,18 +105,10 @@ function Validations.validate(
     context::ValidationContext,
     configuration::DistributionGraphConfiguration,
 )::Maybe{AbstractString}
-    validate_in(context, "figure") do
-        return validate(context, configuration.figure)
-    end
-    validate_in(context, "distribution") do
-        return validate(context, configuration.distribution)
-    end
-    validate_in(context, "value_axis") do
-        return validate(context, configuration.value_axis)
-    end
-    validate_in(context, "value_bands") do
-        return validate(context, configuration.value_bands, "value_axis", configuration.value_axis)
-    end
+    validate_field(context, "figure", configuration.figure)
+    validate_field(context, "distribution", configuration.distribution)
+    validate_field(context, "value_axis", configuration.value_axis)
+    validate_field(context, "value_bands", configuration.value_bands, configuration.value_axis)
 
     return nothing
 end
@@ -130,54 +117,45 @@ end
     @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         distribution::DistributionConfiguration = DistributionConfiguration()
+        values_orientation::ValuesOrientation = HorizontalValues
         value_axis::AxisConfiguration = AxisConfiguration()
+        value_bands::BandsConfiguration = BandsConfiguration()
+        distributions_gap::Maybe{Real} = 0.05
         show_legend::Bool = false
-        overlay_distributions::Bool = false
-        distributions_gap::Maybe{Real} = nothing
     end
 
 Configure a graph for showing multiple distributions.
 
 This is similar to [`DistributionGraphConfiguration`](@ref), with additions to deal with having multiple distributions.
 
-If `show_legend`, we add a legend listing the distributions. If `overlay_distributions`, we plot the distributions on
-top of one another. Otherwise, `distributions_gap` can be used to adjust the amount of space between the distribution
-plots.
+If `distributions_gap` is set to `nothing`, overlay the distributions on top of each other. Otherwise, the distributions
+are plotted next to each other, with the `distributions_gap` specified as a fraction of the used graph size. If zero the
+graphs will be adjacent, if 1 then the gaps will be the same size as the graphs.
 
-!!! note
-
-    Adjusting the `distributions_gap` will end badly if using `show_curve`, because Plotly.
+If `show_legend`, we add a legend listing the distributions.
 """
 @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    distribution::DistributionConfiguration = DistributionConfiguration(; show_curve = false, show_box = true)
+    distribution::DistributionConfiguration = DistributionConfiguration()
+    values_orientation::ValuesOrientation = HorizontalValues
     value_axis::AxisConfiguration = AxisConfiguration()
+    distributions_gap::Maybe{Real} = 0.05
     show_legend::Bool = false
-    overlay_distributions::Bool = false
-    distributions_gap::Maybe{Real} = nothing
 end
 
 function Validations.validate(
     context::ValidationContext,
     configuration::DistributionsGraphConfiguration,
 )::Maybe{AbstractString}
-    validate_in(context, "figure") do
-        validate(context, configuration.figure)
-        return nothing
-    end
-    validate_in(context, "distribution") do
-        validate(context, configuration.distribution)
-        return nothing
-    end
-    validate_in(context, "value_axis") do
-        validate(context, configuration.value_axis)
-        return nothing
-    end
+    validate_field(context, "figure", configuration.figure)
+    validate_field(context, "distribution", configuration.distribution)
+    validate_field(context, "value_axis", configuration.value_axis)
 
-    validate_in(context, "distributions_gap") do
-        validate_is_at_least(context, configuration.distributions_gap, 0)
-        validate_is_below(context, configuration.distributions_gap, 1)
-        return nothing
+    validate_is_at_least(context, configuration.distributions_gap, 0)
+    validate_is_below(context, configuration.distributions_gap, 1)
+
+    if configuration.distribution.style == BoxDistribution && configuration.distributions_gap === nothing
+        throw(ArgumentError("no $(location(context)).distributions_gap specified for box distributions"))
     end
 
     return nothing
@@ -190,13 +168,14 @@ end
         trace_axis_title::Maybe{AbstractString} = nothing
         distribution_values::AbstractVector{<:Real} = Float32[]
         distribution_name::Maybe{AbstractString} = nothing
+        distribution_color::Maybe{AbstractString} = nothing
         value_bands::BandsData = BandsData()
     end
 
 By default, all the titles are empty. You can specify the overall `figure_title` as well as the `value_axis_title` and
-the `trace_axis_title`. The optional `distribution_name` is used as the tick value for the distribution. You can also
-specify the bands offsets here if they are more of a data than a configuration parameter in the specific graph. This
-will override whatever is specified in the configuration.
+the `trace_axis_title`. The optional `distribution_name` is used as the name of the density axis. You can also specify
+the `distribution_color` and/or `value_bands` offsets here if they are more of a data than a configuration parameter in
+the specific graph. This will override whatever is specified in the configuration.
 """
 @kwdef mutable struct DistributionGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -204,6 +183,7 @@ will override whatever is specified in the configuration.
     trace_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{<:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
+    distribution_color::Maybe{AbstractString} = nothing
     value_bands::BandsData = BandsData()
 end
 
@@ -259,11 +239,13 @@ function Validations.validate(context::ValidationContext, data::DistributionsGra
     )
 
     validate_vector_entries(context, "distributions_colors", data.distributions_colors) do _, distribution_color
-        return validate_is_color(context, distribution_color)
+        validate_is_color(context, distribution_color)
+        return nothing
     end
 
     validate_vector_entries(context, "distributions_values", data.distributions_values) do _, distribution_values
-        return validate_vector_is_not_empty(context, distribution_values)
+        validate_vector_is_not_empty(context, distribution_values)
+        return nothing
     end
 
     return nothing
@@ -347,9 +329,24 @@ function distributions_graph(;
     )
 end
 
-const BOX = 1
-const VIOLIN = 2
-const CURVE = 4
+function Common.validate_graph(graph::DistributionGraph)::Nothing
+    validate_graph_bands(
+        "value_bands",
+        graph.configuration.value_bands,
+        graph.data.value_bands,
+        graph.configuration.value_axis,
+    )
+    return nothing
+end
+
+function Common.validate_graph(graph::DistributionsGraph)::Nothing
+    validate_is_below(
+        ValidationContext(["graph.configuration.distributions_gap"]),
+        graph.configuration.distributions_gap,
+        0.5 / length(graph.data.distributions_values),
+    )
+    return nothing
+end
 
 function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
@@ -361,235 +358,222 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     push!(
         traces,
         distribution_trace(;  # NOJET
-            distribution_values = graph.data.distribution_values,
-            distribution_name = graph.data.distribution_name === nothing ? "Trace" : graph.data.distribution_name,
-            color = graph.configuration.distribution.color,
+            values = graph.data.distribution_values,
+            name = prefer_data(graph.data.distribution_name, "Trace"),
+            color = prefer_data(graph.data.distribution_color, graph.configuration.distribution.color),
             legend_title = nothing,
             configuration = graph.configuration,
-            overlay_distributions = false,
             implicit_values_range,
         ),
     )
 
-    layout = distribution_layout(;
-        graph = graph,
-        has_tick_names = graph.data.distribution_name !== nothing,
-        show_legend = false,
-        distributions_gap = nothing,
-        implicit_values_range,
-    )
-
-    return plotly_figure(traces, layout)
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range))
 end
 
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    if graph.configuration.distributions_gap !== nothing && graph.configuration.distribution.show_curve
-        @warn "setting the distributions_gap for curve is buggy in plotly"
-    end
-
-    if graph.configuration.distributions_gap === nothing
-        graph.configuration.distributions_gap = 0.05
-    end
-
     implicit_values_range = Vector{Maybe{Float32}}([nothing, nothing])
 
     n_distributions = length(graph.data.distributions_values)
+
     traces = [
         distribution_trace(;
-            distribution_values = graph.data.distributions_values[index],
-            distribution_name = if graph.data.distributions_names === nothing
-                "Trace $(index)"
-            else
-                graph.data.distributions_names[index]
-            end,
-            color = if graph.data.distributions_colors === nothing
-                graph.configuration.distribution.color
-            else
-                graph.data.distributions_colors[index]
-            end,
+            values = graph.data.distributions_values[index],
+            name = prefer_data(
+                graph.data.distributions_names,
+                index,
+                graph.configuration.distributions_gap === nothing ? nothing : "Trace $(index)",
+            ),
+            color = prefer_data(graph.data.distributions_colors, index, graph.configuration.distribution.color),
             legend_title = graph.data.legend_title,
             configuration = graph.configuration,
-            overlay_distributions = graph.configuration.overlay_distributions,
-            is_first = index == 1,
+            sub_graph = SubGraph(; index = index, overlay = graph.configuration.distributions_gap === nothing),
             implicit_values_range,
+            scale_group = "Distributions",
         ) for index in 1:n_distributions
     ]
 
-    layout = distribution_layout(;
-        graph = graph,
-        has_tick_names = graph.data.distributions_names !== nothing,
-        show_legend = graph.configuration.show_legend,
-        distributions_gap = graph.configuration.distributions_gap,
-        implicit_values_range,
-    )
-
-    return plotly_figure(traces, layout)
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range))
 end
 
 function distribution_trace(;
-    distribution_values::AbstractVector{<:Real},
-    distribution_name::AbstractString,
+    values::AbstractVector{<:Real},
+    name::Maybe{AbstractString},
     color::Maybe{AbstractString},
     legend_title::Maybe{AbstractString},
     configuration::Union{DistributionGraphConfiguration, DistributionsGraphConfiguration},
-    overlay_distributions::Bool,
-    is_first::Bool = true,
+    sub_graph::Maybe{SubGraph} = nothing,
     implicit_values_range::Vector{Maybe{Float32}},
+    scale_group::Maybe{AbstractString} = nothing,
 )::GenericTrace
-    style = (
-        (configuration.distribution.show_box ? BOX : 0) |
-        (configuration.distribution.show_violin ? VIOLIN : 0) |
-        (configuration.distribution.show_curve ? CURVE : 0)
-    )
+    scaled_values = scale_axis_values(configuration.value_axis, values)
+    range_of(scaled_values, implicit_values_range)
+    @assert !any(implicit_values_range .=== nothing)
 
-    scaled_values = scale_axis_values(configuration.value_axis, distribution_values)
-    for value in scaled_values
-        if value !== nothing && implicit_values_range[1] === nothing || implicit_values_range[1] > value
-            implicit_values_range[1] = value
-        end
-        if value !== nothing && implicit_values_range[2] === nothing || implicit_values_range[2] < value
-            implicit_values_range[2] = value
-        end
-    end
-
-    if configuration.distribution.values_orientation == VerticalValues
-        x = nothing
+    if configuration.values_orientation == VerticalValues
         y = scaled_values
-        x0 = overlay_distributions ? " " : nothing
+        x = nothing
+
+        yaxis = nothing
         y0 = nothing
-    elseif configuration.distribution.values_orientation == HorizontalValues
+
+        if sub_graph === nothing
+            xaxis = nothing
+            x0 = nothing
+        else
+            xaxis = sub_graph.overlay || sub_graph.index == 1 ? "x" : "x$(sub_graph.index)"
+            x0 = 0
+        end
+
+    elseif configuration.values_orientation == HorizontalValues
         x = scaled_values
         y = nothing
+
+        xaxis = nothing
         x0 = nothing
-        y0 = overlay_distributions ? " " : nothing
+
+        if sub_graph === nothing
+            yaxis = nothing
+            y0 = nothing
+        else
+            yaxis = sub_graph.overlay || sub_graph.index == 1 ? "y" : "y$(sub_graph.index)"
+            y0 = 0
+        end
+
     else
         @assert false
     end
 
-    points = configuration.distribution.show_outliers ? "outliers" : false
-    tracer = style == BOX ? box : violin
-
+    tracer = configuration.distribution.style == BoxDistribution ? box : violin
     return tracer(;
-        x = x,
-        y = y,
-        x0 = x0,
-        y0 = y0,
-        side = configuration.distribution.show_curve ? "positive" : nothing,
-        box_visible = configuration.distribution.show_box,
-        boxpoints = points,
-        points = points,
-        name = distribution_name,
+        x,
+        y,
+        xaxis,
+        yaxis,
+        x0,
+        y0,
+        side = configuration.distribution.style in (CurveDistribution, CurveBoxDistribution) ? "positive" : nothing,
+        box_visible = configuration.distribution.style in
+                      (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution),
+        points = if configuration.distribution.style in (ViolinBoxDistribution, CurveBoxDistribution) &&
+                    configuration.distribution.show_outliers
+            "outliers"
+        else
+            false
+        end,
+        boxpoints = if configuration.distribution.style == BoxDistribution && configuration.distribution.show_outliers
+            "outliers"
+        else
+            false
+        end,
+        name,
         marker_color = color,
-        legendgroup = distribution_name,
-        legendgrouptitle_text = is_first ? legend_title : nothing,
+        legendgroup = "Distributions",
+        legendgrouptitle_text = sub_graph !== nothing && sub_graph.index == 1 ? legend_title : nothing,
+        scalegroup = scale_group,
+        spanmode = "hard",
     )
 end
 
 function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
-    has_tick_names::Bool,
-    show_legend::Bool,
-    distributions_gap::Maybe{Real},
     implicit_values_range::Vector{Maybe{Float32}},
 )::Layout
-    if graph.configuration.distribution.show_outliers
-        implicit_values_range .*= [0.99, 1.01]  # NOJET
+    expand_range!(implicit_values_range)
+    scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
+
+    shapes = Shape[]
+
+    if graph.configuration.values_orientation == VerticalValues
+        values_axis_letter = "y"
+        distributions_axis_letter = "x"
+    elseif graph.configuration.values_orientation == HorizontalValues
+        values_axis_letter = "x"
+        distributions_axis_letter = "y"
+    else
+        @assert false
     end
 
-    explicit_values_range = scale_axis_values(
-        graph.configuration.value_axis,
-        [graph.configuration.value_axis.minimum, graph.configuration.value_axis.maximum],
-    )
-
-    scaled_values_range = [
-        explicit_value === nothing ? implicit_value : explicit_value for
-        (explicit_value, implicit_value) in zip(explicit_values_range, implicit_values_range)
-    ]
-
-    shapes = nothing
-
-    if graph.configuration.distribution.values_orientation == VerticalValues
-        xaxis_showticklabels = has_tick_names
-        xaxis_title = graph.data.trace_axis_title
-        xaxis_range = (nothing, nothing)
-        xaxis_tickprefix = nothing
-        xaxis_ticksuffix = nothing
-        xaxis_zeroline = nothing
-
-        yaxis_showticklabels = graph.configuration.figure.show_ticks
-        yaxis_showgrid = graph.configuration.figure.show_grid
-        yaxis_title = graph.data.value_axis_title
-        yaxis_range = scaled_values_range
-        yaxis_tickprefix, yaxis_ticksuffix = axis_ticksformat(graph.configuration.value_axis)
-        yaxis_zeroline = graph.configuration.value_axis.log_scale === nothing ? nothing : false
-
-        if graph isa DistributionGraph
-            shapes = horizontal_bands_shapes(
+    if graph isa DistributionGraph
+        if graph.configuration.values_orientation == VerticalValues
+            push_horizontal_bands_shapes(
+                shapes,
+                graph.configuration.value_axis,
+                scaled_values_range,
+                graph.data.value_bands,
+                graph.configuration.value_bands,
+            )
+        elseif graph.configuration.values_orientation == HorizontalValues
+            push_vertical_bands_shapes(
+                shapes,
                 graph.configuration.value_axis,
                 scaled_values_range,
                 graph.data.value_bands,
                 graph.configuration.value_bands,
             )
         end
+        show_legend = false
+    else
+        show_legend = graph.configuration.show_legend
+    end
 
-    elseif graph.configuration.distribution.values_orientation == HorizontalValues
-        xaxis_showticklabels = graph.configuration.figure.show_ticks
-        xaxis_title = graph.data.value_axis_title
-        xaxis_range = scaled_values_range
-        xaxis_tickprefix, xaxis_ticksuffix = axis_ticksformat(graph.configuration.value_axis)
-        xaxis_zeroline = graph.configuration.value_axis.log_scale === nothing ? nothing : false
+    layout = Layout(;  # NOJET
+        title = graph.data.figure_title,
+        showlegend = show_legend,
+        legend_tracegroupgap = 0,
+        legend_itemdoubleclick = false,
+        shapes,
+    )
 
-        yaxis_showticklabels = has_tick_names
-        yaxis_showgrid = false
-        yaxis_title = graph.data.trace_axis_title
-        yaxis_range = (nothing, nothing)
-        yaxis_tickprefix = nothing
-        yaxis_ticksuffix = nothing
-        yaxis_zeroline = nothing
+    layout["$(values_axis_letter)axis"] = Dict(
+        :showgrid => graph.configuration.figure.show_grid,
+        :gridcolor => prefer_data(graph.configuration.figure.grid_color, "lightgrey"),
+        :title => graph.data.value_axis_title,
+        :range => scaled_values_range,
+        :tickprefix => axis_ticks_prefix(graph.configuration.value_axis),
+        :ticksuffix => axis_ticks_suffix(graph.configuration.value_axis),
+        :zeroline => graph.configuration.value_axis.log_scale === nothing ? nothing : false,
+    )
 
-        if graph isa DistributionGraph
-            shapes = vertical_bands_shapes(
-                graph.configuration.value_axis,
-                scaled_values_range,
-                graph.data.value_bands,
-                graph.configuration.value_bands,
+    if graph isa DistributionGraph
+        layout["$(distributions_axis_letter)axis"] = Dict(
+            :showgrid => graph.configuration.figure.show_grid,
+            :gridcolor => prefer_data(graph.configuration.figure.grid_color, "lightgrey"),
+            :showticklabels => false,
+            :title => graph.data.distribution_name,
+        )
+
+    elseif graph isa DistributionsGraph
+        n_distributions = length(graph.data.distributions_values)  # NOJET
+
+        distributions_gap = graph.configuration.distributions_gap
+        for index in 1:n_distributions
+            if distributions_gap === nothing || n_distributions == 1
+                domain = nothing
+            else
+                graph_size = 1 / (n_distributions + (n_distributions - 1) * distributions_gap)
+                gap_size = graph_size * distributions_gap
+                domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
+            end
+
+            layout[index == 1 ? "$(distributions_axis_letter)axis" : "$(distributions_axis_letter)axis$(index)"] = Dict(
+                :showgrid => graph.configuration.figure.show_grid,
+                :gridcolor => prefer_data(graph.configuration.figure.grid_color, "lightgrey"),
+                :showticklabels => false,
+                :title => if distributions_gap === nothing
+                    nothing
+                else
+                    prefer_data(graph.data.distributions_names, index, "Trace $(index)")
+                end,
+                :domain => domain,
             )
         end
     else
         @assert false
     end
 
-    layout = Layout(;  # NOJET
-        title = graph.data.figure_title,
-        xaxis_showgrid = graph.configuration.figure.show_grid,
-        xaxis_gridcolor = graph.configuration.figure.grid_color,
-        xaxis_showticklabels = xaxis_showticklabels,
-        xaxis_title = xaxis_title,
-        xaxis_range = xaxis_range,
-        xaxis_tickprefix = xaxis_tickprefix,
-        xaxis_ticksuffix = xaxis_ticksuffix,
-        xaxis_zeroline = xaxis_zeroline,
-        yaxis_showgrid = yaxis_showgrid,
-        yaxis_gridcolor = graph.configuration.figure.grid_color,
-        yaxis_showticklabels = yaxis_showticklabels,
-        yaxis_title = yaxis_title,
-        yaxis_range = yaxis_range,
-        yaxis_tickprefix = yaxis_tickprefix,
-        yaxis_ticksuffix = yaxis_ticksuffix,
-        yaxis_zeroline = yaxis_zeroline,
-        showlegend = show_legend,
-        legend_tracegroupgap = 0,
-        legend_itemdoubleclick = false,
-        violingroupgap = distributions_gap === nothing ? nothing : 0,
-        boxgroupgap = distributions_gap === nothing ? nothing : 0,
-        boxgap = distributions_gap,
-        violingap = distributions_gap,
-        shapes,
-    )
-
-    return graph_layout(graph.configuration.figure, layout)
+    return patch_layout!(graph.configuration.figure, layout)
 end
 
-end
+end  # module

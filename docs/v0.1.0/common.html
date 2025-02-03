@@ -73,6 +73,10 @@
 </ul>
 </li>
 <li>
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+</li>
+<li>
 <a class="tocitem" href="utilities.html">Utilities
 </a>
 </li>
@@ -314,10 +318,9 @@
     margins::MarginsConfiguration = MarginsConfiguration()
     width::Maybe{Int} = nothing
     height::Maybe{Int} = nothing
-    template::AbstractString = &quot;simple_white&quot;
+    template::Maybe{AbstractString} = nothing
     show_grid::Bool = true
-    grid_color::AbstractString = &quot;lightgrey&quot;
-    show_ticks::Bool = true
+    grid_color::Maybe{AbstractString} = nothing
 end
 </code>
 </pre>
@@ -339,21 +342,15 @@ end
 </p>
 <p>By default, 
 <code>show_grid
-</code> and 
-<code>show_ticks
-</code> are set.
+</code> is set.
 </p>
 <p>The default 
 <code>template
 </code> is &quot;simple
-<em>white&quot; which is the cleanest. The `show
+<em>white&quot; which is the cleanest (we also force the background color to white if this is the cae). The `show
 </em>grid
-<code>and
-</code>show
-<em>ticks
-<code>can be used to disable the grid and/or ticks for an even cleaner (but less informative) look, and the
-</code>grid
-</em>color` can also be changed.
+<code>flag can be used to disable the grid for an even cleaner (but less informative) look, and the
+</code>grid_color` can also be changed.
 </p>
 </div>
 </section>
@@ -438,6 +435,49 @@ end
 </p>
 <p>The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able to control log scale and/or percent scaling without changing anything else.
 </p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.SizeConfiguration" href="#SomeGraphs.Common.SizeConfiguration">
+<code>SomeGraphs.Common.SizeConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct SizeConfiguration &lt;: Validated
+    smallest::Maybe{Real} = nothing
+    largest::Maybe{Real} = nothing
+end
+</code>
+</pre>
+<p>Configure the range of sizes in pixels (1/96th of an inch) to map the sizes data into. If no bounds are given, and also the 
+<code>size_axis
+</code> scale is linear, then we assume the sizes data is just the size in pixels. Otherwise, by default we use 2 pixels for the 
+<code>smallest
+</code> size and make the 
+<code>largest
+</code> size be 8 pixels larger than the 
+<code>smallest
+</code> size. Sizes must be positive.
+</p>
+<div class="admonition is-info">
+<header class="admonition-header">Note
+</header>
+<div class="admonition-body">
+<p>A zero size disables drawing the entity.
+</p>
+</div>
+</div>
 </div>
 </section>
 </article>
@@ -546,8 +586,20 @@ end
 </li>
 <li>
 <p>
-<code>DashedLine
+<code>DashLine
 </code> draws a dashed line.
+</p>
+</li>
+<li>
+<p>
+<code>DotLine
+</code> draws a dotted line.
+</p>
+</li>
+<li>
+<p>
+<code>DashDotLine
+</code> draws a dash-dotted line.
 </p>
 </li>
 </ul>
@@ -612,6 +664,10 @@ end
 </code> bands are for the &quot;outer&quot; regions (so their lines are at their border, dashed by default) and the 
 <code>middle
 </code> band is for the &quot;inner&quot; region between them (so its line is inside it, solid by default).
+</p>
+<p>If 
+<code>show_legend
+</code>, then a legend showing the bands will be shown.
 </p>
 </div>
 </section>
@@ -682,7 +738,7 @@ end
 end
 </code>
 </pre>
-<p>Override or specify the offsets for tha bands in the data instead of the configuration. Similarly to colors, whether the offset is a data or a configuration parameters depends on the specific graph.
+<p>Specify data for bands.
 </p>
 </div>
 </section>
@@ -780,7 +836,11 @@ end
 <div>
 <p>A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make it easy to invoke the API from other languages such as Python which do not have the concept of a 
 <code>Pair
-</code>.
+</code>. The 
+<code>legend_title
+</code> is only used if 
+<code>show_legend
+</code> is set in the configuration.
 </p>
 </div>
 </section>
@@ -800,9 +860,7 @@ end
 </header>
 <section>
 <div>
-<p>A categorical colors palette, mapping string values to colors. We also allow specifying tuples instead of pairs to make it easy to invoke the API from other languages such as Python which do not have the concept of a 
-<code>Pair
-</code>.
+<p>A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown.
 </p>
 </div>
 </section>
@@ -993,6 +1051,37 @@ end
 </div>
 </section>
 </article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.SubGraph" href="#SomeGraphs.Common.SubGraph">
+<code>SomeGraphs.Common.SubGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef struct SubGraph
+    index::Integer
+    overlay::Bool
+end
+</code>
+</pre>
+<p>Identify one sub-graph out of a set of adjacent graphs. If the 
+<code>index
+</code> is 1, this is the 1st sub-graph (used top initialize some values such as the legend group title). If 
+<code>overlay
+</code> then the sub-graphs are plotted on top of each other, which affects axis parameters.
+</p>
+</div>
+</section>
+</article>
 <h2 id="Index">
 <a class="docs-heading-anchor" href="#Index">Index
 </a>
@@ -1117,6 +1206,18 @@ end
 </a>
 </li>
 <li>
+<a href="common.html#SomeGraphs.Common.SizeConfiguration">
+<code>SomeGraphs.Common.SizeConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.SubGraph">
+<code>SomeGraphs.Common.SubGraph
+</code>
+</a>
+</li>
+<li>
 <a href="common.html#SomeGraphs.Common.ValuesOrientation">
 <code>SomeGraphs.Common.ValuesOrientation
 </code>
@@ -1133,7 +1234,7 @@ end
 <nav class="docs-footer">
 <a class="docs-footer-prevpage" href="validations.html">« Validations
 </a>
-<a class="docs-footer-nextpage" href="utilities.html">Utilities »
+<a class="docs-footer-nextpage" href="distributions.html">Distributions »
 </a>
 <div class="flexbox-break">
 </div>

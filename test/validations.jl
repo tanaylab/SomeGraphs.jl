@@ -13,7 +13,7 @@ nested_test("validations") do
         end
 
         nested_test("path") do
-            @test location(ValidationContext(["foo", "bar", 1, 2, "baz"])) == "foo.bar[1, 2].baz"
+            @test location(ValidationContext(["foo", "bar", 1, 2, "baz", "[vaz]"])) == "foo.bar[1, 2].baz[vaz]"
         end
     end
 
@@ -68,6 +68,34 @@ nested_test("validations") do
         validate_is_color(context, "#FF0000")
         validate_is_color(context, "#FF0000FF")
         @test_throws "invalid foo_color: Oobleck" validate_is_color(context, "Oobleck")
+    end
+
+    nested_test("dict") do
+        context = ValidationContext(["foo"])
+
+        dict = Dict(["bar" => 1])
+
+        nested_test("empty") do
+            validate_dict_is_not_empty(context, "bar", dict)
+            empty!(dict)
+            @test_throws "empty dict foo.bar" validate_dict_is_not_empty(context, "bar", dict)
+        end
+
+        nested_test("entries") do
+            validate_dict_entries(context, "baz", dict) do key, value
+                @test key == "bar"
+                return validate_is_at_most(context, value, 1)
+            end
+
+            @test_throws dedent("""
+                too high foo.baz[bar]: 1
+                is not below: 1
+            """) begin
+                validate_dict_entries(context, "baz", dict) do key, value
+                    return validate_is_below(context, value, 1)
+                end
+            end
+        end
     end
 
     nested_test("vector") do
