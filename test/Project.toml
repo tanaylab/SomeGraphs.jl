@@ -1,3 +1,5 @@
 [deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 NestedTests = "c7752788-e2db-4f03-8189-845608b41f97"
+PlotlyDocumenter = "9b90f1cd-2639-4507-8b17-2fbe371ceceb"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

@@ -318,9 +318,10 @@
     margins::MarginsConfiguration = MarginsConfiguration()
     width::Maybe{Int} = nothing
     height::Maybe{Int} = nothing
-    template::Maybe{AbstractString} = nothing
     show_grid::Bool = true
     grid_color::Maybe{AbstractString} = nothing
+    background_color::Maybe{AbstractString} = nothing
+    paper_color::Maybe{AbstractString} = nothing
 end
 </code>
 </pre>
@@ -342,19 +343,131 @@ end
 </p>
 <p>By default, 
 <code>show_grid
-</code> is set.
-</p>
-<p>The default 
-<code>template
-</code> is &quot;simple
-<em>white&quot; which is the cleanest (we also force the background color to white if this is the cae). The `show
-</em>grid
-<code>flag can be used to disable the grid for an even cleaner (but less informative) look, and the
-</code>grid_color` can also be changed.
+</code> is set. It can be used to disable the grid for an even cleaner (but less informative) look. You can also manually change the 
+<code>grid_color
+</code>, 
+<code>background_color
+</code> and 
+<code>paper_color
+</code>.
 </p>
 </div>
 </section>
 </article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Default (serves as a baseline to compare with when modifying options):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='lF5OzaqUNa' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("lF5OzaqUNa")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Reduced size:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.figure.width = 300
+graph.configuration.figure.height = 300
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='8M6IIfxAiJ' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("8M6IIfxAiJ")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Disable grid:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.figure.show_grid = false
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='VOEBplskSO' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("VOEBplskSO")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":false,"gridcolor":"lightgrey","range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":false,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Change colors:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.figure.grid_color = &quot;black&quot;
+graph.configuration.figure.background_color = &quot;lightyellow&quot;
+graph.configuration.figure.paper_color = &quot;lightgrey&quot;
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='fgEGKQvIVS' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("fgEGKQvIVS")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"black","range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"lightyellow","showlegend":false,"gridcolor":"black","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
 <article class="docstring">
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
@@ -384,6 +497,40 @@ end
 </div>
 </section>
 </article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Increased margins:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.figure.margins.left = 100
+graph.configuration.figure.margins.right = 200
+graph.configuration.figure.margins.top = 150
+graph.configuration.figure.margins.bottom = 250
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='uKl6JXVMHl' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("uKl6JXVMHl")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
 <article class="docstring">
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
@@ -438,6 +585,159 @@ end
 </div>
 </section>
 </article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Override range:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.minimum = 1
+graph.configuration.value_axis.maximum = 4
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='pdbhQTHfXe' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("pdbhQTHfXe")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","range":[1,4]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Percent:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.percent = 1
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='XFjU2rP4ui' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("XFjU2rP4ui")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,100.0,100.0,100.0,300.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.LogScale" href="#SomeGraphs.Common.LogScale">
+<code>SomeGraphs.Common.LogScale
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Supported log scales (when log scaling is enabled):
+</p>
+<ul>
+<li>
+<p>
+<code>Log10Scale
+</code> converts values to their log (base 10).
+</p>
+</li>
+<li>
+<p>
+<code>Log2Scale
+</code> converts values to their log (base 2).
+</p>
+</li>
+</ul>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Log 2:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.log_scale = Log2Scale
+graph.configuration.value_axis.log_regularization = 1
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='8ERqu0mnAT' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("8ERqu0mnAT")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,2.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Log 10:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.log_scale = Log10Scale
+graph.configuration.value_axis.log_regularization = 1e-5
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='IcJyilRvt6' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("IcJyilRvt6")
+    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"showgrid":true,"plot_bgcolor":"white","showlegend":false,"gridcolor":"lightgrey","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
 <article class="docstring">
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
@@ -523,40 +823,6 @@ end
 <code>color
 </code> is chosen automatically.
 </p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Common.LogScale" href="#SomeGraphs.Common.LogScale">
-<code>SomeGraphs.Common.LogScale
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>Supported log scales (when log scaling is enabled):
-</p>
-<ul>
-<li>
-<p>
-<code>Log10Scale
-</code> converts values to their log (base 10).
-</p>
-</li>
-<li>
-<p>
-<code>Log2Scale
-</code> converts values to their log (base 2).
-</p>
-</li>
-</ul>
 </div>
 </section>
 </article>

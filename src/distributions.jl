@@ -42,12 +42,15 @@ Possible styles for visualizing a distribution:
 
 """
     @kwdef mutable struct DistributionConfiguration <: Validated
+        values_orientation::ValuesOrientation = HorizontalValues
         style::DistributionStyle = CurveDistribution
         show_outliers::Bool = false
         color::Maybe{AbstractString} = nothing
     end
 
-Configure the style of a distribution graph.
+Configure the style of the distribution(s) in a graph.
+
+The `values_orientation` will determine the overall orientation of the graph.
 
 If `style` uses a box, then if `show_outliers`, also show the extreme (outlier) points.
 
@@ -55,6 +58,7 @@ The `color` is chosen automatically by default. When showing multiple distributi
 the [`DistributionsGraphData`](@ref).
 """
 @kwdef mutable struct DistributionConfiguration <: Validated
+    values_orientation::ValuesOrientation = HorizontalValues
     style::DistributionStyle = CurveDistribution
     show_outliers::Bool = false
     color::Maybe{AbstractString} = nothing
@@ -85,7 +89,6 @@ end
 """
     @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        values_orientation::ValuesOrientation = HorizontalValues
         distribution::DistributionConfiguration = DistributionConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration()
         value_bands::BandsConfiguration = BandsConfiguration()
@@ -96,7 +99,6 @@ Configure a graph for showing a single distribution.
 @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
-    values_orientation::ValuesOrientation = HorizontalValues
     value_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
 end
@@ -117,11 +119,8 @@ end
     @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         distribution::DistributionConfiguration = DistributionConfiguration()
-        values_orientation::ValuesOrientation = HorizontalValues
         value_axis::AxisConfiguration = AxisConfiguration()
-        value_bands::BandsConfiguration = BandsConfiguration()
         distributions_gap::Maybe{Real} = 0.05
-        show_legend::Bool = false
     end
 
 Configure a graph for showing multiple distributions.
@@ -131,16 +130,12 @@ This is similar to [`DistributionGraphConfiguration`](@ref), with additions to d
 If `distributions_gap` is set to `nothing`, overlay the distributions on top of each other. Otherwise, the distributions
 are plotted next to each other, with the `distributions_gap` specified as a fraction of the used graph size. If zero the
 graphs will be adjacent, if 1 then the gaps will be the same size as the graphs.
-
-If `show_legend`, we add a legend listing the distributions.
 """
 @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
-    values_orientation::ValuesOrientation = HorizontalValues
     value_axis::AxisConfiguration = AxisConfiguration()
     distributions_gap::Maybe{Real} = 0.05
-    show_legend::Bool = false
 end
 
 function Validations.validate(
@@ -152,7 +147,6 @@ function Validations.validate(
     validate_field(context, "value_axis", configuration.value_axis)
 
     validate_is_at_least(context, configuration.distributions_gap, 0)
-    validate_is_below(context, configuration.distributions_gap, 1)
 
     if configuration.distribution.style == BoxDistribution && configuration.distributions_gap === nothing
         throw(ArgumentError("no $(location(context)).distributions_gap specified for box distributions"))
@@ -165,22 +159,20 @@ end
     @kwdef mutable struct DistributionGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
-        trace_axis_title::Maybe{AbstractString} = nothing
         distribution_values::AbstractVector{<:Real} = Float32[]
         distribution_name::Maybe{AbstractString} = nothing
         distribution_color::Maybe{AbstractString} = nothing
         value_bands::BandsData = BandsData()
     end
 
-By default, all the titles are empty. You can specify the overall `figure_title` as well as the `value_axis_title` and
-the `trace_axis_title`. The optional `distribution_name` is used as the name of the density axis. You can also specify
-the `distribution_color` and/or `value_bands` offsets here if they are more of a data than a configuration parameter in
-the specific graph. This will override whatever is specified in the configuration.
+By default, all the titles are empty. You can specify the overall `figure_title` as well as the `value_axis_title`. The
+optional `distribution_name` is used as the name of the density axis. You can also specify the `distribution_color`
+and/or `value_bands` offsets here, if they are more of a data than a configuration parameter in the specific graph. This
+will override whatever is specified in the configuration.
 """
 @kwdef mutable struct DistributionGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
-    trace_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{<:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
     distribution_color::Maybe{AbstractString} = nothing
@@ -196,23 +188,19 @@ end
     @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
-        trace_axis_title::Maybe{AbstractString} = nothing
-        legend_title::Maybe{AbstractString} = nothing
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
     end
 
 The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall
-`figure_title` as well as the `value_axis_title`, the `trace_axis_title` and the `legend_title` (if `show_legend` is
-set). If specified, the `distributions_names` and/or the `distributions_colors` vectors must contain the same number of
-elements as the number of vectors in the `distributions_values`.
+`figure_title` as well as the `value_axis_title`. If specified, the `distributions_names` and/or the
+`distributions_colors` vectors must contain the same number of elements as the number of vectors in the
+`distributions_values`.
 """
 @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
-    trace_axis_title::Maybe{AbstractString} = nothing
-    legend_title::Maybe{AbstractString} = nothing
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -261,7 +249,6 @@ DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
     distribution_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         value_axis_title::Maybe{AbstractString} = nothing,
-        trace_axis_title::Maybe{AbstractString} = nothing,
         distribution_values::AbstractVector{<:Real} = Float32[],
         distribution_name::Maybe{AbstractString} = nothing],
     )::DistributionGraph
@@ -271,18 +258,11 @@ Create a [`DistributionGraph`](@ref) by initializing only the [`DistributionGrap
 function distribution_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
-    trace_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{<:Real} = Float32[],
     distribution_name::Maybe{AbstractString} = nothing,
 )::DistributionGraph
     return DistributionGraph(
-        DistributionGraphData(;
-            figure_title,
-            value_axis_title,
-            trace_axis_title,
-            distribution_values,
-            distribution_name,
-        ),
+        DistributionGraphData(; figure_title, value_axis_title, distribution_values, distribution_name),
         DistributionGraphConfiguration(),
     )
 end
@@ -297,8 +277,6 @@ DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfigurati
     distributions_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         value_axis_title::Maybe{AbstractString} = nothing,
-        trace_axis_title::Maybe{AbstractString} = nothing,
-        legend_title::Maybe{AbstractString} = nothing,
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing],
@@ -309,8 +287,6 @@ Create a [`DistributionsGraph`](@ref) by initializing only the [`DistributionsGr
 function distributions_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
-    trace_axis_title::Maybe{AbstractString} = nothing,
-    legend_title::Maybe{AbstractString} = nothing,
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
@@ -319,8 +295,6 @@ function distributions_graph(;
         DistributionsGraphData(;
             figure_title,
             value_axis_title,
-            trace_axis_title,
-            legend_title,
             distributions_values,
             distributions_names,
             distributions_colors,
@@ -339,15 +313,6 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
     return nothing
 end
 
-function Common.validate_graph(graph::DistributionsGraph)::Nothing
-    validate_is_below(
-        ValidationContext(["graph.configuration.distributions_gap"]),
-        graph.configuration.distributions_gap,
-        0.5 / length(graph.data.distributions_values),
-    )
-    return nothing
-end
-
 function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
@@ -361,7 +326,6 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
             values = graph.data.distribution_values,
             name = prefer_data(graph.data.distribution_name, "Trace"),
             color = prefer_data(graph.data.distribution_color, graph.configuration.distribution.color),
-            legend_title = nothing,
             configuration = graph.configuration,
             implicit_values_range,
         ),
@@ -380,13 +344,8 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
     traces = [
         distribution_trace(;
             values = graph.data.distributions_values[index],
-            name = prefer_data(
-                graph.data.distributions_names,
-                index,
-                graph.configuration.distributions_gap === nothing ? nothing : "Trace $(index)",
-            ),
+            name = prefer_data(graph.data.distributions_names, index, nothing),
             color = prefer_data(graph.data.distributions_colors, index, graph.configuration.distribution.color),
-            legend_title = graph.data.legend_title,
             configuration = graph.configuration,
             sub_graph = SubGraph(; index = index, overlay = graph.configuration.distributions_gap === nothing),
             implicit_values_range,
@@ -401,7 +360,6 @@ function distribution_trace(;
     values::AbstractVector{<:Real},
     name::Maybe{AbstractString},
     color::Maybe{AbstractString},
-    legend_title::Maybe{AbstractString},
     configuration::Union{DistributionGraphConfiguration, DistributionsGraphConfiguration},
     sub_graph::Maybe{SubGraph} = nothing,
     implicit_values_range::Vector{Maybe{Float32}},
@@ -411,7 +369,7 @@ function distribution_trace(;
     range_of(scaled_values, implicit_values_range)
     @assert !any(implicit_values_range .=== nothing)
 
-    if configuration.values_orientation == VerticalValues
+    if configuration.distribution.values_orientation == VerticalValues
         y = scaled_values
         x = nothing
 
@@ -426,7 +384,7 @@ function distribution_trace(;
             x0 = 0
         end
 
-    elseif configuration.values_orientation == HorizontalValues
+    elseif configuration.distribution.values_orientation == HorizontalValues
         x = scaled_values
         y = nothing
 
@@ -469,8 +427,6 @@ function distribution_trace(;
         end,
         name,
         marker_color = color,
-        legendgroup = "Distributions",
-        legendgrouptitle_text = sub_graph !== nothing && sub_graph.index == 1 ? legend_title : nothing,
         scalegroup = scale_group,
         spanmode = "hard",
     )
@@ -485,10 +441,10 @@ function distribution_layout(;
 
     shapes = Shape[]
 
-    if graph.configuration.values_orientation == VerticalValues
+    if graph.configuration.distribution.values_orientation == VerticalValues
         values_axis_letter = "y"
         distributions_axis_letter = "x"
-    elseif graph.configuration.values_orientation == HorizontalValues
+    elseif graph.configuration.distribution.values_orientation == HorizontalValues
         values_axis_letter = "x"
         distributions_axis_letter = "y"
     else
@@ -496,7 +452,7 @@ function distribution_layout(;
     end
 
     if graph isa DistributionGraph
-        if graph.configuration.values_orientation == VerticalValues
+        if graph.configuration.distribution.values_orientation == VerticalValues
             push_horizontal_bands_shapes(
                 shapes,
                 graph.configuration.value_axis,
@@ -504,7 +460,7 @@ function distribution_layout(;
                 graph.data.value_bands,
                 graph.configuration.value_bands,
             )
-        elseif graph.configuration.values_orientation == HorizontalValues
+        elseif graph.configuration.distribution.values_orientation == HorizontalValues
             push_vertical_bands_shapes(
                 shapes,
                 graph.configuration.value_axis,
@@ -513,18 +469,9 @@ function distribution_layout(;
                 graph.configuration.value_bands,
             )
         end
-        show_legend = false
-    else
-        show_legend = graph.configuration.show_legend
     end
 
-    layout = Layout(;  # NOJET
-        title = graph.data.figure_title,
-        showlegend = show_legend,
-        legend_tracegroupgap = 0,
-        legend_itemdoubleclick = false,
-        shapes,
-    )
+    layout = Layout(; title = graph.data.figure_title, showlegend = false, shapes)  # NOJET
 
     layout["$(values_axis_letter)axis"] = Dict(
         :showgrid => graph.configuration.figure.show_grid,
@@ -537,12 +484,8 @@ function distribution_layout(;
     )
 
     if graph isa DistributionGraph
-        layout["$(distributions_axis_letter)axis"] = Dict(
-            :showgrid => graph.configuration.figure.show_grid,
-            :gridcolor => prefer_data(graph.configuration.figure.grid_color, "lightgrey"),
-            :showticklabels => false,
-            :title => graph.data.distribution_name,
-        )
+        layout["$(distributions_axis_letter)axis"] =
+            Dict(:showticklabels => false, :title => graph.data.distribution_name)
 
     elseif graph isa DistributionsGraph
         n_distributions = length(graph.data.distributions_values)  # NOJET
@@ -564,7 +507,7 @@ function distribution_layout(;
                 :title => if distributions_gap === nothing
                     nothing
                 else
-                    prefer_data(graph.data.distributions_names, index, "Trace $(index)")
+                    prefer_data(graph.data.distributions_names, index, nothing)
                 end,
                 :domain => domain,
             )

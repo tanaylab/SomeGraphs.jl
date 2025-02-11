@@ -1,3 +1,4 @@
+using Documenter
 using Test
 
 using SomeGraphs
@@ -152,6 +153,10 @@ function test_legend(set_title::Function, graph::Graph, path_prefix::AbstractStr
     end
 
     return nothing
+end
+
+nested_test("doctests") do
+    return doctest(SomeGraphs; manual = "src")
 end
 
 mkpath("actual")

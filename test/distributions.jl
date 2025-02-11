@@ -4,7 +4,7 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
 
         for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
             nested_test(name) do
-                graph.configuration.values_orientation = orientation
+                graph.configuration.distribution.values_orientation = orientation
 
                 nested_test("()") do
                     test_html(graph, "$(plurality).$(kind).$(name).html")
@@ -98,13 +98,6 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                     end
 
                 elseif plurality == "distributions"
-                    nested_test("legend") do
-                        graph.configuration.show_legend = true
-                        graph.data.distributions_names = ["Foo", "Bar"]
-                        test_html(graph, "$(plurality).$(kind).$(name).legend.html")
-                        return nothing
-                    end
-
                     nested_test("!gap") do
                         graph.configuration.distributions_gap = nothing
 
@@ -115,15 +108,6 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                             )
                         else
                             test_html(graph, "$(plurality).$(kind).$(name).!gap.html")
-                            return nothing
-                        end
-                    end
-
-                    if kind !== "box"
-                        nested_test("legend!gap") do
-                            graph.configuration.show_legend = true
-                            graph.configuration.distributions_gap = nothing
-                            test_html(graph, "$(plurality).$(kind).$(name).legend!gap.html")
                             return nothing
                         end
                     end

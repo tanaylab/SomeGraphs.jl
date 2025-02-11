@@ -112,7 +112,7 @@ Validate that the combination of data and configuration in a graph is valid, aft
 isn't invoked manually, instead it is called by the overall `validate` of the graph. It is provided (with a default
 empty implementation) to allow for type-specific validations.
 """
-function validate_graph(::Graph)::Maybe{AbstractString}  # UNTESTED
+function validate_graph(::Graph)::Maybe{AbstractString}
     return nothing
 end
 
@@ -188,9 +188,10 @@ end
         margins::MarginsConfiguration = MarginsConfiguration()
         width::Maybe{Int} = nothing
         height::Maybe{Int} = nothing
-        template::Maybe{AbstractString} = nothing
         show_grid::Bool = true
         grid_color::Maybe{AbstractString} = nothing
+        background_color::Maybe{AbstractString} = nothing
+        paper_color::Maybe{AbstractString} = nothing
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -199,11 +200,8 @@ Generic configuration that applies to the whole figure. Each complete [`Abstract
 The optional `width` and `height` are in pixels, that is, 1/96 of an inch. The `margins` are specified in the same
 units.
 
-By default, `show_grid` is set.
-
-The default `template` is "simple_white" which is the cleanest (we also force the background color to white if this is
-the cae). The `show_grid` flag can be used to disable the grid for an even cleaner (but less informative) look, and the
-`grid_color` can also be changed.
+By default, `show_grid` is set. It can be used to disable the grid for an even cleaner (but less informative) look. You
+can also manually change the `grid_color`, `background_color` and `paper_color`.
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
@@ -212,6 +210,8 @@ the cae). The `show_grid` flag can be used to disable the grid for an even clean
     template::Maybe{AbstractString} = nothing
     show_grid::Bool = true
     grid_color::Maybe{AbstractString} = nothing
+    background_color::Maybe{AbstractString} = nothing
+    paper_color::Maybe{AbstractString} = nothing
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -226,6 +226,14 @@ function Validations.validate(context::ValidationContext, figure_configuration::
     end
     validate_in(context, "grid_color") do
         validate_is_color(context, figure_configuration.grid_color)
+        return nothing
+    end
+    validate_in(context, "background_color") do
+        validate_is_color(context, figure_configuration.background_color)
+        return nothing
+    end
+    validate_in(context, "paper_color") do
+        validate_is_color(context, figure_configuration.paper_color)
         return nothing
     end
     return nothing

@@ -183,9 +183,13 @@ function patch_layout!(figure_configuration::FigureConfiguration, layout::Layout
         :b => figure_configuration.margins.bottom,
     )
 
-    layout["template"] = prefer_data(figure_configuration.template, "simple_white")
+    layout["template"] = "simple_white" # TODO: This doesn't really use `simple_white`, but it makes things cleaner.
     layout["width"] = prefer_data(figure_configuration.width, nothing)
     layout["height"] = prefer_data(figure_configuration.height, nothing)
+    layout["showgrid"] = figure_configuration.show_grid
+    layout["gridcolor"] = prefer_data(figure_configuration.grid_color, "lightgrey")
+    layout["plot_bgcolor"] = prefer_data(figure_configuration.background_color, "white")
+    layout["paper_bgcolor"] = prefer_data(figure_configuration.paper_color, "white")
 
     return layout
 end
@@ -982,7 +986,7 @@ end
 
 function prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_value::Any)::Any
     if data_values !== nothing
-        return data_values[index]
+        return data_values[index]  # UNTESTED
     else
         return configuration_value
     end
