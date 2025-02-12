@@ -48,7 +48,7 @@ Possible styles for visualizing a distribution:
         values_orientation::ValuesOrientation = HorizontalValues
         style::DistributionStyle = CurveDistribution
         show_outliers::Bool = false
-        color::Maybe{AbstractString} = nothing
+        line::LineConfiguration = LineConfiguration(; is_filled = true)
     end
 
 Configure the style of the distribution(s) in a graph.
@@ -57,14 +57,15 @@ The `values_orientation` will determine the overall orientation of the graph.
 
 If `style` uses a box, then if `show_outliers`, also show the extreme (outlier) points.
 
-The `color` is chosen automatically by default. When showing multiple distributions, you can override it per each one in
-the [`DistributionsGraphData`](@ref).
+The `line.color` is chosen automatically by default. When showing multiple distributions, you can override it per each
+one in the [`DistributionsGraphData`](@ref). By default, the distribution is filled. Plotly only allows for solid lines
+for distributions, and always fills histogram plots without any line.
 """
 @kwdef mutable struct DistributionConfiguration <: Validated
     values_orientation::ValuesOrientation = HorizontalValues
     style::DistributionStyle = CurveDistribution
     show_outliers::Bool = false
-    color::Maybe{AbstractString} = nothing
+    line::LineConfiguration = LineConfiguration(; is_filled = true)
 end
 
 function Validations.validate(
@@ -81,9 +82,30 @@ function Validations.validate(
         )
     end
 
-    validate_in(context, "color") do
-        validate_is_color(context, distribution_configuration.color)
-        return nothing
+    validate_field(context, "line", distribution_configuration.line)
+
+    if distribution_configuration.line.style != SolidLine
+        throw(ArgumentError("unsupported $(location(context)).line.style: $(distribution_configuration.line.style)"))
+    end
+
+    if distribution_configuration.style == HistogramDistribution
+        if distribution_configuration.line.width !== nothing
+            throw(
+                ArgumentError(
+                    "unsupported $(location(context)).line.width: $(distribution_configuration.line.width)\n" *
+                    "for $(location(context)).style: $(distribution_configuration.style)",
+                ),
+            )
+        end
+
+        if !distribution_configuration.line.is_filled
+            throw(
+                ArgumentError(
+                    "unsupported $(location(context)).line.is_filled: $(distribution_configuration.line.is_filled)\n" *
+                    "for $(location(context)).style: $(distribution_configuration.style)",
+                ),
+            )
+        end
     end
 
     return nothing
@@ -328,7 +350,9 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
         distribution_trace(;  # NOJET
             values = graph.data.distribution_values,
             name = prefer_data(graph.data.distribution_name, "Trace"),
-            color = prefer_data(graph.data.distribution_color, graph.configuration.distribution.color),
+            color = prefer_data(graph.data.distribution_color, graph.configuration.distribution.line.color),
+            width = graph.configuration.distribution.line.width,
+            is_filled = graph.configuration.distribution.line.is_filled,
             configuration = graph.configuration,
             implicit_values_range,
         ),
@@ -348,7 +372,9 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
         distribution_trace(;
             values = graph.data.distributions_values[index],
             name = prefer_data(graph.data.distributions_names, index, nothing),
-            color = prefer_data(graph.data.distributions_colors, index, graph.configuration.distribution.color),
+            color = prefer_data(graph.data.distributions_colors, index, graph.configuration.distribution.line.color),
+            width = graph.configuration.distribution.line.width,
+            is_filled = graph.configuration.distribution.line.is_filled,
             configuration = graph.configuration,
             sub_graph = SubGraph(; index = index, overlay = graph.configuration.distributions_gap === nothing),
             implicit_values_range,
@@ -365,6 +391,8 @@ function distribution_trace(;
     values::AbstractVector{<:Real},
     name::Maybe{AbstractString},
     color::Maybe{AbstractString},
+    width::Maybe{Real},
+    is_filled::Bool,
     configuration::Union{DistributionGraphConfiguration, DistributionsGraphConfiguration},
     sub_graph::Maybe{SubGraph} = nothing,
     implicit_values_range::Vector{Maybe{Float32}},
@@ -415,6 +443,7 @@ function distribution_trace(;
     else
         tracer = violin
     end
+
     return tracer(;
         x,
         y,
@@ -437,7 +466,9 @@ function distribution_trace(;
             false
         end,
         name,
-        marker_color = color,
+        line_color = color,
+        line_width = width,
+        fillcolor = is_filled ? fill_color(color) : "transparent",
         scalegroup = scale_group,
         spanmode = "hard",
     )
@@ -492,7 +523,6 @@ function distribution_layout(;
         :range => scaled_values_range,
         :tickprefix => axis_ticks_prefix(graph.configuration.value_axis),
         :ticksuffix => axis_ticks_suffix(graph.configuration.value_axis),
-        :zeroline => graph.configuration.value_axis.log_scale === nothing ? nothing : false,
     )
 
     if graph isa DistributionGraph

@@ -358,7 +358,7 @@ Styles of drawing a line
 
 """
     @kwdef mutable struct LineConfiguration <: Validated
-        width::Real = 1
+        width::Maybe{Real} = nothing
         style::Maybe{LineStyle} = SolidLine
         is_filled::Bool = false
         color::Maybe{AbstractString} = nothing
@@ -373,7 +373,7 @@ is filled. A line with no style and no filled is not drawn but can still be used
 By default, the `color` is chosen automatically.
 """
 @kwdef mutable struct LineConfiguration <: Validated
-    width::Real = 1
+    width::Maybe{Real} = nothing
     style::Maybe{LineStyle} = SolidLine
     is_filled::Bool = false
     color::Maybe{AbstractString} = nothing

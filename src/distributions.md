@@ -136,7 +136,18 @@ Color (if it is more of a configuration parameter than data):
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
-graph.configuration.distribution.color = "red"
+graph.configuration.distribution.line.color = "red"
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Line width and disable fill:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.line.width = 4
+graph.configuration.distribution.line.is_filled = false
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -237,7 +248,7 @@ You can also apply any of the distribution and/or value axis configuration optio
 using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
 graph.configuration.distribution.values_orientation = VerticalValues
-graph.configuration.distribution.color = "red"
+graph.configuration.distribution.line.color = "red"
 graph.configuration.distribution.style = BoxDistribution
 graph.configuration.distribution.show_outliers = true
 using PlotlyDocumenter

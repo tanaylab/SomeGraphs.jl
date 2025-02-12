@@ -11,6 +11,40 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                     return nothing
                 end
 
+                nested_test("line") do
+                    nested_test("~style") do
+                        graph.configuration.distribution.line.style = DotLine
+                        @test_throws "unsupported graph.configuration.distribution.line.style: DotLine" validate(
+                            ValidationContext(["graph"]),
+                            graph,
+                        )
+                    end
+
+                    if kind == "histogram"
+                        nested_test("~width") do
+                            graph.configuration.distribution.line.width = 4
+                            @test_throws dedent("""
+                                unsupported graph.configuration.distribution.line.width: 4
+                                for graph.configuration.distribution.style: HistogramDistribution
+                            """) validate(ValidationContext(["graph"]), graph)
+                        end
+
+                        nested_test("~fill") do
+                            graph.configuration.distribution.line.is_filled = false
+                            @test_throws dedent("""
+                                unsupported graph.configuration.distribution.line.is_filled: false
+                                for graph.configuration.distribution.style: HistogramDistribution
+                            """) validate(ValidationContext(["graph"]), graph)
+                        end
+                    else
+                        graph.configuration.distribution.line.color = "red"
+                        graph.configuration.distribution.line.width = 4
+                        graph.configuration.distribution.line.is_filled = false
+                        test_html(graph, "$(plurality).$(kind).$(name).line.html")
+                        return nothing
+                    end
+                end
+
                 nested_test("outliers") do
                     graph.configuration.distribution.show_outliers = true
                     if contains(kind, "box")

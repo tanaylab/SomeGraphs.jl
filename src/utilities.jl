@@ -8,6 +8,7 @@ export axis_ticks_prefix
 export axis_ticks_suffix
 export final_scaled_range
 export expand_range!
+export fill_color
 export patch_layout!
 export plotly_figure
 export prefer_data
@@ -940,7 +941,12 @@ function push_fill_path(  # UNTESTED
     return nothing
 end
 
-function fill_color(::Nothing)::Nothing  # UNTESTED
+"""
+    fill_color(line_color::Maybe{AbstractString})::Maybe{AbstractString}
+
+Return a fill color based on a `line_color`. The fill color is twice as transparent as the line color.
+"""
+function fill_color(::Nothing)::Nothing
     return nothing
 end
 
