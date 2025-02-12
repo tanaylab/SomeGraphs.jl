@@ -465,19 +465,15 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing)::Nothing
 <pre>
 <code class="language-julia hljs">scale_axis_values(
     axis_configuration::AxisConfiguration,
-    values::AbstractVector{&lt;:Maybe{Real}},
-)::AbstractVector{&lt;:Maybe{Real}}
-scale_axis_values(
-    axis_configuration::AxisConfiguration,
-    values::Nothing,
-)::Nothing
+    values::Maybe{AbstractVector{&lt;:Maybe{Real}}},
+)::Maybe{AbstractVector{&lt;:Maybe{Real}}}
 </code>
 </pre>
 <p>Scale a vector of 
 <code>values
 </code> according to the 
 <code>axis_configuration
-</code>. This deals with log scales and percent scaling.
+</code>. This deals with log scales and percent scaling, as well as clamping the values to the allowed range.
 </p>
 </div>
 </section>
@@ -499,15 +495,10 @@ scale_axis_values(
 <div>
 <pre>
 <code class="language-julia hljs">scale_size_values(
-    size_configuration::SizeConfiguration,
     axis_configuration::AxisConfiguration,
-    values::AbstractVector{&lt;:Maybe{Real}},
-)::AbstractVector{&lt;:Maybe{Real}}
-scale_size_values(
     size_configuration::SizeConfiguration,
-    axis_configuration::AxisConfiguration,
-    values::Nothing,
-)::Nothing
+    values::Maybe{AbstractVector{&lt;:Real}},
+)::Maybe{AbstractVector{&lt;:Real}}
 </code>
 </pre>
 <p>Scale a vector of 

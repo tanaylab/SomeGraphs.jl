@@ -86,30 +86,18 @@ nested_test("common") do
         validate(context, size)
 
         nested_test("smallest") do
-            size.smallest = -1
+            size.smallest = 0
             @test_throws dedent("""
-                too low size.smallest: -1
-                is not at least: 0
-            """) validate(context, size)
-        end
-
-        nested_test("largest") do
-            size.largest = 0
-            @test_throws dedent("""
-                too low size.largest: 0
+                too low size.smallest: 0
                 is not above: 0
             """) validate(context, size)
         end
 
-        nested_test("range") do
-            size.smallest = 1
-            size.largest = 2
-            validate(context, size)
-
-            size.largest = 1
+        nested_test("span") do
+            size.span = 0
             @test_throws dedent("""
-                range low limit size.smallest: 1
-                is not below high limit size.largest: 1
+                too low size.span: 0
+                is not above: 0
             """) validate(context, size)
         end
     end

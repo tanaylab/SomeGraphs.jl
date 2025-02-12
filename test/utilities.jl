@@ -83,76 +83,70 @@ nested_test("utilities") do
     end
 
     nested_test("scale_size_values") do
-        sizes = [1, 2, 3, nothing]
+        sizes = [1, 2, 3]
         axis_configuration = AxisConfiguration()
 
         nested_test("default") do
-            @test scale_size_values(SizeConfiguration(), axis_configuration, sizes) === sizes
+            @test scale_size_values(axis_configuration, SizeConfiguration(), sizes) == [2, 6, 10]
         end
 
         nested_test("smallest") do
             return test_same_values(
-                scale_size_values(SizeConfiguration(; smallest = 0), axis_configuration, sizes),
-                [0, 4, 8, nothing],
+                scale_size_values(axis_configuration, SizeConfiguration(; smallest = 0), sizes),
+                [0, 4, 8],
             )
         end
 
-        nested_test("largest") do
+        nested_test("span") do
             return test_same_values(
-                scale_size_values(SizeConfiguration(; largest = 4), axis_configuration, sizes),
-                [2, 3, 4, nothing],
+                scale_size_values(axis_configuration, SizeConfiguration(; span = 2), sizes),
+                [2, 3, 4],
             )
         end
 
         nested_test("both") do
             return test_same_values(
-                scale_size_values(SizeConfiguration(; smallest = 10, largest = 20), axis_configuration, sizes),
-                [10, 15, 20, nothing],
+                scale_size_values(axis_configuration, SizeConfiguration(; smallest = 10, span = 20), sizes),
+                [10, 20, 30],
             )
         end
 
         nested_test("same") do
-            sizes = [1, nothing]
-            return test_same_values(
-                scale_size_values(SizeConfiguration(; smallest = 10, largest = 20), axis_configuration, sizes),
-                [10, nothing],
-            )
+            sizes = [1]
+            return test_same_values(scale_size_values(axis_configuration, SizeConfiguration(), sizes), [2])
         end
 
         nested_test("nothing") do
-            sizes = [nothing]
-            @test scale_size_values(SizeConfiguration(; smallest = 0), axis_configuration, sizes) === sizes
+            sizes = nothing
+            @test scale_size_values(axis_configuration, SizeConfiguration(; smallest = 0), sizes) === sizes
         end
 
         nested_test("log2") do
-            sizes = [1, 2, 4, nothing]
+            sizes = [1, 2, 4]
             axis_configuration = AxisConfiguration(; log_scale = Log2Scale)
 
             nested_test("()") do
-                return test_same_values(
-                    scale_size_values(SizeConfiguration(), axis_configuration, sizes),
-                    [2, 6, 10, nothing],
-                )
+                return test_same_values(scale_size_values(axis_configuration, SizeConfiguration(), sizes), [2, 6, 10])
             end
 
             nested_test("smallest") do
                 return test_same_values(
-                    scale_size_values(SizeConfiguration(; smallest = 0), axis_configuration, sizes),
-                    [0, 4, 8, nothing],
+                    scale_size_values(axis_configuration, SizeConfiguration(; smallest = 0), sizes),
+                    [0, 4, 8],
                 )
             end
 
             nested_test("largest") do
                 return test_same_values(
-                    scale_size_values(SizeConfiguration(; largest = 4), axis_configuration, sizes),
-                    [2, 3, 4, nothing],
+                    scale_size_values(axis_configuration, SizeConfiguration(; span = 2), sizes),
+                    [2, 3, 4],
                 )
             end
 
             nested_test("both") do
                 return test_same_values(
-                    scale_size_values(SizeConfiguration(; smallest = 10, largest = 20), axis_configuration, sizes),
-                    [10, 15, 20, nothing],
+                    scale_size_values(axis_configuration, SizeConfiguration(; smallest = 10, span = 20), sizes),
+                    [10, 20, 30],
                 )
             end
         end

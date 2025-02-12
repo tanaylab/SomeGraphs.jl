@@ -158,16 +158,6 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
-Size of gap between distributions
-
-```@example
-using SomeGraphs
-graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
-graph.configuration.distributions_gap = 1.0
-using PlotlyDocumenter
-to_documenter(graph.figure)
-```
-
 ```@docs
 SomeGraphs.Distributions.DistributionsGraphConfiguration
 ```
@@ -182,6 +172,39 @@ graph = distributions_graph(;
     figure_title = "Figure title",
     value_axis_title = "Values title",
 )
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Size of gap between distributions:
+
+```@example
+using SomeGraphs
+graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
+graph.configuration.distributions_gap = 1.0
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Overlay the distributions:
+
+```@example
+using SomeGraphs
+graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
+graph.configuration.distributions_gap = nothing
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Overlay the distributions with a legend:
+
+```@example
+using SomeGraphs
+graph = distributions_graph(;
+    distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]],
+    distributions_names = ["Foo", "Bar"],
+)
+graph.configuration.distributions_gap = nothing
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

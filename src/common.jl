@@ -189,9 +189,9 @@ end
         width::Maybe{Int} = nothing
         height::Maybe{Int} = nothing
         show_grid::Bool = true
-        grid_color::Maybe{AbstractString} = nothing
-        background_color::Maybe{AbstractString} = nothing
-        paper_color::Maybe{AbstractString} = nothing
+        grid_color::AbstractString = "lightgrey"
+        background_color::AbstractString = "white"
+        paper_color::AbstractString = "white"
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -209,9 +209,9 @@ can also manually change the `grid_color`, `background_color` and `paper_color`.
     height::Maybe{Int} = nothing
     template::Maybe{AbstractString} = nothing
     show_grid::Bool = true
-    grid_color::Maybe{AbstractString} = nothing
-    background_color::Maybe{AbstractString} = nothing
-    paper_color::Maybe{AbstractString} = nothing
+    grid_color::AbstractString = "lightgrey"
+    background_color::AbstractString = "white"
+    paper_color::AbstractString = "white"
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -259,34 +259,28 @@ Supported log scales (when log scaling is enabled):
 
 """
     @kwdef mutable struct SizeConfiguration <: Validated
-        smallest::Maybe{Real} = nothing
-        largest::Maybe{Real} = nothing
+        smallest::Real = 2
+        span::Real = 8
     end
 
-Configure the range of sizes in pixels (1/96th of an inch) to map the sizes data into. If no bounds are given, and also
-the `size_axis` scale is linear, then we assume the sizes data is just the size in pixels. Otherwise, by default we use
-2 pixels for the `smallest` size and make the `largest` size be 8 pixels larger than the `smallest` size. Sizes must be
-positive.
-
-!!! note
-
-    A zero size disables drawing the entity.
+Configure the range of sizes in pixels (1/96th of an inch) to map the sizes data By default we use 2 pixels for the
+`smallest` size, and add to it an additional `span` of pixel sizes be 8 to get the largest size. Both the `smallest`
+size and `span` of sizes must be positive.
 """
 @kwdef mutable struct SizeConfiguration <: Validated
-    smallest::Maybe{Real} = nothing
-    largest::Maybe{Real} = nothing
+    smallest::Real = 2
+    span::Real = 8
 end
 
 function Validations.validate(context::ValidationContext, size_configuration::SizeConfiguration)::Nothing
     validate_in(context, "smallest") do
-        validate_is_at_least(context, size_configuration.smallest, 0)
+        validate_is_above(context, size_configuration.smallest, 0)
         return nothing
     end
-    validate_in(context, "largest") do
-        validate_is_above(context, size_configuration.largest, 0)
+    validate_in(context, "span") do
+        validate_is_above(context, size_configuration.span, 0)
         return nothing
     end
-    validate_is_range(context, "smallest", size_configuration.smallest, "largest", size_configuration.largest)
     return nothing
 end
 

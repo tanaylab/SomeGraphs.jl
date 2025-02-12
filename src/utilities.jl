@@ -187,9 +187,9 @@ function patch_layout!(figure_configuration::FigureConfiguration, layout::Layout
     layout["width"] = prefer_data(figure_configuration.width, nothing)
     layout["height"] = prefer_data(figure_configuration.height, nothing)
     layout["showgrid"] = figure_configuration.show_grid
-    layout["gridcolor"] = prefer_data(figure_configuration.grid_color, "lightgrey")
-    layout["plot_bgcolor"] = prefer_data(figure_configuration.background_color, "white")
-    layout["paper_bgcolor"] = prefer_data(figure_configuration.paper_color, "white")
+    layout["gridcolor"] = figure_configuration.grid_color
+    layout["plot_bgcolor"] = figure_configuration.background_color
+    layout["paper_bgcolor"] = figure_configuration.paper_color
 
     return layout
 end
@@ -265,6 +265,13 @@ end
 Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling.
 """
 function scale_axis_value(axis_configuration::AxisConfiguration, value::Real)::Real
+    if axis_configuration.minimum !== nothing && value < axis_configuration.minimum
+        value = axis_configuration.minimum  # UNTESTED
+    end
+    if axis_configuration.maximum !== nothing && value > axis_configuration.maximum  # NOJET
+        value = axis_configuration.maximum  # UNTESTED
+    end
+
     if axis_configuration.percent
         scale = 100.0
     else
@@ -290,28 +297,26 @@ end
 """
     scale_axis_values(
         axis_configuration::AxisConfiguration,
-        values::AbstractVector{<:Maybe{Real}},
-    )::AbstractVector{<:Maybe{Real}}
-    scale_axis_values(
-        axis_configuration::AxisConfiguration,
-        values::Nothing,
-    )::Nothing
+        values::Maybe{AbstractVector{<:Maybe{Real}}},
+    )::Maybe{AbstractVector{<:Maybe{Real}}}
 
-Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling.
+Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling, as
+well as clamping the values to the allowed range.
 """
 function scale_axis_values(
     axis_configuration::AxisConfiguration,
-    values::AbstractVector{<:Maybe{Real}},
-)::AbstractVector{<:Maybe{Real}}
-    if !axis_configuration.percent && axis_configuration.log_scale === nothing
+    values::Maybe{AbstractVector{<:Maybe{Real}}},
+)::Maybe{AbstractVector{<:Maybe{Real}}}
+    if values === nothing
+        return nothing  # UNTESTED
+    elseif !axis_configuration.percent &&
+           axis_configuration.log_scale === nothing &&
+           axis_configuration.minimum === nothing &&
+           axis_configuration.maximum === nothing
         return values
     else
         return [scale_axis_value(axis_configuration, value) for value in values]
     end
-end
-
-function scale_axis_values(::AxisConfiguration, ::Nothing)::Nothing  # UNTESTED
-    return nothing
 end
 
 """
@@ -334,64 +339,38 @@ function final_scaled_range(
         (explicit_scaled, implicit_scaled) in zip(explicit_scaled_range, implicit_scaled_range)
     ]
 
-    @assert scaled_range[1] < scaled_range[2] "empty scaled XS range"
-
     return scaled_range
 end
 
 """
     scale_size_values(
-        size_configuration::SizeConfiguration,
         axis_configuration::AxisConfiguration,
-        values::AbstractVector{<:Maybe{Real}},
-    )::AbstractVector{<:Maybe{Real}}
-    scale_size_values(
         size_configuration::SizeConfiguration,
-        axis_configuration::AxisConfiguration,
-        values::Nothing,
-    )::Nothing
+        values::Maybe{AbstractVector{<:Real}},
+    )::Maybe{AbstractVector{<:Real}}
 
 Scale a vector of `values` according to the `axis_configuration` and `size_configuration`.
 """
 function scale_size_values(
-    size_configuration::SizeConfiguration,
     axis_configuration::AxisConfiguration,
-    values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:Maybe{Real}}}},
-)::AbstractVector{<:Maybe{Real}}
-    if axis_configuration.log_scale === nothing &&
-       size_configuration.smallest === nothing &&
-       size_configuration.largest === nothing
-        return values
+    size_configuration::SizeConfiguration,
+    values::Maybe{AbstractVector{<:Real}},
+)::Maybe{AbstractVector{<:Real}}
+    if values === nothing
+        return nothing
+
     else
         scaled_values = scale_axis_values(axis_configuration, values)
+        implicit_values_range = range_of(scaled_values)
+        minimum_scaled_value, maximum_scaled_value = final_scaled_range(implicit_values_range, axis_configuration)
 
-        minimum_scaled_value, maximum_scaled_value = range_of(scaled_values)
-        if minimum_scaled_value === nothing || maximum_scaled_value === nothing
-            return values
+        scaled_values_range = maximum_scaled_value - minimum_scaled_value
+        if scaled_values_range == 0
+            scaled_values_range = 1
         end
 
-        if minimum_scaled_value == maximum_scaled_value
-            maximum_scaled_value += 1
-        end
-
-        if size_configuration.smallest === nothing
-            smallest = 2
-        else
-            smallest = size_configuration.smallest
-        end
-
-        if size_configuration.largest === nothing
-            largest = smallest + 8
-        else
-            largest = size_configuration.largest
-        end
-
-        scaled_to_pixels = (largest - smallest) / (maximum_scaled_value - minimum_scaled_value)
-
-        return [
-            scaled_value === nothing ? nothing : (scaled_value - minimum_scaled_value) * scaled_to_pixels + smallest for
-            scaled_value in scaled_values
-        ]
+        return (scaled_values .- minimum_scaled_value) .* (size_configuration.span / scaled_values_range) .+
+               size_configuration.smallest
     end
 end
 

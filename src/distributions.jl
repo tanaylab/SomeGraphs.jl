@@ -331,7 +331,7 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
         ),
     )
 
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range))
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, show_legend = false))
 end
 
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
@@ -353,7 +353,9 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
         ) for index in 1:n_distributions
     ]
 
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range))
+    show_legend = graph.configuration.distributions_gap === nothing && graph.data.distributions_names !== nothing
+
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, show_legend))
 end
 
 function distribution_trace(;
@@ -435,6 +437,7 @@ end
 function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
     implicit_values_range::Vector{Maybe{Float32}},
+    show_legend::Bool,
 )::Layout
     expand_range!(implicit_values_range)
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
@@ -471,7 +474,7 @@ function distribution_layout(;
         end
     end
 
-    layout = Layout(; title = graph.data.figure_title, showlegend = false, shapes)  # NOJET
+    layout = Layout(; title = graph.data.figure_title, showlegend = show_legend, shapes)  # NOJET
 
     layout["$(values_axis_letter)axis"] = Dict(
         :showgrid => graph.configuration.figure.show_grid,
