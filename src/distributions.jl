@@ -12,6 +12,7 @@ export DistributionGraphData
 export DistributionStyle
 export DistributionsGraphConfiguration
 export DistributionsGraphData
+export HistogramDistribution
 export ViolinBoxDistribution
 export ViolinDistribution
 export distribution_graph
@@ -37,8 +38,10 @@ Possible styles for visualizing a distribution:
 `CurveBoxDistribution` - combine a curve and a box.
 
 `ViolinBoxDistribution` - combine a violin and a box.
+
+`HistogramDistribution` - a histogram of the distribution.
 """
-@enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution CurveBoxDistribution ViolinBoxDistribution
+@enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution CurveBoxDistribution ViolinBoxDistribution HistogramDistribution
 
 """
     @kwdef mutable struct DistributionConfiguration <: Validated
@@ -149,7 +152,7 @@ function Validations.validate(
     validate_is_at_least(context, configuration.distributions_gap, 0)
 
     if configuration.distribution.style == BoxDistribution && configuration.distributions_gap === nothing
-        throw(ArgumentError("no $(location(context)).distributions_gap specified for box distributions"))
+        throw(ArgumentError("overlay (no $(location(context)).distributions_gap specified) for box distributions"))
     end
 
     return nothing
@@ -405,7 +408,13 @@ function distribution_trace(;
         @assert false
     end
 
-    tracer = configuration.distribution.style == BoxDistribution ? box : violin
+    if configuration.distribution.style == BoxDistribution
+        tracer = box
+    elseif configuration.distribution.style == HistogramDistribution
+        tracer = histogram
+    else
+        tracer = violin
+    end
     return tracer(;
         x,
         y,

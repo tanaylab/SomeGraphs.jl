@@ -121,6 +121,16 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+Histogram:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = HistogramDistribution
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 Color (if it is more of a configuration parameter than data):
 
 ```@example

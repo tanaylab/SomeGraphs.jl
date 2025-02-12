@@ -102,7 +102,7 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                         graph.configuration.distributions_gap = nothing
 
                         if kind === "box"
-                            @test_throws "no graph.configuration.distributions_gap specified for box distributions" validate(
+                            @test_throws "overlay (no graph.configuration.distributions_gap specified) for box distributions" validate(
                                 ValidationContext(["graph"]),
                                 graph,
                             )
@@ -149,6 +149,7 @@ nested_test("distribution") do
         ("violin", ViolinDistribution),
         ("violin_box", ViolinBoxDistribution),
         ("box", BoxDistribution),
+        ("histogram", HistogramDistribution),
     )
         test_distributions(graph, "distribution", name) do
             graph.configuration.distribution.style = style
@@ -219,6 +220,7 @@ nested_test("distributions") do
         ("violin", ViolinDistribution),
         ("violin_box", ViolinBoxDistribution),
         ("box", BoxDistribution),
+        ("histogram", HistogramDistribution),
     )
         test_distributions(graph, "distributions", name) do
             graph.configuration.distribution.style = style
