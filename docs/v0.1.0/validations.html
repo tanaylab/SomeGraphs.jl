@@ -586,7 +586,8 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
     validation::Function,
     context::ValidationContext,
     [field::AbstractString,]
-    vector::Maybe{AbstractVector}
+    vector::Maybe{AbstractVector},
+    [mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing]
 )::Nothing
 </code>
 </pre>
@@ -597,6 +598,10 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </code> using the 
 <code>validation
 </code> function. It is given the entry&#39;s index, and its value. The context is updated to include the index for the duration of the function.
+</p>
+<p>If a 
+<code>mask
+</code> is specified, entries with a false value in the mask will not be validated.
 </p>
 </div>
 </section>

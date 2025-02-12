@@ -639,6 +639,74 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing)::Nothing
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.validate_colors" href="#SomeGraphs.Utilities.validate_colors">
+<code>SomeGraphs.Utilities.validate_colors
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_colors(
+    colors_data_context::ValidationContext,
+    colors_data::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}},
+    colors_configuration_context::ValidationContext,
+    colors_configuration::ColorsConfiguration,
+    mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+)::Maybe{AbstractString}
+</code>
+</pre>
+<p>Validate that the 
+<code>colors_data
+</code> from the 
+<code>colors_data_context
+</code> is valid and consistent with the 
+<code>colors_configuration
+</code> from the 
+<code>colors_configuration_context
+</code>. For example, if the color configuration contains a categorical color mapping, this will validate that all the color names in the data are valid keys of this mapping.
+</p>
+<p>If a 
+<code>mask
+</code> is specified, do not validate colors in the data whose matching value in the mask is false.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.fill_color" href="#SomeGraphs.Utilities.fill_color">
+<code>SomeGraphs.Utilities.fill_color
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_color(line_color::Maybe{AbstractString})::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return a fill color based on a 
+<code>line_color
+</code>. The fill color is twice as transparent as the line color.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Utilities.range_of" href="#SomeGraphs.Utilities.range_of">
 <code>SomeGraphs.Utilities.range_of
 </code>
@@ -682,32 +750,6 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing)::Nothing
 </code>
 </pre>
 <p>Expand the range of values by 1% to allow for points and lines at the edge to be fully visible.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.fill_color" href="#SomeGraphs.Utilities.fill_color">
-<code>SomeGraphs.Utilities.fill_color
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">fill_color(line_color::Maybe{AbstractString})::Maybe{AbstractString}
-</code>
-</pre>
-<p>Return a fill color based on a 
-<code>line_color
-</code>. The fill color is twice as transparent as the line color.
 </p>
 </div>
 </section>
@@ -857,6 +899,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.scale_size_values">
 <code>SomeGraphs.Utilities.scale_size_values
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.validate_colors">
+<code>SomeGraphs.Utilities.validate_colors
 </code>
 </a>
 </li>

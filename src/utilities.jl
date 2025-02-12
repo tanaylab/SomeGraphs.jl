@@ -84,16 +84,32 @@ function validate_graph_bands(
     return nothing
 end
 
+"""
+    validate_colors(
+        colors_data_context::ValidationContext,
+        colors_data::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}},
+        colors_configuration_context::ValidationContext,
+        colors_configuration::ColorsConfiguration,
+        mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+    )::Maybe{AbstractString}
+
+Validate that the `colors_data` from the `colors_data_context` is valid and consistent with the `colors_configuration`
+from the `colors_configuration_context`. For example, if the color configuration contains a categorical color mapping,
+this will validate that all the color names in the data are valid keys of this mapping.
+
+If a `mask` is specified, do not validate colors in the data whose matching value in the mask is false.
+"""
 function validate_colors(
     colors_data_context::ValidationContext,
     colors_data::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}},
     colors_configuration_context::ValidationContext,
     colors_configuration::ColorsConfiguration,
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Maybe{AbstractString}
     if colors_data isa AbstractVector{<:AbstractString}
         if colors_configuration.colors_palette isa CategoricalColors
-            validate_vector_entries(colors_data_context, colors_data) do _, color  # NOJET
-                if color !== "" && !haskey(colors_configuration.colors_palette, color)
+            validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
+                if !haskey(colors_configuration.colors_palette, color)
                     throw(
                         ArgumentError(
                             "invalid $(location(colors_data_context)): $(color)\n" *
@@ -135,7 +151,7 @@ function validate_colors(
         end
 
         if colors_configuration.color_axis.log_scale !== nothing
-            validate_vector_entries(colors_data_context, colors_data) do _, color  # NOJET
+            validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
                 if colors_configuration.color_axis.minimum === nothing ||
                    color > colors_configuration.color_axis.minimum
                     validate_in(

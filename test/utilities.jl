@@ -171,15 +171,16 @@ nested_test("utilities") do
             nested_test("pallete") do
                 configuration.colors_palette = Dict("Foo" => "red", "Bar" => "green")
                 data = ["Foo", "Bar", "", "Baz"]
+                mask = [true, true, false, true]
                 @test_throws dedent("""
                     invalid colors_data[4]: Baz
                     does not exist in colors_configuration.colors_palette
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                """) validate_colors(data_context, data, configuration_context, configuration, mask)
             end
 
             nested_test("continuous") do
                 configuration.colors_palette = [0 => "red", 1 => "green"]
-                data = ["Foo", "Bar", "", "Baz"]
+                data = ["Foo", "Bar", "Baz"]
                 @test_throws dedent("""
                     categorical colors colors_data
                     specified for a continuous colors_configuration.colors_palette
@@ -188,7 +189,7 @@ nested_test("utilities") do
 
             nested_test("axis") do
                 configuration.color_axis.percent = true
-                data = ["Foo", "Bar", ""]
+                data = ["Foo", "Bar"]
                 @test_throws dedent("""
                     categorical colors colors_data
                     specified for a continuous colors_configuration.color_axis

@@ -507,7 +507,8 @@ ContinuousColors =
     Union{AbstractVector{<:Pair{<:Real, <:AbstractString}}, AbstractVector{<:Tuple{<:Real, <:AbstractString}}}
 
 """
-A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown.
+A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown
+(as if it was masked or never included in the data).
 """
 CategoricalColors = Dict{<:AbstractString, <:AbstractString}
 

@@ -17,9 +17,10 @@ SomeGraphs.Utilities.push_horizontal_bands_shapes
 SomeGraphs.Utilities.push_vertical_bands_shapes
 SomeGraphs.Utilities.push_diagonal_bands_shapes
 SomeGraphs.Utilities.validate_graph_bands
+SomeGraphs.Utilities.validate_colors
+SomeGraphs.Utilities.fill_color
 SomeGraphs.Utilities.range_of
 SomeGraphs.Utilities.expand_range!
-SomeGraphs.Utilities.fill_color
 SomeGraphs.Utilities.prefer_data
 ```
 

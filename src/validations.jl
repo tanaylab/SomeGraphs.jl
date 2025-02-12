@@ -316,20 +316,24 @@ end
         validation::Function,
         context::ValidationContext,
         [field::AbstractString,]
-        vector::Maybe{AbstractVector}
+        vector::Maybe{AbstractVector},
+        [mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing]
     )::Nothing
 
 Validate all the entries of a `field` containing a `vector` using the `validation` function. It is given the entry's
 index, and its value. The context is updated to include the index for the duration of the function.
+
+If a `mask` is specified, entries with a false value in the mask will not be validated.
 """
 function validate_vector_entries(
     validation::Function,
     context::ValidationContext,
     field::AbstractString,
     vector::Maybe{AbstractVector},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Nothing
     validate_in(context, field) do
-        return validate_vector_entries(validation, context, vector)
+        return validate_vector_entries(validation, context, vector, mask)
     end
     return nothing
 end
@@ -338,11 +342,14 @@ function validate_vector_entries(
     validation::Function,
     context::ValidationContext,
     vector::Maybe{AbstractVector},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Nothing
     if vector !== nothing
         for (index, entry) in enumerate(vector)
-            validate_in(context, index) do
-                return validation(index, entry)
+            if mask === nothing || mask[index]
+                validate_in(context, index) do
+                    return validation(index, entry)
+                end
             end
         end
     end
