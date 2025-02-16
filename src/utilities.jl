@@ -230,6 +230,7 @@ function patch_layout_axis!(layout::Layout, axis::AbstractString, axis_configura
     layout[axis][:showticklabels] = axis_configuration.show_ticks
     layout[axis][:tickprefix] = axis_configuration.show_ticks ? axis_ticks_prefix(axis_configuration) : nothing
     layout[axis][:ticksuffix] = axis_configuration.show_ticks ? axis_ticks_suffix(axis_configuration) : nothing
+    layout[axis][:zeroline] = axis_configuration.log_scale === nothing
     return nothing
 end
 
@@ -298,17 +299,20 @@ function axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{Abstrac
 end
 
 """
-    scale_axis_value(axis_configuration::AxisConfiguration, value::Real)::Real
-    scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing)::Nothing
+    scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::Real
+    scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::Bool = true)::Nothing
 
-Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling.
+Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling. By
+default, `clamp` the values to a specified explicit range.
 """
-function scale_axis_value(axis_configuration::AxisConfiguration, value::Real)::Real
-    if axis_configuration.minimum !== nothing && value < axis_configuration.minimum
-        value = axis_configuration.minimum  # UNTESTED
-    end
-    if axis_configuration.maximum !== nothing && value > axis_configuration.maximum  # NOJET
-        value = axis_configuration.maximum  # UNTESTED
+function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::Real
+    if clamp
+        if axis_configuration.minimum !== nothing && value < axis_configuration.minimum
+            value = axis_configuration.minimum  # UNTESTED
+        end
+        if axis_configuration.maximum !== nothing && value > axis_configuration.maximum  # NOJET
+            value = axis_configuration.maximum  # UNTESTED
+        end
     end
 
     if axis_configuration.percent
@@ -329,22 +333,24 @@ function scale_axis_value(axis_configuration::AxisConfiguration, value::Real)::R
     end
 end
 
-function scale_axis_value(::AxisConfiguration, ::Nothing)::Nothing
+function scale_axis_value(::AxisConfiguration, ::Nothing; clamp::Bool = true)::Nothing  # NOLINT
     return nothing
 end
 
 """
     scale_axis_values(
         axis_configuration::AxisConfiguration,
-        values::Maybe{AbstractVector{<:Maybe{Real}}},
+        values::Maybe{AbstractVector{<:Maybe{Real}}};
+        clamp::Bool = true
     )::Maybe{AbstractVector{<:Maybe{Real}}}
 
-Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling, as
-well as clamping the values to the allowed range.
+Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling By
+default, `clamp` the values to a specified explicit range.
 """
 function scale_axis_values(
     axis_configuration::AxisConfiguration,
-    values::Maybe{AbstractVector{<:Maybe{Real}}},
+    values::Maybe{AbstractVector{<:Maybe{Real}}};
+    clamp::Bool = true,
 )::Maybe{AbstractVector{<:Maybe{Real}}}
     if values === nothing
         return nothing  # UNTESTED
@@ -354,7 +360,7 @@ function scale_axis_values(
            axis_configuration.maximum === nothing
         return values
     else
-        return [scale_axis_value(axis_configuration, value) for value in values]
+        return [scale_axis_value(axis_configuration, value; clamp) for value in values]
     end
 end
 
@@ -371,7 +377,7 @@ function final_scaled_range(
     axis_configuration::AxisConfiguration,
 )::AbstractVector{<:Real}
     explicit_scaled_range =
-        scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum])
+        scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum]; clamp = false)
 
     scaled_range = Real[  # NOJET
         prefer_data(explicit_scaled, implicit_scaled) for

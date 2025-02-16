@@ -398,7 +398,7 @@ function distribution_trace(;
     implicit_values_range::Vector{Maybe{Float32}},
     scale_group::Maybe{AbstractString} = nothing,
 )::GenericTrace
-    scaled_values = scale_axis_values(configuration.value_axis, values)
+    scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false)
     range_of(scaled_values, implicit_values_range)
     @assert !any(implicit_values_range .=== nothing)
 
