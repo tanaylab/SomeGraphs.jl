@@ -60,6 +60,24 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                     end
                 end
 
+                nested_test("!grid") do
+                    graph.configuration.value_axis.show_grid = false
+                    test_html(graph, "$(plurality).$(kind).$(name).!grid.html")
+                    return nothing
+                end
+
+                nested_test("grid_color") do
+                    graph.configuration.value_axis.grid_color = "red"
+                    test_html(graph, "$(plurality).$(kind).$(name).grid_color.html")
+                    return nothing
+                end
+
+                nested_test("ticks") do
+                    graph.configuration.value_axis.show_ticks = false
+                    test_html(graph, "$(plurality).$(kind).$(name).!ticks.html")
+                    return nothing
+                end
+
                 nested_test("log") do
                     nested_test("10") do
                         graph.configuration.value_axis.log_scale = Log10Scale

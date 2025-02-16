@@ -168,7 +168,7 @@ nested_test("utilities") do
         end
 
         nested_test("categorical") do
-            nested_test("pallete") do
+            nested_test("palette") do
                 configuration.colors_palette = Dict("Foo" => "red", "Bar" => "green")
                 data = ["Foo", "Bar", "", "Baz"]
                 mask = [true, true, false, true]
@@ -201,7 +201,7 @@ nested_test("utilities") do
         nested_test("continuous") do
             data = [0, 1]
 
-            nested_test("pallete") do
+            nested_test("palette") do
                 configuration.colors_palette = Dict("Foo" => "red", "Bar" => "green")
                 @test_throws dedent("""
                     continuous colors colors_data

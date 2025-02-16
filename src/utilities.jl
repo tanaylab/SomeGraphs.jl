@@ -9,7 +9,8 @@ export axis_ticks_suffix
 export final_scaled_range
 export expand_range!
 export fill_color
-export patch_layout!
+export patch_layout_figure!
+export patch_layout_axis!
 export plotly_figure
 export prefer_data
 export push_diagonal_bands_shapes
@@ -106,8 +107,8 @@ function validate_colors(
     colors_configuration::ColorsConfiguration,
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Maybe{AbstractString}
-    if colors_data isa AbstractVector{<:AbstractString}
-        if colors_configuration.colors_palette isa CategoricalColors
+    if colors_configuration.colors_palette isa CategoricalColors
+        if colors_data isa AbstractVector{<:AbstractString}
             validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
                 if !haskey(colors_configuration.colors_palette, color)
                     throw(
@@ -118,7 +119,20 @@ function validate_colors(
                     )
                 end
             end
-        elseif colors_configuration.colors_palette isa ContinuousColors
+        elseif colors_data isa AbstractVector{<:Real}
+            throw(
+                ArgumentError(
+                    "continuous colors $(location(colors_data_context))\n" *
+                    "specified for a categorical $(location(colors_configuration_context)).colors_palette",
+                ),
+            )
+
+        else
+            @assert colors_data === nothing  # UNTESTED
+        end
+
+    elseif colors_configuration.colors_palette isa ContinuousColors
+        if colors_data isa AbstractVector{<:AbstractString}
             throw(
                 ArgumentError(
                     "categorical colors $(location(colors_data_context))\n" *
@@ -127,72 +141,64 @@ function validate_colors(
             )
         end
 
-        if colors_configuration.color_axis.minimum !== nothing ||
-           colors_configuration.color_axis.maximum !== nothing ||
-           colors_configuration.color_axis.log_scale !== nothing ||
-           colors_configuration.color_axis.percent
-            throw(
-                ArgumentError(
-                    "categorical colors $(location(colors_data_context))\n" *
-                    "specified for a continuous $(location(colors_configuration_context)).color_axis\n" *
-                    "(specified some of minimum/maximum/log_scale/percent)",
-                ),
-            )
-        end
+    else
+        @assert colors_configuration.colors_palette === nothing
 
-    elseif colors_data isa AbstractVector{<:Real}
-        if colors_configuration.colors_palette isa CategoricalColors
-            throw(
-                ArgumentError(
-                    "continuous colors $(location(colors_data_context))\n" *
-                    "specified for a categorical $(location(colors_configuration_context)).colors_palette",
-                ),
-            )
+        if colors_data isa AbstractVector{<:AbstractString}
+            if colors_configuration.color_axis.minimum !== nothing ||
+               colors_configuration.color_axis.maximum !== nothing ||
+               colors_configuration.color_axis.log_scale !== nothing ||
+               colors_configuration.color_axis.percent
+                throw(
+                    ArgumentError(
+                        "categorical colors $(location(colors_data_context))\n" *
+                        "specified for a continuous $(location(colors_configuration_context)).color_axis\n" *
+                        "(specified some of minimum/maximum/log_scale/percent)",
+                    ),
+                )
+            end
         end
+    end
 
-        if colors_configuration.color_axis.log_scale !== nothing
-            validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
-                if colors_configuration.color_axis.minimum === nothing ||
-                   color > colors_configuration.color_axis.minimum
-                    validate_in(
+    if colors_data isa AbstractVector{<:Real} && colors_configuration.color_axis.log_scale !== nothing
+        validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
+            if colors_configuration.color_axis.minimum === nothing || color >= colors_configuration.color_axis.minimum
+                validate_in(
+                    colors_data_context,
+                    "(value + $(location(colors_configuration_context)).color_axis.log_regularization)",
+                ) do
+                    validate_is_above(
                         colors_data_context,
-                        "(value + $(location(colors_configuration_context)).color_axis.log_regularization)",
-                    ) do
-                        validate_is_above(
-                            colors_data_context,
-                            color + colors_configuration.color_axis.log_regularization,
-                            0,
-                        )
-                        return nothing
-                    end
+                        color + colors_configuration.color_axis.log_regularization,
+                        0,
+                    )
+                    return nothing
                 end
             end
         end
+    end
 
-    else
-        @assert colors_data === nothing
-
-        if colors_configuration.show_legend &&
-           !(colors_configuration.colors_palette isa CategoricalColors) &&
-           (colors_configuration.color_axis.minimum === nothing || colors_configuration.color_axis.maximum === nothing)
-            throw(
-                ArgumentError(
-                    "did not specify $(location(colors_data_context))\n" *
-                    "for $(location(colors_configuration_context)).show_legend",
-                ),
-            )
-        end
+    if colors_data === nothing &&
+       colors_configuration.show_legend &&
+       !(colors_configuration.colors_palette isa CategoricalColors) &&
+       (colors_configuration.color_axis.minimum === nothing || colors_configuration.color_axis.maximum === nothing)
+        throw(
+            ArgumentError(
+                "did not specify $(location(colors_data_context))\n" *
+                "for $(location(colors_configuration_context)).show_legend",
+            ),
+        )
     end
 
     return nothing
 end
 
 """
-    patch_layout!(figure_configuration::FigureConfiguration, layout::Layout)::Layout
+    patch_layout_figure!(layout::Layout, figure_configuration::FigureConfiguration)::Nothing
 
 Patch a Plotly `layout` using the `figure_configuration`.
 """
-function patch_layout!(figure_configuration::FigureConfiguration, layout::Layout)::Layout
+function patch_layout_figure!(layout::Layout, figure_configuration::FigureConfiguration)::Nothing
     layout["margin"] = Dict(
         :l => figure_configuration.margins.left,
         :r => figure_configuration.margins.right,
@@ -203,12 +209,28 @@ function patch_layout!(figure_configuration::FigureConfiguration, layout::Layout
     layout["template"] = "simple_white" # TODO: This doesn't really use `simple_white`, but it makes things cleaner.
     layout["width"] = prefer_data(figure_configuration.width, nothing)
     layout["height"] = prefer_data(figure_configuration.height, nothing)
-    layout["showgrid"] = figure_configuration.show_grid
-    layout["gridcolor"] = figure_configuration.grid_color
     layout["plot_bgcolor"] = figure_configuration.background_color
     layout["paper_bgcolor"] = figure_configuration.paper_color
 
-    return layout
+    return nothing
+end
+
+"""
+    patch_layout_axis!(
+        layout::Layout,
+        axis::AbstractString
+        axis_configuration::AxisConfiguration,
+    )::Nothing
+
+Patch an existing Plotly `axis` in a `layout` using the `axis_configuration`.
+"""
+function patch_layout_axis!(layout::Layout, axis::AbstractString, axis_configuration::AxisConfiguration)::Nothing
+    layout[axis][:showgrid] = axis_configuration.show_grid
+    layout[axis][:gridcolor] = axis_configuration.show_grid ? axis_configuration.grid_color : nothing
+    layout[axis][:showticklabels] = axis_configuration.show_ticks
+    layout[axis][:tickprefix] = axis_configuration.show_ticks ? axis_ticks_prefix(axis_configuration) : nothing
+    layout[axis][:ticksuffix] = axis_configuration.show_ticks ? axis_ticks_suffix(axis_configuration) : nothing
+    return nothing
 end
 
 """

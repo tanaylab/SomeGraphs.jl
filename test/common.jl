@@ -1,6 +1,6 @@
-function test_same_pallete(actual_pallete::ContinuousColors, expected_pallete::ContinuousColors)::Nothing
-    @test length(actual_pallete) == length(expected_pallete)
-    for ((actual_value, actual_color), (expected_value, expected_color)) in zip(actual_pallete, expected_pallete)
+function test_same_palette(actual_palette::ContinuousColors, expected_palette::ContinuousColors)::Nothing
+    @test length(actual_palette) == length(expected_palette)
+    for ((actual_value, actual_color), (expected_value, expected_color)) in zip(actual_palette, expected_palette)
         @test abs(actual_value - expected_value) < 1e-7
         @test actual_color == expected_color
     end
@@ -72,11 +72,6 @@ nested_test("common") do
                 too low figure.height: 0
                 is not above: 0
             """) validate(context, figure)
-        end
-
-        nested_test("grid_color") do
-            figure.grid_color = "Oobleck"
-            @test_throws "invalid figure.grid_color: Oobleck" validate(context, figure)
         end
     end
 
@@ -282,26 +277,26 @@ nested_test("common") do
         end
     end
 
-    nested_test("pallete") do
-        pallete = [(0, "red"), (0.5, "green"), (1, "blue")]
+    nested_test("palette") do
+        palette = [(0, "red"), (0.5, "green"), (1, "blue")]
 
         nested_test("r") do
-            return test_same_pallete(
-                SomeGraphs.Common.reverse_pallete(pallete),
+            return test_same_palette(
+                SomeGraphs.Common.reverse_palette(palette),
                 [(0, "blue"), (0.5, "green"), (1, "red")],
             )
         end
 
         nested_test("z") do
-            return test_same_pallete(
-                SomeGraphs.Common.zero_pallete(pallete, 0.2, 0.4),
+            return test_same_palette(
+                SomeGraphs.Common.zero_palette(palette, 0.2, 0.4),
                 [(0.0, "white"), (0.2 - 1e-6, "white"), (0.2, "#7C7300"), (1 / 3, "green"), (1.0, "blue")],
             )
         end
 
         nested_test("c") do
-            return test_same_pallete(
-                SomeGraphs.Common.center_pallete(pallete, 0.2, 0.4),
+            return test_same_palette(
+                SomeGraphs.Common.center_palette(palette, 0.2, 0.4),
                 [
                     (0, "red"),
                     (0.4, "#AA6500"),
@@ -314,15 +309,15 @@ nested_test("common") do
         end
 
         nested_test("o") do
-            return test_same_pallete(
-                SomeGraphs.Common.overflow_pallete(pallete, 0.2, "magenta"),
+            return test_same_palette(
+                SomeGraphs.Common.overflow_palette(palette, 0.2, "magenta"),
                 [(0, "red"), (0.4, "green"), (0.8, "blue"), (0.8 + 1e-6, "magenta"), (1, "magenta")],
             )
         end
 
         nested_test("u") do
-            return test_same_pallete(
-                SomeGraphs.Common.underflow_pallete(pallete, 0.2, "magenta"),
+            return test_same_palette(
+                SomeGraphs.Common.underflow_palette(palette, 0.2, "magenta"),
                 [(0, "magenta"), (0.2 - 1e-6, "magenta"), (0.2, "red"), (0.6, "green"), (1, "blue")],
             )
         end
@@ -345,7 +340,7 @@ nested_test("common") do
             nested_test("()") do
                 colors.colors_palette = "Reds"
                 validate(context, colors)
-                return test_same_pallete(
+                return test_same_palette(
                     SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds"],
                     [
                         0 => "rgb(220,220,220)",
@@ -359,7 +354,7 @@ nested_test("common") do
             nested_test("r") do
                 colors.colors_palette = "Reds_r"
                 validate(context, colors)
-                return test_same_pallete(
+                return test_same_palette(
                     SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_r"],
                     [
                         (0, "rgb(178,10,28)"),
@@ -373,7 +368,7 @@ nested_test("common") do
             nested_test("z") do
                 colors.colors_palette = "Reds_z:0.2:0.4"
                 validate(context, colors)
-                return test_same_pallete(
+                return test_same_palette(
                     SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_z:0.2:0.4"],
                     [
                         (0, "white"),
@@ -388,7 +383,7 @@ nested_test("common") do
             nested_test("c") do
                 colors.colors_palette = "RdBu_r_c:0.2:0.4"
                 validate(context, colors)
-                return test_same_pallete(
+                return test_same_palette(
                     SomeGraphs.Common.CACHED_COLOR_PALETTES["RdBu_r_c:0.2:0.4"],
                     [
                         (0, "rgb(178,10,28)"),
@@ -406,7 +401,7 @@ nested_test("common") do
             nested_test("o") do
                 colors.colors_palette = "Reds_o:0.2:magenta"
                 validate(context, colors)
-                return test_same_pallete(
+                return test_same_palette(
                     SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_o:0.2:magenta"],
                     [
                         (0, "rgb(220,220,220)"),
@@ -422,7 +417,7 @@ nested_test("common") do
             nested_test("u") do
                 colors.colors_palette = "Reds_u:0.2:magenta"
                 validate(context, colors)
-                return test_same_pallete(
+                return test_same_palette(
                     SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_u:0.2:magenta"],
                     [
                         (0, "magenta"),
@@ -444,7 +439,7 @@ nested_test("common") do
         nested_test("order") do
             colors.colors_palette = [0 => "red", 1 => "green", 1 => "blue", 0 => "red"]
             @test_throws dedent("""
-                pallete value colors.colors_palette[3].value: 1
+                palette value colors.colors_palette[3].value: 1
                 is above value colors.colors_palette[4].value: 0
             """) validate(context, colors)
         end

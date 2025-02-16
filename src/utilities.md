@@ -5,7 +5,8 @@ SomeGraphs.Utilities
 SomeGraphs.Utilities.Maybe
 SomeGraphs.Utilities.validate_graph
 SomeGraphs.Utilities.final_scaled_range
-SomeGraphs.Utilities.patch_layout!
+SomeGraphs.Utilities.patch_layout_figure!
+SomeGraphs.Utilities.patch_layout_axis!
 SomeGraphs.Utilities.graph_to_figure
 SomeGraphs.Utilities.plotly_figure
 SomeGraphs.Utilities.axis_ticks_prefix

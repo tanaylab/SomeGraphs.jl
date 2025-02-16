@@ -188,7 +188,6 @@ end
         margins::MarginsConfiguration = MarginsConfiguration()
         width::Maybe{Int} = nothing
         height::Maybe{Int} = nothing
-        show_grid::Bool = true
         grid_color::AbstractString = "lightgrey"
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
@@ -200,16 +199,15 @@ Generic configuration that applies to the whole figure. Each complete [`Abstract
 The optional `width` and `height` are in pixels, that is, 1/96 of an inch. The `margins` are specified in the same
 units.
 
-By default, `show_grid` is set. It can be used to disable the grid for an even cleaner (but less informative) look. You
-can also manually change the `grid_color`, `background_color` and `paper_color`.
+You can also manually change the `background_color` (inside the graph's area) and `paper_color` (outside the graph's area,
+that is, the margins).
+the axes.
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
     width::Maybe{Int} = nothing
     height::Maybe{Int} = nothing
     template::Maybe{AbstractString} = nothing
-    show_grid::Bool = true
-    grid_color::AbstractString = "lightgrey"
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
 end
@@ -222,10 +220,6 @@ function Validations.validate(context::ValidationContext, figure_configuration::
     end
     validate_in(context, "height") do
         validate_is_above(context, figure_configuration.height, 0)
-        return nothing
-    end
-    validate_in(context, "grid_color") do
-        validate_is_color(context, figure_configuration.grid_color)
         return nothing
     end
     validate_in(context, "background_color") do
@@ -291,6 +285,9 @@ end
         log_scale::Maybe{LogScale} = nothing
         log_regularization::Real = 0
         percent::Bool = false
+        show_ticks::Bool = true
+        show_grid::Bool = true
+        grid_color::AbstractString = "lightgrey"
     end
 
 Generic configuration for a graph axis. Everything is optional; by default, the `minimum` and `maximum` are computed
@@ -301,6 +298,9 @@ is shown according to the [`LogScale`](@ref). Otherwise, `log_regularization` mu
 
 If `percent` is set, then the values are multiplied by 100 and a `%` suffix is added to the tick labels.
 
+The `show_ticks` and/or `show_grid` can be disabled for a cleaner (though less informative) graph appearance. By default
+the grid lines are shown in `lightgrey`.
+
 The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able
 to control log scale and/or percent scaling without changing anything else.
 """
@@ -310,10 +310,18 @@ to control log scale and/or percent scaling without changing anything else.
     log_scale::Maybe{LogScale} = nothing
     log_regularization::Real = 0
     percent::Bool = false
+    show_ticks::Bool = true
+    show_grid::Bool = true
+    grid_color::AbstractString = "lightgrey"
 end
 
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
     validate_is_range(context, "minimum", axis_configuration.minimum, "maximum", axis_configuration.maximum)
+
+    validate_in(context, "grid_color") do
+        validate_is_color(context, axis_configuration.grid_color)
+        return nothing
+    end
 
     if axis_configuration.log_scale === nothing
         if axis_configuration.log_regularization != 0
@@ -529,16 +537,21 @@ If `show_legend` is set, then the colors will be shown (in the legend or as a co
 
 The `color_axis` can be used to tweak (continuous) colors. Specifically, the values to be converted to color are
 modified according to the `log_scale` and/or `percent` flags. This is also done to the values specified in an explicit
-continuous colors pallete.
+continuous colors palette.
 
-In Plotly's API, a color pallete is always specified to cover the values between 0 and 1, and it linearly maps some
+In Plotly's API, a color palette is always specified to cover the values between 0 and 1, and it linearly maps some
 range of colors to this unit range. You can control the mapping of the values to be colored by using `color_axis` to
 modify the values (`log_scale`, `percent`) and also specify the specific range of color values to map to the unit range
 (`minimum`, `maximum`).
 
-When specifying an explict continuous colors pallete, we must map its lowest value to 0 and the highest value to 1 (and
+When specifying an explict continuous colors palette, we must map its lowest value to 0 and the highest value to 1 (and
 the values must be in non-decreasing order). In this case, there's no point in specifying `minimum` and `maximum` in the
-`color_axis`, as these are already encoded in the pallete itself.
+`color_axis`, as these are already encoded in the palette itself.
+
+When using categorical colors (that is, the data contains string colors), if no `colors_palette` is specified, these are
+assumed to be color names. Otherwise, the `colors_palette` should contain a mapping from the colors data strings to
+color names (where an empty color names indicate the entity should not be drawn, as if it wasn't contained in the data
+in the 1st place).
 """
 @kwdef mutable struct ColorsConfiguration <: Validated
     show_legend::Bool = false
@@ -551,12 +564,12 @@ function continuous_colors(colors::AbstractVector{<:AbstractString})::Continuous
     return [((index - 1) / (size - 1)) => color for (index, color) in enumerate(colors)]
 end
 
-function reverse_pallete(pallete::ContinuousColors)::ContinuousColors
-    return reverse!([(1 - value, color) for (value, color) in pallete])
+function reverse_palette(palette::ContinuousColors)::ContinuousColors
+    return reverse!([(1 - value, color) for (value, color) in palette])
 end
 
-function zero_pallete(
-    pallete::ContinuousColors,
+function zero_palette(
+    palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
 )::ContinuousColors
@@ -569,7 +582,7 @@ function zero_pallete(
     previous_color = nothing
     previous_value = nothing
 
-    for (value, color) in pallete
+    for (value, color) in palette
         if value <= color_fraction
             previous_color = color
             previous_value = value
@@ -600,8 +613,8 @@ function zero_pallete(
     return result
 end
 
-function center_pallete(
-    pallete::ContinuousColors,
+function center_palette(
+    palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
 )::ContinuousColors
@@ -612,7 +625,7 @@ function center_pallete(
     previous_color = nothing
     previous_value = nothing
 
-    for (value, color) in pallete
+    for (value, color) in palette
         if value <= 0.5 - color_fraction / 2
             previous_color = color
             previous_value = value
@@ -670,14 +683,14 @@ function center_pallete(
     return result
 end
 
-function overflow_pallete(
-    pallete::ContinuousColors,
+function overflow_palette(
+    palette::ContinuousColors,
     value_fraction::AbstractFloat,
     overflow_color::AbstractString,
 )::ContinuousColors
     result = Vector{Tuple{AbstractFloat, AbstractString}}()
 
-    for (value, color) in pallete
+    for (value, color) in palette
         push!(result, (value * (1 - value_fraction), color))
     end
 
@@ -689,8 +702,8 @@ function overflow_pallete(
     return result
 end
 
-function underflow_pallete(
-    pallete::ContinuousColors,
+function underflow_palette(
+    palette::ContinuousColors,
     value_fraction::AbstractFloat,
     underflow_color::AbstractString,
 )::ContinuousColors
@@ -699,7 +712,7 @@ function underflow_pallete(
     push!(result, (0, underflow_color))
     push!(result, (value_fraction - 1e-6, underflow_color))
 
-    for (value, color) in pallete
+    for (value, color) in palette
         push!(result, (value * (1 - value_fraction) + value_fraction, color))
     end
 
@@ -721,19 +734,19 @@ Builtin color palattes from [Plotly](https://plotly.com/python/builtin-colorscal
     definition here. An upside of having this dictionary is that you are free to insert additional named palettes into
     and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
 
-A `_r` suffix specifies reversing the order of the pallete.
+A `_r` suffix specifies reversing the order of the palette.
 
 You can also append a final `_z:<value_fraction>:<color_fraction>` suffix to the name. This will map values in the bottom
 0..`value_fraction` of the range to white, and map the rest of the values to the top `color_fraction`..1 range of the
 palette. For example, `Blues_z:0.3:0.2` will color the bottom 30% of the values in white, and color the top 70% of the
-values to the top 80% of the `Blues` pallete.
+values to the top 80% of the `Blues` palette.
 
 A `_c:<value_fraction>:<color_fraction>` works similarly to the `_z` suffix, except that the fractions are centered on
 0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the
-pallete has white in the middle. For example `RdBu_c:0.3:0.2` will color the 30% of the values near the 0 middle in
-white, and color the rest of the values using the top and bottom 40% of the `RdBu` pallete.
+palette has white in the middle. For example `RdBu_c:0.3:0.2` will color the 30% of the values near the 0 middle in
+white, and color the rest of the values using the top and bottom 40% of the `RdBu` palette.
 
-An `_o:<value_fraction>:<color>` suffix maps the pallete to the range 0..`1-value_fraction`, and all the values above this
+An `_o:<value_fraction>:<color>` suffix maps the palette to the range 0..`1-value_fraction`, and all the values above this
 to the `color`, to denote overflow (too high) values. For example, `Blues_o:0.01:magenta` will color all the values in
 the bottom 99% of the values range to `Blues`, and the top 1% of the range to magenta. A `_u` suffix works similarly but
 applies to the bottom range of the values.
@@ -741,7 +754,7 @@ applies to the bottom range of the values.
 You can combine multiple suffixes together, for example `Reds_z:0.2:0.2_o:0.99:magenta` or
 `RdBu_r_c:0.2:0.2_o:0.01:magenta_u:0.01:darkgreen`.
 
-Palletes with suffixes (including `_r`) are computed on the fly and cached for future use.
+Palettes with suffixes (including `_r`) are computed on the fly and cached for future use.
 
 !!! note
 
@@ -1049,20 +1062,20 @@ function Validations.validate(
                     pieces = split(part, ":")
                     try
                         if pieces[1] == "r" && length(pieces) == 1
-                            actual_palette = reverse_pallete(actual_palette)
+                            actual_palette = reverse_palette(actual_palette)
                             continue
                         elseif pieces[1] == "z" && length(pieces) == 3
                             value_fraction = parse(Float32, pieces[2])
                             color_fraction = parse(Float32, pieces[3])
                             if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
-                                actual_palette = zero_pallete(actual_palette, value_fraction, color_fraction)
+                                actual_palette = zero_palette(actual_palette, value_fraction, color_fraction)
                                 continue
                             end
                         elseif pieces[1] == "c" && length(pieces) == 3
                             value_fraction = parse(Float32, pieces[2])
                             color_fraction = parse(Float32, pieces[3])
                             if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
-                                actual_palette = center_pallete(actual_palette, value_fraction, color_fraction)
+                                actual_palette = center_palette(actual_palette, value_fraction, color_fraction)
                                 continue
                             end
                         elseif pieces[1] == "o" && length(pieces) == 3
@@ -1070,7 +1083,7 @@ function Validations.validate(
                             color = pieces[3]
                             parse(Colorant, color)  # NOJET
                             if 0 <= value_fraction < 1
-                                actual_palette = overflow_pallete(actual_palette, value_fraction, color)
+                                actual_palette = overflow_palette(actual_palette, value_fraction, color)
                                 continue
                             end
                         elseif pieces[1] == "u" && length(pieces) == 3
@@ -1078,7 +1091,7 @@ function Validations.validate(
                             color = pieces[3]
                             parse(Colorant, color)  # NOJET
                             if 0 <= value_fraction < 1
-                                actual_palette = underflow_pallete(actual_palette, value_fraction, color)
+                                actual_palette = underflow_palette(actual_palette, value_fraction, color)
                                 continue
                             end
                         end
@@ -1099,7 +1112,7 @@ function Validations.validate(
             if low_value > high_value
                 throw(
                     ArgumentError(
-                        "pallete value $(location(context)).colors_palette[$(index)].value: $(low_value)\n" *
+                        "palette value $(location(context)).colors_palette[$(index)].value: $(low_value)\n" *
                         "is above value $(location(context)).colors_palette[$(index + 1)].value: $(high_value)",
                     ),
                 )

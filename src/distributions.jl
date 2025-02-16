@@ -485,10 +485,10 @@ function distribution_layout(;
     shapes = Shape[]
 
     if graph.configuration.distribution.values_orientation == VerticalValues
-        values_axis_letter = "y"
+        value_axis_letter = "y"
         distributions_axis_letter = "x"
     elseif graph.configuration.distribution.values_orientation == HorizontalValues
-        values_axis_letter = "x"
+        value_axis_letter = "x"
         distributions_axis_letter = "y"
     else
         @assert false
@@ -515,15 +515,11 @@ function distribution_layout(;
     end
 
     layout = Layout(; title = graph.data.figure_title, showlegend = show_legend, shapes)  # NOJET
+    patch_layout_figure!(layout, graph.configuration.figure)
 
-    layout["$(values_axis_letter)axis"] = Dict(
-        :showgrid => graph.configuration.figure.show_grid,
-        :gridcolor => prefer_data(graph.configuration.figure.grid_color, "lightgrey"),
-        :title => graph.data.value_axis_title,
-        :range => scaled_values_range,
-        :tickprefix => axis_ticks_prefix(graph.configuration.value_axis),
-        :ticksuffix => axis_ticks_suffix(graph.configuration.value_axis),
-    )
+    value_axis_name = "$(value_axis_letter)axis"
+    layout[value_axis_name] = Dict(:title => graph.data.value_axis_title, :range => scaled_values_range)
+    patch_layout_axis!(layout, value_axis_name, graph.configuration.value_axis)
 
     if graph isa DistributionGraph
         layout["$(distributions_axis_letter)axis"] =
@@ -531,8 +527,8 @@ function distribution_layout(;
 
     elseif graph isa DistributionsGraph
         n_distributions = length(graph.data.distributions_values)  # NOJET
+        distributions_gap = graph.configuration.distributions_gap  # NOJET
 
-        distributions_gap = graph.configuration.distributions_gap
         for index in 1:n_distributions
             if distributions_gap === nothing || n_distributions == 1
                 domain = nothing
@@ -542,23 +538,19 @@ function distribution_layout(;
                 domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
             end
 
-            layout[index == 1 ? "$(distributions_axis_letter)axis" : "$(distributions_axis_letter)axis$(index)"] = Dict(
-                :showgrid => graph.configuration.figure.show_grid,
-                :gridcolor => prefer_data(graph.configuration.figure.grid_color, "lightgrey"),
-                :showticklabels => false,
-                :title => if distributions_gap === nothing
-                    nothing
-                else
-                    prefer_data(graph.data.distributions_names, index, nothing)
-                end,
-                :domain => domain,
-            )
+            distributions_axis_name =
+                index == 1 ? "$(distributions_axis_letter)axis" : "$(distributions_axis_letter)axis$(index)"
+            layout[distributions_axis_name] = Dict(:title => if distributions_gap === nothing
+                nothing
+            else
+                prefer_data(graph.data.distributions_names, index, nothing)
+            end, :domain => domain)
         end
     else
         @assert false
     end
 
-    return patch_layout!(graph.configuration.figure, layout)
+    return layout
 end
 
 end  # module

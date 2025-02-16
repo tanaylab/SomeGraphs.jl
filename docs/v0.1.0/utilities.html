@@ -255,8 +255,8 @@
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.patch_layout!" href="#SomeGraphs.Utilities.patch_layout!">
-<code>SomeGraphs.Utilities.patch_layout!
+<a class="docstring-binding" id="SomeGraphs.Utilities.patch_layout_figure!" href="#SomeGraphs.Utilities.patch_layout_figure!">
+<code>SomeGraphs.Utilities.patch_layout_figure!
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -267,13 +267,47 @@
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">patch_layout!(figure_configuration::FigureConfiguration, layout::Layout)::Layout
+<code class="language-julia hljs">patch_layout_figure!(layout::Layout, figure_configuration::FigureConfiguration)::Nothing
 </code>
 </pre>
 <p>Patch a Plotly 
 <code>layout
 </code> using the 
 <code>figure_configuration
+</code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.patch_layout_axis!" href="#SomeGraphs.Utilities.patch_layout_axis!">
+<code>SomeGraphs.Utilities.patch_layout_axis!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">patch_layout_axis!(
+    layout::Layout,
+    axis::AbstractString
+    axis_configuration::AxisConfiguration,
+)::Nothing
+</code>
+</pre>
+<p>Patch an existing Plotly 
+<code>axis
+</code> in a 
+<code>layout
+</code> using the 
+<code>axis_configuration
 </code>.
 </p>
 </div>
@@ -843,8 +877,14 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.patch_layout!">
-<code>SomeGraphs.Utilities.patch_layout!
+<a href="utilities.html#SomeGraphs.Utilities.patch_layout_axis!">
+<code>SomeGraphs.Utilities.patch_layout_axis!
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.patch_layout_figure!">
+<code>SomeGraphs.Utilities.patch_layout_figure!
 </code>
 </a>
 </li>

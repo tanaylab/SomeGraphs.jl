@@ -39,22 +39,11 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
-Disable grid:
-
-```@example
-using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
-graph.configuration.figure.show_grid = false
-using PlotlyDocumenter
-to_documenter(graph.figure)
-```
-
 Change colors:
 
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
-graph.configuration.figure.grid_color = "black"
 graph.configuration.figure.background_color = "lightyellow"
 graph.configuration.figure.paper_color = "lightgrey"
 using PlotlyDocumenter
@@ -85,6 +74,36 @@ SomeGraphs.Common.AxisConfiguration
 ```
 
 **Examples:**
+
+Disable ticks:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.show_ticks = false
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Disable grid:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.show_grid = false
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Override grid color:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.value_axis.grid_color = "red"
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
 
 Override range:
 
