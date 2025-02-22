@@ -321,6 +321,7 @@
     grid_color::AbstractString = &quot;lightgrey&quot;
     background_color::AbstractString = &quot;white&quot;
     paper_color::AbstractString = &quot;white&quot;
+    color_scale_offsets::AbstractVector{&lt;:Real} = [1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6]
 end
 </code>
 </pre>
@@ -346,6 +347,14 @@ end
 <code>paper_color
 </code> (outside the graph&#39;s area, that is, the margins). the axes.
 </p>
+<p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position each and every color scale (except the 1st one if there&#39;s no legend) by specifying an explicit offset.
+</p>
+<p>These 
+<code>color_scale_offsets
+</code> are specified in what Plotly calls &quot;paper coordinates&quot; which are singularly unsuitable for this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For optimal results you will need to manually tweak these to match your specific graph. In 21st century, when &quot;AI&quot; is a thing. Sigh.
+</p>
+<p>We provide &quot;way too many&quot; default values for this vector; if you set it manually to something else, you need to ensure you provide enough offsets for all the color scales in your graph. Typically a graph has just one color scale with no legend (so no offset is needed) or just one color scale in addition to a legend (so just the 1st vector entry is needed) but, as usual, there are pathological cases (e.g., color scales for multiple annotations of a heatmap graph).
+</p>
 </div>
 </section>
 </article>
@@ -362,12 +371,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='s3IpGf1D4T' class='' style=';'>
+<div id='HrjuVNYh96' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("s3IpGf1D4T")
+    const PLOT = document.getElementById("HrjuVNYh96")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -390,12 +399,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='gJhKpbznJk' class='' style=';'>
+<div id='Fhavm7hliV' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("gJhKpbznJk")
+    const PLOT = document.getElementById("Fhavm7hliV")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -418,12 +427,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='bi8UA8Ya9f' class='' style=';'>
+<div id='ppH0pG3bvI' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("bi8UA8Ya9f")
+    const PLOT = document.getElementById("ppH0pG3bvI")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"lightyellow","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -481,12 +490,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='lNPcYCovKi' class='' style=';'>
+<div id='M4yUDGXQXR' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("lNPcYCovKi")
+    const PLOT = document.getElementById("M4yUDGXQXR")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -577,12 +586,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='342rNcJ6e0' class='' style=';'>
+<div id='KibSlxT46t' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("342rNcJ6e0")
+    const PLOT = document.getElementById("KibSlxT46t")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -604,12 +613,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='QESmQfN6pk' class='' style=';'>
+<div id='PguwEk3vWL' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QESmQfN6pk")
+    const PLOT = document.getElementById("PguwEk3vWL")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -631,12 +640,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='gMKYWl8FJp' class='' style=';'>
+<div id='U22dY7cFXg' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("gMKYWl8FJp")
+    const PLOT = document.getElementById("U22dY7cFXg")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -659,12 +668,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='0ajakpzgIu' class='' style=';'>
+<div id='UProT8Z3ps' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("0ajakpzgIu")
+    const PLOT = document.getElementById("UProT8Z3ps")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,3.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[1.0,4.0]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -686,12 +695,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='CQWszDIdgM' class='' style=';'>
+<div id='sv90ymoMnf' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("CQWszDIdgM")
+    const PLOT = document.getElementById("sv90ymoMnf")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,100.0,100.0,100.0,300.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -752,12 +761,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='tUwjbJePjI' class='' style=';'>
+<div id='cLey2nNB8F' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("tUwjbJePjI")
+    const PLOT = document.getElementById("cLey2nNB8F")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,2.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -780,12 +789,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='WIJLa9Z2Tg' class='' style=';'>
+<div id='5fTIdpWVl6' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("WIJLa9Z2Tg")
+    const PLOT = document.getElementById("5fTIdpWVl6")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1077,67 +1086,238 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct ColorsConfiguration &lt;: Validated
+    fixed::Maybe{AbstractString} = nothing
+    palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+    axis::AxisConfiguration = AxisConfiguration()
     show_legend::Bool = false
-    color_axis::AxisConfiguration = AxisConfiguration()
-    colors_palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
 end
 </code>
 </pre>
-<p>Configure how to color some values. The 
-<code>colors_palette
-</code> is applied; this can be:
+<p>Configure how to color some data. Supported combinations of configuration and data are:
 </p>
-<ul>
-<li>The name of a standard 
-<a href="https://plotly.com/python/builtin-colorscales/">Plotly palette
-</a> (see 
-<a href="common.html#SomeGraphs.Common.NAMED_COLOR_PALETTES">
-<code>NAMED_COLOR_PALETTES
+<table>
+<tr>
+<th style="text-align: left">
+<code>fixed
 </code>
-</a>);
-</li>
-<li>A vector of (value, color) tuples for a continuous (numeric value) scale;
-</li>
-<li>Or a vector of (value, color) for a categorical (string value) scale.
-</li>
-</ul>
+</th>
+<th style="text-align: left">
+<code>palette
+</code>
+</th>
+<th style="text-align: left">colors data
+</th>
+<th style="text-align: left">
+<code>axis
+</code>
+</th>
+<th style="text-align: left">
+<code>show_legend
+</code>
+</th>
+<th style="text-align: left">Behavior
+</th>
+</tr>
+<tr>
+<td style="text-align: left">color name
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">
+<code>false
+</code>
+</td>
+<td style="text-align: left">Named fixed (1)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">
+<code>false
+</code>
+</td>
+<td style="text-align: left">Auto fixed (2)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">str[]
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">
+<code>false
+</code>
+</td>
+<td style="text-align: left">Named data (3)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">num[]
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Auto scale (4)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">palette name
+</td>
+<td style="text-align: left">num[]
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Named scale (5)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">(value::num, color::str)[]
+</td>
+<td style="text-align: left">num[]
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Manual scale (6)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Dict{value::str =&gt; color::str}
+</td>
+<td style="text-align: left">str[]
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Categorical (7)
+</td>
+</tr>
+</table>
+<p>Any other combination of configuration is not allowed.
+</p>
+<p>
+<strong>Restricted Axis:
+</strong> The 
+<code>axis
+</code> can&#39;t specify 
+<code>log_scale
+</code>, 
+<code>percent
+</code>, 
+<code>minimum
+</code>, 
+<code>maximum
+</code> as they make no sense in this case.
+</p>
+<p>
+<strong>Named fixed (1):
+</strong> All the data entities will be given the same 
+<code>fixed
+</code> color.
+</p>
+<p>
+<strong>Auto fixed (2):
+</strong> All the data entities will be given the same color, chosen automatically by Plotly.
+</p>
+<p>
+<strong>Named data (3):
+</strong> The colors data contains explicit color names. An empty color name will prevent the matching data from being plotted. If the 
+<code>fixed
+</code> color is specified, it is ignored.
+</p>
+<p>
+<strong>Auto scale (4):
+</strong> The colors data (transformed by the 
+<code>axis
+</code>) will be shown in a color scale chosen by Plotly.
+</p>
+<p>
+<strong>Names scale (5):
+</strong> The colors data (transformed by the 
+<code>axis
+</code>) will be shown using the named standard Plotly 
+<a href="https://plotly.com/python/builtin-colorscales/">color scale
+</a> (see 
+<a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES">
+<code>NAMED_COLOR_SCALES
+</code>
+</a>).
+</p>
+<p>
+<strong>Manual scale (6):
+</strong> The colors data (transformed by the 
+<code>axis
+</code>) will be shown using the specified palette (whose values will also be transformed by the 
+<code>axis
+</code>). The values must be in non-decreasing order, and the overall range of values must not be empty.
+</p>
+<p>
+<strong>Categorical (7):
+</strong> The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the dictionary will prevent the matching data from being plotted.
+</p>
 <p>If 
 <code>show_legend
-</code> is set, then the colors will be shown (in the legend or as a color bar, as appropriate).
-</p>
-<p>The 
-<code>color_axis
-</code> can be used to tweak (continuous) colors. Specifically, the values to be converted to color are modified according to the 
-<code>log_scale
-</code> and/or 
-<code>percent
-</code> flags. This is also done to the values specified in an explicit continuous colors palette.
-</p>
-<p>In Plotly&#39;s API, a color palette is always specified to cover the values between 0 and 1, and it linearly maps some range of colors to this unit range. You can control the mapping of the values to be colored by using 
-<code>color_axis
-</code> to modify the values (
-<code>log_scale
-</code>, 
-<code>percent
-</code>) and also specify the specific range of color values to map to the unit range (
-<code>minimum
-</code>, 
-<code>maximum
-</code>).
-</p>
-<p>When specifying an explict continuous colors palette, we must map its lowest value to 0 and the highest value to 1 (and the values must be in non-decreasing order). In this case, there&#39;s no point in specifying 
-<code>minimum
-</code> and 
-<code>maximum
-</code> in the 
-<code>color_axis
-</code>, as these are already encoded in the palette itself.
-</p>
-<p>When using categorical colors (that is, the data contains string colors), if no 
-<code>colors_palette
-</code> is specified, these are assumed to be color names. Otherwise, the 
-<code>colors_palette
-</code> should contain a mapping from the colors data strings to color names (where an empty color names indicate the entity should not be drawn, as if it wasn&#39;t contained in the data in the 1st place).
+</code> is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each other); see the 
+<code>color_scale_offsets
+</code> vector of 
+<a href="common.html#SomeGraphs.Common.FigureConfiguration">
+<code>FigureConfiguration
+</code>
+</a> for details.
 </p>
 </div>
 </section>
@@ -1192,8 +1372,8 @@ end
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Common.NAMED_COLOR_PALETTES" href="#SomeGraphs.Common.NAMED_COLOR_PALETTES">
-<code>SomeGraphs.Common.NAMED_COLOR_PALETTES
+<a class="docstring-binding" id="SomeGraphs.Common.NAMED_COLOR_SCALES" href="#SomeGraphs.Common.NAMED_COLOR_SCALES">
+<code>SomeGraphs.Common.NAMED_COLOR_SCALES
 </code>
 </a> — 
 <span class="docstring-category">Constant
@@ -1203,7 +1383,7 @@ end
 </header>
 <section>
 <div>
-<p>Builtin color palattes from 
+<p>Builtin color scales from 
 <a href="https://plotly.com/python/builtin-colorscales/">Plotly
 </a>, both linear: 
 <code>Blackbody
@@ -1261,13 +1441,13 @@ end
 <header class="admonition-header">Note
 </header>
 <div class="admonition-body">
-<p>You would think we could just give the builtin color palette names to plotly, but it turns out that &quot;builtin&quot; in Python plotly doesn&#39;t mean &quot;builtin&quot; in JavaScript plotly, because &quot;reasons&quot;. We therefore have to copy their definition here. An upside of having this dictionary is that you are free to insert additional named palettes into and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
+<p>You would think we could just give the builtin color scale names to plotly, but it turns out that &quot;builtin&quot; in Python plotly doesn&#39;t mean &quot;builtin&quot; in JavaScript plotly, because &quot;reasons&quot;. We therefore have to copy their definition here. An upside of having this dictionary is that you are free to insert additional named scale into and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
 </p>
 </div>
 </div>
 <p>A 
 <code>_r
-</code> suffix specifies reversing the order of the palette.
+</code> suffix specifies reversing the order of the scale.
 </p>
 <p>You can also append a final 
 <code>_z:&lt;value_fraction&gt;:&lt;color_fraction&gt;
@@ -1275,25 +1455,25 @@ end
 <code>value_fraction
 </code> of the range to white, and map the rest of the values to the top 
 <code>color_fraction
-</code>..1 range of the palette. For example, 
+</code>..1 range of the scale. For example, 
 <code>Blues_z:0.3:0.2
 </code> will color the bottom 30% of the values in white, and color the top 70% of the values to the top 80% of the 
 <code>Blues
-</code> palette.
+</code> scale.
 </p>
 <p>A 
 <code>_c:&lt;value_fraction&gt;:&lt;color_fraction&gt;
 </code> works similarly to the 
 <code>_z
-</code> suffix, except that the fractions are centered on 0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the palette has white in the middle. For example 
+</code> suffix, except that the fractions are centered on 0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the scale has white in the middle. For example 
 <code>RdBu_c:0.3:0.2
 </code> will color the 30% of the values near the 0 middle in white, and color the rest of the values using the top and bottom 40% of the 
 <code>RdBu
-</code> palette.
+</code> scale.
 </p>
 <p>An 
 <code>_o:&lt;value_fraction&gt;:&lt;color&gt;
-</code> suffix maps the palette to the range 0..
+</code> suffix maps the scale to the range 0..
 <code>1-value_fraction
 </code>, and all the values above this to the 
 <code>color
@@ -1330,11 +1510,11 @@ end
 </header>
 <div class="admonition-body">
 <p>Always hold the 
-<a href="common.html#SomeGraphs.Common.COLOR_PALETTES_LOCK">
-<code>COLOR_PALETTES_LOCK
+<a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>COLOR_SCALES_LOCK
 </code>
 </a> when manually accessing the 
-<code>NAMED_COLOR_PALETTES
+<code>NAMED_COLOR_SCALES
 </code>, otherwise you 
 <em>will
 </em> regret it at some point.
@@ -1348,8 +1528,8 @@ end
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Common.COLOR_PALETTES_LOCK" href="#SomeGraphs.Common.COLOR_PALETTES_LOCK">
-<code>SomeGraphs.Common.COLOR_PALETTES_LOCK
+<a class="docstring-binding" id="SomeGraphs.Common.COLOR_SCALES_LOCK" href="#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>SomeGraphs.Common.COLOR_SCALES_LOCK
 </code>
 </a> — 
 <span class="docstring-category">Constant
@@ -1360,13 +1540,13 @@ end
 <section>
 <div>
 <p>A global lock to use when accessing the 
-<code>NAMED_COLOR_PALETTES
+<code>NAMED_COLOR_SCALES
 </code>. Always hold the 
-<a href="common.html#SomeGraphs.Common.COLOR_PALETTES_LOCK">
-<code>COLOR_PALETTES_LOCK
+<a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>COLOR_SCALES_LOCK
 </code>
 </a> when manually accessing the 
-<code>NAMED_COLOR_PALETTES
+<code>NAMED_COLOR_SCALES
 </code>, otherwise you 
 <em>will
 </em> regret it at some point.
@@ -1421,14 +1601,14 @@ end
 </a>
 </li>
 <li>
-<a href="common.html#SomeGraphs.Common.COLOR_PALETTES_LOCK">
-<code>SomeGraphs.Common.COLOR_PALETTES_LOCK
+<a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>SomeGraphs.Common.COLOR_SCALES_LOCK
 </code>
 </a>
 </li>
 <li>
-<a href="common.html#SomeGraphs.Common.NAMED_COLOR_PALETTES">
-<code>SomeGraphs.Common.NAMED_COLOR_PALETTES
+<a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES">
+<code>SomeGraphs.Common.NAMED_COLOR_SCALES
 </code>
 </a>
 </li>

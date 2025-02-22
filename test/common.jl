@@ -282,21 +282,21 @@ nested_test("common") do
 
         nested_test("r") do
             return test_same_palette(
-                SomeGraphs.Common.reverse_palette(palette),
+                SomeGraphs.Common.reverse_color_scale(palette),
                 [(0, "blue"), (0.5, "green"), (1, "red")],
             )
         end
 
         nested_test("z") do
             return test_same_palette(
-                SomeGraphs.Common.zero_palette(palette, 0.2, 0.4),
+                SomeGraphs.Common.zero_color_scale(palette, 0.2, 0.4),
                 [(0.0, "white"), (0.2 - 1e-6, "white"), (0.2, "#7C7300"), (1 / 3, "green"), (1.0, "blue")],
             )
         end
 
         nested_test("c") do
             return test_same_palette(
-                SomeGraphs.Common.center_palette(palette, 0.2, 0.4),
+                SomeGraphs.Common.center_color_scale(palette, 0.2, 0.4),
                 [
                     (0, "red"),
                     (0.4, "#AA6500"),
@@ -310,14 +310,14 @@ nested_test("common") do
 
         nested_test("o") do
             return test_same_palette(
-                SomeGraphs.Common.overflow_palette(palette, 0.2, "magenta"),
+                SomeGraphs.Common.overflow_color_scale(palette, 0.2, "magenta"),
                 [(0, "red"), (0.4, "green"), (0.8, "blue"), (0.8 + 1e-6, "magenta"), (1, "magenta")],
             )
         end
 
         nested_test("u") do
             return test_same_palette(
-                SomeGraphs.Common.underflow_palette(palette, 0.2, "magenta"),
+                SomeGraphs.Common.underflow_color_scale(palette, 0.2, "magenta"),
                 [(0, "magenta"), (0.2 - 1e-6, "magenta"), (0.2, "red"), (0.6, "green"), (1, "blue")],
             )
         end
@@ -328,20 +328,59 @@ nested_test("common") do
         context = ValidationContext(["colors"])
         validate(context, colors)
 
+        nested_test("fixed") do
+            nested_test("()") do
+                colors.fixed = "red"
+                return validate(context, colors)
+            end
+
+            nested_test("invalid") do
+                colors.fixed = "Oobleck"
+                @test_throws "invalid colors.fixed: Oobleck" validate(context, colors)
+            end
+
+            nested_test("legend") do
+                colors.fixed = "red"
+                colors.show_legend = true
+                @test_throws dedent("""
+                    can't specify both colors.fixed
+                    and colors.show_legend
+                """) validate(context, colors)
+            end
+
+            nested_test("precent") do
+                colors.fixed = "red"
+                colors.axis.percent = true
+                @test_throws dedent("""
+                    can't specify both colors.fixed
+                    and any of colors.axis.(minimum,maximum,log_scale,percent)
+                """) validate(context, colors)
+            end
+
+            nested_test("palette") do
+                colors.fixed = "red"
+                colors.palette = "Viridis"
+                @test_throws dedent("""
+                    can't specify both colors.fixed
+                    and colors.palette
+                """) validate(context, colors)
+            end
+        end
+
         nested_test("builtin") do
-            colors.colors_palette = "Viridis"
+            colors.palette = "Viridis"
             validate(context, colors)
 
-            colors.colors_palette = "Oobleck_r"
-            @test_throws "invalid colors.colors_palette: Oobleck" validate(context, colors)
+            colors.palette = "Oobleck_r"
+            @test_throws "invalid colors.palette: Oobleck" validate(context, colors)
         end
 
         nested_test("cached") do
             nested_test("()") do
-                colors.colors_palette = "Reds"
+                colors.palette = "Reds"
                 validate(context, colors)
                 return test_same_palette(
-                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds"],
+                    SomeGraphs.Common.CACHED_COLOR_SCALES["Reds"],
                     [
                         0 => "rgb(220,220,220)",
                         1 / 3 => "rgb(245,195,157)",
@@ -352,10 +391,10 @@ nested_test("common") do
             end
 
             nested_test("r") do
-                colors.colors_palette = "Reds_r"
+                colors.palette = "Reds_r"
                 validate(context, colors)
                 return test_same_palette(
-                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_r"],
+                    SomeGraphs.Common.CACHED_COLOR_SCALES["Reds_r"],
                     [
                         (0, "rgb(178,10,28)"),
                         (1 / 3, "rgb(245,160,105)"),
@@ -366,10 +405,10 @@ nested_test("common") do
             end
 
             nested_test("z") do
-                colors.colors_palette = "Reds_z:0.2:0.4"
+                colors.palette = "Reds_z:0.2:0.4"
                 validate(context, colors)
                 return test_same_palette(
-                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_z:0.2:0.4"],
+                    SomeGraphs.Common.CACHED_COLOR_SCALES["Reds_z:0.2:0.4"],
                     [
                         (0, "white"),
                         (0.2 - 1e-6, "white"),
@@ -381,10 +420,10 @@ nested_test("common") do
             end
 
             nested_test("c") do
-                colors.colors_palette = "RdBu_r_c:0.2:0.4"
+                colors.palette = "RdBu_r_c:0.2:0.4"
                 validate(context, colors)
                 return test_same_palette(
-                    SomeGraphs.Common.CACHED_COLOR_PALETTES["RdBu_r_c:0.2:0.4"],
+                    SomeGraphs.Common.CACHED_COLOR_SCALES["RdBu_r_c:0.2:0.4"],
                     [
                         (0, "rgb(178,10,28)"),
                         (0.8 / 3, "rgb(230,145,90)"),
@@ -399,10 +438,10 @@ nested_test("common") do
             end
 
             nested_test("o") do
-                colors.colors_palette = "Reds_o:0.2:magenta"
+                colors.palette = "Reds_o:0.2:magenta"
                 validate(context, colors)
                 return test_same_palette(
-                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_o:0.2:magenta"],
+                    SomeGraphs.Common.CACHED_COLOR_SCALES["Reds_o:0.2:magenta"],
                     [
                         (0, "rgb(220,220,220)"),
                         (0.8 / 3, "rgb(245,195,157)"),
@@ -415,10 +454,10 @@ nested_test("common") do
             end
 
             nested_test("u") do
-                colors.colors_palette = "Reds_u:0.2:magenta"
+                colors.palette = "Reds_u:0.2:magenta"
                 validate(context, colors)
                 return test_same_palette(
-                    SomeGraphs.Common.CACHED_COLOR_PALETTES["Reds_u:0.2:magenta"],
+                    SomeGraphs.Common.CACHED_COLOR_SCALES["Reds_u:0.2:magenta"],
                     [
                         (0, "magenta"),
                         (0.2 - 1e-6, "magenta"),
@@ -431,72 +470,68 @@ nested_test("common") do
             end
 
             nested_test("invalid") do
-                colors.colors_palette = "Reds_z:0.2:magenta"
-                @test_throws "invalid colors.colors_palette: Reds_z:0.2:magenta" validate(context, colors)
+                colors.palette = "Reds_z:0.2:magenta"
+                @test_throws "invalid colors.palette: Reds_z:0.2:magenta" validate(context, colors)
             end
         end
 
         nested_test("order") do
-            colors.colors_palette = [0 => "red", 1 => "green", 1 => "blue", 0 => "red"]
+            colors.palette = [0 => "red", 1 => "green", 1 => "blue", 0 => "red"]
             @test_throws dedent("""
-                palette value colors.colors_palette[3].value: 1
-                is above value colors.colors_palette[4].value: 0
+                palette value colors.palette[3].value: 1
+                is above value colors.palette[4].value: 0
             """) validate(context, colors)
         end
 
         nested_test("color") do
-            colors.colors_palette = [0 => "red", 1 => "green", 1 => "Oobleck"]
-            @test_throws "invalid colors.colors_palette[3].color: Oobleck" validate(context, colors)
+            colors.palette = [0 => "red", 1 => "green", 1 => "Oobleck"]
+            @test_throws "invalid colors.palette[3].color: Oobleck" validate(context, colors)
         end
 
         nested_test("range") do
-            colors.colors_palette = [0 => "red", 0 => "green", 0 => "blue"]
+            colors.palette = [0 => "red", 0 => "green", 0 => "blue"]
             @test_throws dedent("""
-                range low limit colors.minimum(colors_palette[*].value): 0
-                is not below high limit colors.maximum(colors_palette[*].value): 0
-            """) validate(context, colors)
-        end
-
-        nested_test("minimum") do
-            colors.colors_palette = [0 => "red", 1 => "green", 1 => "blue"]
-            colors.color_axis.minimum = 0.5
-            @test_throws dedent("""
-                must not specify both: explicit continuous colors colors.colors_palette
-                and explicit colors.color_axis.minimum: 0.5
-            """) validate(context, colors)
-        end
-
-        nested_test("maximum") do
-            colors.colors_palette = [0 => "red", 1 => "green", 1 => "blue"]
-            colors.color_axis.maximum = 0.5
-            @test_throws dedent("""
-                must not specify both: explicit continuous colors colors.colors_palette
-                and explicit colors.color_axis.maximum: 0.5
+                range low limit colors.palette[1].value: 0
+                is not below high limit colors.palette[end].value: 0
             """) validate(context, colors)
         end
 
         nested_test("log_regularization+cmin") do
-            colors.colors_palette = [0 => "red", 1 => "green", 1 => "blue"]
-            colors.color_axis.log_scale = Log10Scale
+            colors.palette = [0 => "red", 1 => "green", 1 => "blue"]
+            colors.axis.log_scale = Log10Scale
             @test_throws dedent("""
-                too low colors.(colors_palette[1].value + color_axis.log_regularization): 0
+                too low colors.(palette[1].value + axis.log_regularization): 0
                 is not above: 0
             """) validate(context, colors)
 
-            colors.color_axis.log_regularization = 1
+            colors.axis.log_regularization = 1
             return validate(context, colors)
         end
 
         nested_test("categorical") do
-            colors.colors_palette = Dict(["foo" => "red", "bar" => "green"])
-            validate(context, colors)
+            nested_test("()") do
+                colors.palette = Dict(["foo" => "red", "bar" => "green"])
+                return validate(context, colors)
+            end
 
-            empty!(colors.colors_palette)
+            nested_test("empty") do
+                colors.palette = Dict{String, String}()
+                @test_throws "empty dict colors.palette" validate(context, colors)
+            end
 
-            @test_throws "empty dict colors.colors_palette" validate(context, colors)
+            nested_test("invalid") do
+                colors.palette = Dict(["baz" => "Oobleck"])
+                @test_throws "invalid colors.palette[baz].color: Oobleck" validate(context, colors)
+            end
 
-            colors.colors_palette = Dict(["baz" => "Oobleck"])
-            @test_throws "invalid colors.colors_palette[baz].color: Oobleck" validate(context, colors)
+            nested_test("percent") do
+                colors.palette = Dict(["foo" => "red", "bar" => "green"])
+                colors.axis.percent = true
+                @test_throws dedent("""
+                    can't specify both categorical colors.palette
+                    and any of colors.axis.(minimum,maximum,log_scale,percent)
+                """) validate(context, colors)
+            end
         end
     end
 end

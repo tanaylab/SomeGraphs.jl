@@ -514,12 +514,16 @@ function distribution_layout(;
         end
     end
 
-    layout = Layout(; title = graph.data.figure_title, showlegend = show_legend, shapes)  # NOJET
-    patch_layout_figure!(layout, graph.configuration.figure)
+    layout =
+        plotly_layout(graph.configuration.figure; title = graph.data.figure_title, showlegend = show_legend, shapes)
 
-    value_axis_name = "$(value_axis_letter)axis"
-    layout[value_axis_name] = Dict(:title => graph.data.value_axis_title, :range => scaled_values_range)
-    patch_layout_axis!(layout, value_axis_name, graph.configuration.value_axis)
+    set_layout_axis!(
+        layout,
+        "$(value_axis_letter)axis",
+        graph.configuration.value_axis;
+        title = graph.data.value_axis_title,
+        range = scaled_values_range,
+    )
 
     if graph isa DistributionGraph
         layout["$(distributions_axis_letter)axis"] =

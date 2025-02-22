@@ -165,8 +165,8 @@ SomeGraphs.Common.BandsData
 SomeGraphs.Common.ColorsConfiguration
 SomeGraphs.Common.ContinuousColors
 SomeGraphs.Common.CategoricalColors
-SomeGraphs.Common.NAMED_COLOR_PALETTES
-SomeGraphs.Common.COLOR_PALETTES_LOCK
+SomeGraphs.Common.NAMED_COLOR_SCALES
+SomeGraphs.Common.COLOR_SCALES_LOCK
 SomeGraphs.Common.SubGraph
 ```
 

@@ -5,12 +5,11 @@ SomeGraphs.Utilities
 SomeGraphs.Utilities.Maybe
 SomeGraphs.Utilities.validate_graph
 SomeGraphs.Utilities.final_scaled_range
-SomeGraphs.Utilities.patch_layout_figure!
-SomeGraphs.Utilities.patch_layout_axis!
+SomeGraphs.Utilities.plotly_layout
+SomeGraphs.Utilities.set_layout_axis!
+SomeGraphs.Utilities.set_layout_colorscale!
 SomeGraphs.Utilities.graph_to_figure
 SomeGraphs.Utilities.plotly_figure
-SomeGraphs.Utilities.axis_ticks_prefix
-SomeGraphs.Utilities.axis_ticks_suffix
 SomeGraphs.Utilities.scale_axis_value
 SomeGraphs.Utilities.scale_axis_values
 SomeGraphs.Utilities.scale_size_values

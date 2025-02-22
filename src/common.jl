@@ -9,7 +9,7 @@ export AxisConfiguration
 export BandConfiguration
 export BandsConfiguration
 export BandsData
-export COLOR_PALETTES_LOCK
+export COLOR_SCALES_LOCK
 export CategoricalColors
 export ColorsConfiguration
 export ContinuousColors
@@ -25,7 +25,7 @@ export Log10Scale
 export Log2Scale
 export LogScale
 export MarginsConfiguration
-export NAMED_COLOR_PALETTES
+export NAMED_COLOR_SCALES
 export PlotlyFigure
 export SizeConfiguration
 export SolidLine
@@ -191,6 +191,7 @@ end
         grid_color::AbstractString = "lightgrey"
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
+        color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6]
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -202,6 +203,22 @@ units.
 You can also manually change the `background_color` (inside the graph's area) and `paper_color` (outside the graph's area,
 that is, the margins).
 the axes.
+
+If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
+will happily place them all on top of each other. We therefore need to tell it how to position each and every color
+scale (except the 1st one if there's no legend) by specifying an explicit offset.
+
+These `color_scale_offsets` are specified in what Plotly calls "paper coordinates" which are singularly unsuitable for
+this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the
+preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an
+interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For
+optimal results you will need to manually tweak these to match your specific graph. In 21st century, when "AI" is a
+thing. Sigh.
+
+We provide "way too many" default values for this vector; if you set it manually to something else, you need to ensure
+you provide enough offsets for all the color scales in your graph. Typically a graph has just one color scale with no
+legend (so no offset is needed) or just one color scale in addition to a legend (so just the 1st vector entry is needed)
+but, as usual, there are pathological cases (e.g., color scales for multiple annotations of a heatmap graph).
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
@@ -210,6 +227,7 @@ the axes.
     template::Maybe{AbstractString} = nothing
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
+    color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6]
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -520,55 +538,16 @@ A categorical colors palette, mapping string values to colors. An empty string c
 """
 CategoricalColors = Dict{<:AbstractString, <:AbstractString}
 
-"""
-    @kwdef mutable struct ColorsConfiguration <: Validated
-        show_legend::Bool = false
-        color_axis::AxisConfiguration = AxisConfiguration()
-        colors_palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
-    end
-
-Configure how to color some values. The `colors_palette` is applied; this can be:
-
-  - The name of a standard [Plotly palette](https://plotly.com/python/builtin-colorscales/) (see [`NAMED_COLOR_PALETTES`](@ref));
-  - A vector of (value, color) tuples for a continuous (numeric value) scale;
-  - Or a vector of (value, color) for a categorical (string value) scale.
-
-If `show_legend` is set, then the colors will be shown (in the legend or as a color bar, as appropriate).
-
-The `color_axis` can be used to tweak (continuous) colors. Specifically, the values to be converted to color are
-modified according to the `log_scale` and/or `percent` flags. This is also done to the values specified in an explicit
-continuous colors palette.
-
-In Plotly's API, a color palette is always specified to cover the values between 0 and 1, and it linearly maps some
-range of colors to this unit range. You can control the mapping of the values to be colored by using `color_axis` to
-modify the values (`log_scale`, `percent`) and also specify the specific range of color values to map to the unit range
-(`minimum`, `maximum`).
-
-When specifying an explict continuous colors palette, we must map its lowest value to 0 and the highest value to 1 (and
-the values must be in non-decreasing order). In this case, there's no point in specifying `minimum` and `maximum` in the
-`color_axis`, as these are already encoded in the palette itself.
-
-When using categorical colors (that is, the data contains string colors), if no `colors_palette` is specified, these are
-assumed to be color names. Otherwise, the `colors_palette` should contain a mapping from the colors data strings to
-color names (where an empty color names indicate the entity should not be drawn, as if it wasn't contained in the data
-in the 1st place).
-"""
-@kwdef mutable struct ColorsConfiguration <: Validated
-    show_legend::Bool = false
-    color_axis::AxisConfiguration = AxisConfiguration()
-    colors_palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
-end
-
-function continuous_colors(colors::AbstractVector{<:AbstractString})::ContinuousColors  # ONLY SEEMS UNTESTED
+function continuous_colors_scale(colors::AbstractVector{<:AbstractString})::ContinuousColors  # ONLY SEEMS UNTESTED
     size = length(colors)
     return [((index - 1) / (size - 1)) => color for (index, color) in enumerate(colors)]
 end
 
-function reverse_palette(palette::ContinuousColors)::ContinuousColors
+function reverse_color_scale(palette::ContinuousColors)::ContinuousColors
     return reverse!([(1 - value, color) for (value, color) in palette])
 end
 
-function zero_palette(
+function zero_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
@@ -613,7 +592,7 @@ function zero_palette(
     return result
 end
 
-function center_palette(
+function center_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
@@ -683,7 +662,7 @@ function center_palette(
     return result
 end
 
-function overflow_palette(
+function overflow_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     overflow_color::AbstractString,
@@ -702,7 +681,7 @@ function overflow_palette(
     return result
 end
 
-function underflow_palette(
+function underflow_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     underflow_color::AbstractString,
@@ -722,31 +701,31 @@ function underflow_palette(
 end
 
 """
-Builtin color palattes from [Plotly](https://plotly.com/python/builtin-colorscales/), both linear: `Blackbody`,
+Builtin color scales from [Plotly](https://plotly.com/python/builtin-colorscales/), both linear: `Blackbody`,
 `Bluered`, `Blues`, `Cividis`, `Earth`, `Electric`, `Greens`, `Greys`, `Hot`, `Jet`, `Picnic`, `Portland`, `Rainbow`,
 `RdBu`, `Reds`, `Viridis`, `YlGnBu`, `YlOrRd` and cyclical: `Twilight`, `IceFire`, `Edge`, `Phase`, `HSV`, `mrybm`,
 `mygbm`.
 
 !!! note
 
-    You would think we could just give the builtin color palette names to plotly, but it turns out that "builtin" in
+    You would think we could just give the builtin color scale names to plotly, but it turns out that "builtin" in
     Python plotly doesn't mean "builtin" in JavaScript plotly, because "reasons". We therefore have to copy their
-    definition here. An upside of having this dictionary is that you are free to insert additional named palettes into
+    definition here. An upside of having this dictionary is that you are free to insert additional named scale into
     and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
 
-A `_r` suffix specifies reversing the order of the palette.
+A `_r` suffix specifies reversing the order of the scale.
 
 You can also append a final `_z:<value_fraction>:<color_fraction>` suffix to the name. This will map values in the bottom
 0..`value_fraction` of the range to white, and map the rest of the values to the top `color_fraction`..1 range of the
-palette. For example, `Blues_z:0.3:0.2` will color the bottom 30% of the values in white, and color the top 70% of the
-values to the top 80% of the `Blues` palette.
+scale. For example, `Blues_z:0.3:0.2` will color the bottom 30% of the values in white, and color the top 70% of the
+values to the top 80% of the `Blues` scale.
 
 A `_c:<value_fraction>:<color_fraction>` works similarly to the `_z` suffix, except that the fractions are centered on
 0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the
-palette has white in the middle. For example `RdBu_c:0.3:0.2` will color the 30% of the values near the 0 middle in
-white, and color the rest of the values using the top and bottom 40% of the `RdBu` palette.
+scale has white in the middle. For example `RdBu_c:0.3:0.2` will color the 30% of the values near the 0 middle in
+white, and color the rest of the values using the top and bottom 40% of the `RdBu` scale.
 
-An `_o:<value_fraction>:<color>` suffix maps the palette to the range 0..`1-value_fraction`, and all the values above this
+An `_o:<value_fraction>:<color>` suffix maps the scale to the range 0..`1-value_fraction`, and all the values above this
 to the `color`, to denote overflow (too high) values. For example, `Blues_o:0.01:magenta` will color all the values in
 the bottom 99% of the values range to `Blues`, and the top 1% of the range to magenta. A `_u` suffix works similarly but
 applies to the bottom range of the values.
@@ -763,11 +742,11 @@ Palettes with suffixes (including `_r`) are computed on the fly and cached for f
 
 !!! note
 
-    Always hold the [`COLOR_PALETTES_LOCK`](@ref) when manually accessing the `NAMED_COLOR_PALETTES`, otherwise you
+    Always hold the [`COLOR_SCALES_LOCK`](@ref) when manually accessing the `NAMED_COLOR_SCALES`, otherwise you
     *will* regret it at some point.
 """
-NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
-    "Twilight" => continuous_colors([
+NAMED_COLOR_SCALES = Dict{String, ContinuousColors}([
+    "Twilight" => continuous_colors_scale([
         "#e2d9e2",
         "#9ebbc9",
         "#6785be",
@@ -779,7 +758,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#ceac94",
         "#e2d9e2",
     ]),
-    "IceFire" => continuous_colors([
+    "IceFire" => continuous_colors_scale([
         "#000000",
         "#001f4d",
         "#003786",
@@ -798,7 +777,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#4c0000",
         "#000000",
     ]),
-    "Edge" => continuous_colors([
+    "Edge" => continuous_colors_scale([
         "#313131",
         "#3d019d",
         "#3810dc",
@@ -817,7 +796,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#97023d",
         "#313131",
     ]),
-    "Phase" => continuous_colors([
+    "Phase" => continuous_colors_scale([
         "rgb(167, 119, 12)",
         "rgb(197, 96, 51)",
         "rgb(217, 67, 96)",
@@ -831,7 +810,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(119, 141, 17)",
         "rgb(167, 119, 12)",
     ]),
-    "HSV" => continuous_colors([
+    "HSV" => continuous_colors_scale([
         "#ff0000",
         "#ffa700",
         "#afff00",
@@ -843,7 +822,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#ff00bf",
         "#ff0000",
     ]),
-    "mrybm" => continuous_colors([
+    "mrybm" => continuous_colors_scale([
         "#f884f7",
         "#f968c4",
         "#ea4388",
@@ -862,7 +841,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#cd7dfe",
         "#f884f7",
     ]),
-    "mygbm" => continuous_colors([
+    "mygbm" => continuous_colors_scale([
         "#ef55f1",
         "#fb84ce",
         "#fbafa1",
@@ -881,10 +860,15 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#c543fa",
         "#ef55f1",
     ]),
-    "Blackbody" =>
-        continuous_colors(["rgb(0,0,0)", "rgb(230,0,0)", "rgb(230,210,0)", "rgb(255,255,255)", "rgb(160,200,255)"]),
-    "Bluered" => continuous_colors(["rgb(0,0,255)", "rgb(255,0,0)"]),
-    "Blues" => continuous_colors([
+    "Blackbody" => continuous_colors_scale([
+        "rgb(0,0,0)",
+        "rgb(230,0,0)",
+        "rgb(230,210,0)",
+        "rgb(255,255,255)",
+        "rgb(160,200,255)",
+    ]),
+    "Bluered" => continuous_colors_scale(["rgb(0,0,255)", "rgb(255,0,0)"]),
+    "Blues" => continuous_colors_scale([
         "rgb(5,10,172)",
         "rgb(40,60,190)",
         "rgb(70,100,245)",
@@ -892,7 +876,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(106,137,247)",
         "rgb(220,220,220)",
     ]),
-    "Cividis" => continuous_colors([
+    "Cividis" => continuous_colors_scale([
         "rgb(0,32,76)",
         "rgb(0,42,102)",
         "rgb(0,52,110)",
@@ -912,7 +896,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(243,219,79)",
         "rgb(255,233,69)",
     ]),
-    "Earth" => continuous_colors([
+    "Earth" => continuous_colors_scale([
         "rgb(0,0,130)",
         "rgb(0,180,180)",
         "rgb(40,210,40)",
@@ -920,7 +904,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(120,70,20)",
         "rgb(255,255,255)",
     ]),
-    "Electric" => continuous_colors([
+    "Electric" => continuous_colors_scale([
         "rgb(0,0,0)",
         "rgb(30,0,100)",
         "rgb(120,0,100)",
@@ -928,7 +912,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(230,200,0)",
         "rgb(255,250,220)",
     ]),
-    "Greens" => continuous_colors([
+    "Greens" => continuous_colors_scale([
         "rgb(0,68,27)",
         "rgb(0,109,44)",
         "rgb(35,139,69)",
@@ -939,9 +923,9 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(229,245,224)",
         "rgb(247,252,245)",
     ]),
-    "Greys" => continuous_colors(["rgb(0,0,0)", "rgb(255,255,255)"]),
-    "Hot" => continuous_colors(["rgb(0,0,0)", "rgb(230,0,0)", "rgb(255,210,0)", "rgb(255,255,255)"]),
-    "Jet" => continuous_colors([
+    "Greys" => continuous_colors_scale(["rgb(0,0,0)", "rgb(255,255,255)"]),
+    "Hot" => continuous_colors_scale(["rgb(0,0,0)", "rgb(230,0,0)", "rgb(255,210,0)", "rgb(255,255,255)"]),
+    "Jet" => continuous_colors_scale([
         "rgb(0,0,131)",
         "rgb(0,60,170)",
         "rgb(5,255,255)",
@@ -949,7 +933,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(250,0,0)",
         "rgb(128,0,0)",
     ]),
-    "Picnic" => continuous_colors([
+    "Picnic" => continuous_colors_scale([
         "rgb(0,0,255)",
         "rgb(51,153,255)",
         "rgb(102,204,255)",
@@ -962,14 +946,14 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(255,102,102)",
         "rgb(255,0,0)",
     ]),
-    "Portland" => continuous_colors([
+    "Portland" => continuous_colors_scale([
         "rgb(12,51,131)",
         "rgb(10,136,186)",
         "rgb(242,211,56)",
         "rgb(242,143,56)",
         "rgb(217,30,30)",
     ]),
-    "Rainbow" => continuous_colors([
+    "Rainbow" => continuous_colors_scale([
         "rgb(150,0,90)",
         "rgb(0,0,200)",
         "rgb(0,25,255)",
@@ -980,7 +964,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(255,111,0)",
         "rgb(255,0,0)",
     ]),
-    "RdBu" => continuous_colors([
+    "RdBu" => continuous_colors_scale([
         "rgb(5,10,172)",
         "rgb(106,137,247)",
         "rgb(190,190,190)",
@@ -988,8 +972,9 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(230,145,90)",
         "rgb(178,10,28)",
     ]),
-    "Reds" => continuous_colors(["rgb(220,220,220)", "rgb(245,195,157)", "rgb(245,160,105)", "rgb(178,10,28)"]),
-    "Viridis" => continuous_colors([
+    "Reds" =>
+        continuous_colors_scale(["rgb(220,220,220)", "rgb(245,195,157)", "rgb(245,160,105)", "rgb(178,10,28)"]),
+    "Viridis" => continuous_colors_scale([
         "#440154",
         "#48186a",
         "#472d7b",
@@ -1008,7 +993,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "#d8e219",
         "#fde725",
     ]),
-    "YlGnBu" => continuous_colors([
+    "YlGnBu" => continuous_colors_scale([
         "rgb(8,29,88)",
         "rgb(37,52,148)",
         "rgb(34,94,168)",
@@ -1019,7 +1004,7 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
         "rgb(237,248,217)",
         "rgb(255,255,217)",
     ]),
-    "YlOrRd" => continuous_colors([
+    "YlOrRd" => continuous_colors_scale([
         "rgb(128,0,38)",
         "rgb(189,0,38)",
         "rgb(227,26,28)",
@@ -1033,145 +1018,235 @@ NAMED_COLOR_PALETTES = Dict{String, ContinuousColors}([
 ])
 
 """
-A global lock to use when accessing the `NAMED_COLOR_PALETTES`. Always hold the [`COLOR_PALETTES_LOCK`](@ref) when
-manually accessing the `NAMED_COLOR_PALETTES`, otherwise you *will* regret it at some point.
+A global lock to use when accessing the `NAMED_COLOR_SCALES`. Always hold the [`COLOR_SCALES_LOCK`](@ref) when
+manually accessing the `NAMED_COLOR_SCALES`, otherwise you *will* regret it at some point.
 """
-COLOR_PALETTES_LOCK = ReentrantLock()
+COLOR_SCALES_LOCK = ReentrantLock()
 
-CACHED_COLOR_PALETTES = Dict{String, ContinuousColors}()
+CACHED_COLOR_SCALES = Dict{String, ContinuousColors}()
+
+function ensure_cached_scale(context::ValidationContext, palette::AbstractString)::Nothing
+    lock(COLOR_SCALES_LOCK) do
+        actual_palette = get(CACHED_COLOR_SCALES, palette, nothing)
+        if actual_palette === nothing
+            parts = split(palette, "_")
+
+            actual_palette = get(NAMED_COLOR_SCALES, parts[1], nothing)
+            if actual_palette === nothing
+                throw(ArgumentError("invalid $(location(context)).palette: $(parts[1])"))
+            end
+
+            for part in parts[2:end]
+                pieces = split(part, ":")
+                try
+                    if pieces[1] == "r" && length(pieces) == 1
+                        actual_palette = reverse_color_scale(actual_palette)
+                        continue
+                    elseif pieces[1] == "z" && length(pieces) == 3
+                        value_fraction = parse(Float32, pieces[2])
+                        color_fraction = parse(Float32, pieces[3])
+                        if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
+                            actual_palette = zero_color_scale(actual_palette, value_fraction, color_fraction)
+                            continue
+                        end
+                    elseif pieces[1] == "c" && length(pieces) == 3
+                        value_fraction = parse(Float32, pieces[2])
+                        color_fraction = parse(Float32, pieces[3])
+                        if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
+                            actual_palette = center_color_scale(actual_palette, value_fraction, color_fraction)
+                            continue
+                        end
+                    elseif pieces[1] == "o" && length(pieces) == 3
+                        value_fraction = parse(Float32, pieces[2])
+                        color = pieces[3]
+                        parse(Colorant, color)  # NOJET
+                        if 0 <= value_fraction < 1
+                            actual_palette = overflow_color_scale(actual_palette, value_fraction, color)
+                            continue
+                        end
+                    elseif pieces[1] == "u" && length(pieces) == 3
+                        value_fraction = parse(Float32, pieces[2])
+                        color = pieces[3]
+                        parse(Colorant, color)  # NOJET
+                        if 0 <= value_fraction < 1
+                            actual_palette = underflow_color_scale(actual_palette, value_fraction, color)
+                            continue
+                        end
+                    end
+                catch
+                end
+                throw(ArgumentError("invalid $(location(context)).palette: $(palette)"))
+            end
+
+            CACHED_COLOR_SCALES[palette] = actual_palette
+        end
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct ColorsConfiguration <: Validated
+        fixed::Maybe{AbstractString} = nothing
+        palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+        axis::AxisConfiguration = AxisConfiguration()
+        show_legend::Bool = false
+    end
+
+Configure how to color some data. Supported combinations of configuration and data are:
+
+| `fixed`    | `palette`                      | colors data | `axis`        | `show_legend` | Behavior         |
+|:---------- |:------------------------------ |:----------- |:------------- |:------------- |:---------------- |
+| color name | `nothing`                      | `nothing`   | Restricted(A) | `false`       | Named fixed (1)  |
+| `nothing`  | `nothing`                      | `nothing`   | Restricted(A) | `false`       | Auto fixed (2)   |
+| `nothing`  | `nothing`                      | str[]       | Restricted(A) | `false`       | Named data (3)   |
+| `nothing`  | `nothing`                      | num[]       | Any           | Any           | Auto scale (4)   |
+| `nothing`  | palette name                   | num[]       | Any           | Any           | Named scale (5)  |
+| `nothing`  | (value::num, color::str)[]     | num[]       | Any           | Any           | Manual scale (6) |
+| `nothing`  | Dict{value::str => color::str} | str[]       | Restricted(A) | Any           | Categorical (7)  |
+
+Any other combination of configuration is not allowed.
+
+**Restricted Axis:** The `axis` can't specify `log_scale`, `percent`, `minimum`, `maximum` as they make no sense in this case.
+
+**Named fixed (1):** All the data entities will be given the same `fixed` color.
+
+**Auto fixed (2):** All the data entities will be given the same color, chosen automatically by Plotly.
+
+**Named data (3):** The colors data contains explicit color names. An empty color name will prevent the matching data from being
+plotted. If the `fixed` color is specified, it is ignored.
+
+**Auto scale (4):** The colors data (transformed by the `axis`) will be shown in a color scale chosen by Plotly.
+
+**Names scale (5):** The colors data (transformed by the `axis`) will be shown using the named standard Plotly
+[color scale](https://plotly.com/python/builtin-colorscales/) (see [`NAMED_COLOR_SCALES`](@ref)).
+
+**Manual scale (6):** The colors data (transformed by the `axis`) will be shown using the specified palette (whose values will also be
+transformed by the `axis`). The values must be in non-decreasing order, and the overall range of values must not be
+empty.
+
+**Categorical (7):** The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the
+dictionary will prevent the matching data from being plotted.
+
+If `show_legend` is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be
+shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each
+other); see the `color_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
+"""
+@kwdef mutable struct ColorsConfiguration <: Validated
+    palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+    fixed::Maybe{AbstractString} = nothing
+    axis::AxisConfiguration = AxisConfiguration()
+    show_legend::Bool = false
+end
 
 function Validations.validate(
     context::ValidationContext,
     colors_configuration::ColorsConfiguration,
 )::Maybe{AbstractString}
-    validate_field(context, "color_axis", colors_configuration.color_axis)
+    validate_field(context, "axis", colors_configuration.axis)
 
-    colors_palette = colors_configuration.colors_palette
-    if colors_palette isa AbstractString
-        lock(COLOR_PALETTES_LOCK) do
-            actual_palette = get(CACHED_COLOR_PALETTES, colors_palette, nothing)
-            if actual_palette === nothing
-                parts = split(colors_palette, "_")
+    palette = colors_configuration.palette
 
-                actual_palette = get(NAMED_COLOR_PALETTES, parts[1], nothing)
-                if actual_palette === nothing
-                    throw(ArgumentError("invalid $(location(context)).colors_palette: $(parts[1])"))
-                end
-
-                for part in parts[2:end]
-                    pieces = split(part, ":")
-                    try
-                        if pieces[1] == "r" && length(pieces) == 1
-                            actual_palette = reverse_palette(actual_palette)
-                            continue
-                        elseif pieces[1] == "z" && length(pieces) == 3
-                            value_fraction = parse(Float32, pieces[2])
-                            color_fraction = parse(Float32, pieces[3])
-                            if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
-                                actual_palette = zero_palette(actual_palette, value_fraction, color_fraction)
-                                continue
-                            end
-                        elseif pieces[1] == "c" && length(pieces) == 3
-                            value_fraction = parse(Float32, pieces[2])
-                            color_fraction = parse(Float32, pieces[3])
-                            if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
-                                actual_palette = center_palette(actual_palette, value_fraction, color_fraction)
-                                continue
-                            end
-                        elseif pieces[1] == "o" && length(pieces) == 3
-                            value_fraction = parse(Float32, pieces[2])
-                            color = pieces[3]
-                            parse(Colorant, color)  # NOJET
-                            if 0 <= value_fraction < 1
-                                actual_palette = overflow_palette(actual_palette, value_fraction, color)
-                                continue
-                            end
-                        elseif pieces[1] == "u" && length(pieces) == 3
-                            value_fraction = parse(Float32, pieces[2])
-                            color = pieces[3]
-                            parse(Colorant, color)  # NOJET
-                            if 0 <= value_fraction < 1
-                                actual_palette = underflow_palette(actual_palette, value_fraction, color)
-                                continue
-                            end
-                        end
-                    catch
-                    end
-                    throw(ArgumentError("invalid $(location(context)).colors_palette: $(colors_palette)"))
-                end
-
-                CACHED_COLOR_PALETTES[colors_palette] = actual_palette
-            end
+    if colors_configuration.fixed !== nothing
+        if palette !== nothing
+            throw(ArgumentError("can't specify both $(location(context)).fixed\n" * "and $(location(context)).palette"))
         end
 
-    elseif colors_palette isa ContinuousColors
-        validate_vector_is_not_empty(context, "colors_palette", colors_palette)  # NOJET
+        if colors_configuration.axis.minimum !== nothing ||
+           colors_configuration.axis.maximum !== nothing ||
+           colors_configuration.axis.log_scale !== nothing ||
+           colors_configuration.axis.percent
+            throw(
+                ArgumentError(
+                    "can't specify both $(location(context)).fixed\n" *
+                    "and any of $(location(context)).axis.(minimum,maximum,log_scale,percent)",
+                ),
+            )
+        end
 
-        values = [entry[1] for entry in colors_palette]
+        if colors_configuration.show_legend
+            throw(
+                ArgumentError(
+                    "can't specify both $(location(context)).fixed\n" * "and $(location(context)).show_legend",
+                ),
+            )
+        end
+
+        validate_in(context, "fixed") do
+            validate_is_color(context, colors_configuration.fixed)
+            return nothing
+        end
+    end
+
+    if palette === nothing
+        return nothing
+    end
+
+    if palette isa AbstractString
+        ensure_cached_scale(context, palette)
+        return nothing
+    end
+
+    if palette isa ContinuousColors
+        validate_vector_is_not_empty(context, "palette", palette)  # NOJET
+
+        values = [entry[1] for entry in palette]
         for (index, (low_value, high_value)) in enumerate(zip(values[1:(end - 1)], values[2:end]))
             if low_value > high_value
                 throw(
                     ArgumentError(
-                        "palette value $(location(context)).colors_palette[$(index)].value: $(low_value)\n" *
-                        "is above value $(location(context)).colors_palette[$(index + 1)].value: $(high_value)",
+                        "palette value $(location(context)).palette[$(index)].value: $(low_value)\n" *
+                        "is above value $(location(context)).palette[$(index + 1)].value: $(high_value)",
                     ),
                 )
             end
         end
 
-        validate_vector_entries(context, "colors_palette", colors_palette) do _, (_, color)  # NOJET
+        validate_vector_entries(context, "palette", palette) do _, (_, color)  # NOJET
             validate_in(context, "color") do
                 validate_is_color(context, color)
                 return nothing
             end
         end
 
-        if colors_configuration.color_axis.minimum !== nothing
-            throw(
-                ArgumentError(
-                    "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
-                    "and explicit $(location(context)).color_axis.minimum: $(colors_configuration.color_axis.minimum)",
-                ),
-            )
-        end
+        validate_is_range(context, "palette[1].value", palette[1][1], "palette[end].value", palette[end][1])  # NOJET
 
-        if colors_configuration.color_axis.maximum !== nothing
-            throw(
-                ArgumentError(
-                    "must not specify both: explicit continuous colors $(location(context)).colors_palette\n" *
-                    "and explicit $(location(context)).color_axis.maximum: $(colors_configuration.color_axis.maximum)",
-                ),
-            )
-        end
-
-        cmin = minimum([value for (value, _) in colors_palette])
-        cmax = maximum([value for (value, _) in colors_palette])
-        validate_is_range(context, "minimum(colors_palette[*].value)", cmin, "maximum(colors_palette[*].value)", cmax)
-
-        if colors_configuration.color_axis.log_scale !== nothing
-            index = argmin(colors_palette)  # NOJET
-            validate_in(context, "(colors_palette[$(index)].value + color_axis.log_regularization)") do
-                validate_is_above(
-                    context,
-                    colors_palette[index][1] + colors_configuration.color_axis.log_regularization,
-                    0,
-                )
+        if colors_configuration.axis.log_scale !== nothing
+            validate_in(context, "(palette[1].value + axis.log_regularization)") do
+                validate_is_above(context, palette[1][1] + colors_configuration.axis.log_regularization, 0)
                 return nothing
             end
         end
 
-    elseif colors_palette isa CategoricalColors
-        validate_dict_is_not_empty(context, "colors_palette", colors_palette)  # NOJET
-
-        validate_dict_entries(context, "colors_palette", colors_palette) do _, color  # NOJET
-            validate_in(context, "color") do
-                validate_is_color(context, color)
-                return nothing
-            end
-        end
+        return nothing
     end
 
-    return nothing
+    if palette isa CategoricalColors
+        validate_dict_is_not_empty(context, "palette", palette)  # NOJET
+
+        validate_dict_entries(context, "palette", palette) do _, color  # NOJET
+            validate_in(context, "color") do
+                validate_is_color(context, color)
+                return nothing
+            end
+        end
+
+        if colors_configuration.axis.minimum !== nothing ||
+           colors_configuration.axis.maximum !== nothing ||
+           colors_configuration.axis.log_scale !== nothing ||
+           colors_configuration.axis.percent
+            throw(
+                ArgumentError(
+                    "can't specify both categorical $(location(context)).palette\n" *
+                    "and any of $(location(context)).axis.(minimum,maximum,log_scale,percent)",
+                ),
+            )
+        end
+
+        return nothing
+    end
+
+    @assert false
 end
 
 """
