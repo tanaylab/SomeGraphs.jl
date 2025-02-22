@@ -59,71 +59,79 @@ nested_test("utilities") do
     end
 
     nested_test("scale_size_values") do
-        sizes = [1, 2, 3]
-        axis_configuration = AxisConfiguration()
+        sizes_configuration = SizesConfiguration()
 
         nested_test("default") do
-            @test scale_size_values(axis_configuration, SizeConfiguration(), sizes) == [2, 6, 10]
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [2, 6, 10])
+            return nothing
         end
 
         nested_test("smallest") do
-            return test_same_values(
-                scale_size_values(axis_configuration, SizeConfiguration(; smallest = 0), sizes),
-                [0, 4, 8],
-            )
+            sizes_configuration.smallest = 4
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [4, 8, 12])
+            return nothing
         end
 
         nested_test("span") do
-            return test_same_values(
-                scale_size_values(axis_configuration, SizeConfiguration(; span = 2), sizes),
-                [2, 3, 4],
-            )
+            sizes_configuration.span = 10
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [2, 7, 12])
+            return nothing
         end
 
         nested_test("both") do
-            return test_same_values(
-                scale_size_values(axis_configuration, SizeConfiguration(; smallest = 10, span = 20), sizes),
-                [10, 20, 30],
-            )
+            sizes_configuration.smallest = 4
+            sizes_configuration.span = 10
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [4, 9, 14])
+            return nothing
         end
 
         nested_test("same") do
-            sizes = [1]
-            return test_same_values(scale_size_values(axis_configuration, SizeConfiguration(), sizes), [2])
+            test_same_values(scale_size_values(sizes_configuration, [1]), [2])
+            return nothing
         end
 
         nested_test("nothing") do
-            sizes = nothing
-            @test scale_size_values(axis_configuration, SizeConfiguration(; smallest = 0), sizes) === sizes
+            @test scale_size_values(sizes_configuration, nothing) === nothing
         end
 
-        nested_test("log2") do
-            sizes = [1, 2, 4]
-            axis_configuration = AxisConfiguration(; log_scale = Log2Scale)
+        nested_test("log") do
+            sizes_configuration.log_scale = true
+            sizes_configuration.log_regularization = 1
 
             nested_test("()") do
-                return test_same_values(scale_size_values(axis_configuration, SizeConfiguration(), sizes), [2, 6, 10])
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [2, 6, 10])
+                return nothing
+            end
+
+            nested_test("minimum") do
+                sizes_configuration.minimum = 0
+                test_same_values(scale_size_values(sizes_configuration, [-1, 1, 3]), [2, 6, 10])
+                return nothing
+            end
+
+            nested_test("maximum") do
+                sizes_configuration.maximum = 3
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 4]), [2, 6, 10])
+                return nothing
             end
 
             nested_test("smallest") do
-                return test_same_values(
-                    scale_size_values(axis_configuration, SizeConfiguration(; smallest = 0), sizes),
-                    [0, 4, 8],
-                )
+                sizes_configuration.smallest = 4
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [4, 8, 12])
+                return nothing
             end
 
-            nested_test("largest") do
-                return test_same_values(
-                    scale_size_values(axis_configuration, SizeConfiguration(; span = 2), sizes),
-                    [2, 3, 4],
-                )
+            nested_test("span") do
+                sizes_configuration.span = 10
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [2, 7, 12])
+                return nothing
             end
 
             nested_test("both") do
-                return test_same_values(
-                    scale_size_values(axis_configuration, SizeConfiguration(; smallest = 10, span = 20), sizes),
-                    [10, 20, 30],
-                )
+                sizes_configuration.smallest = 4
+                sizes_configuration.span = 10
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [4, 9, 14])
+                return nothing
             end
         end
     end

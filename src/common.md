@@ -155,7 +155,7 @@ to_documenter(graph.figure)
 ```
 
 ```@docs
-SomeGraphs.Common.SizeConfiguration
+SomeGraphs.Common.SizesConfiguration
 SomeGraphs.Common.LineConfiguration
 SomeGraphs.Common.LineStyle
 SomeGraphs.Common.ValuesOrientation

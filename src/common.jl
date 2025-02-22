@@ -27,7 +27,7 @@ export LogScale
 export MarginsConfiguration
 export NAMED_COLOR_SCALES
 export PlotlyFigure
-export SizeConfiguration
+export SizesConfiguration
 export SolidLine
 export SubGraph
 export ValuesOrientation
@@ -270,29 +270,95 @@ Supported log scales (when log scaling is enabled):
 @enum LogScale Log10Scale Log2Scale
 
 """
-    @kwdef mutable struct SizeConfiguration <: Validated
+    @kwdef mutable struct SizesConfiguration <: Validated
+        fixed::Maybe{Real} = nothing
+        minimum::Maybe{Real} = nothing
+        maximum::Maybe{Real} = nothing
+        log_scale::Bool = false
+        log_regularization::Real = 0
         smallest::Real = 2
         span::Real = 8
     end
 
-Configure the range of sizes in pixels (1/96th of an inch) to map the sizes data By default we use 2 pixels for the
-`smallest` size, and add to it an additional `span` of pixel sizes be 8 to get the largest size. Both the `smallest`
-size and `span` of sizes must be positive.
+Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
+used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be
+specified. The minimal size data value (or any values at most the specified `minimum`) is mapped to the `smallest` size
+in pixels, and the maximum size data value (or any values at least the specified `maximum`) is mapped to a size with an
+additional `span` in pixels. If `log_scale`, then we use the log of the data values (and of the specified `minimum`
+and/or `maximum`, if any), adding the `log_regularization` to avoid a log of zero or negative values.
 """
-@kwdef mutable struct SizeConfiguration <: Validated
+@kwdef mutable struct SizesConfiguration <: Validated
+    fixed::Maybe{Real} = nothing
+    minimum::Maybe{Real} = nothing
+    maximum::Maybe{Real} = nothing
+    log_scale::Bool = false
+    log_regularization::Real = 0
     smallest::Real = 2
     span::Real = 8
 end
 
-function Validations.validate(context::ValidationContext, size_configuration::SizeConfiguration)::Nothing
-    validate_in(context, "smallest") do
-        validate_is_above(context, size_configuration.smallest, 0)
+function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
+    if sizes_configuration.fixed !== nothing
+        validate_in(context, "fixed") do
+            return validate_is_above(context, sizes_configuration.fixed, 0)
+        end
+
+        if sizes_configuration.minimum !== nothing ||
+           sizes_configuration.maximum !== nothing ||
+           sizes_configuration.log_scale ||
+           sizes_configuration.log_regularization != 0 ||
+           sizes_configuration.smallest != 2 ||
+           sizes_configuration.span != 8
+            throw(
+                ArgumentError(
+                    "can't specify both $(location(context)).fixed\n" *
+                    "and any of $(location(context)).(minimum,maximum,log_scale,log_regularization,smallest,span)",
+                ),
+            )
+        end
+
         return nothing
+    else
+        validate_is_range(context, "minimum", sizes_configuration.minimum, "maximum", sizes_configuration.maximum)
+
+        if sizes_configuration.log_scale
+            validate_in(context, "log_regularization") do
+                validate_is_at_least(context, sizes_configuration.log_regularization, 0)
+                return nothing
+            end
+            if sizes_configuration.minimum !== nothing
+                validate_in(context, "(minimum + log_regularization)") do
+                    validate_is_above(context, sizes_configuration.minimum + sizes_configuration.log_regularization, 0)
+                    return nothing
+                end
+            end
+            if sizes_configuration.maximum !== nothing
+                validate_in(context, "(maximum + log_regularization)") do
+                    validate_is_above(context, sizes_configuration.maximum + sizes_configuration.log_regularization, 0)
+                    return nothing
+                end
+            end
+        else
+            if sizes_configuration.log_regularization != 0
+                throw(
+                    ArgumentError(
+                        "non-zero non-log $(location(context)).log_regularization: $(sizes_configuration.log_regularization)",
+                    ),
+                )
+            end
+        end
+
+        validate_in(context, "smallest") do
+            validate_is_above(context, sizes_configuration.smallest, 0)
+            return nothing
+        end
+
+        validate_in(context, "span") do
+            validate_is_above(context, sizes_configuration.span, 0)
+            return nothing
+        end
     end
-    validate_in(context, "span") do
-        validate_is_above(context, size_configuration.span, 0)
-        return nothing
-    end
+
     return nothing
 end
 

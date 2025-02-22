@@ -76,7 +76,7 @@ nested_test("common") do
     end
 
     nested_test("size") do
-        size = SizeConfiguration()
+        size = SizesConfiguration()
         context = ValidationContext(["size"])
         validate(context, size)
 
@@ -94,6 +94,101 @@ nested_test("common") do
                 too low size.span: 0
                 is not above: 0
             """) validate(context, size)
+        end
+    end
+
+    nested_test("sizes") do
+        sizes = SizesConfiguration()
+        context = ValidationContext(["sizes"])
+        validate(context, sizes)
+
+        nested_test("fixed") do
+            sizes.fixed = 2
+            return validate(context, sizes)
+        end
+
+        nested_test("~fixed") do
+            sizes.fixed = 0
+            @test_throws dedent("""
+                too low sizes.fixed: 0
+                is not above: 0
+            """) validate(context, sizes)
+        end
+
+        nested_test("!fixed") do
+            sizes.fixed = 1
+            sizes.log_scale = true
+            @test_throws dedent("""
+                can't specify both sizes.fixed
+                and any of sizes.(minimum,maximum,log_scale,log_regularization,smallest,span)
+            """) validate(context, sizes)
+        end
+
+        nested_test("range") do
+            sizes.minimum = 0
+            sizes.maximum = 0
+            @test_throws dedent("""
+                range low limit sizes.minimum: 0
+                is not below high limit sizes.maximum: 0
+            """) validate(context, sizes)
+        end
+
+        nested_test("~log_regularization") do
+            sizes.log_regularization = 1
+            @test_throws "non-zero non-log sizes.log_regularization: 1" validate(context, sizes)
+        end
+
+        nested_test("log_regularization") do
+            sizes.log_scale = true
+            sizes.log_regularization = -1
+            @test_throws dedent("""
+                too low sizes.log_regularization: -1
+                is not at least: 0
+            """) validate(context, sizes)
+        end
+
+        nested_test("log_regularization+minimum") do
+            sizes.log_scale = true
+            sizes.log_regularization = 1
+
+            sizes.minimum = -3
+            @test_throws dedent("""
+                too low sizes.(minimum + log_regularization): -2
+                is not above: 0
+            """) validate(context, sizes)
+
+            sizes.minimum = 2
+            return validate(context, sizes)
+        end
+
+        nested_test("log_regularization+maximum") do
+            sizes.log_scale = true
+            sizes.log_regularization = 1
+
+            sizes.maximum = -3
+            @test_throws dedent("""
+                too low sizes.(maximum + log_regularization): -2
+                is not above: 0
+            """) validate(context, sizes)
+
+            sizes.maximum = 2
+            return validate(context, sizes)
+        end
+
+        nested_test("smallest") do
+            sizes.smallest = 0
+            @test_throws dedent("""
+                too low sizes.smallest: 0
+                is not above: 0
+            """) validate(context, sizes)
+        end
+
+        nested_test("span") do
+            sizes.span = 0
+            @test_throws dedent("""
+                too low sizes.span: 0
+                is not above: 0
+            """) validate(context, sizes)
         end
     end
 

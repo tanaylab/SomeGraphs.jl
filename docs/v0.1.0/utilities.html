@@ -360,6 +360,34 @@
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.line_dash" href="#SomeGraphs.Utilities.line_dash">
+<code>SomeGraphs.Utilities.line_dash
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">line_dash(line_style::Maybe{LineStyle})::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return the Plotly 
+<code>line_dash
+</code> for a 
+<code>line_style
+</code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Common.graph_to_figure" href="#SomeGraphs.Common.graph_to_figure">
 <code>SomeGraphs.Common.graph_to_figure
 </code>
@@ -525,18 +553,15 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <div>
 <pre>
 <code class="language-julia hljs">scale_size_values(
-    axis_configuration::AxisConfiguration,
-    size_configuration::SizeConfiguration,
+    sizes_configuration::SizesConfiguration,
     values::Maybe{AbstractVector{&lt;:Real}},
 )::Maybe{AbstractVector{&lt;:Real}}
 </code>
 </pre>
 <p>Scale a vector of 
 <code>values
-</code> according to the 
-<code>axis_configuration
-</code> and 
-<code>size_configuration
+</code> according to 
+<code>sizes_configuration
 </code>.
 </p>
 </div>
@@ -752,10 +777,14 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <code class="language-julia hljs">range_of(
     values::AbstractVector{&lt;:Maybe{Real}},
     range::Maybe{AbstractVector{&lt;:Maybe{Real}}} = nothing,
-)::AbstractVector{&lt;:Maybe{Real}}
+)::Nothing
 </code>
 </pre>
-<p>Compute the range of (scaled) values. If a range is give, it is updated in-place as well.
+<p>Compute the 
+<code>range
+</code> of (scaled) 
+<code>values
+</code>.
 </p>
 </div>
 </section>
@@ -857,6 +886,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.final_scaled_range">
 <code>SomeGraphs.Utilities.final_scaled_range
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.line_dash">
+<code>SomeGraphs.Utilities.line_dash
 </code>
 </a>
 </li>

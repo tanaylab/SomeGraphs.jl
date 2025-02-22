@@ -7,6 +7,7 @@ module Utilities
 export expand_range!
 export fill_color
 export final_scaled_range
+export line_dash
 export plotly_figure
 export plotly_layout
 export prefer_data
@@ -18,6 +19,7 @@ export scale_axis_value
 export scale_axis_values
 export scale_size_values
 export set_layout_axis!
+export set_layout_colorscale!
 export validate_colors
 export validate_graph_bands
 
@@ -29,6 +31,7 @@ using ..Validations
 using ..Common
 
 import .Common.Maybe
+
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
 
@@ -295,14 +298,28 @@ placement of color scales, the `offset` must be specified manually to avoid over
 """
 function set_layout_colorscale!(;  # UNTESTED
     layout::Layout,
-    color_scale::AbstractString,
+    colors_scale::AbstractString,
     colors_configuration::ColorsConfiguration,
     offset::Maybe{Real},
     range::Maybe{AbstractVector{Real}} = nothing,
     title::Maybe{AbstractString},
 )::Nothing
-    return layout[color_scale] = Dict(
+    if colors_configuration.palette isa AbstractString
+        colorscale = lock(COLOR_SCALES_LOCK) do
+            return NAMED_COLOR_SCALES[colors_configuration.palette]
+        end
+    elseif colors_configuration.palette isa CategoricalColors
+        return nothing
+    elseif colors_configuration.palette isa ContinuousColors
+        colorscale = colors_configuration.palette
+    else
+        @assert colors_configuration.palette === nothing
+        colorscale = nothing
+    end
+
+    return layout[colors_scale] = Dict(
         :showscale => true,
+        :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range[1],
         :cmax => range === nothing ? nothing : range[2],
         :colorbar => Dict(
@@ -461,44 +478,63 @@ end
 
 """
     scale_size_values(
-        axis_configuration::AxisConfiguration,
-        size_configuration::SizeConfiguration,
+        sizes_configuration::SizesConfiguration,
         values::Maybe{AbstractVector{<:Real}},
     )::Maybe{AbstractVector{<:Real}}
 
-Scale a vector of `values` according to the `axis_configuration` and `size_configuration`.
+Scale a vector of `values` according to `sizes_configuration`.
 """
 function scale_size_values(
-    axis_configuration::AxisConfiguration,
-    size_configuration::SizeConfiguration,
+    sizes_configuration::SizesConfiguration,
     values::Maybe{AbstractVector{<:Real}},
 )::Maybe{AbstractVector{<:Real}}
     if values === nothing
         return nothing
-
-    else
-        scaled_values = scale_axis_values(axis_configuration, values)
-        implicit_values_range = range_of(scaled_values)
-        minimum_scaled_value, maximum_scaled_value = final_scaled_range(implicit_values_range, axis_configuration)
-
-        scaled_values_range = maximum_scaled_value - minimum_scaled_value
-        if scaled_values_range == 0
-            scaled_values_range = 1
-        end
-
-        return (scaled_values .- minimum_scaled_value) .* (size_configuration.span / scaled_values_range) .+
-               size_configuration.smallest
     end
+
+    if sizes_configuration.minimum !== nothing
+        minimum_value = sizes_configuration.minimum
+        values = max.(values, sizes_configuration.minimum)
+    else
+        minimum_value = minimum(values)
+    end
+
+    if sizes_configuration.maximum !== nothing
+        maximum_value = sizes_configuration.maximum
+        values = min.(values, sizes_configuration.maximum)
+    else
+        maximum_value = maximum(values)
+    end
+
+    if maximum_value == minimum_value
+        maximum_value += 1
+    end
+
+    if sizes_configuration.log_scale
+        minimum_value = log(minimum_value + sizes_configuration.log_regularization)
+        maximum_value = log(maximum_value + sizes_configuration.log_regularization)
+        values = log.(values .+ sizes_configuration.log_regularization)
+    end
+
+    return [
+        sizes_configuration.smallest +
+        sizes_configuration.span * (value - minimum_value) / (maximum_value - minimum_value) for value in values
+    ]
 end
 
-function line_dash(style::LineStyle)::Maybe{AbstractString}
-    if style == SolidLine
+"""
+    line_dash(line_style::Maybe{LineStyle})::Maybe{AbstractString}
+
+Return the Plotly `line_dash` for a `line_style`.
+"""
+function line_dash(line_style::LineStyle)::Maybe{AbstractString}
+    if line_style == SolidLine
         return nothing
-    elseif style == DashLine
+    elseif line_style == DashLine
         return "dash"
-    elseif style == DotLine
+    elseif line_style == DotLine
         return "dot"
-    elseif style == DashDotLine
+    elseif line_style == DashDotLine
         return "dashdot"
     else
         @assert false
@@ -1112,22 +1148,13 @@ end
     range_of(
         values::AbstractVector{<:Maybe{Real}},
         range::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
-    )::AbstractVector{<:Maybe{Real}}
+    )::Nothing
 
-Compute the range of (scaled) values. If a range is give, it is updated in-place as well.
+Compute the `range` of (scaled) `values`.
 """
-function range_of(
-    values::Maybe{AbstractVector{<:Maybe{Real}}},
-    range::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
-)::AbstractVector{<:Maybe{Real}}
-    if range === nothing
-        minimum_value = nothing
-        maximum_value = nothing
-    else
-        minimum_value, maximum_value = range
-    end
-
+function range_of(values::Maybe{AbstractVector{<:Maybe{Real}}}, range::AbstractVector{<:Maybe{Real}})::Nothing
     if values !== nothing
+        minimum_value, maximum_value = range
         for value in values
             if minimum_value === nothing || (value !== nothing && value < minimum_value)
                 minimum_value = value
@@ -1136,15 +1163,10 @@ function range_of(
                 maximum_value = value
             end
         end
-    end
-
-    if range === nothing
-        range = [minimum_value, maximum_value]
-    else
         range .= [minimum_value, maximum_value]
     end
 
-    return range
+    return nothing
 end
 
 end  # module
