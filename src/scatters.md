@@ -79,6 +79,34 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+```@docs
+SomeGraphs.Scatters.LineGraph
+SomeGraphs.Scatters.line_graph
+SomeGraphs.Scatters.LineGraphData
+SomeGraphs.Scatters.LineGraphConfiguration
+```
+
+**Examples:**
+
+Default (serves as a baseline to compare with when modifying options):
+
+```@example
+using SomeGraphs
+graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+With points:
+
+```@example
+using SomeGraphs
+graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph.configuration.show_points = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 ## Index
 
 ```@index

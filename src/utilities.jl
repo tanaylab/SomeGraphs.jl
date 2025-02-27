@@ -7,9 +7,9 @@ module Utilities
 export expand_range!
 export fill_color
 export final_scaled_range
-export line_dash
 export plotly_figure
 export plotly_layout
+export plotly_line_dash
 export prefer_data
 export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
@@ -543,11 +543,11 @@ function scale_size_values(
 end
 
 """
-    line_dash(line_style::Maybe{LineStyle})::Maybe{AbstractString}
+    plotly_line_dash(line_style::Maybe{LineStyle})::Maybe{AbstractString}
 
 Return the Plotly `line_dash` for a `line_style`.
 """
-function line_dash(line_style::LineStyle)::Maybe{AbstractString}
+function plotly_line_dash(line_style::LineStyle)::Maybe{AbstractString}
     if line_style == SolidLine
         return nothing
     elseif line_style == DashLine
@@ -561,7 +561,7 @@ function line_dash(line_style::LineStyle)::Maybe{AbstractString}
     end
 end
 
-function line_dash(::Nothing)::Nothing  # UNTESTED
+function plotly_line_dash(::Nothing)::Nothing
     return nothing
 end
 
@@ -601,7 +601,7 @@ function push_vertical_bands_shapes(
                 Shape(
                     "line";
                     line_color = band_configuration.line.color,
-                    line_dash = line_dash(band_configuration.line.style),
+                    line_dash = plotly_line_dash(band_configuration.line.style),
                     x0 = scaled_offset,
                     x1 = scaled_offset,
                     xref = "x",
@@ -707,7 +707,7 @@ function push_horizontal_bands_shapes(
                 Shape(
                     "line";
                     line_color = band_configuration.line.color,
-                    line_dash = line_dash(band_configuration.line.style),
+                    line_dash = plotly_line_dash(band_configuration.line.style),
                     y0 = scaled_offset,
                     y1 = scaled_offset,
                     yref = "y",
@@ -883,7 +883,7 @@ function push_diagonal_bands_line(
         Shape(
             "line";
             line_color = band_configuration.line.color,
-            line_dash = line_dash(band_configuration.line.style),
+            line_dash = plotly_line_dash(band_configuration.line.style),
             y0 = start_point.y,
             y1 = end_point.y,
             yref = "y",

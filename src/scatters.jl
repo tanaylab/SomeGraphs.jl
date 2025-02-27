@@ -3,11 +3,15 @@ Graphs for showing scatter points and/or lines.
 """
 module Scatters
 
+export LineGraph
+export LineGraphConfiguration
+export LineGraphData
 export PointsGraph
 export PointsGraphConfiguration
 export PointsGraphData
-export points_graph
 export ScattersConfiguration
+export line_graph
+export points_graph
 
 using ..Common
 using ..Utilities
@@ -405,7 +409,7 @@ function scaled_data(axis_configuration::AxisConfiguration, values::Maybe{Abstra
     return ScaledData(; values = scaled_values, range = scaled_range)
 end
 
-@kwdef mutable struct ConfigeredScatters
+@kwdef mutable struct ConfiguredScatters
     legend_group::AbstractString
     has_legend::Bool
     colors_title::Maybe{AbstractString}
@@ -428,7 +432,7 @@ function configured_scatters(;
     colors_scales::AbstractVector{<:AbstractString},
     size_values::Maybe{AbstractVector{<:Real}},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
-)::ConfigeredScatters
+)::ConfiguredScatters
     scaled_colors_palette = nothing
     if colors_values isa AbstractVector{<:Real}
         colors_scale = pop!(colors_scales)
@@ -445,7 +449,7 @@ function configured_scatters(;
             final_color_palette_values = (scaled_colors_palette_values .- implicit_scaled_colors_range[1]) ./ scale
             final_color_palette_values[1] = 0
             final_color_palette_values[end] = 1
-            scaled_colors_palette = [
+            scaled_colors_palette = [  # NOJET
                 (final_value, entry[2]) for
                 (final_value, entry) in zip(final_color_palette_values, scatters_configuration.colors.palette)
             ]
@@ -492,7 +496,7 @@ function configured_scatters(;
     has_legend =
         scatters_configuration.colors.show_legend && scatters_configuration.colors.palette isa CategoricalColors
 
-    return ConfigeredScatters(;
+    return ConfiguredScatters(;
         legend_group,
         has_legend,
         colors_title,
@@ -625,7 +629,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     return plotly_figure(traces, layout)
 end
 
-function add_pixel_sizes(configured_points::ConfigeredScatters, configured_borders::ConfigeredScatters)::Nothing
+function add_pixel_sizes(configured_points::ConfiguredScatters, configured_borders::ConfiguredScatters)::Nothing
     if configured_points.pixel_size !== nothing
         @assert configured_points.pixel_sizes === nothing
 
@@ -634,7 +638,7 @@ function add_pixel_sizes(configured_points::ConfigeredScatters, configured_borde
             configured_borders.pixel_size += configured_points.pixel_size
         else
             @assert configured_borders.pixel_sizes !== nothing
-            configured_borders.pixel_sizes .+= configured_points.pixel_size
+            configured_borders.pixel_sizes .+= configured_points.pixel_size  # NOJET
         end
 
     else
@@ -658,7 +662,7 @@ function push_edge_traces!(;
     graph::PointsGraph,
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
-    configured_edges::ConfigeredScatters,
+    configured_edges::ConfiguredScatters,
 )::Nothing
     if configured_edges.colors_configuration.show_legend &&
        graph.data.edges_colors isa AbstractVector{<:AbstractString} &&
@@ -704,7 +708,9 @@ function push_edge_traces!(;
                         ),
                         "darkgrey",
                     ),
-                    line_dash = line_dash(prefer_data(graph.data.edges_styles, index, graph.configuration.edges_style)),
+                    line_dash = plotly_line_dash(
+                        prefer_data(graph.data.edges_styles, index, graph.configuration.edges_style),
+                    ),
                     name = prefer_data(edges_names, index, nothing),
                     mode = "lines",
                     legendgroup = legend_group,
@@ -725,7 +731,7 @@ function push_points_traces!(;
     graph::PointsGraph,
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
-    configured_points::ConfigeredScatters,
+    configured_points::ConfiguredScatters,
 )::Nothing
     if configured_points.final_colors_values !== nothing &&
        configured_points.colors_configuration.palette isa CategoricalColors
@@ -738,9 +744,9 @@ function push_points_traces!(;
             if any(mask)
                 push_points_trace!(;
                     traces,
-                    graph,
                     scaled_points_xs,
                     scaled_points_ys,
+                    points_hovers = graph.data.points_hovers,
                     configured_points,
                     mask,
                     name,
@@ -754,9 +760,9 @@ function push_points_traces!(;
     else
         push_points_trace!(;
             traces,
-            graph,
             scaled_points_xs,
             scaled_points_ys,
+            points_hovers = graph.data.points_hovers,
             configured_points,
             mask = configured_points.mask,
             name = nothing,
@@ -767,17 +773,297 @@ function push_points_traces!(;
     return nothing
 end
 
+"""
+    @kwdef mutable struct LineGraphConfiguration <: AbstractGraphConfiguration
+        figure::FigureConfiguration = FigureConfiguration()
+        x_axis::AxisConfiguration = AxisConfiguration()
+        y_axis::AxisConfiguration = AxisConfiguration()
+        line_width::Maybe{Real} = nothing
+        line_color::Maybe{AbstractString} = nothing
+        line_style::LineStyle = SolidLine
+        show_points::Bool = false
+        points_size::Maybe{Real} = nothing
+        points_color::Maybe{AbstractString} = nothing
+        vertical_bands::BandsConfiguration = BandsConfiguration()
+        horizontal_bands::BandsConfiguration = BandsConfiguration()
+        diagonal_bands::BandsConfiguration = BandsConfiguration()
+    end
+
+Configure a graph for showing a single line.
+
+The `line_width` and `line_color` are chosen automatically by default. If `show_points` is set, so are `points_color`
+and `points_size`. The bands are similar to [`PointsGraphConfiguration`](@ref).
+"""
+@kwdef mutable struct LineGraphConfiguration <: AbstractGraphConfiguration
+    figure::FigureConfiguration = FigureConfiguration()
+    x_axis::AxisConfiguration = AxisConfiguration()
+    y_axis::AxisConfiguration = AxisConfiguration()
+    line_width::Maybe{Real} = nothing
+    line_color::Maybe{AbstractString} = nothing
+    line_style::LineStyle = SolidLine
+    show_points::Bool = false
+    points_size::Maybe{Real} = nothing
+    points_color::Maybe{AbstractString} = nothing
+    vertical_bands::BandsConfiguration = BandsConfiguration()
+    horizontal_bands::BandsConfiguration = BandsConfiguration()
+    diagonal_bands::BandsConfiguration = BandsConfiguration()
+end
+
+function Validations.validate(context::ValidationContext, configuration::LineGraphConfiguration)::Nothing
+    validate_field(context, "figure", configuration.figure)
+    validate_field(context, "x_axis", configuration.x_axis)
+    validate_field(context, "y_axis", configuration.y_axis)
+
+    validate_in(context, "line_color") do
+        return validate_is_color(context, configuration.line_color)
+    end
+    validate_in(context, "points_size") do
+        return validate_is_above(context, configuration.points_size, 0)
+    end
+    validate_in(context, "points_color") do
+        return validate_is_color(context, configuration.points_color)
+    end
+
+    validate_field(context, "vertical_bands", configuration.vertical_bands, configuration.x_axis)
+    validate_field(context, "horizontal_bands", configuration.horizontal_bands, configuration.y_axis)
+    validate_field(context, "diagonal_bands", configuration.diagonal_bands, configuration.x_axis)
+
+    if !configuration.show_points
+        if configuration.points_size !== nothing
+            throw(ArgumentError("can't specify $(location(context)).points_size w/o $(location(context)).show_points"))
+        end
+
+        if configuration.points_color !== nothing
+            throw(ArgumentError("can't specify $(location(context)).points_color w/o $(location(context)).show_points"))
+        end
+    end
+
+    if configuration.diagonal_bands.low.offset !== nothing ||
+       configuration.diagonal_bands.middle.offset !== nothing ||
+       configuration.diagonal_bands.high.offset !== nothing
+        if configuration.x_axis.log_scale != configuration.y_axis.log_scale
+            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)"))
+        end
+        if configuration.x_axis.percent != configuration.y_axis.percent
+            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)"))
+        end
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct LineGraphData <: AbstractGraphData
+        figure_title::Maybe{AbstractString} = nothing
+        x_axis_title::Maybe{AbstractString} = nothing
+        y_axis_title::Maybe{AbstractString} = nothing
+        points_xs::AbstractVector{<:Real} = Float32[]
+        points_ys::AbstractVector{<:Real} = Float32[]
+        points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        vertical_bands::BandsData = BandsData()
+        horizontal_bands::BandsData = BandsData()
+        diagonal_bands::BandsData = BandsData()
+    end
+
+The data for a single line graph.
+
+By default, all the titles are empty. You can specify the overall `figure_title` as well as the `x_axis_title` and
+`y_axis_title` for the axes.
+
+The `points_xs` and `points_ys` vectors must be of the same size. If specified, the `points_hovers` vector must also be
+of the same size.
+"""
+@kwdef mutable struct LineGraphData <: AbstractGraphData
+    figure_title::Maybe{AbstractString} = nothing
+    x_axis_title::Maybe{AbstractString} = nothing
+    y_axis_title::Maybe{AbstractString} = nothing
+    points_xs::AbstractVector{<:Real} = Float32[]
+    points_ys::AbstractVector{<:Real} = Float32[]
+    points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+    vertical_bands::BandsData = BandsData()
+    horizontal_bands::BandsData = BandsData()
+    diagonal_bands::BandsData = BandsData()
+end
+
+function Validations.validate(context::ValidationContext, data::LineGraphData)::Nothing
+    validate_vector_is_not_empty(context, "points_xs", data.points_xs)
+    n_points = length(data.points_xs)
+
+    validate_vector_length(context, "points_ys", data.points_ys, "points_ys", n_points)
+    validate_vector_length(context, "points_hovers", data.points_hovers, "points_hovers", n_points)
+
+    return nothing
+end
+
+"""
+A graph showing a single line. See [`LineGraphData`](@ref) and [`LineGraphConfiguration`](@ref).
+"""
+LineGraph = Graph{LineGraphData, LineGraphConfiguration}
+
+"""
+    function line_graph(;
+        [figure_title::Maybe{AbstractString} = nothing,
+        x_axis_title::Maybe{AbstractString} = nothing,
+        y_axis_title::Maybe{AbstractString} = nothing,
+        points_xs::AbstractVector{<:Real} = Float32[],
+        points_ys::AbstractVector{<:Real} = Float32[],
+        points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        vertical_bands::BandsData = BandsData(),
+        horizontal_bands::BandsData = BandsData(),
+        diagonal_bands::BandsData = BandsData()]
+    )::LineGraph
+
+Create a [`LineGraph`](@ref) by initializing only the [`LineGraphData`](@ref) fields.
+"""
+function line_graph(;
+    figure_title::Maybe{AbstractString} = nothing,
+    x_axis_title::Maybe{AbstractString} = nothing,
+    y_axis_title::Maybe{AbstractString} = nothing,
+    points_xs::AbstractVector{<:Real} = Float32[],
+    points_ys::AbstractVector{<:Real} = Float32[],
+    points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    vertical_bands::BandsData = BandsData(),
+    horizontal_bands::BandsData = BandsData(),
+    diagonal_bands::BandsData = BandsData(),
+)::LineGraph
+    return LineGraph(
+        LineGraphData(;
+            figure_title,
+            x_axis_title,
+            y_axis_title,
+            points_xs,
+            points_ys,
+            points_hovers,
+            vertical_bands,
+            horizontal_bands,
+            diagonal_bands,
+        ),
+        LineGraphConfiguration(),
+    )
+end
+
+function Common.validate_graph(graph::LineGraph)::Nothing
+    if graph.configuration.diagonal_bands.low.offset !== nothing ||
+       graph.configuration.diagonal_bands.middle.offset !== nothing ||
+       graph.configuration.diagonal_bands.high.offset !== nothing ||
+       graph.data.diagonal_bands.low_offset !== nothing ||
+       graph.data.diagonal_bands.middle_offset !== nothing ||
+       graph.data.diagonal_bands.high_offset !== nothing
+        if graph.configuration.x_axis.log_scale !== graph.configuration.y_axis.log_scale
+            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)"))
+        end
+        if graph.configuration.x_axis.percent !== graph.configuration.y_axis.percent
+            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)"))
+        end
+    end
+
+    validate_graph_bands(
+        "vertical_bands",
+        graph.configuration.vertical_bands,
+        graph.data.vertical_bands,
+        graph.configuration.x_axis,
+    )
+    validate_graph_bands(
+        "horizontal_bands",
+        graph.configuration.horizontal_bands,
+        graph.data.horizontal_bands,
+        graph.configuration.y_axis,
+    )
+    validate_graph_bands(
+        "diagonal_bands",
+        graph.configuration.diagonal_bands,
+        graph.data.diagonal_bands,
+        graph.configuration.x_axis,
+    )
+
+    return nothing
+end
+
+function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
+    validate(ValidationContext(["graph"]), graph)
+
+    scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
+    scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
+
+    traces = Vector{GenericTrace}()
+
+    configured_points = ConfiguredScatters(;
+        legend_group = "Line",
+        has_legend = false,
+        colors_title = nothing,
+        colors_configuration = ColorsConfiguration(),
+        colors_scale = nothing,
+        original_color_values = nothing,
+        final_colors_values = nothing,
+        final_colors_range = nothing,
+        scaled_colors_palette = nothing,
+        pixel_size = graph.configuration.points_size,
+        pixel_sizes = nothing,
+        mask = nothing,
+    )
+
+    push_points_trace!(;
+        traces,
+        points_hovers = graph.data.points_hovers,
+        scaled_points_xs,
+        scaled_points_ys,
+        configured_points,
+        mask = nothing,
+        name = nothing,
+        color = graph.configuration.points_color,
+        mode = graph.configuration.show_points ? "lines+markers" : "lines",
+        line_width = graph.configuration.line_width,
+        line_color = graph.configuration.line_color,
+        line_style = graph.configuration.line_style,
+    )
+
+    shapes = Shape[]
+
+    push_vertical_bands_shapes(
+        shapes,
+        graph.configuration.x_axis,
+        scaled_points_xs.range,
+        graph.data.vertical_bands,
+        graph.configuration.vertical_bands,
+    )
+
+    push_horizontal_bands_shapes(
+        shapes,
+        graph.configuration.y_axis,
+        scaled_points_ys.range,
+        graph.data.horizontal_bands,
+        graph.configuration.horizontal_bands,
+    )
+
+    push_diagonal_bands_shapes(
+        shapes,
+        graph.configuration.x_axis,
+        scaled_points_xs.range,
+        scaled_points_ys.range,
+        graph.data.diagonal_bands,
+        graph.configuration.diagonal_bands,
+    )
+
+    layout = points_layout(; graph, scaled_points_xs, scaled_points_ys, shapes, show_legend = false)
+
+    return plotly_figure(traces, layout)
+end
+
 function push_points_trace!(;
     traces::AbstractVector{GenericTrace},
-    graph::PointsGraph,
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
-    configured_points::ConfigeredScatters,
+    points_hovers::Maybe{AbstractVector{<:AbstractString}},
+    configured_points::ConfiguredScatters,
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
     name::Maybe{AbstractString},
     color::Maybe{Union{AbstractString, AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     legend_group_suffix::Maybe{AbstractString} = nothing,
     is_first = true,
+    mode::AbstractString = "markers",
+    line_width::Maybe{Real} = nothing,
+    line_color::Maybe{AbstractString} = nothing,
+    line_style::Maybe{LineStyle} = nothing,
 )::Nothing
     if color isa AbstractVector
         color = masked_values(color, mask)
@@ -792,7 +1078,7 @@ function push_points_trace!(;
         legend_group = "$(configured_points.legend_group) $(legend_group_suffix)"
     end
 
-    hovers = masked_values(graph.data.points_hovers, mask)
+    hovers = masked_values(points_hovers, mask)
 
     push!(  # NOJET
         traces,
@@ -809,7 +1095,10 @@ function push_points_trace!(;
             showlegend = configured_points.colors_configuration.show_legend && !is_colors_scale,
             name = name,
             hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
-            mode = "markers",
+            mode,
+            line_color,
+            line_width,
+            line_dash = plotly_line_dash(line_style),
         ),
     )
 
@@ -836,7 +1125,7 @@ function masked_values(
 end
 
 function points_layout(;
-    graph::PointsGraph,
+    graph::Union{PointsGraph, LineGraph},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     shapes::AbstractVector{Shape},

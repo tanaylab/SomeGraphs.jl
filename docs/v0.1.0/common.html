@@ -221,9 +221,11 @@
 </header>
 <section>
 <div>
-<p>A configuration of a [
+<p>A configuration of a 
+<a href="common.html#SomeGraphs.Common.Graph">
 <code>Graph
-</code>] specifies how to display the data while being (as much as possible) independent of the data itself. That is, it should be possible to apply the same configuration to multiple sets of data to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.
+</code>
+</a> specifies how to display the data while being (as much as possible) independent of the data itself. That is, it should be possible to apply the same configuration to multiple sets of data to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.
 </p>
 </div>
 </section>
@@ -243,9 +245,11 @@
 </header>
 <section>
 <div>
-<p>Some data of a [
+<p>Some data of a 
+<a href="common.html#SomeGraphs.Common.Graph">
 <code>Graph
-</code>] specifies what to display the data while being (as much as possible) independent of how to display it. That is, it should be possible to apply multiple sets of data to the same configuration to to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.
+</code>
+</a> specifies what to display the data while being (as much as possible) independent of how to display it. That is, it should be possible to apply multiple sets of data to the same configuration to to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.
 </p>
 </div>
 </section>
@@ -357,9 +361,11 @@ end
 <code>color_scale_offsets
 </code> are specified in what Plotly calls &quot;paper coordinates&quot; which are singularly unsuitable for this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For optimal results you will need to manually tweak these to match your specific graph. In 21st century, when &quot;AI&quot; is a thing. Sigh.
 </p>
-<p>We only provide two offsets here, because plotly in its infinite wisdom is incapable of displaying more than two color scales in a single graph. That is, you are restricted to at most two [
+<p>We only provide two offsets here, because plotly in its infinite wisdom is incapable of displaying more than two color scales in a single graph. That is, you are restricted to at most two 
+<a href="common.html#SomeGraphs.Common.ColorsConfiguration">
 <code>ColorsConfiguration
-</code>] that use continuous colors and specify 
+</code>
+</a> that use continuous colors and specify 
 <code>show_legend
 </code>.
 </p>
@@ -379,12 +385,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='MRu45NtKE4' class='' style=';'>
+<div id='uVdbTOZZ78' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("MRu45NtKE4")
+    const PLOT = document.getElementById("uVdbTOZZ78")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -407,12 +413,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='8fx7LRfbIg' class='' style=';'>
+<div id='9O6ZFNzEtE' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8fx7LRfbIg")
+    const PLOT = document.getElementById("9O6ZFNzEtE")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -435,12 +441,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='3aQAzFpp1Y' class='' style=';'>
+<div id='WkeqO50bav' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("3aQAzFpp1Y")
+    const PLOT = document.getElementById("WkeqO50bav")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"lightyellow","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -498,12 +504,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='66smx3bsBb' class='' style=';'>
+<div id='foxKN3LH57' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("66smx3bsBb")
+    const PLOT = document.getElementById("foxKN3LH57")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -594,12 +600,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='NCJbRKSODT' class='' style=';'>
+<div id='4sLH5IO76A' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("NCJbRKSODT")
+    const PLOT = document.getElementById("4sLH5IO76A")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -621,12 +627,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='OT4UEykUs0' class='' style=';'>
+<div id='KsPp8RkJZP' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("OT4UEykUs0")
+    const PLOT = document.getElementById("KsPp8RkJZP")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -648,12 +654,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='7EfvJQxnds' class='' style=';'>
+<div id='wHhuAwt0EU' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("7EfvJQxnds")
+    const PLOT = document.getElementById("wHhuAwt0EU")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -676,12 +682,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FFH8v7H0bP' class='' style=';'>
+<div id='pLiw3R8bky' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FFH8v7H0bP")
+    const PLOT = document.getElementById("pLiw3R8bky")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,3.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[1.0,4.0]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -703,12 +709,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='55uKbnfBcR' class='' style=';'>
+<div id='w4tOOwHnS2' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("55uKbnfBcR")
+    const PLOT = document.getElementById("w4tOOwHnS2")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,100.0,100.0,100.0,300.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -769,12 +775,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='BtWTfRKrqy' class='' style=';'>
+<div id='R0lQfzxinV' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("BtWTfRKrqy")
+    const PLOT = document.getElementById("R0lQfzxinV")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,2.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -797,12 +803,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='8WqDRpObfY' class='' style=';'>
+<div id='70zSt7S4rC' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8WqDRpObfY")
+    const PLOT = document.getElementById("70zSt7S4rC")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

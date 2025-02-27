@@ -55,16 +55,16 @@ interactive graph in a Python Jupyter notebook, given an appropriate wrapper cod
 PlotlyFigure = Union{Plot, SyncPlot}
 
 """
-A configuration of a [`Graph`] specifies how to display the data while being (as much as possible) independent of the
-data itself. That is, it should be possible to apply the same configuration to multiple sets of data to generate
+A configuration of a [`Graph`](@ref) specifies how to display the data while being (as much as possible) independent of
+the data itself. That is, it should be possible to apply the same configuration to multiple sets of data to generate
 multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for
 specific entities in the data.
 """
 abstract type AbstractGraphConfiguration <: Validated end
 
 """
-Some data of a [`Graph`] specifies what to display the data while being (as much as possible) independent of how to
-display it. That is, it should be possible to apply multiple sets of data to the same configuration to to generate
+Some data of a [`Graph`](@ref) specifies what to display the data while being (as much as possible) independent of how
+to display it. That is, it should be possible to apply multiple sets of data to the same configuration to to generate
 multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for
 specific entities in the data.
 """
@@ -216,8 +216,8 @@ optimal results you will need to manually tweak these to match your specific gra
 thing. Sigh.
 
 We only provide two offsets here, because plotly in its infinite wisdom is incapable of displaying more than two color
-scales in a single graph. That is, you are restricted to at most two [`ColorsConfiguration`] that use continuous colors
-and specify `show_legend`.
+scales in a single graph. That is, you are restricted to at most two [`ColorsConfiguration`](@ref) that use continuous
+colors and specify `show_legend`.
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()

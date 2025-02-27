@@ -507,3 +507,110 @@ nested_test("points") do
         end
     end
 end
+
+nested_test("line") do
+    graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+
+    nested_test("invalid") do
+        context = ValidationContext(["graph"])
+
+        nested_test("points_size") do
+            graph.configuration.points_size = 6
+
+            @test_throws "can't specify graph.configuration.points_size w/o graph.configuration.show_points" validate(
+                context,
+                graph,
+            )
+        end
+
+        nested_test("points_color") do
+            graph.configuration.points_color = "red"
+
+            @test_throws "can't specify graph.configuration.points_color w/o graph.configuration.show_points" validate(
+                context,
+                graph,
+            )
+        end
+
+        nested_test("diagonal") do
+            nested_test("log") do
+                graph.configuration.x_axis.log_scale = Log10Scale
+                graph.configuration.x_axis.log_regularization = 1
+
+                nested_test("configuration") do
+                    graph.configuration.diagonal_bands.middle.offset = 1
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)" validate(
+                        context,
+                        graph,
+                    )
+                end
+
+                nested_test("data") do
+                    graph.data.diagonal_bands.middle_offset = 1
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)" validate(
+                        context,
+                        graph,
+                    )
+                end
+            end
+
+            nested_test("percent") do
+                graph.configuration.x_axis.percent = true
+
+                nested_test("configuration") do
+                    graph.configuration.diagonal_bands.middle.offset = 1
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)" validate(
+                        context,
+                        graph,
+                    )
+                end
+
+                nested_test("data") do
+                    graph.data.diagonal_bands.middle_offset = 1
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)" validate(
+                        context,
+                        graph,
+                    )
+                end
+            end
+        end
+    end
+
+    nested_test("()") do
+        test_html(graph, "line.html")
+        return nothing
+    end
+
+    nested_test("width") do
+        graph.configuration.line_width = 8
+        return test_html(graph, "line.width.html")
+    end
+
+    nested_test("color") do
+        graph.configuration.line_color = "red"
+        return test_html(graph, "line.color.html")
+    end
+
+    nested_test("style") do
+        graph.configuration.line_style = DashLine
+        return test_html(graph, "line.style.html")
+    end
+
+    nested_test("points") do
+        graph.configuration.show_points = true
+
+        nested_test("()") do
+            return test_html(graph, "line.points.html")
+        end
+
+        nested_test("size") do
+            graph.configuration.points_size = 8
+            return test_html(graph, "line.points.size.html")
+        end
+
+        nested_test("color") do
+            graph.configuration.points_color = "red"
+            return test_html(graph, "line.points.color.html")
+        end
+    end
+end

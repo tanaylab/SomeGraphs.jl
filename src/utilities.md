@@ -8,7 +8,7 @@ SomeGraphs.Utilities.final_scaled_range
 SomeGraphs.Utilities.plotly_layout
 SomeGraphs.Utilities.set_layout_axis!
 SomeGraphs.Utilities.set_layout_colorscale!
-SomeGraphs.Utilities.line_dash
+SomeGraphs.Utilities.plotly_line_dash
 SomeGraphs.Utilities.graph_to_figure
 SomeGraphs.Utilities.plotly_figure
 SomeGraphs.Utilities.scale_axis_value
