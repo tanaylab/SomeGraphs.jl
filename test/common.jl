@@ -120,7 +120,7 @@ nested_test("common") do
             sizes.log_scale = true
             @test_throws dedent("""
                 can't specify both sizes.fixed
-                and any of sizes.(minimum,maximum,log_scale,log_regularization,smallest,span)
+                and any of sizes.(minimum,maximum,log_scale,log_regularization,span)
             """) validate(context, sizes)
         end
 

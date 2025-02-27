@@ -3,10 +3,10 @@ function test_same_values(
     expected_values::Union{AbstractVector{<:Real}, AbstractVector{<:Maybe{Real}}},
 )::Nothing
     @test length(actual_values) == length(expected_values)
-    for (actual_value, expected_value) in zip(actual_values, expected_values)
+    for (index, (actual_value, expected_value)) in enumerate(zip(actual_values, expected_values))
         @test (actual_value === nothing) == (expected_value === nothing)
         if actual_value !== nothing
-            @test abs(actual_value - expected_value) < 1e-7
+            @assert abs(actual_value - expected_value) < 1e-7 "at $(index): $(actual_value) != $(expected_value)"
         end
     end
 end
@@ -62,31 +62,31 @@ nested_test("utilities") do
         sizes_configuration = SizesConfiguration()
 
         nested_test("default") do
-            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [2, 6, 10])
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [6, 12, 18])
             return nothing
         end
 
         nested_test("smallest") do
-            sizes_configuration.smallest = 4
-            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [4, 8, 12])
+            sizes_configuration.smallest = 2
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [2, 8, 14])
             return nothing
         end
 
         nested_test("span") do
             sizes_configuration.span = 10
-            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [2, 7, 12])
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [6, 11, 16])
             return nothing
         end
 
         nested_test("both") do
-            sizes_configuration.smallest = 4
+            sizes_configuration.smallest = 2
             sizes_configuration.span = 10
-            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [4, 9, 14])
+            test_same_values(scale_size_values(sizes_configuration, [1, 2, 3]), [2, 7, 12])
             return nothing
         end
 
         nested_test("same") do
-            test_same_values(scale_size_values(sizes_configuration, [1]), [2])
+            test_same_values(scale_size_values(sizes_configuration, [1]), [6])
             return nothing
         end
 
@@ -99,38 +99,38 @@ nested_test("utilities") do
             sizes_configuration.log_regularization = 1
 
             nested_test("()") do
-                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [2, 6, 10])
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [6, 12, 18])
                 return nothing
             end
 
             nested_test("minimum") do
                 sizes_configuration.minimum = 0
-                test_same_values(scale_size_values(sizes_configuration, [-1, 1, 3]), [2, 6, 10])
+                test_same_values(scale_size_values(sizes_configuration, [-1, 1, 3]), [6, 12, 18])
                 return nothing
             end
 
             nested_test("maximum") do
                 sizes_configuration.maximum = 3
-                test_same_values(scale_size_values(sizes_configuration, [0, 1, 4]), [2, 6, 10])
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 4]), [6, 12, 18])
                 return nothing
             end
 
             nested_test("smallest") do
-                sizes_configuration.smallest = 4
-                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [4, 8, 12])
+                sizes_configuration.smallest = 2
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [2, 8, 14])
                 return nothing
             end
 
             nested_test("span") do
                 sizes_configuration.span = 10
-                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [2, 7, 12])
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [6, 11, 16])
                 return nothing
             end
 
             nested_test("both") do
-                sizes_configuration.smallest = 4
+                sizes_configuration.smallest = 2
                 sizes_configuration.span = 10
-                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [4, 9, 14])
+                test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [2, 7, 12])
                 return nothing
             end
         end

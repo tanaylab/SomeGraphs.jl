@@ -17,4 +17,7 @@ include("utilities.jl")
 include("distributions.jl")
 @reexport using .Distributions
 
+include("scatters.jl")
+@reexport using .Scatters
+
 end  # module

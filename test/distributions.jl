@@ -53,9 +53,9 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                     else
                         @test_throws dedent(
                             """
-            specified graph.configuration.distribution.show_outliers
-            for non-box graph.configuration.distribution.style: $(graph.configuration.distribution.style)
-        """,
+                                specified graph.configuration.distribution.show_outliers
+                                for non-box graph.configuration.distribution.style: $(graph.configuration.distribution.style)
+                            """,
                         ) validate(ValidationContext(["graph"]), graph)
                     end
                 end
@@ -150,6 +150,12 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                     end
 
                 elseif plurality == "distributions"
+                    nested_test("names") do
+                        graph.data.distributions_names = ["Foo", "Bar"]
+                        test_html(graph, "$(plurality).$(kind).$(name).names.html")
+                        return nothing
+                    end
+
                     nested_test("!gap") do
                         graph.configuration.distributions_gap = nothing
 
@@ -159,8 +165,16 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                                 graph,
                             )
                         else
-                            test_html(graph, "$(plurality).$(kind).$(name).!gap.html")
-                            return nothing
+                            nested_test("()") do
+                                test_html(graph, "$(plurality).$(kind).$(name).!gap.html")
+                                return nothing
+                            end
+
+                            nested_test("names") do
+                                graph.data.distributions_names = ["Foo", "Bar"]
+                                test_html(graph, "$(plurality).$(kind).$(name).!gap.names.html")
+                                return nothing
+                            end
                         end
                     end
                 end

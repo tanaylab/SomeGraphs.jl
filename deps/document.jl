@@ -46,7 +46,7 @@ makedocs(;
         prettyurls = false,
         size_threshold_warn = 200 * 2^10,
     ),
-    pages = ["index.md", "validations.md", "common.md", "distributions.md", "utilities.md"],
+    pages = ["index.md", "validations.md", "common.md", "distributions.md", "scatters.md", "utilities.md"],
 )
 
 if seen_problems

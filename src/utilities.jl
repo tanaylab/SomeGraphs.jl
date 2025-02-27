@@ -93,7 +93,7 @@ end
         colors_configuration_context::ValidationContext,
         colors_configuration::ColorsConfiguration,
         mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
-    )::Maybe{AbstractString}
+    )::Nothing
 
 Validate that the `colors_data` from the `colors_data_context` is valid and consistent with the `colors_configuration`
 from the `colors_configuration_context`. For example, if the color configuration contains a categorical color mapping,
@@ -107,7 +107,7 @@ function validate_colors(
     colors_configuration_context::ValidationContext,
     colors_configuration::ColorsConfiguration,
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-)::Maybe{AbstractString}
+)::Nothing
     if colors_configuration.fixed isa AbstractString
         if colors_data !== nothing
             throw(
@@ -117,6 +117,8 @@ function validate_colors(
                 ),
             )
         end
+
+        return nothing
     end
 
     if colors_configuration.show_legend && colors_data === nothing
@@ -214,7 +216,10 @@ function validate_colors(
         end
 
     else
-        @assert false
+        @assert colors_configuration.palette isa AbstractString
+        lock(COLOR_SCALES_LOCK) do
+            @assert haskey(NAMED_COLOR_SCALES, colors_configuration.palette)
+        end
     end
 
     return nothing
@@ -240,6 +245,7 @@ function plotly_layout(
         title,
         showlegend,
         legend_itemdoubleclick = showlegend ? false : nothing,
+        legend_tracegroupgap = 0,
         shapes,
         margin_l = figure_configuration.margins.left,
         margin_r = figure_configuration.margins.right,
@@ -296,39 +302,53 @@ end
 Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. Since Plotly is dumb when it comes to
 placement of color scales, the `offset` must be specified manually to avoid overlaps.
 """
-function set_layout_colorscale!(;  # UNTESTED
+function set_layout_colorscale!(;
     layout::Layout,
     colors_scale::AbstractString,
     colors_configuration::ColorsConfiguration,
+    scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
     offset::Maybe{Real},
     range::Maybe{AbstractVector{Real}} = nothing,
     title::Maybe{AbstractString},
+    show_legend::Bool,
 )::Nothing
-    if colors_configuration.palette isa AbstractString
+    if colors_configuration.palette isa CategoricalColors
+        @assert false
+
+    elseif colors_configuration.palette isa AbstractString
+        @assert scaled_colors_palette === nothing
         colorscale = lock(COLOR_SCALES_LOCK) do
             return NAMED_COLOR_SCALES[colors_configuration.palette]
         end
-    elseif colors_configuration.palette isa CategoricalColors
-        return nothing
+
     elseif colors_configuration.palette isa ContinuousColors
-        colorscale = colors_configuration.palette
+        @assert scaled_colors_palette !== nothing
+        colorscale = scaled_colors_palette
+
     else
         @assert colors_configuration.palette === nothing
+        @assert scaled_colors_palette === nothing
         colorscale = nothing
     end
 
-    return layout[colors_scale] = Dict(
-        :showscale => true,
+    layout[colors_scale] = Dict(
+        :showscale => show_legend,
         :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range[1],
         :cmax => range === nothing ? nothing : range[2],
-        :colorbar => Dict(
-            :title => title,
-            :x => offset,
-            :ticksprefix => axis_ticks_prefix(colors_configuration.axis),
-            :tickssuffix => axis_ticks_suffix(colors_configuration.axis),
-        ),
+        :colorbar => if !show_legend
+            nothing
+        else
+            Dict(
+                :title => Dict(:text => title),
+                :x => offset,
+                :ticksprefix => axis_ticks_prefix(colors_configuration.axis),
+                :tickssuffix => axis_ticks_suffix(colors_configuration.axis),
+            )
+        end,
     )
+
+    return nothing
 end
 
 """
@@ -413,9 +433,9 @@ function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; cl
     offset = axis_configuration.log_regularization
 
     if axis_configuration.log_scale === Log10Scale
-        return log10(value * scale + offset)
+        return log10((value + offset) * scale)
     elseif axis_configuration.log_scale === Log2Scale
-        return log2(value * scale + offset)
+        return log2((value + offset) * scale)
     else
         @assert axis_configuration.log_scale === nothing
         return value * scale + offset
@@ -777,7 +797,7 @@ end
 
 Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
 """
-function push_diagonal_bands_shapes(  # UNTESTED
+function push_diagonal_bands_shapes(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     x_scaled_values_range::AbstractVector{<:Real},
@@ -793,7 +813,7 @@ function push_diagonal_bands_shapes(  # UNTESTED
         bands_data.low_offset,
         bands_configuration.low,
     )
-    middle_band_points = push_diagonal_bands_line(
+    push_diagonal_bands_line(
         shapes,
         axis_configuration,
         x_scaled_values_range,
@@ -826,7 +846,7 @@ function push_diagonal_bands_shapes(  # UNTESTED
             x_scaled_values_range,
             y_scaled_values_range,
             low_band_points,
-            middle_band_points,
+            high_band_points,
             bands_configuration.middle,
         )
     end
@@ -842,7 +862,7 @@ function push_diagonal_bands_shapes(  # UNTESTED
     end
 end
 
-function push_diagonal_bands_line(  # UNTESTED
+function push_diagonal_bands_line(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     x_scaled_values_range::AbstractVector{<:Real},
@@ -851,8 +871,8 @@ function push_diagonal_bands_line(  # UNTESTED
     band_configuration::BandConfiguration,
 )::Maybe{Tuple{BandPoint, BandPoint}}
     offset = prefer_data(data_offset, band_configuration.offset)
-    start_point = start_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
-    end_point = end_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
+    start_point = start_diagonal_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
+    end_point = end_diagonal_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
     @assert (start_point === nothing) == (end_point === nothing)
     if start_point === nothing
         return nothing
@@ -876,54 +896,64 @@ function push_diagonal_bands_line(  # UNTESTED
     return (start_point, end_point)
 end
 
-function start_band_point(::AxisConfiguration, ::AbstractVector{<:Real}, ::AbstractVector{<:Real}, ::Nothing)::Nothing  # UNTESTED
+function start_diagonal_band_point(
+    ::AxisConfiguration,
+    ::AbstractVector{<:Real},
+    ::AbstractVector{<:Real},
+    ::Nothing,
+)::Nothing
     return nothing
 end
 
-function start_band_point(  # UNTESTED
+function start_diagonal_band_point(
     axis_configuration::AxisConfiguration,
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
     offset::Real,
 )::Maybe{BandPoint}
-    scaled_offset = scale_axis_value(axis_configuration, offset)
+    scaled_offset = scale_axis_offset(axis_configuration, offset)
     bottom = [y_scaled_values_range[1] - scaled_offset, y_scaled_values_range[1]]
     left = [x_scaled_values_range[1], x_scaled_values_range[1] + scaled_offset]
 
     if is_in_bounds(x_scaled_values_range, y_scaled_values_range, bottom)
         if is_in_bounds(x_scaled_values_range, y_scaled_values_range, left)
             @assert isapprox(bottom, left)  # NOJET
-            return (bottom[1], bottom[2], BottomLeft)
+            return BandPoint(bottom[1], bottom[2], BottomLeft)
         else
-            return (bottom[1], bottom[2], Bottom)
+            return BandPoint(bottom[1], bottom[2], Bottom)
         end
     elseif is_in_bounds(x_scaled_values_range, y_scaled_values_range, left)
         return BandPoint(left[1], left[2], Left)
     else
-        return nothing
+        return nothing  # UNTESTED
     end
 end
 
-function end_band_point(::AxisConfiguration, ::AbstractVector{<:Real}, ::AbstractVector{<:Real}, ::Nothing)::Nothing
+function end_diagonal_band_point(
+    ::AxisConfiguration,
+    ::AbstractVector{<:Real},
+    ::AbstractVector{<:Real},
+    ::Nothing,
+)::Nothing
     return nothing
 end
 
-function end_band_point(
+function end_diagonal_band_point(
     axis_configuration::AxisConfiguration,
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
     offset::Real,
 )::Maybe{BandPoint}
-    scaled_offset = scale_axis_value(axis_configuration, offset)
+    scaled_offset = scale_axis_offset(axis_configuration, offset)
     top = [y_scaled_values_range[2] - scaled_offset, y_scaled_values_range[2]]
     right = [x_scaled_values_range[2], x_scaled_values_range[2] + scaled_offset]
 
     if is_in_bounds(x_scaled_values_range, y_scaled_values_range, top)
         if is_in_bounds(x_scaled_values_range, y_scaled_values_range, right)
             @assert isapprox(top, right)
-            return (top[1], top[2], TopRight)
+            return BandPoint(top[1], top[2], TopRight)
         else
-            return (top[1], top[2], Top)
+            return BandPoint(top[1], top[2], Top)
         end
     elseif is_in_bounds(x_scaled_values_range, y_scaled_values_range, right)
         return BandPoint(right[1], right[2], Right)
@@ -932,7 +962,24 @@ function end_band_point(
     end
 end
 
-function is_in_bounds(  # UNTESTED
+function scale_axis_offset(axis_configuration::AxisConfiguration, offset::Real)::Real
+    if axis_configuration.percent
+        scale = 100.0  # UNTESTED
+    else
+        scale = 1.0
+    end
+
+    if axis_configuration.log_scale === Log10Scale
+        return log10(offset * scale)
+    elseif axis_configuration.log_scale === Log2Scale
+        return log2(offset * scale)  # UNTESTED
+    else
+        @assert axis_configuration.log_scale === nothing
+        return offset
+    end
+end
+
+function is_in_bounds(
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
     point::AbstractVector{<:Real},
@@ -941,7 +988,7 @@ function is_in_bounds(  # UNTESTED
            (y_scaled_values_range[1] <= point[2] <= y_scaled_values_range[2])
 end
 
-function push_diagonal_bands_low_fill(  # UNTESTED
+function push_diagonal_bands_low_fill(
     shapes::AbstractVector{Shape},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -964,7 +1011,7 @@ function push_diagonal_bands_low_fill(  # UNTESTED
     return nothing
 end
 
-function push_diagonal_bands_high_fill(  # UNTESTED
+function push_diagonal_bands_high_fill(
     shapes::AbstractVector{Shape},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -987,7 +1034,7 @@ function push_diagonal_bands_high_fill(  # UNTESTED
     return nothing
 end
 
-function push_diagonal_bands_middle_fill(  # UNTESTED
+function push_diagonal_bands_middle_fill(
     shapes::AbstractVector{Shape},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -1012,7 +1059,7 @@ function push_diagonal_bands_middle_fill(  # UNTESTED
     return nothing
 end
 
-function to_start_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing  # UNTESTED
+function to_start_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
     push!(path_parts, string(band_points[1].x))
     push!(path_parts, string(band_points[1].y))
@@ -1026,7 +1073,7 @@ function to_end_point(path_parts::AbstractVector{<:AbstractString}, band_points:
     return nothing
 end
 
-function to_bottom_left(  # UNTESTED
+function to_bottom_left(
     path_parts::AbstractVector{<:AbstractString},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -1037,7 +1084,7 @@ function to_bottom_left(  # UNTESTED
     return nothing
 end
 
-function to_bottom_right(  # UNTESTED
+function to_bottom_right(
     path_parts::AbstractVector{<:AbstractString},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -1048,7 +1095,7 @@ function to_bottom_right(  # UNTESTED
     return nothing
 end
 
-function to_top_left(  # UNTESTED
+function to_top_left(
     path_parts::AbstractVector{<:AbstractString},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -1059,7 +1106,7 @@ function to_top_left(  # UNTESTED
     return nothing
 end
 
-function to_top_right(  # UNTESTED
+function to_top_right(
     path_parts::AbstractVector{<:AbstractString},
     x_scaled_values_range::AbstractVector{<:Real},
     y_scaled_values_range::AbstractVector{<:Real},
@@ -1070,7 +1117,7 @@ function to_top_right(  # UNTESTED
     return nothing
 end
 
-function push_fill_path(  # UNTESTED
+function push_fill_path(
     shapes::AbstractVector{Shape},
     path_parts::AbstractVector{<:AbstractString},
     band_configuration::BandConfiguration,
@@ -1123,7 +1170,7 @@ end
 
 function prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_value::Any)::Any
     if data_values !== nothing
-        return data_values[index]  # UNTESTED
+        return data_values[index]
     else
         return configuration_value
     end

@@ -191,7 +191,7 @@ end
         grid_color::AbstractString = "lightgrey"
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
-        color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6]
+        color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4]
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -215,10 +215,9 @@ interactive graph will definitely misbehave). We provide a vector of hopefully r
 optimal results you will need to manually tweak these to match your specific graph. In 21st century, when "AI" is a
 thing. Sigh.
 
-We provide "way too many" default values for this vector; if you set it manually to something else, you need to ensure
-you provide enough offsets for all the color scales in your graph. Typically a graph has just one color scale with no
-legend (so no offset is needed) or just one color scale in addition to a legend (so just the 1st vector entry is needed)
-but, as usual, there are pathological cases (e.g., color scales for multiple annotations of a heatmap graph).
+We only provide two offsets here, because plotly in its infinite wisdom is incapable of displaying more than two color
+scales in a single graph. That is, you are restricted to at most two [`ColorsConfiguration`] that use continuous colors
+and specify `show_legend`.
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
@@ -227,7 +226,7 @@ but, as usual, there are pathological cases (e.g., color scales for multiple ann
     template::Maybe{AbstractString} = nothing
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
-    color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6]
+    color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4]
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -276,8 +275,8 @@ Supported log scales (when log scaling is enabled):
         maximum::Maybe{Real} = nothing
         log_scale::Bool = false
         log_regularization::Real = 0
-        smallest::Real = 2
-        span::Real = 8
+        smallest::Real = 6
+        span::Real = 12
     end
 
 Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
@@ -293,8 +292,8 @@ and/or `maximum`, if any), adding the `log_regularization` to avoid a log of zer
     maximum::Maybe{Real} = nothing
     log_scale::Bool = false
     log_regularization::Real = 0
-    smallest::Real = 2
-    span::Real = 8
+    smallest::Real = 6
+    span::Real = 12
 end
 
 function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
@@ -307,12 +306,11 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
            sizes_configuration.maximum !== nothing ||
            sizes_configuration.log_scale ||
            sizes_configuration.log_regularization != 0 ||
-           sizes_configuration.smallest != 2 ||
-           sizes_configuration.span != 8
+           sizes_configuration.span != 12
             throw(
                 ArgumentError(
                     "can't specify both $(location(context)).fixed\n" *
-                    "and any of $(location(context)).(minimum,maximum,log_scale,log_regularization,smallest,span)",
+                    "and any of $(location(context)).(minimum,maximum,log_scale,log_regularization,span)",
                 ),
             )
         end
@@ -604,12 +602,14 @@ A categorical colors palette, mapping string values to colors. An empty string c
 """
 CategoricalColors = Dict{<:AbstractString, <:AbstractString}
 
-function continuous_colors_scale(colors::AbstractVector{<:AbstractString})::ContinuousColors  # ONLY SEEMS UNTESTED
+function continuous_colors_scale(  # ONLY SEEMS UNTESTED
+    colors::AbstractVector{<:AbstractString},
+)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     size = length(colors)
-    return [((index - 1) / (size - 1)) => color for (index, color) in enumerate(colors)]
+    return [(((index - 1) / (size - 1)), color) for (index, color) in enumerate(colors)]
 end
 
-function reverse_color_scale(palette::ContinuousColors)::ContinuousColors
+function reverse_color_scale(palette::ContinuousColors)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     return reverse!([(1 - value, color) for (value, color) in palette])
 end
 
@@ -617,7 +617,7 @@ function zero_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
-)::ContinuousColors
+)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     result = Vector{Tuple{AbstractFloat, AbstractString}}()
 
     push!(result, (0, "white"))
@@ -662,7 +662,7 @@ function center_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
-)::ContinuousColors
+)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     result = Vector{Tuple{AbstractFloat, AbstractString}}()
 
     is_first_in_high = true
@@ -732,7 +732,7 @@ function overflow_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     overflow_color::AbstractString,
-)::ContinuousColors
+)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     result = Vector{Tuple{AbstractFloat, AbstractString}}()
 
     for (value, color) in palette
@@ -751,7 +751,7 @@ function underflow_color_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     underflow_color::AbstractString,
-)::ContinuousColors
+)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     result = Vector{Tuple{AbstractFloat, AbstractString}}()
 
     push!(result, (0, underflow_color))
