@@ -107,6 +107,16 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+Filled:
+
+```@example
+using SomeGraphs
+graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph.configuration.line.is_filled = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 ## Index
 
 ```@index

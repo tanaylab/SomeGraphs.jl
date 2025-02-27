@@ -543,7 +543,7 @@ function scale_size_values(
 end
 
 """
-    plotly_line_dash(line_style::Maybe{LineStyle})::Maybe{AbstractString}
+    plotly_line_dash(line_style::LineStyle)::Maybe{AbstractString}
 
 Return the Plotly `line_dash` for a `line_style`.
 """
@@ -559,10 +559,6 @@ function plotly_line_dash(line_style::LineStyle)::Maybe{AbstractString}
     else
         @assert false
     end
-end
-
-function plotly_line_dash(::Nothing)::Nothing
-    return nothing
 end
 
 """
@@ -596,7 +592,7 @@ function push_vertical_bands_shapes(
         (bands_configuration.high, scaled_high_offset),
     )
         if scaled_offset !== nothing && band_configuration.line.style !== nothing
-            push!(
+            push!(  # NOJET
                 shapes,
                 Shape(
                     "line";
@@ -702,7 +698,7 @@ function push_horizontal_bands_shapes(
         (bands_configuration.high, scaled_high_offset),
     )
         if scaled_offset !== nothing && band_configuration.line.style !== nothing
-            push!(
+            push!(  # NOJET
                 shapes,
                 Shape(
                     "line";
@@ -878,20 +874,22 @@ function push_diagonal_bands_line(
         return nothing
     end
 
-    push!(
-        shapes,
-        Shape(
-            "line";
-            line_color = band_configuration.line.color,
-            line_dash = plotly_line_dash(band_configuration.line.style),
-            y0 = start_point.y,
-            y1 = end_point.y,
-            yref = "y",
-            x0 = start_point.x,
-            x1 = end_point.x,
-            xref = "x",
-        ),
-    )
+    if band_configuration.line.style !== nothing
+        push!(  # NOJET
+            shapes,
+            Shape(
+                "line";
+                line_color = band_configuration.line.color,
+                line_dash = plotly_line_dash(band_configuration.line.style),
+                y0 = start_point.y,
+                y1 = end_point.y,
+                yref = "y",
+                x0 = start_point.x,
+                x1 = end_point.x,
+                xref = "x",
+            ),
+        )
+    end
 
     return (start_point, end_point)
 end

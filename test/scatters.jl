@@ -582,18 +582,23 @@ nested_test("line") do
     end
 
     nested_test("width") do
-        graph.configuration.line_width = 8
+        graph.configuration.line.width = 8
         return test_html(graph, "line.width.html")
     end
 
     nested_test("color") do
-        graph.configuration.line_color = "red"
+        graph.configuration.line.color = "red"
         return test_html(graph, "line.color.html")
     end
 
     nested_test("style") do
-        graph.configuration.line_style = DashLine
+        graph.configuration.line.style = DashLine
         return test_html(graph, "line.style.html")
+    end
+
+    nested_test("filled") do
+        graph.configuration.line.is_filled = true
+        return test_html(graph, "line.is_filled.html")
     end
 
     nested_test("points") do

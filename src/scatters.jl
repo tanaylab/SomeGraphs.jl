@@ -778,9 +778,7 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         x_axis::AxisConfiguration = AxisConfiguration()
         y_axis::AxisConfiguration = AxisConfiguration()
-        line_width::Maybe{Real} = nothing
-        line_color::Maybe{AbstractString} = nothing
-        line_style::LineStyle = SolidLine
+        line::LineConfiguration = LineConfiguration()
         show_points::Bool = false
         points_size::Maybe{Real} = nothing
         points_color::Maybe{AbstractString} = nothing
@@ -791,16 +789,14 @@ end
 
 Configure a graph for showing a single line.
 
-The `line_width` and `line_color` are chosen automatically by default. If `show_points` is set, so are `points_color`
-and `points_size`. The bands are similar to [`PointsGraphConfiguration`](@ref).
+If `show_points` is set, each point is drawn, using the `points_size` and/or `points_color` if specified. The bands are
+similar to [`PointsGraphConfiguration`](@ref).
 """
 @kwdef mutable struct LineGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration()
     y_axis::AxisConfiguration = AxisConfiguration()
-    line_width::Maybe{Real} = nothing
-    line_color::Maybe{AbstractString} = nothing
-    line_style::LineStyle = SolidLine
+    line::LineConfiguration = LineConfiguration()
     show_points::Bool = false
     points_size::Maybe{Real} = nothing
     points_color::Maybe{AbstractString} = nothing
@@ -813,10 +809,8 @@ function Validations.validate(context::ValidationContext, configuration::LineGra
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "x_axis", configuration.x_axis)
     validate_field(context, "y_axis", configuration.y_axis)
+    validate_field(context, "line", configuration.line)
 
-    validate_in(context, "line_color") do
-        return validate_is_color(context, configuration.line_color)
-    end
     validate_in(context, "points_size") do
         return validate_is_above(context, configuration.points_size, 0)
     end
@@ -1012,9 +1006,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         name = nothing,
         color = graph.configuration.points_color,
         mode = graph.configuration.show_points ? "lines+markers" : "lines",
-        line_width = graph.configuration.line_width,
-        line_color = graph.configuration.line_color,
-        line_style = graph.configuration.line_style,
+        line_configuration = graph.configuration.line,
     )
 
     shapes = Shape[]
@@ -1061,9 +1053,7 @@ function push_points_trace!(;
     legend_group_suffix::Maybe{AbstractString} = nothing,
     is_first = true,
     mode::AbstractString = "markers",
-    line_width::Maybe{Real} = nothing,
-    line_color::Maybe{AbstractString} = nothing,
-    line_style::Maybe{LineStyle} = nothing,
+    line_configuration::Maybe{LineConfiguration} = nothing,
 )::Nothing
     if color isa AbstractVector
         color = masked_values(color, mask)
@@ -1096,9 +1086,10 @@ function push_points_trace!(;
             name = name,
             hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
             mode,
-            line_color,
-            line_width,
-            line_dash = plotly_line_dash(line_style),
+            line_color = line_configuration === nothing ? nothing : line_configuration.color,
+            line_width = line_configuration === nothing ? nothing : line_configuration.width,
+            line_dash = line_configuration === nothing ? nothing : plotly_line_dash(line_configuration.style),
+            fill = line_configuration === nothing || !line_configuration.is_filled ? nothing : "tozeroy",
         ),
     )
 
