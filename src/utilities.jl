@@ -4,6 +4,10 @@ Utility functions for defining graph types. We do not re-export all symbols from
 """
 module Utilities
 
+export MaybeRange
+export Range
+export assert_range
+export collect_range!
 export expand_range!
 export fill_color
 export final_scaled_range
@@ -14,7 +18,6 @@ export prefer_data
 export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
 export push_vertical_bands_shapes
-export range_of
 export scale_axis_value
 export scale_axis_values
 export scale_size_values
@@ -22,6 +25,7 @@ export set_layout_axis!
 export set_layout_colorscale!
 export validate_colors
 export validate_graph_bands
+export validate_values
 
 using Colors
 using PlotlyJS
@@ -34,6 +38,48 @@ import .Common.Maybe
 
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
+
+@kwdef mutable struct ScaledPoint
+    x::Real
+    y::Real
+end
+
+"""
+    @kwdef mutable struct MaybeRange
+        minimum::Maybe{Float32} = nothing
+        maximum::Maybe{Float32} = nothing
+    end
+
+A range of values (possibly partially specified).
+"""
+@kwdef mutable struct MaybeRange
+    minimum::Maybe{Float32} = nothing
+    maximum::Maybe{Float32} = nothing
+end
+
+"""
+    @kwdef mutable struct Range
+        minimum::Float32
+        maximum::Float32
+    end
+
+A range of values (fully specified).
+"""
+@kwdef mutable struct Range
+    minimum::Float32
+    maximum::Float32
+end
+
+"""
+    assert_range(range::MaybeRange)::Range
+
+Convert a partial range to a fully specified one.
+"""
+function assert_range(range::MaybeRange)::Range
+    @assert range.minimum !== nothing
+    @assert range.maximum !== nothing
+    return Range(; minimum = range.minimum, maximum = range.maximum)  # NOJET
+end
 
 """
     validate_graph_bands(
@@ -226,6 +272,38 @@ function validate_colors(
 end
 
 """
+    validate_values(
+        values_data_context::ValidationContext,
+        values_data::Maybe{AbstractVector{<:Real}}},
+        axis_configuration_context::ValidationContext,
+        axis_configuration::AxisConfiguration,
+    )::Nothing
+
+Validate that the `values_data` from the `values_data_context` is valid and consistent with the `axis_configuration`
+from the `axis_configuration_context`. Specifically this ensures that if a `log_scale` is applied, all the values
+are positive.
+"""
+function validate_values(
+    values_data_context::ValidationContext,
+    values_data::Maybe{AbstractVector{<:Real}},
+    axis_configuration_context::ValidationContext,
+    axis_configuration::AxisConfiguration,
+)::Nothing
+    if values_data !== nothing && axis_configuration.log_scale !== nothing
+        for (index, value) in enumerate(values_data)
+            validate_in(
+                values_data_context,
+                "([$(index)] + $(location(axis_configuration_context)).axis.log_regularization)",
+            ) do
+                return validate_is_above(values_data_context, value + axis_configuration.log_regularization, 0)
+            end
+        end
+    end
+
+    return nothing
+end
+
+"""
     plotly_layout(
         figure_configuration::FigureConfiguration;
         title::Maybe{AbstractString},
@@ -265,7 +343,7 @@ end
         axis::AbstractString
         axis_configuration::AxisConfiguration;
         title::Maybe{AbstractString},
-        range::AbstractVector{<:Real},
+        range::Range,
     )::Nothing
 
 Add a Plotly `axis` in a `layout` using the `axis_configuration`.
@@ -275,11 +353,11 @@ function set_layout_axis!(
     axis::AbstractString,
     axis_configuration::AxisConfiguration;
     title::Maybe{AbstractString},
-    range::AbstractVector{<:Real},
+    range::Range,
 )::Nothing
     layout[axis] = Dict(
         :title => title,
-        :range => range,
+        :range => [range.minimum, range.maximum],
         :showgrid => axis_configuration.show_grid,
         :gridcolor => axis_configuration.show_grid ? axis_configuration.grid_color : nothing,
         :showticklabels => axis_configuration.show_ticks,
@@ -308,7 +386,7 @@ function set_layout_colorscale!(;
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
     offset::Maybe{Real},
-    range::Maybe{AbstractVector{Real}} = nothing,
+    range::Maybe{Range} = nothing,
     title::Maybe{AbstractString},
     show_legend::Bool,
 )::Nothing
@@ -334,8 +412,8 @@ function set_layout_colorscale!(;
     layout[colors_scale] = Dict(
         :showscale => show_legend,
         :colorscale => colorscale,
-        :cmin => range === nothing ? nothing : range[1],
-        :cmax => range === nothing ? nothing : range[2],
+        :cmin => range === nothing ? nothing : range.minimum,
+        :cmax => range === nothing ? nothing : range.maximum,
         :colorbar => if !show_legend
             nothing
         else
@@ -475,25 +553,21 @@ end
 
 """
     final_scaled_range(
-        implicit_scaled_range::AbstractVector{<:Maybe{Real}},
+        implicit_scaled_range::Range,
         axis_configuration::AxisConfiguration
-    )::AbstractVector{<:Real}
+    )::Range,
 
 Compute the final range for some axis given the `implicit_scaled_range` computed from the values and the `axis_configuration`.
 """
-function final_scaled_range(
-    implicit_scaled_range::AbstractVector{<:Maybe{Real}},
-    axis_configuration::AxisConfiguration,
-)::AbstractVector{<:Real}
-    explicit_scaled_range =
+function final_scaled_range(implicit_scaled_range::Range, axis_configuration::AxisConfiguration)::Range
+    explicit_scaled_minimum, explicit_scaled_maximum =
         scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum]; clamp = false)
+    explicit_scaled_range = MaybeRange(; minimum = explicit_scaled_minimum, maximum = explicit_scaled_maximum)
 
-    scaled_range = Real[  # NOJET
-        prefer_data(explicit_scaled, implicit_scaled) for
-        (explicit_scaled, implicit_scaled) in zip(explicit_scaled_range, implicit_scaled_range)
-    ]
-
-    return scaled_range
+    return Range(;
+        minimum = prefer_data(explicit_scaled_range.minimum, implicit_scaled_range.minimum),
+        maximum = prefer_data(explicit_scaled_range.maximum, implicit_scaled_range.maximum),
+    )
 end
 
 """
@@ -565,7 +639,7 @@ end
     push_vertical_bands_shapes(
         shapes::AbstractVector{Shape},
         axis_configuration::AxisConfiguration,
-        scaled_values_range::AbstractVector{<:Real},
+        scaled_values_range::Range,
         bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
@@ -575,7 +649,7 @@ Push shapes for plotting vertical bands. These shapes need to be places in the l
 function push_vertical_bands_shapes(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
-    scaled_values_range::AbstractVector{<:Real},
+    scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
 )::Nothing
@@ -617,7 +691,7 @@ function push_vertical_bands_shapes(
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
                 layer = "below",
-                x0 = scaled_values_range[1],
+                x0 = scaled_values_range.minimum,
                 x1 = scaled_low_offset,
                 xref = "x",
                 y0 = 0,
@@ -654,7 +728,7 @@ function push_vertical_bands_shapes(
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
                 x0 = scaled_high_offset,
-                x1 = scaled_values_range[2],
+                x1 = scaled_values_range.maximum,
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -670,7 +744,7 @@ end
     push_horizontal_bands_shapes(
         shapes::AbstractVector{Shape},
         axis_configuration::AxisConfiguration,
-        scaled_values_range::AbstractVector{<:Real},
+        scaled_values_range::Range,
         bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
@@ -681,7 +755,7 @@ Plotly.
 function push_horizontal_bands_shapes(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
-    scaled_values_range::AbstractVector{<:Real},
+    scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
 )::Nothing
@@ -723,7 +797,7 @@ function push_horizontal_bands_shapes(
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
                 layer = "below",
-                y0 = scaled_values_range[1],
+                y0 = scaled_values_range.minimum,
                 y1 = scaled_low_offset,
                 yref = "y",
                 x0 = 0,
@@ -760,7 +834,7 @@ function push_horizontal_bands_shapes(
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
                 y0 = scaled_high_offset,
-                y1 = scaled_values_range[2],
+                y1 = scaled_values_range.maximum,
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -775,8 +849,7 @@ end
 @enum Side Left BottomLeft Bottom BottomRight Right TopRight Top TopLeft
 
 struct BandPoint
-    x::Real
-    y::Real
+    point::ScaledPoint
     side::Side
 end
 
@@ -785,8 +858,8 @@ end
         shapes::AbstractVector{Shape},
         x_axis_configuration::AxisConfiguration,
         y_axis_configuration::AxisConfiguration,
-        x_scaled_values_range::AbstractVector{<:Real},
-        y_scaled_values_range::AbstractVector{<:Real},
+        x_scaled_values_range::Range,
+        y_scaled_values_range::Range,
         bands_data::BandsData,
         bands_configuration::BandsConfiguration
     )::AbstractVector{<:Shape}
@@ -796,8 +869,8 @@ Push shapes for plotting diagonal bands. These shapes need to be placed in the l
 function push_diagonal_bands_shapes(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
 )::Nothing
@@ -861,8 +934,8 @@ end
 function push_diagonal_bands_line(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     data_offset::Maybe{Real},
     band_configuration::BandConfiguration,
 )::Maybe{Tuple{BandPoint, BandPoint}}
@@ -881,11 +954,11 @@ function push_diagonal_bands_line(
                 "line";
                 line_color = band_configuration.line.color,
                 line_dash = plotly_line_dash(band_configuration.line.style),
-                y0 = start_point.y,
-                y1 = end_point.y,
+                y0 = start_point.point.y,
+                y1 = end_point.point.y,
                 yref = "y",
-                x0 = start_point.x,
-                x1 = end_point.x,
+                x0 = start_point.point.x,
+                x1 = end_point.point.x,
                 xref = "x",
             ),
         )
@@ -894,67 +967,59 @@ function push_diagonal_bands_line(
     return (start_point, end_point)
 end
 
-function start_diagonal_band_point(
-    ::AxisConfiguration,
-    ::AbstractVector{<:Real},
-    ::AbstractVector{<:Real},
-    ::Nothing,
-)::Nothing
+function start_diagonal_band_point(::AxisConfiguration, ::Range, ::Range, ::Nothing)::Nothing
     return nothing
 end
 
 function start_diagonal_band_point(
     axis_configuration::AxisConfiguration,
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     offset::Real,
 )::Maybe{BandPoint}
     scaled_offset = scale_axis_offset(axis_configuration, offset)
-    bottom = [y_scaled_values_range[1] - scaled_offset, y_scaled_values_range[1]]
-    left = [x_scaled_values_range[1], x_scaled_values_range[1] + scaled_offset]
+    bottom = ScaledPoint(; x = y_scaled_values_range.minimum - scaled_offset, y = y_scaled_values_range.minimum)
+    left = ScaledPoint(; x = x_scaled_values_range.minimum, y = x_scaled_values_range.minimum + scaled_offset)
 
     if is_in_bounds(x_scaled_values_range, y_scaled_values_range, bottom)
         if is_in_bounds(x_scaled_values_range, y_scaled_values_range, left)
-            @assert isapprox(bottom, left)  # NOJET
-            return BandPoint(bottom[1], bottom[2], BottomLeft)
+            @assert isapprox(bottom.x, left.x)
+            @assert isapprox(bottom.y, left.y)
+            return BandPoint(bottom, BottomLeft)
         else
-            return BandPoint(bottom[1], bottom[2], Bottom)
+            return BandPoint(bottom, Bottom)
         end
     elseif is_in_bounds(x_scaled_values_range, y_scaled_values_range, left)
-        return BandPoint(left[1], left[2], Left)
+        return BandPoint(left, Left)
     else
         return nothing  # UNTESTED
     end
 end
 
-function end_diagonal_band_point(
-    ::AxisConfiguration,
-    ::AbstractVector{<:Real},
-    ::AbstractVector{<:Real},
-    ::Nothing,
-)::Nothing
+function end_diagonal_band_point(::AxisConfiguration, ::Range, ::Range, ::Nothing)::Nothing
     return nothing
 end
 
 function end_diagonal_band_point(
     axis_configuration::AxisConfiguration,
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     offset::Real,
 )::Maybe{BandPoint}
     scaled_offset = scale_axis_offset(axis_configuration, offset)
-    top = [y_scaled_values_range[2] - scaled_offset, y_scaled_values_range[2]]
-    right = [x_scaled_values_range[2], x_scaled_values_range[2] + scaled_offset]
+    top = ScaledPoint(; x = y_scaled_values_range.maximum - scaled_offset, y = y_scaled_values_range.maximum)
+    right = ScaledPoint(; x = x_scaled_values_range.maximum, y = x_scaled_values_range.maximum + scaled_offset)
 
     if is_in_bounds(x_scaled_values_range, y_scaled_values_range, top)
         if is_in_bounds(x_scaled_values_range, y_scaled_values_range, right)
-            @assert isapprox(top, right)
-            return BandPoint(top[1], top[2], TopRight)
+            @assert isapprox(top.x, right.x)
+            @assert isapprox(top.y, right.y)
+            return BandPoint(top, TopRight)
         else
-            return BandPoint(top[1], top[2], Top)
+            return BandPoint(top, Top)
         end
     elseif is_in_bounds(x_scaled_values_range, y_scaled_values_range, right)
-        return BandPoint(right[1], right[2], Right)
+        return BandPoint(right, Right)
     else
         return nothing
     end
@@ -977,19 +1042,15 @@ function scale_axis_offset(axis_configuration::AxisConfiguration, offset::Real):
     end
 end
 
-function is_in_bounds(
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
-    point::AbstractVector{<:Real},
-)::Bool
-    return (x_scaled_values_range[1] <= point[1] <= x_scaled_values_range[2]) &&
-           (y_scaled_values_range[1] <= point[2] <= y_scaled_values_range[2])
+function is_in_bounds(x_scaled_values_range::Range, y_scaled_values_range::Range, point::ScaledPoint)::Bool
+    return (x_scaled_values_range.minimum <= point.x <= x_scaled_values_range.maximum) &&
+           (y_scaled_values_range.minimum <= point.y <= y_scaled_values_range.maximum)
 end
 
 function push_diagonal_bands_low_fill(
     shapes::AbstractVector{Shape},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     band_points::Tuple{BandPoint, BandPoint},
     band_configuration::BandConfiguration,
 )::Nothing
@@ -1011,8 +1072,8 @@ end
 
 function push_diagonal_bands_high_fill(
     shapes::AbstractVector{Shape},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     band_points::Tuple{BandPoint, BandPoint},
     band_configuration::BandConfiguration,
 )::Nothing
@@ -1034,8 +1095,8 @@ end
 
 function push_diagonal_bands_middle_fill(
     shapes::AbstractVector{Shape},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
     low_band_points::Tuple{BandPoint, BandPoint},
     high_band_points::Tuple{BandPoint, BandPoint},
     band_configuration::BandConfiguration,
@@ -1059,59 +1120,59 @@ end
 
 function to_start_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(band_points[1].x))
-    push!(path_parts, string(band_points[1].y))
+    push!(path_parts, string(band_points[1].point.x))
+    push!(path_parts, string(band_points[1].point.y))
     return nothing
 end
 
 function to_end_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(band_points[2].x))
-    push!(path_parts, string(band_points[2].y))
+    push!(path_parts, string(band_points[2].point.x))
+    push!(path_parts, string(band_points[2].point.y))
     return nothing
 end
 
 function to_bottom_left(
     path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
 )::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range[1]))
-    push!(path_parts, string(y_scaled_values_range[1]))
+    push!(path_parts, string(x_scaled_values_range.minimum))
+    push!(path_parts, string(y_scaled_values_range.minimum))
     return nothing
 end
 
 function to_bottom_right(
     path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
 )::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range[2]))
-    push!(path_parts, string(y_scaled_values_range[1]))
+    push!(path_parts, string(x_scaled_values_range.maximum))
+    push!(path_parts, string(y_scaled_values_range.minimum))
     return nothing
 end
 
 function to_top_left(
     path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
 )::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range[1]))
-    push!(path_parts, string(y_scaled_values_range[2]))
+    push!(path_parts, string(x_scaled_values_range.minimum))
+    push!(path_parts, string(y_scaled_values_range.maximum))
     return nothing
 end
 
 function to_top_right(
     path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::AbstractVector{<:Real},
-    y_scaled_values_range::AbstractVector{<:Real},
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
 )::Nothing
     push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range[2]))
-    push!(path_parts, string(y_scaled_values_range[2]))
+    push!(path_parts, string(x_scaled_values_range.maximum))
+    push!(path_parts, string(y_scaled_values_range.maximum))
     return nothing
 end
 
@@ -1179,36 +1240,31 @@ end
 
 Expand the range of values by 1% to allow for points and lines at the edge to be fully visible.
 """
-function expand_range!(range::Maybe{AbstractVector{<:Maybe{Real}}})::Nothing
-    low, high = range  # NOJET
-    @assert low !== nothing
-    @assert high !== nothing
-    margins = (high - low) / 100
-    range[1] = low - margins
-    range[2] = high + margins
+function expand_range!(range::Range)::Nothing
+    margins = (range.maximum - range.minimum) / 100
+    range.minimum -= margins
+    range.maximum += margins
     return nothing
 end
 
 """
-    range_of(
+    collect_range!(
+        range::MaybeRange,
         values::AbstractVector{<:Maybe{Real}},
-        range::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
     )::Nothing
 
-Compute the `range` of (scaled) `values`.
+Expand the `range` to cover the `values.
 """
-function range_of(values::Maybe{AbstractVector{<:Maybe{Real}}}, range::AbstractVector{<:Maybe{Real}})::Nothing
+function collect_range!(range::MaybeRange, values::Maybe{AbstractVector{<:Maybe{Real}}})::Nothing
     if values !== nothing
-        minimum_value, maximum_value = range
         for value in values
-            if minimum_value === nothing || (value !== nothing && value < minimum_value)
-                minimum_value = value
+            if range.minimum === nothing || (value !== nothing && value < range.minimum)
+                range.minimum = value
             end
-            if maximum_value === nothing || (value !== nothing && value > maximum_value)
-                maximum_value = value
+            if range.maximum === nothing || (value !== nothing && value > range.maximum)
+                range.maximum = value
             end
         end
-        range .= [minimum_value, maximum_value]
     end
 
     return nothing

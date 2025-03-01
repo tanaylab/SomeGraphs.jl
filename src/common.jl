@@ -112,7 +112,7 @@ Validate that the combination of data and configuration in a graph is valid, aft
 isn't invoked manually, instead it is called by the overall `validate` of the graph. It is provided (with a default
 empty implementation) to allow for type-specific validations.
 """
-function validate_graph(::Graph)::Maybe{AbstractString}
+function validate_graph(::Graph)::Maybe{AbstractString}  # UNTESTED
     return nothing
 end
 

@@ -117,6 +117,84 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+```@docs
+SomeGraphs.Scatters.LinesGraph
+SomeGraphs.Scatters.lines_graph
+SomeGraphs.Scatters.LinesGraphData
+SomeGraphs.Scatters.LinesGraphConfiguration
+SomeGraphs.Scatters.Stacking
+```
+
+**Examples:**
+
+Default (serves as a baseline to compare with when modifying options):
+
+```@example
+using SomeGraphs
+graph = lines_graph(;
+    lines_points_xs = [collect(0:10) .* 10, [0, 90]],
+    lines_points_ys = [collect(0:10) .^ 2, [50, 0]]
+)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Filled:
+
+```@example
+using SomeGraphs
+graph = lines_graph(;
+    lines_points_xs = [collect(0:10) .* 10, [0, 90]],
+    lines_points_ys = [collect(0:10) .^ 2, [50, 0]]
+)
+graph.configuration.line.is_filled = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Stacked:
+
+```@example
+using SomeGraphs
+graph = lines_graph(;
+    lines_points_xs = [collect(0:10) .* 10, [0, 90]],
+    lines_points_ys = [collect(0:10) .^ 2, [50, 0]]
+)
+graph.configuration.line.is_filled = true
+graph.configuration.stacking = StackValues
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Fractions:
+
+```@example
+using SomeGraphs
+graph = lines_graph(;
+    lines_points_xs = [collect(0:10) .* 10, [0, 90]],
+    lines_points_ys = [collect(0:10) .^ 2, [50, 0]]
+)
+graph.configuration.line.is_filled = true
+graph.configuration.stacking = StackFractions
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Percents:
+
+```@example
+using SomeGraphs
+graph = lines_graph(;
+    lines_points_xs = [collect(0:10) .* 10, [0, 90]],
+    lines_points_ys = [collect(0:10) .^ 2, [50, 0]]
+)
+graph.configuration.line.is_filled = true
+graph.configuration.stacking = StackFractions
+graph.configuration.y_axis.percent = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 ## Index
 
 ```@index

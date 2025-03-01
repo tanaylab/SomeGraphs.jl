@@ -329,6 +329,13 @@ function distributions_graph(;
 end
 
 function Common.validate_graph(graph::DistributionGraph)::Nothing
+    validate_values(
+        ValidationContext(["graph.data.distribution_values"]),
+        graph.data.distribution_values,
+        ValidationContext(["graph.configuration.value_axis"]),
+        graph.configuration.value_axis,
+    )
+
     validate_graph_bands(
         "value_bands",
         graph.configuration.value_bands,
@@ -338,12 +345,25 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
     return nothing
 end
 
+function Common.validate_graph(graph::DistributionsGraph)::Nothing
+    for (index, distribution_values) in enumerate(graph.data.distributions_values)
+        validate_values(
+            ValidationContext(["graph.data.distributions_values", index]),
+            distribution_values,
+            ValidationContext(["graph.configuration.value_axis"]),
+            graph.configuration.value_axis,
+        )
+    end
+
+    return nothing
+end
+
 function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
     traces = Vector{GenericTrace}()
 
-    implicit_values_range = Vector{Maybe{Float32}}([nothing, nothing])
+    implicit_values_range = MaybeRange()
 
     push!(
         traces,
@@ -364,7 +384,7 @@ end
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    implicit_values_range = Vector{Maybe{Float32}}([nothing, nothing])
+    implicit_values_range = MaybeRange()
 
     n_distributions = length(graph.data.distributions_values)
 
@@ -395,12 +415,11 @@ function distribution_trace(;
     is_filled::Bool,
     configuration::Union{DistributionGraphConfiguration, DistributionsGraphConfiguration},
     sub_graph::Maybe{SubGraph} = nothing,
-    implicit_values_range::Vector{Maybe{Float32}},
+    implicit_values_range::MaybeRange,
     scale_group::Maybe{AbstractString} = nothing,
 )::GenericTrace
     scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false)
-    range_of(scaled_values, implicit_values_range)
-    @assert !any(implicit_values_range .=== nothing)
+    collect_range!(implicit_values_range, scaled_values)
 
     if configuration.distribution.values_orientation == VerticalValues
         y = scaled_values
@@ -476,9 +495,10 @@ end
 
 function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
-    implicit_values_range::Vector{Maybe{Float32}},
+    implicit_values_range::MaybeRange,
     show_legend::Bool,
 )::Layout
+    implicit_values_range = assert_range(implicit_values_range)
     expand_range!(implicit_values_range)
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 

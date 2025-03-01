@@ -228,170 +228,6 @@
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.final_scaled_range" href="#SomeGraphs.Utilities.final_scaled_range">
-<code>SomeGraphs.Utilities.final_scaled_range
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">final_scaled_range(
-    implicit_scaled_range::AbstractVector{&lt;:Maybe{Real}},
-    axis_configuration::AxisConfiguration
-)::AbstractVector{&lt;:Real}
-</code>
-</pre>
-<p>Compute the final range for some axis given the 
-<code>implicit_scaled_range
-</code> computed from the values and the 
-<code>axis_configuration
-</code>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_layout" href="#SomeGraphs.Utilities.plotly_layout">
-<code>SomeGraphs.Utilities.plotly_layout
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">plotly_layout(
-    figure_configuration::FigureConfiguration;
-    title::Maybe{AbstractString},
-    showlegend::Bool,
-    shapes::AbstractVector{Shape},
-)::Layout
-</code>
-</pre>
-<p>Create a Plotly 
-<code>Layout
-</code> object.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.set_layout_axis!" href="#SomeGraphs.Utilities.set_layout_axis!">
-<code>SomeGraphs.Utilities.set_layout_axis!
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">set_layout_axis!(
-    layout::Layout,
-    axis::AbstractString
-    axis_configuration::AxisConfiguration;
-    title::Maybe{AbstractString},
-    range::AbstractVector{&lt;:Real},
-)::Nothing
-</code>
-</pre>
-<p>Add a Plotly 
-<code>axis
-</code> in a 
-<code>layout
-</code> using the 
-<code>axis_configuration
-</code>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.set_layout_colorscale!" href="#SomeGraphs.Utilities.set_layout_colorscale!">
-<code>SomeGraphs.Utilities.set_layout_colorscale!
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">set_layout_colorscale!(
-    layout::Layout,
-    colorscale::AbstractString,
-    colors_configuration::ColorsConfiguration;
-    offset::Maybe{Real},
-    title::Maybe{AbstractString},
-)::Nothing
-</code>
-</pre>
-<p>Set a 
-<code>colorscale
-</code> in a Plotly 
-<code>layout
-</code>, as specified by a 
-<code>colors_configuration
-</code>. Since Plotly is dumb when it comes to placement of color scales, the 
-<code>offset
-</code> must be specified manually to avoid overlaps.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_line_dash" href="#SomeGraphs.Utilities.plotly_line_dash">
-<code>SomeGraphs.Utilities.plotly_line_dash
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">plotly_line_dash(line_style::LineStyle)::Maybe{AbstractString}
-</code>
-</pre>
-<p>Return the Plotly 
-<code>line_dash
-</code> for a 
-<code>line_style
-</code>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
 <a class="docstring-binding" id="SomeGraphs.Common.graph_to_figure" href="#SomeGraphs.Common.graph_to_figure">
 <code>SomeGraphs.Common.graph_to_figure
 </code>
@@ -471,6 +307,113 @@ plotly_figure(traces::AbstractVector{&lt;:GenericTrace}, layout::Layout)::Plotly
 </code> in a 
 <code>PlotlyFigure
 </code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.validate_colors" href="#SomeGraphs.Utilities.validate_colors">
+<code>SomeGraphs.Utilities.validate_colors
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_colors(
+    colors_data_context::ValidationContext,
+    colors_data::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}},
+    colors_configuration_context::ValidationContext,
+    colors_configuration::ColorsConfiguration,
+    mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+)::Nothing
+</code>
+</pre>
+<p>Validate that the 
+<code>colors_data
+</code> from the 
+<code>colors_data_context
+</code> is valid and consistent with the 
+<code>colors_configuration
+</code> from the 
+<code>colors_configuration_context
+</code>. For example, if the color configuration contains a categorical color mapping, this will validate that all the color names in the data are valid keys of this mapping.
+</p>
+<p>If a 
+<code>mask
+</code> is specified, do not validate colors in the data whose matching value in the mask is false.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.fill_color" href="#SomeGraphs.Utilities.fill_color">
+<code>SomeGraphs.Utilities.fill_color
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_color(line_color::Maybe{AbstractString})::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return a fill color based on a 
+<code>line_color
+</code>. The fill color is twice as transparent as the line color.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.validate_values" href="#SomeGraphs.Utilities.validate_values">
+<code>SomeGraphs.Utilities.validate_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_values(
+    values_data_context::ValidationContext,
+    values_data::Maybe{AbstractVector{&lt;:Real}}},
+    axis_configuration_context::ValidationContext,
+    axis_configuration::AxisConfiguration,
+)::Nothing
+</code>
+</pre>
+<p>Validate that the 
+<code>values_data
+</code> from the 
+<code>values_data_context
+</code> is valid and consistent with the 
+<code>axis_configuration
+</code> from the 
+<code>axis_configuration_context
+</code>. Specifically this ensures that if a 
+<code>log_scale
+</code> is applied, all the values are positive.
 </p>
 </div>
 </section>
@@ -575,8 +518,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.push_horizontal_bands_shapes" href="#SomeGraphs.Utilities.push_horizontal_bands_shapes">
-<code>SomeGraphs.Utilities.push_horizontal_bands_shapes
+<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_layout" href="#SomeGraphs.Utilities.plotly_layout">
+<code>SomeGraphs.Utilities.plotly_layout
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -587,16 +530,17 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">push_horizontal_bands_shapes(
+<code class="language-julia hljs">plotly_layout(
+    figure_configuration::FigureConfiguration;
+    title::Maybe{AbstractString},
+    showlegend::Bool,
     shapes::AbstractVector{Shape},
-    axis_configuration::AxisConfiguration,
-    scaled_values_range::AbstractVector{&lt;:Real},
-    bands_data::BandsData,
-    bands_configuration::BandsConfiguration
-)::AbstractVector{&lt;:Shape}
+)::Layout
 </code>
 </pre>
-<p>Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+<p>Create a Plotly 
+<code>Layout
+</code> object.
 </p>
 </div>
 </section>
@@ -605,8 +549,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.push_vertical_bands_shapes" href="#SomeGraphs.Utilities.push_vertical_bands_shapes">
-<code>SomeGraphs.Utilities.push_vertical_bands_shapes
+<a class="docstring-binding" id="SomeGraphs.Utilities.set_layout_axis!" href="#SomeGraphs.Utilities.set_layout_axis!">
+<code>SomeGraphs.Utilities.set_layout_axis!
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -617,16 +561,22 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">push_vertical_bands_shapes(
-    shapes::AbstractVector{Shape},
-    axis_configuration::AxisConfiguration,
-    scaled_values_range::AbstractVector{&lt;:Real},
-    bands_data::BandsData,
-    bands_configuration::BandsConfiguration
-)::AbstractVector{&lt;:Shape}
+<code class="language-julia hljs">set_layout_axis!(
+    layout::Layout,
+    axis::AbstractString
+    axis_configuration::AxisConfiguration;
+    title::Maybe{AbstractString},
+    range::Range,
+)::Nothing
 </code>
 </pre>
-<p>Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
+<p>Add a Plotly 
+<code>axis
+</code> in a 
+<code>layout
+</code> using the 
+<code>axis_configuration
+</code>.
 </p>
 </div>
 </section>
@@ -635,8 +585,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.push_diagonal_bands_shapes" href="#SomeGraphs.Utilities.push_diagonal_bands_shapes">
-<code>SomeGraphs.Utilities.push_diagonal_bands_shapes
+<a class="docstring-binding" id="SomeGraphs.Utilities.set_layout_colorscale!" href="#SomeGraphs.Utilities.set_layout_colorscale!">
+<code>SomeGraphs.Utilities.set_layout_colorscale!
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -647,18 +597,52 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">push_diagonal_bands_shapes(
-    shapes::AbstractVector{Shape},
-    x_axis_configuration::AxisConfiguration,
-    y_axis_configuration::AxisConfiguration,
-    x_scaled_values_range::AbstractVector{&lt;:Real},
-    y_scaled_values_range::AbstractVector{&lt;:Real},
-    bands_data::BandsData,
-    bands_configuration::BandsConfiguration
-)::AbstractVector{&lt;:Shape}
+<code class="language-julia hljs">set_layout_colorscale!(
+    layout::Layout,
+    colorscale::AbstractString,
+    colors_configuration::ColorsConfiguration;
+    offset::Maybe{Real},
+    title::Maybe{AbstractString},
+)::Nothing
 </code>
 </pre>
-<p>Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+<p>Set a 
+<code>colorscale
+</code> in a Plotly 
+<code>layout
+</code>, as specified by a 
+<code>colors_configuration
+</code>. Since Plotly is dumb when it comes to placement of color scales, the 
+<code>offset
+</code> must be specified manually to avoid overlaps.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_line_dash" href="#SomeGraphs.Utilities.plotly_line_dash">
+<code>SomeGraphs.Utilities.plotly_line_dash
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_line_dash(line_style::LineStyle)::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return the Plotly 
+<code>line_dash
+</code> for a 
+<code>line_style
+</code>.
 </p>
 </div>
 </section>
@@ -698,8 +682,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.validate_colors" href="#SomeGraphs.Utilities.validate_colors">
-<code>SomeGraphs.Utilities.validate_colors
+<a class="docstring-binding" id="SomeGraphs.Utilities.push_horizontal_bands_shapes" href="#SomeGraphs.Utilities.push_horizontal_bands_shapes">
+<code>SomeGraphs.Utilities.push_horizontal_bands_shapes
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -710,28 +694,16 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">validate_colors(
-    colors_data_context::ValidationContext,
-    colors_data::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}},
-    colors_configuration_context::ValidationContext,
-    colors_configuration::ColorsConfiguration,
-    mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
-)::Nothing
+<code class="language-julia hljs">push_horizontal_bands_shapes(
+    shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    scaled_values_range::Range,
+    bands_data::BandsData,
+    bands_configuration::BandsConfiguration
+)::AbstractVector{&lt;:Shape}
 </code>
 </pre>
-<p>Validate that the 
-<code>colors_data
-</code> from the 
-<code>colors_data_context
-</code> is valid and consistent with the 
-<code>colors_configuration
-</code> from the 
-<code>colors_configuration_context
-</code>. For example, if the color configuration contains a categorical color mapping, this will validate that all the color names in the data are valid keys of this mapping.
-</p>
-<p>If a 
-<code>mask
-</code> is specified, do not validate colors in the data whose matching value in the mask is false.
+<p>Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because Plotly.
 </p>
 </div>
 </section>
@@ -740,8 +712,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.fill_color" href="#SomeGraphs.Utilities.fill_color">
-<code>SomeGraphs.Utilities.fill_color
+<a class="docstring-binding" id="SomeGraphs.Utilities.push_vertical_bands_shapes" href="#SomeGraphs.Utilities.push_vertical_bands_shapes">
+<code>SomeGraphs.Utilities.push_vertical_bands_shapes
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -752,12 +724,16 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">fill_color(line_color::Maybe{AbstractString})::Maybe{AbstractString}
+<code class="language-julia hljs">push_vertical_bands_shapes(
+    shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    scaled_values_range::Range,
+    bands_data::BandsData,
+    bands_configuration::BandsConfiguration
+)::AbstractVector{&lt;:Shape}
 </code>
 </pre>
-<p>Return a fill color based on a 
-<code>line_color
-</code>. The fill color is twice as transparent as the line color.
+<p>Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
 </p>
 </div>
 </section>
@@ -766,8 +742,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.range_of" href="#SomeGraphs.Utilities.range_of">
-<code>SomeGraphs.Utilities.range_of
+<a class="docstring-binding" id="SomeGraphs.Utilities.push_diagonal_bands_shapes" href="#SomeGraphs.Utilities.push_diagonal_bands_shapes">
+<code>SomeGraphs.Utilities.push_diagonal_bands_shapes
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -778,17 +754,101 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">range_of(
+<code class="language-julia hljs">push_diagonal_bands_shapes(
+    shapes::AbstractVector{Shape},
+    x_axis_configuration::AxisConfiguration,
+    y_axis_configuration::AxisConfiguration,
+    x_scaled_values_range::Range,
+    y_scaled_values_range::Range,
+    bands_data::BandsData,
+    bands_configuration::BandsConfiguration
+)::AbstractVector{&lt;:Shape}
+</code>
+</pre>
+<p>Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.MaybeRange" href="#SomeGraphs.Utilities.MaybeRange">
+<code>SomeGraphs.Utilities.MaybeRange
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct MaybeRange
+    minimum::Maybe{Float32} = nothing
+    maximum::Maybe{Float32} = nothing
+end
+</code>
+</pre>
+<p>A range of values (possibly partially specified).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.Range" href="#SomeGraphs.Utilities.Range">
+<code>SomeGraphs.Utilities.Range
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct Range
+    minimum::Float32
+    maximum::Float32
+end
+</code>
+</pre>
+<p>A range of values (fully specified).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.collect_range!" href="#SomeGraphs.Utilities.collect_range!">
+<code>SomeGraphs.Utilities.collect_range!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">collect_range!(
+    range::MaybeRange,
     values::AbstractVector{&lt;:Maybe{Real}},
-    range::Maybe{AbstractVector{&lt;:Maybe{Real}}} = nothing,
 )::Nothing
 </code>
 </pre>
-<p>Compute the 
+<p>Expand the 
 <code>range
-</code> of (scaled) 
-<code>values
-</code>.
+</code> to cover the `values.
 </p>
 </div>
 </section>
@@ -813,6 +873,61 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 </code>
 </pre>
 <p>Expand the range of values by 1% to allow for points and lines at the edge to be fully visible.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.assert_range" href="#SomeGraphs.Utilities.assert_range">
+<code>SomeGraphs.Utilities.assert_range
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">assert_range(range::MaybeRange)::Range
+</code>
+</pre>
+<p>Convert a partial range to a fully specified one.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.final_scaled_range" href="#SomeGraphs.Utilities.final_scaled_range">
+<code>SomeGraphs.Utilities.final_scaled_range
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">final_scaled_range(
+    implicit_scaled_range::Range,
+    axis_configuration::AxisConfiguration
+)::Range,
+</code>
+</pre>
+<p>Compute the final range for some axis given the 
+<code>implicit_scaled_range
+</code> computed from the values and the 
+<code>axis_configuration
+</code>.
 </p>
 </div>
 </section>
@@ -858,6 +973,18 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.MaybeRange">
+<code>SomeGraphs.Utilities.MaybeRange
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.Range">
+<code>SomeGraphs.Utilities.Range
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Validations.Maybe">
 <code>SomeGraphs.Validations.Maybe
 </code>
@@ -872,6 +999,18 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Common.validate_graph">
 <code>SomeGraphs.Common.validate_graph
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.assert_range">
+<code>SomeGraphs.Utilities.assert_range
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.collect_range!">
+<code>SomeGraphs.Utilities.collect_range!
 </code>
 </a>
 </li>
@@ -936,12 +1075,6 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.range_of">
-<code>SomeGraphs.Utilities.range_of
-</code>
-</a>
-</li>
-<li>
 <a href="utilities.html#SomeGraphs.Utilities.scale_axis_value">
 <code>SomeGraphs.Utilities.scale_axis_value
 </code>
@@ -980,6 +1113,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_graph_bands">
 <code>SomeGraphs.Utilities.validate_graph_bands
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.validate_values">
+<code>SomeGraphs.Utilities.validate_values
 </code>
 </a>
 </li>

@@ -136,6 +136,29 @@ nested_test("utilities") do
         end
     end
 
+    nested_test("values") do
+        data_context = ValidationContext(["values_data"])
+        configuration_context = ValidationContext(["axis_configuration"])
+        configuration = AxisConfiguration()
+        configuration.log_scale = Log2Scale
+
+        validate_values(data_context, nothing, configuration_context, configuration)
+
+        data = [0.0, 1.0]
+
+        nested_test("negative") do
+            @test_throws dedent("""
+                too low values_data.([1] + axis_configuration.axis.log_regularization): 0.0
+                is not above: 0
+            """) validate_values(data_context, data, configuration_context, configuration)
+        end
+
+        nested_test("positive") do
+            configuration.log_regularization = 1
+            return validate_values(data_context, data, configuration_context, configuration)
+        end
+    end
+
     nested_test("colors") do
         data_context = ValidationContext(["colors_data"])
         data = nothing

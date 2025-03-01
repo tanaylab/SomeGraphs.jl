@@ -459,7 +459,8 @@ nested_test("points") do
             graph.configuration.edges.colors.palette = Dict("Foo-E" => "red", "Bar-E" => "green", "Baz-E" => "blue")
             graph.data.edges_colors = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
 
-            return test_html(graph, "points.offsets.no-colors.html")
+            test_html(graph, "points.offsets.no-colors.html")
+            return nothing
         end
 
         nested_test("one-colors") do
@@ -473,7 +474,8 @@ nested_test("points") do
             graph.configuration.edges.colors.palette = Dict("Foo-E" => "red", "Bar-E" => "green", "Baz-E" => "blue")
             graph.data.edges_colors = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
 
-            return test_html(graph, "points.offsets.one-colors.html")
+            test_html(graph, "points.offsets.one-colors.html")
+            return nothing
         end
 
         nested_test("two-colors") do
@@ -486,7 +488,8 @@ nested_test("points") do
             graph.configuration.edges.colors.palette = Dict("Foo-E" => "red", "Bar-E" => "green", "Baz-E" => "blue")
             graph.data.edges_colors = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
 
-            return test_html(graph, "points.offsets.two-colors.html")
+            test_html(graph, "points.offsets.two-colors.html")
+            return nothing
         end
 
         nested_test("all-colors") do
@@ -583,39 +586,160 @@ nested_test("line") do
 
     nested_test("width") do
         graph.configuration.line.width = 8
-        return test_html(graph, "line.width.html")
+        test_html(graph, "line.width.html")
+        return nothing
     end
 
     nested_test("color") do
         graph.configuration.line.color = "red"
-        return test_html(graph, "line.color.html")
+        test_html(graph, "line.color.html")
+        return nothing
     end
 
     nested_test("style") do
         graph.configuration.line.style = DashLine
-        return test_html(graph, "line.style.html")
+        test_html(graph, "line.style.html")
+        return nothing
     end
 
     nested_test("filled") do
         graph.configuration.line.is_filled = true
-        return test_html(graph, "line.is_filled.html")
+        test_html(graph, "line.is_filled.html")
+        return nothing
     end
 
     nested_test("points") do
         graph.configuration.show_points = true
 
         nested_test("()") do
-            return test_html(graph, "line.points.html")
+            test_html(graph, "line.points.html")
+            return nothing
         end
 
         nested_test("size") do
             graph.configuration.points_size = 8
-            return test_html(graph, "line.points.size.html")
+            test_html(graph, "line.points.size.html")
+            return nothing
         end
 
         nested_test("color") do
+            graph.configuration.line.color = "green"
             graph.configuration.points_color = "red"
-            return test_html(graph, "line.points.color.html")
+            test_html(graph, "line.points.color.html")
+            return nothing
         end
+    end
+end
+
+nested_test("lines") do
+    graph =
+        lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+
+    nested_test("invalid") do
+        context = ValidationContext(["graph"])
+
+        nested_test("log") do
+            graph.configuration.stacking = StackFractions
+            graph.configuration.y_axis.log_scale = Log10Scale
+            @test_throws "can't specify both graph.configuration.stacking and graph.configuration.y_axis.log_scale" validate(
+                context,
+                graph,
+            )
+        end
+
+        nested_test("negative") do
+            graph.configuration.stacking = StackFractions
+            graph.data.lines_points_ys[1][1] = -1
+            @test_throws dedent("""
+                too low scaled graph.data.lines_points_ys[1][1]: -1.0
+                is not at least: 0
+                when using graph.configuration.stacking: StackFractions
+            """) validate(context, graph)
+        end
+
+        nested_test("legend") do
+            graph.configuration.show_legend = true
+            @test_throws "must specify graph.data.lines_titles for graph.configuration.show_legend" validate(
+                context,
+                graph,
+            )
+        end
+    end
+
+    nested_test("()") do
+        test_html(graph, "lines.html")
+        return nothing
+    end
+
+    nested_test("legend") do
+        graph.configuration.show_legend = true
+        graph.data.lines_titles = ["Foo", "Bar"]
+        test_html(graph, "lines.legend.html")
+        return nothing
+    end
+
+    nested_test("fill") do
+        graph.configuration.line.is_filled = true
+        test_html(graph, "lines.fill.html")
+        return nothing
+    end
+
+    nested_test("stacking") do
+        nested_test("values") do
+            graph.configuration.stacking = StackValues
+
+            nested_test("()") do
+                test_html(graph, "lines.values.html")
+                return nothing
+            end
+
+            nested_test("fill") do
+                graph.configuration.line.is_filled = true
+                test_html(graph, "lines.values.fill.html")
+                return nothing
+            end
+        end
+
+        nested_test("fractions") do
+            graph.configuration.stacking = StackFractions
+
+            nested_test("()") do
+                test_html(graph, "lines.fractions.html")
+                return nothing
+            end
+
+            nested_test("fill") do
+                graph.configuration.line.is_filled = true
+                test_html(graph, "lines.fractions.fill.html")
+                return nothing
+            end
+
+            nested_test("percent") do
+                graph.configuration.y_axis.percent = true
+                test_html(graph, "lines.fractions.percent.html")
+                return nothing
+            end
+        end
+    end
+
+    nested_test("unify") do
+        lines_points_xs = [[0.0, 1.0, 2.0], [0.25, 0.5, 1.5, 2.5]]
+        lines_points_ys = [[-0.2, 1.2, 1.8], [0.1, 1.0, 0.5, 2.0]]
+        unified_points_xs, unified_points_ys = SomeGraphs.Scatters.unify_lines_points(lines_points_xs, lines_points_ys)
+
+        @test isapprox(
+            unified_points_xs,
+            [  #
+                [0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 2.0, 2.0, 2.5],  #
+                [0.0, 0.0, 0.25, 0.25, 0.25, 0.5, 1.0, 1.5, 2.0, 2.5],  #
+            ],
+        )
+        @test isapprox(
+            unified_points_ys,
+            [  #
+                [-0.2, 0.15, 0.5, 1.2, 1.5, 1.8, 0.0, 0.0],  #
+                [0.0, 0.0, 0.1, 1.0, 0.75, 0.5, 1.25, 2.0],  #
+            ],
+        )
     end
 end
