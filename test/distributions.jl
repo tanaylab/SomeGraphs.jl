@@ -221,7 +221,7 @@ function test_distributions(
                     nested_test("!gap") do
                         graph.configuration.distributions_gap = nothing
 
-                        if kind === "box"
+                        if contains(kind, "box")
                             @test_throws "overlay (no graph.configuration.distributions_gap specified) for box distributions" validate(
                                 ValidationContext(["graph"]),
                                 graph,
@@ -350,6 +350,14 @@ nested_test("distributions") do
         ],
     )
     nested_test("invalid") do
+        nested_test("~cumulative_axis") do
+            graph.configuration.cumulative_axis.units = CumulativeCounts
+            @test_throws dedent("""
+                specified graph.configuration.cumulative_axis
+                for non-cumulative graph.configuration.distribution.style: CurveDistribution
+            """) graph.figure
+        end
+
         nested_test("!values") do
             empty!(graph.data.distributions_values)
             @test_throws "empty vector graph.data.distributions_values" graph.figure
@@ -380,14 +388,6 @@ nested_test("distributions") do
                 is different from length of graph.data.distributions_values: 2
             """) graph.figure
         end
-
-        nested_test("~cumulative_axis_title") do
-            graph.data.cumulative_axis_title = "Title"
-            @test_throws dedent("""
-                specified graph.data.cumulative_axis_title: Title
-                for non-cumulative graph.configuration.distribution.style: CurveDistribution
-            """) graph.figure
-        end
     end
 
     for (name, style) in (
@@ -401,6 +401,17 @@ nested_test("distributions") do
         test_distributions(graph, "distributions", name) do
             graph.configuration.distribution.style = style
             return nothing
+        end
+    end
+
+    nested_test("cumulative") do
+        for (name, units) in
+            (("fractions", CumulativeFractions), ("percents", CumulativePercents), ("counts", CumulativeCounts))
+            test_distributions(graph, "distributions", "cumulative.$(name)", name) do
+                graph.configuration.distribution.style = CumulativeDistribution
+                graph.configuration.cumulative_axis.units = units
+                return nothing
+            end
         end
     end
 end

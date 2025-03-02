@@ -352,6 +352,7 @@ end
         axis_configuration::AxisConfiguration;
         title::Maybe{AbstractString},
         range::Range,
+        domain::Maybe{AbstractVector{<:Real}} = nothing,
     )::Nothing
 
 Add a Plotly `axis` in a `layout` using the `axis_configuration`.
@@ -362,6 +363,7 @@ function set_layout_axis!(
     axis_configuration::AxisConfiguration;
     title::Maybe{AbstractString},
     range::Range,
+    domain::Maybe{AbstractVector{<:Real}} = nothing,
 )::Nothing
     layout[axis] = Dict(
         :title => title,
@@ -372,6 +374,7 @@ function set_layout_axis!(
         :tickprefix => axis_ticks_prefix(axis_configuration),
         :ticksuffix => axis_ticks_suffix(axis_configuration),
         :zeroline => axis_configuration.log_scale === nothing,
+        :domain => domain,
     )
     return nothing
 end

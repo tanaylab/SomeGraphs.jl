@@ -226,12 +226,14 @@ This is similar to [`DistributionGraphConfiguration`](@ref), with additions to d
 
 If `distributions_gap` is set to `nothing`, overlay the distributions on top of each other. Otherwise, the distributions
 are plotted next to each other, with the `distributions_gap` specified as a fraction of the used graph size. If zero the
-graphs will be adjacent, if 1 then the gaps will be the same size as the graphs.
+graphs will be adjacent, if 1 then the gaps will be the same size as the graphs. The `cumulative_axis` is only used if
+the `distribution.style` is `CumulativeDistribution`.
 """
 @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
+    cumulative_axis::CumulativeAxisConfiguration = CumulativeAxisConfiguration()
     distributions_gap::Maybe{Real} = 0.05
 end
 
@@ -245,8 +247,23 @@ function Validations.validate(
 
     validate_is_at_least(context, configuration.distributions_gap, 0)
 
-    if configuration.distribution.style == BoxDistribution && configuration.distributions_gap === nothing
+    if configuration.distributions_gap === nothing &&
+       configuration.distribution.style in (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution)
         throw(ArgumentError("overlay (no $(location(context)).distributions_gap specified) for box distributions"))
+    end
+
+    if configuration.distribution.style != CumulativeDistribution
+        if configuration.cumulative_axis.units !== CumulativeFractions ||
+           configuration.cumulative_axis.descending ||
+           !configuration.cumulative_axis.show_ticks ||
+           configuration.cumulative_axis.grid_color != "lightgrey"
+            throw(
+                ArgumentError(
+                    "specified $(location(context)).cumulative_axis\n" *
+                    "for non-cumulative $(location(context)).distribution.style: $(configuration.distribution.style)",
+                ),
+            )
+        end
     end
 
     return nothing
@@ -292,7 +309,6 @@ end
     @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
-        cumulative_axis_title::Maybe{AbstractString} = nothing
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -306,7 +322,6 @@ The data for a multiple distributions graph. By default, all the titles are empt
 @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
-    cumulative_axis_title::Maybe{AbstractString} = nothing
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -401,7 +416,6 @@ Create a [`DistributionsGraph`](@ref) by initializing only the [`DistributionsGr
 function distributions_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
-    cumulative_axis_title::Maybe{AbstractString} = nothing,
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
@@ -410,7 +424,6 @@ function distributions_graph(;
         DistributionsGraphData(;
             figure_title,
             value_axis_title,
-            cumulative_axis_title,
             distributions_values,
             distributions_names,
             distributions_colors,
@@ -436,7 +449,9 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
 
     validate_graph_bands("cumulative_bands", graph.configuration.cumulative_bands, graph.data.cumulative_bands)
 
-    if graph.data.cumulative_axis_title !== nothing && graph.configuration.distribution.style !== CumulativeDistribution
+    if graph isa DistributionGraph &&
+       graph.data.cumulative_axis_title !== nothing &&
+       graph.configuration.distribution.style !== CumulativeDistribution
         throw(
             ArgumentError(
                 "specified graph.data.cumulative_axis_title: $(graph.data.cumulative_axis_title)\n" *
@@ -455,15 +470,6 @@ function Common.validate_graph(graph::DistributionsGraph)::Nothing
             distribution_values,
             ValidationContext(["graph.configuration.value_axis"]),
             graph.configuration.value_axis,
-        )
-    end
-
-    if graph.data.cumulative_axis_title !== nothing && graph.configuration.distribution.style !== CumulativeDistribution
-        throw(
-            ArgumentError(
-                "specified graph.data.cumulative_axis_title: $(graph.data.cumulative_axis_title)\n" *
-                "for non-cumulative graph.configuration.distribution.style: $(graph.configuration.distribution.style)",
-            ),
         )
     end
 
@@ -490,12 +496,7 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
         ),
     )
 
-    max_count = length(graph.data.distribution_values)
-
-    return plotly_figure(
-        traces,
-        distribution_layout(; graph = graph, implicit_values_range, show_legend = false, max_count),
-    )
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, show_legend = false))
 end
 
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
@@ -537,6 +538,34 @@ function distribution_trace(;
 )::GenericTrace
     scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false)
     collect_range!(implicit_values_range, scaled_values)
+
+    if configuration.distribution.values_orientation == VerticalValues
+        yaxis = nothing
+        y0 = nothing
+
+        if sub_graph === nothing
+            xaxis = nothing
+            x0 = nothing
+        else
+            xaxis = sub_graph.overlay || sub_graph.index == 1 ? "x" : "x$(sub_graph.index)"
+            x0 = 0
+        end
+
+    elseif configuration.distribution.values_orientation == HorizontalValues
+        xaxis = nothing
+        x0 = nothing
+
+        if sub_graph === nothing
+            yaxis = nothing
+            y0 = nothing
+        else
+            yaxis = sub_graph.overlay || sub_graph.index == 1 ? "y" : "y$(sub_graph.index)"
+            y0 = 0
+        end
+
+    else
+        @assert false
+    end
 
     if configuration.distribution.style == CumulativeDistribution
         n_values = length(scaled_values)
@@ -585,6 +614,10 @@ function distribution_trace(;
         return scatter(;
             x = xs,
             y = ys,
+            xaxis,
+            yaxis,
+            x0,
+            y0,
             mode = "lines",
             name,
             line_color = color,
@@ -594,34 +627,12 @@ function distribution_trace(;
 
     else # All other styles
         if configuration.distribution.values_orientation == VerticalValues
-            y = scaled_values
-            x = nothing
-
-            yaxis = nothing
-            y0 = nothing
-
-            if sub_graph === nothing
-                xaxis = nothing
-                x0 = nothing
-            else
-                xaxis = sub_graph.overlay || sub_graph.index == 1 ? "x" : "x$(sub_graph.index)"
-                x0 = 0
-            end
+            ys = scaled_values
+            xs = nothing
 
         elseif configuration.distribution.values_orientation == HorizontalValues
-            x = scaled_values
-            y = nothing
-
-            xaxis = nothing
-            x0 = nothing
-
-            if sub_graph === nothing
-                yaxis = nothing
-                y0 = nothing
-            else
-                yaxis = sub_graph.overlay || sub_graph.index == 1 ? "y" : "y$(sub_graph.index)"
-                y0 = 0
-            end
+            xs = scaled_values
+            ys = nothing
 
         else
             @assert false
@@ -636,8 +647,8 @@ function distribution_trace(;
         end
 
         return tracer(;
-            x,
-            y,
+            x = xs,
+            y = ys,
             xaxis,
             yaxis,
             x0,
@@ -671,7 +682,6 @@ function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
     implicit_values_range::MaybeRange,
     show_legend::Bool,
-    max_count::Maybe{Integer} = nothing,
 )::Layout
     implicit_values_range = assert_range(implicit_values_range)
     expand_range!(implicit_values_range)
@@ -720,7 +730,7 @@ function distribution_layout(;
         range = scaled_values_range,
     )
 
-    if graph isa DistributionGraph && graph.configuration.distribution.style == CumulativeDistribution
+    if graph.configuration.distribution.style == CumulativeDistribution
         cumulative_axis_configuration = AxisConfiguration(;
             log_scale = nothing,
             percent = graph.configuration.cumulative_axis.units == CumulativePercents,
@@ -729,77 +739,129 @@ function distribution_layout(;
             grid_color = graph.configuration.cumulative_axis.grid_color,
         )
 
-        if graph.configuration.cumulative_axis.units == CumulativeCounts
-            @assert max_count !== nothing
-            cumulative_range = Range(; minimum = 0, maximum = max_count + 1)
-            cumulative_bands_scale = max_count
-        elseif graph.configuration.cumulative_axis.units == CumulativeFractions
-            cumulative_range = Range(; minimum = 0, maximum = 1.01)
-            cumulative_bands_scale = 1
-        elseif graph.configuration.cumulative_axis.units == CumulativePercents
-            cumulative_range = Range(; minimum = 0, maximum = 101)
-            cumulative_bands_scale = 1
+        if graph isa DistributionGraph
+            if graph.configuration.cumulative_axis.units == CumulativeCounts
+                max_count = length(graph.data.distribution_values)
+                cumulative_range = Range(; minimum = 0, maximum = max_count + 1)
+                cumulative_bands_scale = max_count
+            elseif graph.configuration.cumulative_axis.units == CumulativeFractions
+                cumulative_range = Range(; minimum = 0, maximum = 1.01)
+                cumulative_bands_scale = 1
+            elseif graph.configuration.cumulative_axis.units == CumulativePercents
+                cumulative_range = Range(; minimum = 0, maximum = 101)
+                cumulative_bands_scale = 1
+            else
+                @assert false
+            end
+
+            set_layout_axis!(
+                layout,
+                "$(density_axis_letter)axis",
+                cumulative_axis_configuration;
+                title = graph.data.cumulative_axis_title,
+                range = cumulative_range,
+            )
+
+            if graph.configuration.distribution.values_orientation == VerticalValues
+                push_vertical_bands_shapes(
+                    shapes,
+                    cumulative_axis_configuration,
+                    cumulative_range,
+                    graph.data.cumulative_bands,
+                    graph.configuration.cumulative_bands,
+                    cumulative_bands_scale,
+                )
+            elseif graph.configuration.distribution.values_orientation == HorizontalValues
+                push_horizontal_bands_shapes(
+                    shapes,
+                    cumulative_axis_configuration,
+                    cumulative_range,
+                    graph.data.cumulative_bands,
+                    graph.configuration.cumulative_bands,
+                    cumulative_bands_scale,
+                )
+            end
+
+        elseif graph isa DistributionsGraph
+            n_distributions = length(graph.data.distributions_values)  # NOJET
+            distributions_gap = graph.configuration.distributions_gap  # NOJET
+
+            max_counts = maximum(length.(graph.data.distributions_values))  # NOJET
+
+            for index in 1:n_distributions
+                if graph.configuration.cumulative_axis.units == CumulativeCounts
+                    if distributions_gap === nothing
+                        max_count = max_counts
+                    else
+                        max_count = length(graph.data.distributions_values[index])
+                    end
+                    cumulative_range = Range(; minimum = 0, maximum = max_count + 1)
+                    cumulative_bands_scale = max_count
+                elseif graph.configuration.cumulative_axis.units == CumulativeFractions
+                    cumulative_range = Range(; minimum = 0, maximum = 1.01)
+                    cumulative_bands_scale = 1
+                elseif graph.configuration.cumulative_axis.units == CumulativePercents
+                    cumulative_range = Range(; minimum = 0, maximum = 101)
+                    cumulative_bands_scale = 1
+                else
+                    @assert false
+                end
+
+                if distributions_gap === nothing || n_distributions == 1
+                    domain = nothing
+                else
+                    graph_size = 1 / (n_distributions + (n_distributions - 1) * distributions_gap)
+                    gap_size = graph_size * distributions_gap
+                    domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
+                end
+
+                density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
+                set_layout_axis!(
+                    layout,
+                    density_axis_name,
+                    cumulative_axis_configuration;
+                    title = if distributions_gap === nothing
+                        nothing
+                    else
+                        prefer_data(graph.data.distributions_names, index, nothing)
+                    end,
+                    range = cumulative_range,
+                    domain,
+                )
+            end
+
         else
             @assert false
         end
 
-        set_layout_axis!(
-            layout,
-            "$(density_axis_letter)axis",
-            cumulative_axis_configuration;
-            title = graph.data.cumulative_axis_title,
-            range = cumulative_range,
-        )
-
-        if graph.configuration.distribution.values_orientation == VerticalValues
-            push_vertical_bands_shapes(
-                shapes,
-                cumulative_axis_configuration,
-                cumulative_range,
-                graph.data.cumulative_bands,
-                graph.configuration.cumulative_bands,
-                cumulative_bands_scale,
-            )
-        elseif graph.configuration.distribution.values_orientation == HorizontalValues
-            push_horizontal_bands_shapes(
-                shapes,
-                cumulative_axis_configuration,
-                cumulative_range,
-                graph.data.cumulative_bands,
-                graph.configuration.cumulative_bands,
-                cumulative_bands_scale,
-            )
-        end
-    end
-
-    if graph isa DistributionGraph
-        if graph.configuration.distribution.style != CumulativeDistribution
+    else  # All other styles
+        if graph isa DistributionGraph
             layout["$(density_axis_letter)axis"] =
                 Dict(:showticklabels => false, :title => graph.data.distribution_name)
-        end
 
-    elseif graph isa DistributionsGraph
-        n_distributions = length(graph.data.distributions_values)  # NOJET
-        distributions_gap = graph.configuration.distributions_gap  # NOJET
+        elseif graph isa DistributionsGraph
+            n_distributions = length(graph.data.distributions_values)  # NOJET
+            distributions_gap = graph.configuration.distributions_gap  # NOJET
 
-        for index in 1:n_distributions
-            if distributions_gap === nothing || n_distributions == 1
-                domain = nothing
-            else
-                graph_size = 1 / (n_distributions + (n_distributions - 1) * distributions_gap)
-                gap_size = graph_size * distributions_gap
-                domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
+            for index in 1:n_distributions
+                if distributions_gap === nothing || n_distributions == 1
+                    domain = nothing
+                else
+                    graph_size = 1 / (n_distributions + (n_distributions - 1) * distributions_gap)
+                    gap_size = graph_size * distributions_gap
+                    domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
+                end
+
+                density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
+                layout[density_axis_name] = Dict(:title => if distributions_gap === nothing
+                    nothing
+                else
+                    prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
+                end, :domain => domain)
             end
-
-            density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
-            layout[density_axis_name] = Dict(:title => if distributions_gap === nothing
-                nothing
-            else
-                prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
-            end, :domain => domain)
+        else
+            @assert false
         end
-    else
-        @assert false
     end
 
     return layout
