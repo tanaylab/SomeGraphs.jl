@@ -86,7 +86,7 @@ end
         field::AbstractString,
         bands_configuration::BandsConfiguration,
         bands_data::BandsData,
-        axis_configuration::AxisConfiguration,
+        axis_configuration::Maybe{AxisConfiguration} = nothing,
     )::Nothing
 
 Validate that the bands configuration and data is compatible. Assumes these are specified as the same `field` in both
@@ -96,7 +96,7 @@ function validate_graph_bands(
     field::AbstractString,
     bands_configuration::BandsConfiguration,
     bands_data::BandsData,
-    axis_configuration::AxisConfiguration,
+    axis_configuration::Maybe{AxisConfiguration} = nothing,
 )::Nothing
     if bands_configuration.middle.line.is_filled
         if bands_configuration.low.offset === nothing && bands_data.low_offset === nothing
@@ -119,7 +119,15 @@ function validate_graph_bands(
         end
     end
 
-    if axis_configuration.log_scale !== nothing
+    context = ValidationContext(["graph.configuration", field])
+
+    validate_is_range(context, "low_offset", bands_data.low_offset, "middle_offset", bands_data.middle_offset)
+
+    validate_is_range(context, "middle_offset", bands_data.middle_offset, "high_offset", bands_data.high_offset)
+
+    validate_is_range(context, "low_offset", bands_data.low_offset, "high_offset", bands_data.high_offset)
+
+    if axis_configuration !== nothing && axis_configuration.log_scale !== nothing
         validate_is_above(ValidationContext(["graph.configuration", field, "low_offset"]), bands_data.low_offset, 0)
         validate_is_above(
             ValidationContext(["graph.configuration", field, "middle_offset"]),
@@ -641,7 +649,8 @@ end
         axis_configuration::AxisConfiguration,
         scaled_values_range::Range,
         bands_data::BandsData,
-        bands_configuration::BandsConfiguration
+        bands_configuration::BandsConfiguration,
+        bands_scale::Real = 1,
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
@@ -652,6 +661,7 @@ function push_vertical_bands_shapes(
     scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
+    bands_scale::Real = 1,
 )::Nothing
     scaled_low_offset =
         scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
@@ -672,8 +682,8 @@ function push_vertical_bands_shapes(
                     "line";
                     line_color = band_configuration.line.color,
                     line_dash = plotly_line_dash(band_configuration.line.style),
-                    x0 = scaled_offset,
-                    x1 = scaled_offset,
+                    x0 = scaled_offset * bands_scale,
+                    x1 = scaled_offset * bands_scale,
                     xref = "x",
                     y0 = 0,
                     y1 = 1,
@@ -692,7 +702,7 @@ function push_vertical_bands_shapes(
                 line_width = 0,
                 layer = "below",
                 x0 = scaled_values_range.minimum,
-                x1 = scaled_low_offset,
+                x1 = scaled_low_offset * bands_scale,
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -709,8 +719,8 @@ function push_vertical_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.middle.line.color),
                 line_width = 0,
-                x0 = scaled_low_offset,
-                x1 = scaled_high_offset,
+                x0 = scaled_low_offset * bands_scale,
+                x1 = scaled_high_offset * bands_scale,
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -727,7 +737,7 @@ function push_vertical_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
-                x0 = scaled_high_offset,
+                x0 = scaled_high_offset * bands_scale,
                 x1 = scaled_values_range.maximum,
                 xref = "x",
                 y0 = 0,
@@ -746,7 +756,8 @@ end
         axis_configuration::AxisConfiguration,
         scaled_values_range::Range,
         bands_data::BandsData,
-        bands_configuration::BandsConfiguration
+        bands_configuration::BandsConfiguration,
+        bands_scale::Real = 1,
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because
@@ -758,6 +769,7 @@ function push_horizontal_bands_shapes(
     scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
+    bands_scale::Real = 1,
 )::Nothing
     scaled_low_offset =
         scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
@@ -778,8 +790,8 @@ function push_horizontal_bands_shapes(
                     "line";
                     line_color = band_configuration.line.color,
                     line_dash = plotly_line_dash(band_configuration.line.style),
-                    y0 = scaled_offset,
-                    y1 = scaled_offset,
+                    y0 = scaled_offset * bands_scale,
+                    y1 = scaled_offset * bands_scale,
                     yref = "y",
                     x0 = 0,
                     x1 = 1,
@@ -798,7 +810,7 @@ function push_horizontal_bands_shapes(
                 line_width = 0,
                 layer = "below",
                 y0 = scaled_values_range.minimum,
-                y1 = scaled_low_offset,
+                y1 = scaled_low_offset * bands_scale,
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -815,8 +827,8 @@ function push_horizontal_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.middle.line.color),
                 line_width = 0,
-                y0 = scaled_low_offset,
-                y1 = scaled_high_offset,
+                y0 = scaled_low_offset * bands_scale,
+                y1 = scaled_high_offset * bands_scale,
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -833,7 +845,7 @@ function push_horizontal_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
-                y0 = scaled_high_offset,
+                y0 = scaled_high_offset * bands_scale,
                 y1 = scaled_values_range.maximum,
                 yref = "y",
                 x0 = 0,

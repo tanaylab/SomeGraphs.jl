@@ -205,6 +205,7 @@
 <code class="language-julia hljs">distribution_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
+    cumulative_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{&lt;:Real} = Float32[],
     distribution_name::Maybe{AbstractString} = nothing],
 )::DistributionGraph
@@ -242,10 +243,12 @@
 <code class="language-julia hljs">@kwdef mutable struct DistributionGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
+    cumulative_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{&lt;:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
     distribution_color::Maybe{AbstractString} = nothing
     value_bands::BandsData = BandsData()
+    cumulative_bands::BandsData = BandsData()
 end
 </code>
 </pre>
@@ -260,6 +263,16 @@ end
 </code> and/or 
 <code>value_bands
 </code> offsets here, if they are more of a data than a configuration parameter in the specific graph. This will override whatever is specified in the configuration.
+</p>
+<p>The 
+<code>cumulative_axis_title
+</code> and/of 
+<code>cumulative_bands
+</code> should only be specified if the 
+<code>distribution.style
+</code> is 
+<code>CumulativeDistribution
+</code>.
 </p>
 </div>
 </section>
@@ -277,12 +290,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='zb60N3elBG' class='' style=';'>
+<div id='8grVMaUf2a' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("zb60N3elBG")
+    const PLOT = document.getElementById("8grVMaUf2a")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -306,12 +319,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='rm668iCo5j' class='' style=';'>
+<div id='PznttWjYoR' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("rm668iCo5j")
+    const PLOT = document.getElementById("PznttWjYoR")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Distribution name","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"title":"Values axis","range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false,"title":"Distribution name"},"title":"Figure title","plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -333,12 +346,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Yas1uSmYre' class='' style=';'>
+<div id='6vO3c8Cccm' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Yas1uSmYre")
+    const PLOT = document.getElementById("6vO3c8Cccm")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"fillcolor":"FF000080","name":"Trace","line":{"color":"red"},"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -374,7 +387,19 @@ to_documenter(graph.figure)
 end
 </code>
 </pre>
-<p>Configure a graph for showing a single distribution.
+<p>Configure a graph for showing a single distribution. The 
+<code>cumulative_axis
+</code> and 
+<code>cumulative_bands
+</code> are only used if the 
+<code>distribution.style
+</code> is 
+<code>CumulativeDistribution
+</code>. The offsets of the 
+<code>cumulative_bands
+</code> are always in fractions (between 0 and 1) regardless of the 
+<code>cumulative_axis.units
+</code>.
 </p>
 </div>
 </section>
@@ -440,12 +465,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='DEVAcB2afw' class='' style=';'>
+<div id='8B8cMEsP5L' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("DEVAcB2afw")
+    const PLOT = document.getElementById("8B8cMEsP5L")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"name":"Trace","y":[0,0,1,1,1,3],"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -498,6 +523,8 @@ to_documenter(graph.figure)
 <code>HistogramDistribution
 </code> - a histogram of the distribution.
 </p>
+<p>&#39;CumulativeDistribution&#39; - a cumulative distribution (aka &quot;CDF&quot;). This one allows for additional configuration options.
+</p>
 </div>
 </section>
 </article>
@@ -515,12 +542,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='UaxpLCt365' class='' style=';'>
+<div id='R9bcqQmwji' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("UaxpLCt365")
+    const PLOT = document.getElementById("R9bcqQmwji")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -542,12 +569,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='LlLFXxJhFS' class='' style=';'>
+<div id='tvQnuUDgCc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("LlLFXxJhFS")
+    const PLOT = document.getElementById("tvQnuUDgCc")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":true},"x":[0,0,1,1,1,3],"name":"Trace","type":"box","points":false,"spanmode":"hard"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -570,12 +597,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='glJ1stMxaq' class='' style=';'>
+<div id='VBKMBHbnnj' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("glJ1stMxaq")
+    const PLOT = document.getElementById("VBKMBHbnnj")
     const plot_obj = {"data": [{"boxpoints":"outliers","box":{"visible":true},"x":[0,0,1,1,1,3],"name":"Trace","type":"box","points":false,"spanmode":"hard"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -597,12 +624,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='0LD7u8fnzQ' class='' style=';'>
+<div id='w7AVbHYTzr' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("0LD7u8fnzQ")
+    const PLOT = document.getElementById("w7AVbHYTzr")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":true},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -624,12 +651,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ntPzc89Qln' class='' style=';'>
+<div id='dSDj4Xpjbc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ntPzc89Qln")
+    const PLOT = document.getElementById("dSDj4Xpjbc")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":true},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -651,12 +678,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Jgvuedd5F0' class='' style=';'>
+<div id='NrzmEKanOh' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Jgvuedd5F0")
+    const PLOT = document.getElementById("NrzmEKanOh")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"histogram","points":false,"spanmode":"hard"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -678,12 +705,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FiekawRakl' class='' style=';'>
+<div id='wurvgaiw64' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FiekawRakl")
+    const PLOT = document.getElementById("wurvgaiw64")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"fillcolor":"FF000080","name":"Trace","line":{"color":"red"},"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -706,12 +733,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='TdcO800LLq' class='' style=';'>
+<div id='sYDDMybO3l' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("TdcO800LLq")
+    const PLOT = document.getElementById("sYDDMybO3l")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"fillcolor":"transparent","name":"Trace","line":{"width":4},"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -733,13 +760,204 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ATauXRpqI3' class='' style=';'>
+<div id='OP61wzutjh' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ATauXRpqI3")
+    const PLOT = document.getElementById("OP61wzutjh")
     const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"shapes":[{"line":{"color":null,"dash":null},"x0":2.0,"type":"line","y0":0,"y1":1,"yref":"y domain","xref":"x","x1":2.0}],"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.CumulativeUnits" href="#SomeGraphs.Distributions.CumulativeUnits">
+<code>SomeGraphs.Distributions.CumulativeUnits
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Possible units for the distribution axis of a cumulative distribution:
+</p>
+<p>
+<code>CumulativeFractions
+</code> - the axis is the fraction of entries.
+</p>
+<p>
+<code>CumulativePercents
+</code> - the axis is the percent of entries.
+</p>
+<p>
+<code>CumulativeCounts
+</code> - the axis is the number of entries.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Distributions.CumulativeAxisConfiguration" href="#SomeGraphs.Distributions.CumulativeAxisConfiguration">
+<code>SomeGraphs.Distributions.CumulativeAxisConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct CumulativeAxisConfiguration
+    units::CumulativeUnits = CumulativeFractions
+    descending::Bool = false
+    show_ticks::Bool = true
+    show_grid::Bool = true
+    grid_color::AbstractString = &quot;lightgrey&quot;
+end
+</code>
+</pre>
+<p>Possible configurations for the distribution axis of a cumulative distribution, using the specified 
+<code>units
+</code>. Normally we count the entries up to some value, so the graph is ascending; if 
+<code>descending
+</code>, we count the entries down to some value, so the graph is descending.
+</p>
+<p>This intentionally offers only a subset of the fields of 
+<a href="common.html#SomeGraphs.Common.AxisConfiguration">
+<code>AxisConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Cumulative distribution functions are an undervalued tool for showing distributions. They have the advantage that the second axis is in actual units (by default, fractions). This opens up additional configuration options.
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='c24m2e58kT' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("c24m2e58kT")
+    const plot_obj = {"data": [{"mode":"lines","y":[0.16666667,0.33333334,0.5,0.8333333,1.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Percents:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+graph.configuration.cumulative_axis.units = CumulativePercents
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='pxwRmrJ4mP' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("pxwRmrJ4mP")
+    const plot_obj = {"data": [{"mode":"lines","y":[16.666666,33.333332,50.0,83.333336,100.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,101.0],"ticksuffix":"<sub>%</sub>"},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Counts:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+graph.configuration.cumulative_axis.units = CumulativeCounts
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='jSkIZALbv7' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("jSkIZALbv7")
+    const plot_obj = {"data": [{"mode":"lines","y":[1.0,2.0,3.0,5.0,6.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,7.0]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Descending:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+graph.configuration.cumulative_axis.descending = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='uoKGpen5JW' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("uoKGpen5JW")
+    const plot_obj = {"data": [{"mode":"lines","y":[1.0,0.8333333,0.6666667,0.33333334,0.16666667],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -835,6 +1053,7 @@ to_documenter(graph.figure)
 <code class="language-julia hljs">@kwdef mutable struct DistributionsGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
+    cumulative_axis_title::Maybe{AbstractString} = nothing
     distributions_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
@@ -869,12 +1088,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZqmCa95ipk' class='' style=';'>
+<div id='MYFeKrLT33' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZqmCa95ipk")
+    const PLOT = document.getElementById("MYFeKrLT33")
     const plot_obj = {"data": [{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[0,0,1,1,1,3],"type":"violin","points":false,"spanmode":"hard","side":"positive"},{"scalegroup":"Distributions","yaxis":"y2","boxpoints":false,"y0":0,"box":{"visible":false},"x":[4,4,3,3,3,1],"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"domain":[0.0,0.48780487804878053]},"yaxis2":{"domain":[0.5121951219512195,1.0]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -943,12 +1162,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='sUafLuvTGc' class='' style=';'>
+<div id='PeHP7TkSSJ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("sUafLuvTGc")
+    const PLOT = document.getElementById("PeHP7TkSSJ")
     const plot_obj = {"data": [{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Foo","type":"violin","points":false,"spanmode":"hard","side":"positive"},{"scalegroup":"Distributions","yaxis":"y2","boxpoints":false,"y0":0,"box":{"visible":false},"x":[4,4,3,3,3,1],"name":"Bar","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"title":"Values title","range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"title":"Foo","domain":[0.0,0.48780487804878053]},"yaxis2":{"title":"Bar","domain":[0.5121951219512195,1.0]},"title":"Figure title","plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -970,12 +1189,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='uyc4T2T3bI' class='' style=';'>
+<div id='WLfzdH9SCS' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("uyc4T2T3bI")
+    const PLOT = document.getElementById("WLfzdH9SCS")
     const plot_obj = {"data": [{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[0,0,1,1,1,3],"type":"violin","points":false,"spanmode":"hard","side":"positive"},{"scalegroup":"Distributions","yaxis":"y2","boxpoints":false,"y0":0,"box":{"visible":false},"x":[4,4,3,3,3,1],"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"domain":[0.0,0.3333333333333333]},"yaxis2":{"domain":[0.6666666666666666,1.0]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -997,12 +1216,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='RQTbAH6QXj' class='' style=';'>
+<div id='PGPzKpCJSa' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("RQTbAH6QXj")
+    const PLOT = document.getElementById("PGPzKpCJSa")
     const plot_obj = {"data": [{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[0,0,1,1,1,3],"type":"violin","points":false,"spanmode":"hard","side":"positive"},{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[4,4,3,3,3,1],"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1027,12 +1246,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='xyxThRFxZk' class='' style=';'>
+<div id='vW3CyFylx3' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("xyxThRFxZk")
+    const PLOT = document.getElementById("vW3CyFylx3")
     const plot_obj = {"data": [{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Foo","type":"violin","points":false,"spanmode":"hard","side":"positive"},{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[4,4,3,3,3,1],"name":"Bar","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","plot_bgcolor":"white","showlegend":true,"legend":{"tracegroupgap":0,"itemdoubleclick":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1056,12 +1275,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='5XseCKhyyt' class='' style=';'>
+<div id='gjNbsGPaWZ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("5XseCKhyyt")
+    const PLOT = document.getElementById("gjNbsGPaWZ")
     const plot_obj = {"data": [{"scalegroup":"Distributions","yaxis":"y","boxpoints":false,"y0":0,"box":{"visible":false},"x":[0,0,1,1,1,3],"fillcolor":"FF000080","line":{"color":"red"},"type":"violin","points":false,"spanmode":"hard","side":"positive"},{"scalegroup":"Distributions","yaxis":"y2","boxpoints":false,"y0":0,"box":{"visible":false},"x":[4,4,3,3,3,1],"fillcolor":"00800080","line":{"color":"green"},"type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"domain":[0.0,0.48780487804878053]},"yaxis2":{"domain":[0.5121951219512195,1.0]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1086,12 +1305,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='RupyvD2DX7' class='' style=';'>
+<div id='WdofQuVwYW' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("RupyvD2DX7")
+    const PLOT = document.getElementById("WdofQuVwYW")
     const plot_obj = {"data": [{"xaxis":"x","scalegroup":"Distributions","boxpoints":"outliers","box":{"visible":true},"x0":0,"fillcolor":"FF000080","line":{"color":"red"},"y":[0,0,1,1,1,3],"type":"box","points":false,"spanmode":"hard"},{"xaxis":"x2","scalegroup":"Distributions","boxpoints":"outliers","box":{"visible":true},"x0":0,"fillcolor":"FF000080","line":{"color":"red"},"y":[4,4,3,3,3,1],"type":"box","points":false,"spanmode":"hard"}], "layout": {"xaxis":{"domain":[0.0,0.48780487804878053]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"xaxis2":{"domain":[0.5121951219512195,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1115,6 +1334,18 @@ to_documenter(graph.figure)
 <li>
 <a href="distributions.html#SomeGraphs.Distributions">
 <code>SomeGraphs.Distributions
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.CumulativeAxisConfiguration">
+<code>SomeGraphs.Distributions.CumulativeAxisConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="distributions.html#SomeGraphs.Distributions.CumulativeUnits">
+<code>SomeGraphs.Distributions.CumulativeUnits
 </code>
 </a>
 </li>

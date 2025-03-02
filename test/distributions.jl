@@ -1,5 +1,15 @@
-function test_distributions(setup::Function, graph::Graph, plurality::AbstractString, kind::AbstractString)::Nothing
-    nested_test(kind) do
+function test_distributions(
+    setup::Function,
+    graph::Graph,
+    plurality::AbstractString,
+    kind::AbstractString,
+    test_kind::Maybe{AbstractString} = nothing,
+)::Nothing
+    if test_kind === nothing
+        test_kind = kind
+    end
+
+    nested_test(test_kind) do
         setup()
 
         for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
@@ -62,18 +72,27 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
 
                 nested_test("!grid") do
                     graph.configuration.value_axis.show_grid = false
+                    if startswith(kind, "cumulative")
+                        graph.configuration.cumulative_axis.show_grid = false
+                    end
                     test_html(graph, "$(plurality).$(kind).$(name).!grid.html")
                     return nothing
                 end
 
                 nested_test("grid_color") do
                     graph.configuration.value_axis.grid_color = "red"
+                    if startswith(kind, "cumulative")
+                        graph.configuration.cumulative_axis.grid_color = "red"
+                    end
                     test_html(graph, "$(plurality).$(kind).$(name).grid_color.html")
                     return nothing
                 end
 
                 nested_test("ticks") do
                     graph.configuration.value_axis.show_ticks = false
+                    if startswith(kind, "cumulative")
+                        graph.configuration.cumulative_axis.show_ticks = false
+                    end
                     test_html(graph, "$(plurality).$(kind).$(name).!ticks.html")
                     return nothing
                 end
@@ -88,6 +107,14 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
                     nested_test("2") do
                         graph.configuration.value_axis.log_scale = Log2Scale
                         test_html(graph, "$(plurality).$(kind).$(name).log2.html")
+                        return nothing
+                    end
+                end
+
+                if startswith(kind, "cumulative")
+                    nested_test("descending") do
+                        graph.configuration.cumulative_axis.descending = true
+                        test_html(graph, "$(plurality).$(kind).$(name).descending.html")
                         return nothing
                     end
                 end
@@ -147,6 +174,41 @@ function test_distributions(setup::Function, graph::Graph, plurality::AbstractSt
 
                         test_html(graph, "$(plurality).$(kind).$(name).value_fills.html")
                         return nothing
+                    end
+
+                    if startswith(kind, "cumulative")
+                        nested_test("cumulative_lines") do
+                            graph.configuration.cumulative_bands.low.offset = 0.25
+                            graph.data.cumulative_bands.middle_offset = 0.5
+                            graph.configuration.cumulative_bands.high.offset = 0.75
+
+                            @assert !graph.configuration.cumulative_bands.low.line.is_filled
+                            @assert !graph.configuration.cumulative_bands.middle.line.is_filled
+                            @assert !graph.configuration.cumulative_bands.high.line.is_filled
+
+                            test_html(graph, "$(plurality).$(kind).$(name).cumulative_lines.html")
+                            return nothing
+                        end
+
+                        nested_test("cumulative_fills") do
+                            graph.configuration.cumulative_bands.low.line.is_filled = true
+                            graph.configuration.cumulative_bands.middle.line.is_filled = true
+                            graph.configuration.cumulative_bands.high.line.is_filled = true
+
+                            graph.configuration.cumulative_bands.low.line.style = DashDotLine
+                            graph.configuration.cumulative_bands.middle.line.style = nothing
+                            graph.configuration.cumulative_bands.high.line.style = DashDotLine
+
+                            graph.configuration.cumulative_bands.low.line.color = "green"
+                            graph.configuration.cumulative_bands.middle.line.color = "red"
+                            graph.configuration.cumulative_bands.high.line.color = "blue"
+
+                            graph.configuration.cumulative_bands.low.offset = 0.25
+                            graph.data.cumulative_bands.high_offset = 0.75
+
+                            test_html(graph, "$(plurality).$(kind).$(name).cumulative_fills.html")
+                            return nothing
+                        end
                     end
 
                 elseif plurality == "distributions"
@@ -209,6 +271,32 @@ nested_test("distribution") do
               "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .figure to show the graph)"
     end
 
+    nested_test("invalid") do
+        nested_test("~cumulative_axis") do
+            graph.configuration.cumulative_axis.units = CumulativeCounts
+            @test_throws dedent("""
+                specified graph.configuration.cumulative_axis
+                for non-cumulative graph.configuration.distribution.style: CurveDistribution
+            """) graph.figure
+        end
+
+        nested_test("~bands") do
+            graph.configuration.cumulative_bands.middle.offset = 0.5
+            @test_throws dedent("""
+                specified graph.configuration.cumulative_bands
+                for non-cumulative graph.configuration.distribution.style: CurveDistribution
+            """) graph.figure
+        end
+
+        nested_test("~cumulative_axis_title") do
+            graph.data.cumulative_axis_title = "Title"
+            @test_throws dedent("""
+                specified graph.data.cumulative_axis_title: Title
+                for non-cumulative graph.configuration.distribution.style: CurveDistribution
+            """) graph.figure
+        end
+    end
+
     for (name, style) in (
         ("curve", CurveDistribution),
         ("curve_box", CurveBoxDistribution),
@@ -220,6 +308,20 @@ nested_test("distribution") do
         test_distributions(graph, "distribution", name) do
             graph.configuration.distribution.style = style
             return nothing
+        end
+    end
+
+    nested_test("cumulative") do
+        for (name, units) in
+            (("fractions", CumulativeFractions), ("percents", CumulativePercents), ("counts", CumulativeCounts))
+            test_distributions(graph, "distribution", "cumulative.$(name)", name) do
+                graph.configuration.distribution.style = CumulativeDistribution
+                graph.configuration.cumulative_axis.units = units
+                if name == "counts"
+                    graph.data.cumulative_axis_title = "Counts"
+                end
+                return nothing
+            end
         end
     end
 end
@@ -276,6 +378,14 @@ nested_test("distributions") do
             @test_throws dedent("""
                 invalid length of graph.data.distributions_colors: 1
                 is different from length of graph.data.distributions_values: 2
+            """) graph.figure
+        end
+
+        nested_test("~cumulative_axis_title") do
+            graph.data.cumulative_axis_title = "Title"
+            @test_throws dedent("""
+                specified graph.data.cumulative_axis_title: Title
+                for non-cumulative graph.configuration.distribution.style: CurveDistribution
             """) graph.figure
         end
     end

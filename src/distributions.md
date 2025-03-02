@@ -163,6 +163,61 @@ to_documenter(graph.figure)
 ```
 
 ```@docs
+SomeGraphs.Distributions.CumulativeUnits
+SomeGraphs.Distributions.CumulativeAxisConfiguration
+```
+
+**Examples:**
+
+Cumulative distribution functions are an undervalued tool for showing distributions. They have the advantage that the
+second axis is in actual units (by default, fractions). This opens up additional configuration options.
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Percents:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+graph.configuration.cumulative_axis.units = CumulativePercents
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Counts:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+graph.configuration.cumulative_axis.units = CumulativeCounts
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Descending:
+
+```@example
+using SomeGraphs
+graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph.configuration.distribution.style = CumulativeDistribution
+graph.configuration.distribution.line.is_filled = true
+graph.configuration.cumulative_axis.descending = true
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+```@docs
 SomeGraphs.Distributions.DistributionsGraph
 SomeGraphs.Distributions.distributions_graph
 SomeGraphs.Distributions.DistributionsGraphData

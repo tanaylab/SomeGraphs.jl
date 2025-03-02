@@ -503,9 +503,9 @@ end
 function Validations.validate(
     context::ValidationContext,
     band_configuration::BandConfiguration,
-    axis_configuration::AxisConfiguration,
+    axis_configuration::Maybe{AxisConfiguration} = nothing,
 )::Nothing
-    if axis_configuration.log_scale !== nothing
+    if axis_configuration !== nothing && axis_configuration.log_scale !== nothing
         validate_in(context, "offset") do
             validate_is_above(context, band_configuration.offset, 0)
             return nothing
@@ -539,7 +539,7 @@ end
 function Validations.validate(
     context::ValidationContext,
     bands_configuration::BandsConfiguration,
-    axis_configuration::AxisConfiguration,
+    axis_configuration::Maybe{AxisConfiguration} = nothing,
 )::Nothing
     for (field, band_configuration) in
         (("low", bands_configuration.low), ("middle", bands_configuration.middle), ("high", bands_configuration.high))

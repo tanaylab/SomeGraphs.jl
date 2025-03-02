@@ -667,7 +667,7 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
     field::AbstractString,
     bands_configuration::BandsConfiguration,
     bands_data::BandsData,
-    axis_configuration::AxisConfiguration,
+    axis_configuration::Maybe{AxisConfiguration} = nothing,
 )::Nothing
 </code>
 </pre>
@@ -699,7 +699,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
     axis_configuration::AxisConfiguration,
     scaled_values_range::Range,
     bands_data::BandsData,
-    bands_configuration::BandsConfiguration
+    bands_configuration::BandsConfiguration,
+    bands_scale::Real = 1,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
@@ -729,7 +730,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
     axis_configuration::AxisConfiguration,
     scaled_values_range::Range,
     bands_data::BandsData,
-    bands_configuration::BandsConfiguration
+    bands_configuration::BandsConfiguration,
+    bands_scale::Real = 1,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
