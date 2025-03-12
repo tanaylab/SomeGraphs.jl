@@ -6,14 +6,16 @@ module Utilities
 
 export MaybeRange
 export Range
-export assert_range
 export collect_range!
-export expand_range!
+export axis_ticks_prefix
+export axis_ticks_suffix
 export fill_color
 export final_scaled_range
 export plotly_figure
 export plotly_layout
 export plotly_line_dash
+export plotly_sub_graph_axes
+export plotly_sub_graph_domain
 export prefer_data
 export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
@@ -68,17 +70,6 @@ A range of values (fully specified).
 @kwdef mutable struct Range
     minimum::Float32
     maximum::Float32
-end
-
-"""
-    assert_range(range::MaybeRange)::Range
-
-Convert a partial range to a fully specified one.
-"""
-function assert_range(range::MaybeRange)::Range
-    @assert range.minimum !== nothing
-    @assert range.maximum !== nothing
-    return Range(; minimum = range.minimum, maximum = range.maximum)  # NOJET
 end
 
 """
@@ -475,6 +466,11 @@ function purge_nulls!(dict::AbstractDict)::Nothing
     return nothing
 end
 
+"""
+    axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+
+Return the prefix for the ticks of an `axis_configuration`.
+"""
 function axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
     if !axis_configuration.show_ticks
         return nothing
@@ -488,6 +484,11 @@ function axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{Abstrac
     end
 end
 
+"""
+    axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+
+Return the suffix for the ticks of an `axis_configuration`.
+"""
 function axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
     if axis_configuration.percent
         return "<sub>%</sub>"
@@ -542,13 +543,15 @@ end
         clamp::Bool = true
     )::Maybe{AbstractVector{<:Maybe{Real}}}
 
-Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling By
-default, `clamp` the values to a specified explicit range.
+Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling. By
+default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so it can be
+safely modified further without impacting the original data).
 """
 function scale_axis_values(
     axis_configuration::AxisConfiguration,
     values::Maybe{AbstractVector{<:Maybe{Real}}};
     clamp::Bool = true,
+    copy::Bool = false,
 )::Maybe{AbstractVector{<:Maybe{Real}}}
     if values === nothing
         return nothing  # UNTESTED
@@ -556,7 +559,7 @@ function scale_axis_values(
            axis_configuration.log_scale === nothing &&
            axis_configuration.minimum === nothing &&
            axis_configuration.maximum === nothing
-        return values
+        return copy ? Vector(values) : values
     else
         return [scale_axis_value(axis_configuration, value; clamp) for value in values]
     end
@@ -564,21 +567,36 @@ end
 
 """
     final_scaled_range(
-        implicit_scaled_range::Range,
+        implicit_scaled_range::Union{Range, MaybeRange},
         axis_configuration::AxisConfiguration
     )::Range,
 
 Compute the final range for some axis given the `implicit_scaled_range` computed from the values and the `axis_configuration`.
 """
+function final_scaled_range(implicit_scaled_range::MaybeRange, axis_configuration::AxisConfiguration)::Range
+    @assert implicit_scaled_range.minimum !== nothing
+    @assert implicit_scaled_range.maximum !== nothing
+    return final_scaled_range(  # NOJET
+        Range(; minimum = implicit_scaled_range.minimum, maximum = implicit_scaled_range.maximum),
+        axis_configuration,
+    )
+end
+
 function final_scaled_range(implicit_scaled_range::Range, axis_configuration::AxisConfiguration)::Range
     explicit_scaled_minimum, explicit_scaled_maximum =
         scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum]; clamp = false)
     explicit_scaled_range = MaybeRange(; minimum = explicit_scaled_minimum, maximum = explicit_scaled_maximum)
 
-    return Range(;
+    range = Range(;
         minimum = prefer_data(explicit_scaled_range.minimum, implicit_scaled_range.minimum),
         maximum = prefer_data(explicit_scaled_range.maximum, implicit_scaled_range.maximum),
     )
+
+    margins = (range.maximum - range.minimum) / 100
+    range.minimum -= margins
+    range.maximum += margins
+
+    return range
 end
 
 """
@@ -1251,18 +1269,6 @@ function prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configu
 end
 
 """
-    expand_range!(range::Maybe{AbstractVector{<:Maybe{Real}}})::Nothing
-
-Expand the range of values by 1% to allow for points and lines at the edge to be fully visible.
-"""
-function expand_range!(range::Range)::Nothing
-    margins = (range.maximum - range.minimum) / 100
-    range.minimum -= margins
-    range.maximum += margins
-    return nothing
-end
-
-"""
     collect_range!(
         range::MaybeRange,
         values::AbstractVector{<:Maybe{Real}},
@@ -1283,6 +1289,67 @@ function collect_range!(range::MaybeRange, values::Maybe{AbstractVector{<:Maybe{
     end
 
     return nothing
+end
+
+"""
+    plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
+
+Return the Plotly "domain" for a sub-graph.
+"""
+function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
+    if sub_graph.n_graphs == 1 || sub_graph.gap === nothing
+        return nothing
+    else
+        graph_size = 1 / (sub_graph.n_graphs + (sub_graph.n_graphs - 1) * sub_graph.gap)
+        gap = graph_size * sub_graph.gap
+        return [(sub_graph.index - 1) * (graph_size + gap), (sub_graph.index - 1) * (graph_size + gap) + graph_size]
+    end
+end
+
+"""
+    plotly_axes(sub_graph::SubGraph)::Tuple{
+        Maybe{AbstractString},
+        Maybe{AbstractFloat},
+        Maybe{AbstractString},
+        Maybe{AbstractFloat},
+    }
+
+Return the X and Y axes and zero value for a sub-graph.
+"""
+function plotly_sub_graph_axes(
+    sub_graph::Maybe{SubGraph},
+    values_orientation::ValuesOrientation;
+    flip::Bool = false,
+)::Tuple{Maybe{AbstractString}, Maybe{AbstractFloat}, Maybe{AbstractString}, Maybe{AbstractFloat}}
+    if (values_orientation == HorizontalValues) != flip
+        yaxis = nothing
+        y0 = nothing
+
+        if sub_graph === nothing
+            xaxis = nothing
+            x0 = nothing
+        else
+            xaxis = sub_graph.gap === nothing || sub_graph.index == 1 ? "x" : "x$(sub_graph.index)"
+            x0 = 0
+        end
+
+    elseif (values_orientation == VerticalValues) != flip
+        xaxis = nothing
+        x0 = nothing
+
+        if sub_graph === nothing
+            yaxis = nothing
+            y0 = nothing
+        else
+            yaxis = sub_graph.gap === nothing || sub_graph.index == 1 ? "y" : "y$(sub_graph.index)"
+            y0 = 0
+        end
+
+    else
+        @assert false
+    end
+
+    return (xaxis, x0, yaxis, y0)
 end
 
 end  # module

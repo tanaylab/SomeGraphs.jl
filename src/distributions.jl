@@ -514,7 +514,11 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
             width = graph.configuration.distribution.line.width,
             is_filled = graph.configuration.distribution.line.is_filled,
             configuration = graph.configuration,
-            sub_graph = SubGraph(; index = index, overlay = graph.configuration.distributions_gap === nothing),
+            sub_graph = SubGraph(;
+                index = index,
+                n_graphs = n_distributions,
+                gap = graph.configuration.distributions_gap,
+            ),
             implicit_values_range,
             scale_group = "Distributions",
         ) for index in 1:n_distributions
@@ -536,36 +540,10 @@ function distribution_trace(;
     implicit_values_range::MaybeRange,
     scale_group::Maybe{AbstractString} = nothing,
 )::GenericTrace
-    scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false)
+    scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false, copy = true)
     collect_range!(implicit_values_range, scaled_values)
 
-    if configuration.distribution.values_orientation == VerticalValues
-        yaxis = nothing
-        y0 = nothing
-
-        if sub_graph === nothing
-            xaxis = nothing
-            x0 = nothing
-        else
-            xaxis = sub_graph.overlay || sub_graph.index == 1 ? "x" : "x$(sub_graph.index)"
-            x0 = 0
-        end
-
-    elseif configuration.distribution.values_orientation == HorizontalValues
-        xaxis = nothing
-        x0 = nothing
-
-        if sub_graph === nothing
-            yaxis = nothing
-            y0 = nothing
-        else
-            yaxis = sub_graph.overlay || sub_graph.index == 1 ? "y" : "y$(sub_graph.index)"
-            y0 = 0
-        end
-
-    else
-        @assert false
-    end
+    xaxis, x0, yaxis, y0 = plotly_sub_graph_axes(sub_graph, configuration.distribution.values_orientation; flip = true)
 
     if configuration.distribution.style == CumulativeDistribution
         n_values = length(scaled_values)
@@ -683,8 +661,6 @@ function distribution_layout(;
     implicit_values_range::MaybeRange,
     show_legend::Bool,
 )::Layout
-    implicit_values_range = assert_range(implicit_values_range)
-    expand_range!(implicit_values_range)
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
     shapes = Shape[]
@@ -807,14 +783,6 @@ function distribution_layout(;
                     @assert false
                 end
 
-                if distributions_gap === nothing || n_distributions == 1
-                    domain = nothing
-                else
-                    graph_size = 1 / (n_distributions + (n_distributions - 1) * distributions_gap)
-                    gap_size = graph_size * distributions_gap
-                    domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
-                end
-
                 density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
                 set_layout_axis!(
                     layout,
@@ -823,10 +791,12 @@ function distribution_layout(;
                     title = if distributions_gap === nothing
                         nothing
                     else
-                        prefer_data(graph.data.distributions_names, index, nothing)
+                        prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
                     end,
                     range = cumulative_range,
-                    domain,
+                    domain = plotly_sub_graph_domain(
+                        SubGraph(; index, n_graphs = n_distributions, gap = distributions_gap),
+                    ),
                 )
             end
 
@@ -844,20 +814,17 @@ function distribution_layout(;
             distributions_gap = graph.configuration.distributions_gap  # NOJET
 
             for index in 1:n_distributions
-                if distributions_gap === nothing || n_distributions == 1
-                    domain = nothing
-                else
-                    graph_size = 1 / (n_distributions + (n_distributions - 1) * distributions_gap)
-                    gap_size = graph_size * distributions_gap
-                    domain = [(index - 1) * (graph_size + gap_size), (index - 1) * (graph_size + gap_size) + graph_size]
-                end
-
                 density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
-                layout[density_axis_name] = Dict(:title => if distributions_gap === nothing
-                    nothing
-                else
-                    prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
-                end, :domain => domain)
+                layout[density_axis_name] = Dict(
+                    :title => if distributions_gap === nothing
+                        nothing  # NOJET
+                    else
+                        prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
+                    end,  # NOJET
+                    :domain => plotly_sub_graph_domain(
+                        SubGraph(; index, n_graphs = n_distributions, gap = distributions_gap),
+                    ),
+                )
             end
         else
             @assert false

@@ -122,7 +122,6 @@ SomeGraphs.Scatters.LinesGraph
 SomeGraphs.Scatters.lines_graph
 SomeGraphs.Scatters.LinesGraphData
 SomeGraphs.Scatters.LinesGraphConfiguration
-SomeGraphs.Scatters.Stacking
 ```
 
 **Examples:**

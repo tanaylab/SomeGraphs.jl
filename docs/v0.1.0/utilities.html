@@ -72,6 +72,10 @@
 <a class="tocitem" href="scatters.html">Scatter Plots
 </a>
 </li>
+<li>
+<a class="tocitem" href="bars.html">Bar Plots
+</a>
+</li>
 <li class="is-active">
 <a class="tocitem" href="utilities.html">Utilities
 </a>
@@ -476,9 +480,11 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <code>values
 </code> according to the 
 <code>axis_configuration
-</code>. This deals with log scales and percent scaling By default, 
+</code>. This deals with log scales and percent scaling. By default, 
 <code>clamp
-</code> the values to a specified explicit range.
+</code> the values to a specified explicit range. If 
+<code>copy
+</code> we always return a copy of the data (so it can be safely modified further without impacting the original data).
 </p>
 </div>
 </section>
@@ -541,6 +547,58 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <p>Create a Plotly 
 <code>Layout
 </code> object.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.axis_ticks_prefix" href="#SomeGraphs.Utilities.axis_ticks_prefix">
+<code>SomeGraphs.Utilities.axis_ticks_prefix
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return the prefix for the ticks of an 
+<code>axis_configuration
+</code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.axis_ticks_suffix" href="#SomeGraphs.Utilities.axis_ticks_suffix">
+<code>SomeGraphs.Utilities.axis_ticks_suffix
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return the suffix for the ticks of an 
+<code>axis_configuration
+</code>.
 </p>
 </div>
 </section>
@@ -644,6 +702,59 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 </code> for a 
 <code>line_style
 </code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_sub_graph_axes" href="#SomeGraphs.Utilities.plotly_sub_graph_axes">
+<code>SomeGraphs.Utilities.plotly_sub_graph_axes
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_axes(sub_graph::SubGraph)::Tuple{
+    Maybe{AbstractString},
+    Maybe{AbstractFloat},
+    Maybe{AbstractString},
+    Maybe{AbstractFloat},
+}
+</code>
+</pre>
+<p>Return the X and Y axes and zero value for a sub-graph.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_sub_graph_domain" href="#SomeGraphs.Utilities.plotly_sub_graph_domain">
+<code>SomeGraphs.Utilities.plotly_sub_graph_domain
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{&lt;:AbstractFloat}}
+</code>
+</pre>
+<p>Return the Plotly &quot;domain&quot; for a sub-graph.
 </p>
 </div>
 </section>
@@ -860,54 +971,6 @@ end
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.expand_range!" href="#SomeGraphs.Utilities.expand_range!">
-<code>SomeGraphs.Utilities.expand_range!
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">expand_range!(range::Maybe{AbstractVector{&lt;:Maybe{Real}}})::Nothing
-</code>
-</pre>
-<p>Expand the range of values by 1% to allow for points and lines at the edge to be fully visible.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.assert_range" href="#SomeGraphs.Utilities.assert_range">
-<code>SomeGraphs.Utilities.assert_range
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">assert_range(range::MaybeRange)::Range
-</code>
-</pre>
-<p>Convert a partial range to a fully specified one.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
 <a class="docstring-binding" id="SomeGraphs.Utilities.final_scaled_range" href="#SomeGraphs.Utilities.final_scaled_range">
 <code>SomeGraphs.Utilities.final_scaled_range
 </code>
@@ -921,7 +984,7 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">final_scaled_range(
-    implicit_scaled_range::Range,
+    implicit_scaled_range::Union{Range, MaybeRange},
     axis_configuration::AxisConfiguration
 )::Range,
 </code>
@@ -1006,20 +1069,20 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.assert_range">
-<code>SomeGraphs.Utilities.assert_range
+<a href="utilities.html#SomeGraphs.Utilities.axis_ticks_prefix">
+<code>SomeGraphs.Utilities.axis_ticks_prefix
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.axis_ticks_suffix">
+<code>SomeGraphs.Utilities.axis_ticks_suffix
 </code>
 </a>
 </li>
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.collect_range!">
 <code>SomeGraphs.Utilities.collect_range!
-</code>
-</a>
-</li>
-<li>
-<a href="utilities.html#SomeGraphs.Utilities.expand_range!">
-<code>SomeGraphs.Utilities.expand_range!
 </code>
 </a>
 </li>
@@ -1050,6 +1113,18 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.plotly_line_dash">
 <code>SomeGraphs.Utilities.plotly_line_dash
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_sub_graph_axes">
+<code>SomeGraphs.Utilities.plotly_sub_graph_axes
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_sub_graph_domain">
+<code>SomeGraphs.Utilities.plotly_sub_graph_domain
 </code>
 </a>
 </li>
@@ -1128,7 +1203,7 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </ul>
 </article>
 <nav class="docs-footer">
-<a class="docs-footer-prevpage" href="scatters.html">« Scatter Plots
+<a class="docs-footer-prevpage" href="bars.html">« Bar Plots
 </a>
 <div class="flexbox-break">
 </div>

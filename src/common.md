@@ -15,6 +15,7 @@ SomeGraphs.Common.AbstractGraphData
 SomeGraphs.Common.PlotlyFigure
 SomeGraphs.Common.save_graph
 SomeGraphs.Common.FigureConfiguration
+SomeGraphs.Common.Stacking
 ```
 
 **Examples:**

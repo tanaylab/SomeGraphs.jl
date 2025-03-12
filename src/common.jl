@@ -29,6 +29,9 @@ export NAMED_COLOR_SCALES
 export PlotlyFigure
 export SizesConfiguration
 export SolidLine
+export StackFractions
+export StackValues
+export Stacking
 export SubGraph
 export ValuesOrientation
 export VerticalValues
@@ -1318,16 +1321,28 @@ end
 """
     @kwdef struct SubGraph
         index::Integer
-        overlay::Bool
+        gap::Maybe{AbstractFloat}
     end
 
-Identify one sub-graph out of a set of adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used top
-initialize some values such as the legend group title). If `overlay` then the sub-graphs are plotted on top of each
-other, which affects axis parameters.
+Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
+top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs are plotted on top
+of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout
+parameters.
 """
 @kwdef struct SubGraph
     index::Integer
-    overlay::Bool
+    n_graphs::Integer
+    gap::Maybe{AbstractFloat}
 end
+
+"""
+If stacking elements, how to do so:
+
+`StackValues` just adds the raw values on top of each other.
+
+`StackFractions` normalizes the values so their sum is 1. This can be combined with setting the `percent` field of the
+relevant [`AxisConfiguration`](@ref) to display percents.
+"""
+@enum Stacking StackValues StackFractions
 
 end  # module

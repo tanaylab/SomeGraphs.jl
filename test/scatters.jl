@@ -59,6 +59,12 @@ nested_test("points") do
         return nothing
     end
 
+    nested_test("hovers") do
+        graph.data.points_hovers = ["H: $(index)" for index in 1:11]
+        test_html(graph, "points.hovers.html")
+        return nothing
+    end
+
     nested_test("color") do
         graph.configuration.points.colors.fixed = "red"
         test_html(graph, "points.color.html")
@@ -203,6 +209,12 @@ nested_test("points") do
             graph.configuration.diagonal_bands.middle.offset = 1
             graph.configuration.diagonal_bands.high.offset = sqrt(10)
             test_html(graph, "points.log.diagonal.html")
+            return nothing
+        end
+
+        nested_test("hovers") do
+            graph.data.points_hovers = ["H: $(index)" for index in 1:11]
+            test_html(graph, "points.log.hovers.html")
             return nothing
         end
     end

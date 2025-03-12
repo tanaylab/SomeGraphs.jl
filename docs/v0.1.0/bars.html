@@ -1,0 +1,680 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bar Plots · SomeGraphs.jl v0.1.0
+</title>
+<meta name="title" content="Bar Plots · SomeGraphs.jl v0.1.0"/>
+<meta property="og:title" content="Bar Plots · SomeGraphs.jl v0.1.0"/>
+<meta property="twitter:title" content="Bar Plots · SomeGraphs.jl v0.1.0"/>
+<meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<script data-outdated-warner src="assets/warner.js">
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
+<script>documenterBaseURL="."
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
+</script>
+<script src="search_index.js">
+</script>
+<script src="siteinfo.js">
+</script>
+<script src="../versions.js">
+</script>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
+<script src="assets/themeswap.js">
+</script>
+</head>
+<body>
+<div id="documenter">
+<nav class="docs-sidebar">
+<div class="docs-package-name">
+<span class="docs-autofit">
+<a href="index.html">SomeGraphs.jl v0.1.0
+</a>
+</span>
+</div>
+<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
+</button>
+<ul class="docs-menu">
+<li>
+<a class="tocitem" href="index.html">SomeGraphs
+</a>
+</li>
+<li>
+<a class="tocitem" href="validations.html">Validations
+</a>
+</li>
+<li>
+<a class="tocitem" href="common.html">Common
+</a>
+</li>
+<li>
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+</li>
+<li>
+<a class="tocitem" href="scatters.html">Scatter Plots
+</a>
+</li>
+<li class="is-active">
+<a class="tocitem" href="bars.html">Bar Plots
+</a>
+<ul class="internal">
+<li>
+<a class="tocitem" href="#Index">
+<span>Index
+</span>
+</a>
+</li>
+</ul>
+</li>
+<li>
+<a class="tocitem" href="utilities.html">Utilities
+</a>
+</li>
+</ul>
+<div class="docs-version-selector field has-addons">
+<div class="control">
+<span class="docs-label button is-static is-size-7">Version
+</span>
+</div>
+<div class="docs-selector control is-expanded">
+<div class="select is-fullwidth is-size-7">
+<select id="documenter-version-selector">
+</select>
+</div>
+</div>
+</div>
+</nav>
+<div class="docs-main">
+<header class="docs-navbar">
+<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
+</a>
+<nav class="breadcrumb">
+<ul class="is-hidden-mobile">
+<li class="is-active">
+<a href="bars.html">Bar Plots
+</a>
+</li>
+</ul>
+<ul class="is-hidden-tablet">
+<li class="is-active">
+<a href="bars.html">Bar Plots
+</a>
+</li>
+</ul>
+</nav>
+<div class="docs-right">
+<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
+<span class="docs-icon fa-brands">
+</span>
+<span class="docs-label is-hidden-touch">GitHub
+</span>
+</a>
+<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
+</a>
+<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
+</a>
+</div>
+</header>
+<article class="content" id="documenter-page">
+<h1 id="Bar-Plots">
+<a class="docs-heading-anchor" href="#Bar-Plots">Bar Plots
+</a>
+<a id="Bar-Plots-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Bar-Plots" title="Permalink">
+</a>
+</h1>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars" href="#SomeGraphs.Bars">
+<code>SomeGraphs.Bars
+</code>
+</a> — 
+<span class="docstring-category">Module
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Graphs for showing bars.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.BarsGraph" href="#SomeGraphs.Bars.BarsGraph">
+<code>SomeGraphs.Bars.BarsGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A graph showing a single series of bars. See 
+<a href="bars.html#SomeGraphs.Bars.BarsGraphData">
+<code>BarsGraphData
+</code>
+</a> and 
+<a href="bars.html#SomeGraphs.Bars.BarsGraphConfiguration">
+<code>BarsGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.bars_graph" href="#SomeGraphs.Bars.bars_graph">
+<code>SomeGraphs.Bars.bars_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">function line_graph(;
+    [figure_title::Maybe{AbstractString} = nothing,
+    bar_axis_title::Maybe{AbstractString} = nothing,
+    value_axis_title::Maybe{AbstractString} = nothing,
+    bars_values::AbstractVector{&lt;:Real} = Float32[],
+    bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    bars_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    value_bands::BandsData = BandsData()]
+)::BarsGraph
+</code>
+</pre>
+<p>Create a 
+<a href="bars.html#SomeGraphs.Bars.BarsGraph">
+<code>BarsGraph
+</code>
+</a> by initializing only the 
+<a href="bars.html#SomeGraphs.Bars.BarsGraphData">
+<code>BarsGraphData
+</code>
+</a> fields.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.BarsGraphData" href="#SomeGraphs.Bars.BarsGraphData">
+<code>SomeGraphs.Bars.BarsGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct BarsGraphData &lt;: AbstractGraphData
+    figure_title::Maybe{AbstractString} = nothing
+    bar_axis_title::Maybe{AbstractString} = nothing
+    value_axis_title::Maybe{AbstractString} = nothing
+    bars_values::AbstractVector{&lt;:Real} = Float32[]
+    bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    bars_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    value_bands::BandsData = BandsData()
+end
+</code>
+</pre>
+<p>The data for a graph of a single series of bars.
+</p>
+<p>By default, all the titles are empty. You can specify the overall 
+<code>figure_title
+</code> as well as the 
+<code>bars_axis_title
+</code> and 
+<code>value_axis_title
+</code> for the axes, , and a name for each bar in 
+<code>bars_names
+</code>. You can specify a color for each bar in 
+<code>bars_colors
+</code>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.BarsGraphConfiguration" href="#SomeGraphs.Bars.BarsGraphConfiguration">
+<code>SomeGraphs.Bars.BarsGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct BarsGraphConfiguration &lt;: AbstractGraphConfiguration
+    figure::FigureConfiguration = FigureConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration()
+    value_bands::BandsConfiguration = BandsConfiguration()
+    values_orientation::ValuesOrientation = VerticalValues
+    bars_color::Maybe{AbstractString} = nothing
+    bars_gap::Real = 0.05,
+end
+</code>
+</pre>
+<p>Configure a graph for showing a single series of bars.
+</p>
+<p>By default the values are the 
+<code>y
+</code> axis (
+<code>VerticalValues
+</code>). You can flip the axes using the 
+<code>values_orientation
+</code>. You can specify bands for this axis using 
+<code>value_bands
+</code>. The 
+<code>bars_gap
+</code> is the fraction of white space between bars (0 for no gap, must be less than 1). The 
+<code>bars_colors
+</code> is used to control the color of the bars (if not specified, chosen automatically by Plotly), in combination with the data bar colors (if any).
+</p>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Default (serves as a baseline to compare with when modifying options):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = bars_graph(; bars_values = collect(0:10) .* 10)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='Ajv2Au17bG' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("Ajv2Au17bG")
+    const plot_obj = {"data": [{"orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"],"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"plot_bgcolor":"white","showlegend":false,"bargap":0.05,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.SeriesBarsGraph" href="#SomeGraphs.Bars.SeriesBarsGraph">
+<code>SomeGraphs.Bars.SeriesBarsGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A graph showing multiple series of bars. See 
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphData">
+<code>SeriesBarsGraphData
+</code>
+</a> and 
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphConfiguration">
+<code>SeriesBarsGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.series_bars_graph" href="#SomeGraphs.Bars.series_bars_graph">
+<code>SomeGraphs.Bars.series_bars_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">function series_bars_graph(;
+    [figure_title::Maybe{AbstractString} = nothing,
+    bar_axis_title::Maybe{AbstractString} = nothing,
+    value_axis_title::Maybe{AbstractString} = nothing,
+    series_bars_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Vector{Float32}}(),
+    bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    series_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    series_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    series_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing]
+)::SeriesBarsGraph
+</code>
+</pre>
+<p>Create a 
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraph">
+<code>SeriesBarsGraph
+</code>
+</a> by initializing only the 
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphData">
+<code>SeriesBarsGraphData
+</code>
+</a> fields.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.SeriesBarsGraphData" href="#SomeGraphs.Bars.SeriesBarsGraphData">
+<code>SomeGraphs.Bars.SeriesBarsGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct SeriesBarsGraphData &lt;: AbstractGraphData
+    figure_title::Maybe{AbstractString} = nothing
+    bar_axis_title::Maybe{AbstractString} = nothing
+    value_axis_title::Maybe{AbstractString} = nothing
+    series_bars_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Vector{Float32}}()
+    bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    series_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    series_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    series_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+end
+</code>
+</pre>
+<p>The data for a graph of multiple series of bars.
+</p>
+<p>All the vectors in the 
+<code>series_bars_values
+</code> must have the same length (the number of bars). The number of entries in 
+<code>bars_names
+</code> and/or 
+<code>bars_hovers
+</code> must be the same. The number of entries in 
+<code>series_names
+</code>, 
+<code>series_colors
+</code> and/or 
+<code>series_hovers
+</code> must be the number of series (the number of vectors in 
+<code>series_bars_values
+</code>).
+</p>
+<p>All the bars of each series have the same color. If the 
+<code>series_names
+</code> are specified, then they are used in a legend (or, if using 
+<code>series_gap
+</code>, as the separate axes titles).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Bars.SeriesBarsGraphConfiguration" href="#SomeGraphs.Bars.SeriesBarsGraphConfiguration">
+<code>SomeGraphs.Bars.SeriesBarsGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct SeriesBarsGraphConfiguration &lt;: AbstractGraphConfiguration
+    figure::FigureConfiguration = FigureConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration()
+    values_orientation::ValuesOrientation = VerticalValues
+    bars_gap::Maybe{Real} = nothing
+    series_gap::Maybe{Real} = nothing
+    stacking::Maybe{Stacking} = nothing
+end
+</code>
+</pre>
+<p>Configure a graph for showing multiple series of bars.
+</p>
+<p>This expands on 
+<a href="bars.html#SomeGraphs.Bars.BarsGraphConfiguration">
+<code>BarsGraphConfiguration
+</code>
+</a> by adding optional 
+<code>stacking
+</code> for stacking the bars of the different series on top of each other. Alternatively, specifying a 
+<code>series_gap
+</code> will plot each series in its own separate sub-graph. The 
+<code>series_gap
+</code> is specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the graphs. If neither is specified, then the bars will be shown in groups (adjacent to each other) with the 
+<code>bars_gap
+</code> between the groups.
+</p>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Default (serves as a baseline to compare with when modifying options):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = series_bars_graph(; series_bars_values = [collect(0:10) .* 5, collect(0:10) .^ 2])
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='fBTLvvrJAg' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("fBTLvvrJAg")
+    const plot_obj = {"data": [{"yaxis":"y","orientation":"v","y0":0.0,"x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"],"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar"},{"yaxis":"y","orientation":"v","y0":0.0,"x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"],"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"plot_bgcolor":"white","showlegend":false,"bargap":0.05,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<h2 id="Index">
+<a class="docs-heading-anchor" href="#Index">Index
+</a>
+<a id="Index-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
+</a>
+</h2>
+<ul>
+<li>
+<a href="bars.html#SomeGraphs.Bars">
+<code>SomeGraphs.Bars
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.BarsGraph">
+<code>SomeGraphs.Bars.BarsGraph
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.BarsGraphConfiguration">
+<code>SomeGraphs.Bars.BarsGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.BarsGraphData">
+<code>SomeGraphs.Bars.BarsGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraph">
+<code>SomeGraphs.Bars.SeriesBarsGraph
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphConfiguration">
+<code>SomeGraphs.Bars.SeriesBarsGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphData">
+<code>SomeGraphs.Bars.SeriesBarsGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.bars_graph">
+<code>SomeGraphs.Bars.bars_graph
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.series_bars_graph">
+<code>SomeGraphs.Bars.series_bars_graph
+</code>
+</a>
+</li>
+</ul>
+</article>
+<nav class="docs-footer">
+<a class="docs-footer-prevpage" href="scatters.html">« Scatter Plots
+</a>
+<a class="docs-footer-nextpage" href="utilities.html">Utilities »
+</a>
+<div class="flexbox-break">
+</div>
+<p class="footer-message">Powered by 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> and the 
+<a href="https://julialang.org/">Julia Programming Language
+</a>.
+</p>
+</nav>
+</div>
+<div class="modal" id="documenter-settings">
+<div class="modal-background">
+</div>
+<div class="modal-card">
+<header class="modal-card-head">
+<p class="modal-card-title">Settings
+</p>
+<button class="delete">
+</button>
+</header>
+<section class="modal-card-body">
+<p>
+<label class="label">Theme
+</label>
+<div class="select">
+<select id="documenter-themepicker">
+<option value="auto">Automatic (OS)
+</option>
+<option value="documenter-light">documenter-light
+</option>
+<option value="documenter-dark">documenter-dark
+</option>
+<option value="catppuccin-latte">catppuccin-latte
+</option>
+<option value="catppuccin-frappe">catppuccin-frappe
+</option>
+<option value="catppuccin-macchiato">catppuccin-macchiato
+</option>
+<option value="catppuccin-mocha">catppuccin-mocha
+</option>
+</select>
+</div>
+</p>
+<hr/>
+<p>This document was generated with 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> version 1.8.0. Using Julia version 1.11.3.
+</p>
+</section>
+<footer class="modal-card-foot">
+</footer>
+</div>
+</div>
+</div>
+</body>
+</html>

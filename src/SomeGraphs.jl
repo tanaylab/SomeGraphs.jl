@@ -20,4 +20,7 @@ include("distributions.jl")
 include("scatters.jl")
 @reexport using .Scatters
 
+include("bars.jl")
+@reexport using .Bars
+
 end  # module

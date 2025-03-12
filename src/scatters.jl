@@ -13,9 +13,6 @@ export PointsGraph
 export PointsGraphConfiguration
 export PointsGraphData
 export ScattersConfiguration
-export StackFractions
-export StackValues
-export Stacking
 export line_graph
 export lines_graph
 export points_graph
@@ -425,7 +422,6 @@ end
 function scaled_data(axis_configuration::AxisConfiguration, values::Maybe{AbstractVector{<:Real}})::ScaledData
     scaled_values = scale_axis_values(axis_configuration, values)
     implicit_scaled_range = Range(; minimum = minimum(scaled_values), maximum = maximum(scaled_values))
-    expand_range!(implicit_scaled_range)
     scaled_range = final_scaled_range(implicit_scaled_range, axis_configuration)
     return ScaledData(; values = scaled_values, range = scaled_range)
 end
@@ -436,12 +432,13 @@ end
     colors_title::Maybe{AbstractString}
     colors_configuration::ColorsConfiguration
     colors_scale::Maybe{AbstractString}
-    original_color_values::Maybe{AbstractVector{<:AbstractString}}
+    original_color_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
     final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
     final_colors_range::Maybe{Range}
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
     pixel_size::Maybe{Real}
     pixel_sizes::Maybe{AbstractVector{<:Real}}
+    original_sizes::Maybe{AbstractVector{<:Real}}
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}}
 end
 
@@ -454,10 +451,11 @@ function configured_scatters(;
     size_values::Maybe{AbstractVector{<:Real}},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
 )::ConfiguredScatters
+    original_color_values = colors_values
+    original_sizes = size_values
     scaled_colors_palette = nothing
     if colors_values isa AbstractVector{<:Real}
         colors_scale = pop!(colors_scales)
-        original_color_values = nothing
         final_colors_values = scale_axis_values(scatters_configuration.colors.axis, colors_values)
         if scatters_configuration.colors.palette isa ContinuousColors
             color_palette_values = [entry[1] for entry in scatters_configuration.colors.palette]
@@ -487,13 +485,11 @@ function configured_scatters(;
 
         if scatters_configuration.colors.palette isa CategoricalColors
             @assert colors_values isa AbstractVector{<:AbstractString}
-            original_color_values = colors_values
             final_colors_values = [
                 prefer_data(mask, index, true) ? scatters_configuration.colors.palette[color] : "masked" for
                 (index, color) in enumerate(colors_values)
             ]
         else
-            original_color_values = nothing
             @assert scatters_configuration.colors.palette === nothing
             final_colors_values = colors_values
         end
@@ -503,7 +499,6 @@ function configured_scatters(;
         @assert colors_values === nothing
         final_colors_values = nothing
         final_colors_range = nothing
-        original_color_values = nothing
     end
 
     pixel_size = scatters_configuration.sizes.fixed
@@ -529,6 +524,7 @@ function configured_scatters(;
         final_colors_values,
         final_colors_range,
         scaled_colors_palette,
+        original_sizes,
         pixel_size,
         pixel_sizes,
         mask,
@@ -565,6 +561,18 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         mask = graph.data.borders_mask,
     )
 
+    points_hovers = compute_points_hovers(;
+        original_points_xs = graph.data.points_xs,
+        original_points_ys = graph.data.points_ys,
+        scaled_points_xs,
+        scaled_points_ys,
+        configured_points,
+        configured_borders,
+        x_axis = graph.configuration.x_axis,
+        y_axis = graph.configuration.y_axis,
+        points_hovers = graph.data.points_hovers,
+    )
+
     add_pixel_sizes(configured_points, configured_borders)
 
     configured_edges = configured_scatters(;
@@ -587,10 +595,16 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
        graph.data.borders_mask !== nothing ||
        graph.configuration.borders.colors.fixed !== nothing ||
        graph.configuration.borders.sizes.fixed !== nothing
-        push_points_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_points = configured_borders)
+        push_points_traces!(;
+            traces,
+            scaled_points_xs,
+            scaled_points_ys,
+            configured_points = configured_borders,
+            points_hovers,
+        )
     end
 
-    push_points_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_points)
+    push_points_traces!(; traces, scaled_points_xs, scaled_points_ys, configured_points, points_hovers)
 
     if edges_points !== nothing && graph.configuration.edges_over_points
         push_edge_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_edges)
@@ -656,6 +670,100 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     end
 
     return plotly_figure(traces, layout)
+end
+
+function compute_points_hovers(;
+    original_points_xs::AbstractVector{<:Real},
+    original_points_ys::AbstractVector{<:Real},
+    scaled_points_xs::ScaledData,
+    scaled_points_ys::ScaledData,
+    configured_points::ConfiguredScatters,
+    configured_borders::ConfiguredScatters,
+    x_axis::AxisConfiguration,
+    y_axis::AxisConfiguration,
+    points_hovers::Maybe{AbstractVector{<:AbstractString}},
+)::Maybe{AbstractVector{<:AbstractString}}
+    if x_axis.log_scale === nothing &&
+       !x_axis.percent &&
+       y_axis.log_scale === nothing &&
+       !y_axis.percent &&
+       configured_points.original_color_values === nothing &&
+       configured_points.original_sizes === nothing &&
+       configured_borders.original_color_values === nothing &&
+       configured_borders.original_sizes === nothing
+        return points_hovers
+    end
+
+    scaled_x_prefix = prefer_data(axis_ticks_prefix(x_axis), "")
+    scaled_x_suffix = prefer_data(axis_ticks_suffix(x_axis), "")
+    scaled_y_prefix = prefer_data(axis_ticks_prefix(y_axis), "")
+    scaled_y_suffix = prefer_data(axis_ticks_suffix(y_axis), "")
+
+    n_points = length(original_points_xs)
+    final_hovers = Vector{AbstractString}(undef, n_points)
+
+    has_same_xs = isapprox(original_points_xs, scaled_points_xs.values)  # NOJET
+    has_same_ys = isapprox(original_points_ys, scaled_points_ys.values)
+
+    for point_index in 1:n_points
+        texts = AbstractString[]
+
+        show_points_colors =
+            configured_points.original_color_values !== nothing && (
+                eltype(configured_points.original_color_values) <: Real ||
+                configured_points.colors_configuration.palette !== nothing
+            )
+        show_borders_colors =
+            configured_borders.original_color_values !== nothing && (
+                eltype(configured_borders.original_color_values) <: Real ||
+                configured_borders.colors_configuration.palette !== nothing
+            )
+
+        if show_points_colors || show_borders_colors
+            push!(texts, "Color:")
+            if show_points_colors
+                push!(texts, " $(configured_points.original_color_values[point_index])")
+            end
+            if show_borders_colors
+                if show_borders_colors
+                    push!(texts, " in")
+                end
+                push!(texts, " $(configured_borders.original_color_values[point_index])")
+            end
+            push!(texts, "<br>")
+        end
+
+        if configured_points.original_sizes !== nothing || configured_borders.original_sizes !== nothing
+            push!(texts, "Size:")
+            if configured_points.original_sizes !== nothing
+                push!(texts, " $(configured_points.original_sizes[point_index])")
+            end
+            if configured_borders.original_sizes !== nothing
+                if configured_points.original_sizes !== nothing
+                    push!(texts, " in")
+                end
+                push!(texts, " $(configured_borders.original_sizes[point_index])")
+            end
+            push!(texts, "<br>")
+        end
+
+        push!(texts, "X: $(original_points_xs[point_index])")
+        if !has_same_xs
+            push!(texts, " = $(scaled_x_prefix)$(scaled_points_xs.values[point_index])$(scaled_x_suffix)")
+        end
+        push!(texts, "<br>Y: $(original_points_ys[point_index])$(scaled_x_suffix)")
+        if !has_same_ys
+            push!(texts, " = $(scaled_y_prefix)$(scaled_points_ys.values[point_index])$(scaled_y_suffix)")
+        end
+        if points_hovers !== nothing
+            push!(texts, "<br>")
+            push!(texts, points_hovers[point_index])
+        end
+
+        final_hovers[point_index] = join(texts)
+    end
+
+    return final_hovers
 end
 
 function add_pixel_sizes(configured_points::ConfiguredScatters, configured_borders::ConfiguredScatters)::Nothing
@@ -757,10 +865,10 @@ end
 
 function push_points_traces!(;
     traces::AbstractVector{GenericTrace},
-    graph::PointsGraph,
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     configured_points::ConfiguredScatters,
+    points_hovers::Maybe{AbstractVector{<:AbstractString}},
 )::Nothing
     if configured_points.final_colors_values !== nothing &&
        configured_points.colors_configuration.palette isa CategoricalColors
@@ -775,7 +883,7 @@ function push_points_traces!(;
                     traces,
                     scaled_points_xs,
                     scaled_points_ys,
-                    points_hovers = graph.data.points_hovers,
+                    points_hovers,
                     configured_points,
                     mask,
                     name,
@@ -791,7 +899,7 @@ function push_points_traces!(;
             traces,
             scaled_points_xs,
             scaled_points_ys,
-            points_hovers = graph.data.points_hovers,
+            points_hovers,
             configured_points,
             mask = configured_points.mask,
             name = nothing,
@@ -1028,16 +1136,6 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
 
     return plotly_figure(traces, layout)
 end
-
-"""
-If stacking elements, how to do so:
-
-`StackValues` just adds the raw values on top of each other.
-
-`StackFractions` normalizes the values so their sum is 1. This can be combined with setting the `percent` field of the
-relevant [`AxisConfiguration`](@ref) to display percents.
-"""
-@enum Stacking StackValues StackFractions
 
 """
     @kwdef mutable struct LinesGraphConfiguration <: AbstractGraphConfiguration
@@ -1372,16 +1470,12 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     for scaled_points_xs in scaled_lines_points_xs
         collect_range!(implicit_scaled_xs_range, scaled_points_xs)
     end
-    implicit_scaled_xs_range = assert_range(implicit_scaled_xs_range)
-    expand_range!(implicit_scaled_xs_range)
     scaled_xs_range = final_scaled_range(implicit_scaled_xs_range, graph.configuration.x_axis)
 
     implicit_scaled_ys_range = MaybeRange()
     for scaled_points_ys in scaled_lines_points_ys
         collect_range!(implicit_scaled_ys_range, scaled_points_ys)
     end
-    implicit_scaled_ys_range = assert_range(implicit_scaled_ys_range)
-    expand_range!(implicit_scaled_ys_range)
     scaled_ys_range = final_scaled_range(implicit_scaled_ys_range, graph.configuration.y_axis)
 
     traces = Vector{GenericTrace}()
