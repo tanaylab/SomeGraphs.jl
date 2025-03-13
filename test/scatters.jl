@@ -676,9 +676,9 @@ nested_test("line") do
         return nothing
     end
 
-    nested_test("filled") do
+    nested_test("fill") do
         graph.configuration.line.is_filled = true
-        test_html(graph, "line.is_filled.html")
+        test_html(graph, "line.fill.html")
         return nothing
     end
 
@@ -754,8 +754,17 @@ nested_test("lines") do
 
     nested_test("fill") do
         graph.configuration.line.is_filled = true
-        test_html(graph, "lines.fill.html")
-        return nothing
+
+        nested_test("()") do
+            test_html(graph, "lines.fill.html")
+            return nothing
+        end
+
+        nested_test("priorities") do
+            graph.data.lines_priorities = [1, 0]
+            test_html(graph, "lines.fill.priorities.html")
+            return nothing
+        end
     end
 
     nested_test("stacking") do

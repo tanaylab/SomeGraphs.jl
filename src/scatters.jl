@@ -1332,9 +1332,15 @@ end
         figure_title::Maybe{AbstractString} = nothing
         x_axis_title::Maybe{AbstractString} = nothing
         y_axis_title::Maybe{AbstractString} = nothing
-        points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        lines_titles::Maybe{AbstractVector{<:AbstractString}} = nothing
+        lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
+        lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
+        lines_points_sizes::Maybe{AbstractVector{<:Real}} = nothing
+        lines_points_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+        lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing
+        lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
+        lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing
+        lines_priorities::Maybe{AbstractVector} = nothing
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
         diagonal_bands::BandsData = BandsData()
@@ -1350,6 +1356,9 @@ All the `lines_*` vectors must be of the same size (the number of lines), and co
 line (the number of points in that specific line).
 
 The `lines_titles` is required if `show_legend` is specified in the [`LinesGraphConfiguration`](@ref).
+
+If `lines_priorities` are specified, we reorder the lines in ascending priority order. This allows controlling which
+lines will appear on top of the others.
 """
 @kwdef mutable struct LinesGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -1363,6 +1372,7 @@ The `lines_titles` is required if `show_legend` is specified in the [`LinesGraph
     lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing
     lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
     lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing
+    lines_priorities::Maybe{AbstractVector} = nothing
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
@@ -1379,6 +1389,7 @@ function Validations.validate(context::ValidationContext, data::LinesGraphData):
     validate_vector_length(context, "lines_widths", data.lines_colors, "lines_points_xs", n_lines)
     validate_vector_length(context, "lines_colors", data.lines_colors, "lines_points_xs", n_lines)
     validate_vector_length(context, "lines_styles", data.lines_styles, "lines_points_xs", n_lines)
+    validate_vector_length(context, "lines_priorities", data.lines_priorities, "lines_points_xs", n_lines)
 
     for line_index in 1:n_lines
         validate_vector_is_not_empty(context, "lines_points_xs[$(line_index)]", data.lines_points_xs[line_index])
@@ -1414,6 +1425,7 @@ LinesGraph = Graph{LinesGraphData, LinesGraphConfiguration}
         lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing
         lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
         lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing
+        lines_priorities::Maybe{<:AbstractVector} = nothing
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
         diagonal_bands::BandsData = BandsData()]
@@ -1433,6 +1445,7 @@ function lines_graph(;
     lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing,
     lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing,
     lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing,
+    lines_priorities::Maybe{<:AbstractVector} = nothing,
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
@@ -1450,6 +1463,7 @@ function lines_graph(;
             lines_widths,
             lines_colors,
             lines_styles,
+            lines_priorities,
             vertical_bands,
             horizontal_bands,
             diagonal_bands,
@@ -1603,7 +1617,13 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         end
     end
 
-    for line_index in 1:n_lines
+    if graph.data.lines_priorities === nothing
+        lines_indices = 1:n_lines
+    else
+        lines_indices = sortperm(graph.data.lines_priorities)
+    end
+
+    for line_index in lines_indices
         if graph.configuration.stacking === nothing
             fill = !graph.configuration.line.is_filled ? "none" : "tozeroy"
         else
