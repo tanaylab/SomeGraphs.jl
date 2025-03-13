@@ -312,12 +312,16 @@ end
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+        distributions_priorities::Maybe{AbstractVector} = nothing
     end
 
 The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall
 `figure_title` as well as the `value_axis_title`. If specified, the `distributions_names` and/or the
 `distributions_colors` vectors must contain the same number of elements as the number of vectors in the
 `distributions_values`.
+
+If `distributions_priorities` are specified, we reorder the lines in ascending priority order. This allows controlling
+which distributions will appear on top of the others.
 """
 @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -325,6 +329,7 @@ The data for a multiple distributions graph. By default, all the titles are empt
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+    distributions_priorities::Maybe{AbstractVector} = nothing
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionsGraphData)::Maybe{AbstractString}
@@ -343,6 +348,13 @@ function Validations.validate(context::ValidationContext, data::DistributionsGra
         context,
         "distributions_colors",
         data.distributions_colors,
+        "distributions_values",
+        n_distributions,
+    )
+    validate_vector_length(
+        context,
+        "distributions_priorities",
+        data.distributions_priorities,
         "distributions_values",
         n_distributions,
     )
@@ -506,6 +518,12 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
 
     n_distributions = length(graph.data.distributions_values)
 
+    if graph.data.distributions_priorities === nothing
+        distributions_indices = 1:n_distributions
+    else
+        distributions_indices = sortperm(graph.data.distributions_priorities)
+    end
+
     traces = [
         distribution_trace(;
             values = graph.data.distributions_values[index],
@@ -515,13 +533,13 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
             is_filled = graph.configuration.distribution.line.is_filled,
             configuration = graph.configuration,
             sub_graph = SubGraph(;
-                index = index,
+                index = position,
                 n_graphs = n_distributions,
                 gap = graph.configuration.distributions_gap,
             ),
             implicit_values_range,
             scale_group = "Distributions",
-        ) for index in 1:n_distributions
+        ) for (position, index) in enumerate(distributions_indices)
     ]
 
     show_legend = graph.configuration.distributions_gap === nothing && graph.data.distributions_names !== nothing

@@ -214,8 +214,17 @@ function test_distributions(
                 elseif plurality == "distributions"
                     nested_test("names") do
                         graph.data.distributions_names = ["Foo", "Bar"]
-                        test_html(graph, "$(plurality).$(kind).$(name).names.html")
-                        return nothing
+
+                        nested_test("()") do
+                            test_html(graph, "$(plurality).$(kind).$(name).names.html")
+                            return nothing
+                        end
+
+                        nested_test("priorities") do
+                            graph.data.distributions_priorities = [1, 0]
+                            test_html(graph, "$(plurality).$(kind).$(name).names.priorities.html")
+                            return nothing
+                        end
                     end
 
                     nested_test("!gap") do
