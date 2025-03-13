@@ -46,6 +46,18 @@ nested_test("points") do
                 end
             end
         end
+
+        nested_test("continuous") do
+            nested_test("explicit") do
+                graph.configuration.edges.colors.palette = [0 => "red", 1 => "blue"]
+                @test_throws "continuous colors for edges are not implemented" validate(context, graph)
+            end
+
+            nested_test("named") do
+                graph.configuration.edges.colors.palette = "Viridis"
+                @test_throws "continuous colors for edges are not implemented" validate(context, graph)
+            end
+        end
     end
 
     nested_test("()") do
@@ -226,6 +238,11 @@ nested_test("points") do
             return nothing
         end
 
+        nested_test("continuous") do
+            graph.data.edges_colors = collect(1:5)
+            @test_throws "continuous colors for edges are not implemented" validate(ValidationContext(["graph"]), graph)
+        end
+
         nested_test("mask") do
             graph.data.edges_mask = [true, true, true, false, false]
             test_html(graph, "points.edges.mask.html")
@@ -250,21 +267,6 @@ nested_test("points") do
             return nothing
         end
 
-        nested_test("continuous") do
-            graph.data.edges_colors = collect(1:5)
-
-            nested_test("()") do
-                test_html(graph, "points.edges.continuous.html")
-                return nothing
-            end
-
-            nested_test("legend") do
-                graph.configuration.edges.colors.show_legend = true
-                test_html(graph, "points.edges.continuous.legend.html")
-                return nothing
-            end
-        end
-
         nested_test("named") do
             graph.data.edges_colors = ["red", "yellow", "green", "cyan", "blue"]
             test_html(graph, "points.edges.named.html")
@@ -283,6 +285,12 @@ nested_test("points") do
             nested_test("legend") do
                 graph.configuration.edges.colors.show_legend = true
                 test_html(graph, "points.edges.categorical.legend.html")
+                return nothing
+            end
+
+            nested_test("priorities") do
+                graph.data.edges_priorities = -collect(1:5)
+                test_html(graph, "points.edges.categorical.priorities.html")
                 return nothing
             end
         end
@@ -360,6 +368,12 @@ nested_test("points") do
         nested_test("mask") do
             graph.data.points_mask = [true, true, true, true, true, true, false, false, false, false, false]
             test_html(graph, "points.categorical.mask.html")
+            return nothing
+        end
+
+        nested_test("priorities") do
+            graph.data.points_priorities = -collect(0:10)
+            test_html(graph, "points.points.categorical.priorities.html")
             return nothing
         end
     end
@@ -503,22 +517,70 @@ nested_test("points") do
             test_html(graph, "points.offsets.two-colors.html")
             return nothing
         end
+    end
 
-        nested_test("all-colors") do
-            graph.configuration.points.colors.palette = [0 => "red", 10 => "blue"]
-            graph.data.points_colors = collect(0:10)
+    nested_test("density") do
+        graph.data.points_xs = [
+            0.2698393176826803,
+            0.21199888259395777,
+            -1.1403772919081927,
+            0.015375662421357001,
+            -1.067372097104871,
+            -0.05131680407322392,
+            1.1476690271171557,
+            0.2619998741581797,
+            -0.3294624837610639,
+            0.3990906575326256,
+            0.016185972979333094,
+            -0.6295842065710322,
+            1.74273570356108,
+            -1.612316716623975,
+            -1.2696818434826393,
+            -2.3942962323946806,
+            -0.0683194741744384,
+            -0.6991502371264332,
+            1.3005476302710504,
+            -0.3156364801379863,
+        ]
+        graph.data.points_ys = [
+            -0.1764741545510277,
+            0.5007984744043152,
+            -1.0092288051861404,
+            0.28862095432807144,
+            0.3216029374844889,
+            1.1177946117474804,
+            0.11865114901055787,
+            -2.173777902643006,
+            -0.5131646448399668,
+            -0.4180196978042471,
+            -1.7758801658517032,
+            0.5019767811414706,
+            0.6519383169746722,
+            1.306115558967419,
+            -0.6077449865370641,
+            0.6968047575410379,
+            1.7053341710917538,
+            -0.6584463274588279,
+            0.9034430051864035,
+            -0.631083973233279,
+        ]
+        graph.data.points_colors = points_density(graph.data.points_xs, graph.data.points_ys)
+        graph.configuration.points.colors.palette = "Viridis"
+        graph.configuration.points.sizes.fixed = 16
+        graph.configuration.figure.width = 200
+        graph.configuration.figure.height = 200
+        graph.configuration.x_axis.minimum = -3
+        graph.configuration.y_axis.minimum = -3
+        graph.configuration.x_axis.maximum = 3
+        graph.configuration.y_axis.maximum = 3
 
-            graph.configuration.borders.colors.palette = [0 => "blue", 10 => "green"]
-            graph.data.borders_colors = collect(0:10)
+        nested_test("()") do
+            return test_html(graph, "points.density.html")
+        end
 
-            graph.configuration.edges.colors.palette = [0 => "green", 4 => "red"]
-            graph.data.edges_colors = collect(0:4)
-
-            context = ValidationContext(["graph"])
-            @test_throws "can't specify show_legend in more than two continuous color configurations" validate(
-                context,
-                graph,
-            )
+        nested_test("priorities") do
+            graph.data.points_priorities = graph.data.points_colors
+            return test_html(graph, "points.density.priorities.html")
         end
     end
 end

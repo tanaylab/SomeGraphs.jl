@@ -1269,7 +1269,7 @@ function Validations.validate(
                     ),
                 )
             end
-        end
+        end  # NOJET
 
         validate_vector_entries(context, "palette", palette) do _, (_, color)  # NOJET
             validate_in(context, "color") do
