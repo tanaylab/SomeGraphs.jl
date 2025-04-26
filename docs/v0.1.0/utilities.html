@@ -387,6 +387,126 @@ plotly_figure(traces::AbstractVector{&lt;:GenericTrace}, layout::Layout)::Plotly
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.ConfiguredColors" href="#SomeGraphs.Utilities.ConfiguredColors">
+<code>SomeGraphs.Utilities.ConfiguredColors
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct ConfiguredColors
+    colors_title::Maybe{AbstractString}
+    colors_configuration::ColorsConfiguration
+    colors_scale_index::Maybe{Integer}
+    original_color_values::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}}
+    final_colors_values::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}}
+    final_colors_range::Maybe{Range}
+    scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}}
+    show_in_legend::Bool
+    show_scale::Bool
+end
+</code>
+</pre>
+<p>Colors data after applying the configuration.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.configured_colors" href="#SomeGraphs.Utilities.configured_colors">
+<code>SomeGraphs.Utilities.configured_colors
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">configured_colors(;
+    colors_configuration::ColorsConfiguration,
+    colors_title::Maybe{AbstractString},
+    colors_values::Maybe{Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}}},
+    next_colors_scale_index::AbstractVector{&lt;:Integer},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+)::ConfiguredColors
+</code>
+</pre>
+<p>Apply the colors configuration to the colors data.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.ConfiguredAnnotation" href="#SomeGraphs.Utilities.ConfiguredAnnotation">
+<code>SomeGraphs.Utilities.ConfiguredAnnotation
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct ConfiguredAnnotation
+    annotation_data::AnnotationData
+    final_colors_values::AbstractVector{&lt;:Real}
+    final_colors_range::Maybe{Range}
+end
+</code>
+</pre>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.validate_axis_sizes" href="#SomeGraphs.Utilities.validate_axis_sizes">
+<code>SomeGraphs.Utilities.validate_axis_sizes
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_axis_sizes(;
+    axis_name::AbstractString,
+    graphs_gap::Maybe{Real} = nothing,
+    n_graphs::Integer = 1,
+    annotation_size::AnnotationSize,
+    n_annotations::Integer,
+)::nothing
+</code>
+</pre>
+<p>Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Utilities.validate_values" href="#SomeGraphs.Utilities.validate_values">
 <code>SomeGraphs.Utilities.validate_values
 </code>
@@ -539,7 +659,7 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <code class="language-julia hljs">plotly_layout(
     figure_configuration::FigureConfiguration;
     title::Maybe{AbstractString},
-    showlegend::Bool,
+    has_legend::Bool,
     shapes::AbstractVector{Shape},
 )::Layout
 </code>
@@ -656,12 +776,15 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">set_layout_colorscale!(
+<code class="language-julia hljs">set_layout_colorscale!(;
     layout::Layout,
-    colorscale::AbstractString,
-    colors_configuration::ColorsConfiguration;
+    colors_scale_index::Integer,
+    colors_configuration::ColorsConfiguration,
+    scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}},
     offset::Maybe{Real},
+    range::Maybe{Range} = nothing,
     title::Maybe{AbstractString},
+    show_scale::Bool,
 )::Nothing
 </code>
 </pre>
@@ -754,7 +877,33 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <code class="language-julia hljs">plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{&lt;:AbstractFloat}}
 </code>
 </pre>
-<p>Return the Plotly &quot;domain&quot; for a sub-graph.
+<p>Return the Plotly &quot;domain&quot; for a sub-graph (or an annotation).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_coloraxis" href="#SomeGraphs.Utilities.plotly_coloraxis">
+<code>SomeGraphs.Utilities.plotly_coloraxis
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_coloraxis(colors_scale_index::Maybe{Integer})::Maybe{AbstractString}
+</code>
+</pre>
+<p>Return the Plotly 
+<code>coloraxis
+</code> name for a given color scale index.
 </p>
 </div>
 </section>
@@ -1039,6 +1188,18 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.ConfiguredAnnotation">
+<code>SomeGraphs.Utilities.ConfiguredAnnotation
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.ConfiguredColors">
+<code>SomeGraphs.Utilities.ConfiguredColors
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.MaybeRange">
 <code>SomeGraphs.Utilities.MaybeRange
 </code>
@@ -1087,6 +1248,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.configured_colors">
+<code>SomeGraphs.Utilities.configured_colors
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.fill_color">
 <code>SomeGraphs.Utilities.fill_color
 </code>
@@ -1095,6 +1262,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.final_scaled_range">
 <code>SomeGraphs.Utilities.final_scaled_range
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_coloraxis">
+<code>SomeGraphs.Utilities.plotly_coloraxis
 </code>
 </a>
 </li>
@@ -1183,6 +1356,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.validate_axis_sizes">
+<code>SomeGraphs.Utilities.validate_axis_sizes
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_colors">
 <code>SomeGraphs.Utilities.validate_colors
 </code>
@@ -1251,7 +1430,7 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <hr/>
 <p>This document was generated with 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.8.0. Using Julia version 1.11.3.
+</a> version 1.10.1. Using Julia version 1.11.5.
 </p>
 </section>
 <footer class="modal-card-foot">

@@ -166,9 +166,15 @@ SomeGraphs.Common.BandsData
 SomeGraphs.Common.ColorsConfiguration
 SomeGraphs.Common.ContinuousColors
 SomeGraphs.Common.CategoricalColors
+SomeGraphs.Common.categorical_palette
 SomeGraphs.Common.NAMED_COLOR_SCALES
 SomeGraphs.Common.COLOR_SCALES_LOCK
 SomeGraphs.Common.SubGraph
+```
+
+```@docs
+SomeGraphs.Common.AnnotationData
+SomeGraphs.Common.AnnotationSize
 ```
 
 ## Index

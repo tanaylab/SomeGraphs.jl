@@ -147,10 +147,12 @@ nested_test("utilities") do
         data = [0.0, 1.0]
 
         nested_test("negative") do
-            @test_throws dedent("""
-                too low values_data.([1] + axis_configuration.axis.log_regularization): 0.0
+            @test_throws chomp(
+                """
+                ArgumentError: too low values_data.([1] + axis_configuration.axis.log_regularization): 0.0
                 is not above: 0
-            """) validate_values(data_context, data, configuration_context, configuration)
+                """,
+            ) validate_values(data_context, data, configuration_context, configuration)
         end
 
         nested_test("positive") do
@@ -169,23 +171,34 @@ nested_test("utilities") do
         nested_test("fixed") do
             configuration.fixed = "red"
             data = [1.0, 2.0]
-            @test_throws dedent("""
-                can't specify colors_data
-                for colors_configuration.fixed: red
-            """) validate_colors(data_context, data, configuration_context, configuration)
+            @test_throws chomp("""
+                               ArgumentError: can't specify colors_data
+                               for colors_configuration.fixed: red
+                               """) validate_colors(data_context, data, configuration_context, configuration)
         end
 
         nested_test("legend") do
             configuration.show_legend = true
-            @test_throws dedent("""
-                must specify colors_data
-                for colors_configuration.show_legend
-            """) validate_colors(data_context, data, configuration_context, configuration)
+
+            nested_test("!data") do
+                @test_throws chomp("""
+                                   ArgumentError: must specify colors_data
+                                   for colors_configuration.show_legend
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
+            end
+
+            nested_test("named") do
+                data = ["red", "green", "blue"]
+                @test_throws chomp("""
+                                   ArgumentError: can't specify colors_configuration.show_legend
+                                   for named colors_data
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
+            end
         end
 
         nested_test("explicit") do
             data = ["red", "Oobleck"]
-            @test_throws "invalid colors_data[2]: Oobleck" validate_colors(
+            @test_throws "ArgumentError: invalid colors_data[2]: Oobleck" validate_colors(
                 data_context,
                 data,
                 configuration_context,
@@ -196,48 +209,48 @@ nested_test("utilities") do
         nested_test("categorical") do
             nested_test("missing") do
                 configuration.palette = Dict("Foo" => "red", "Bar" => "green")
-                @test_throws dedent("""
-                    must specify (categorical) colors_data
-                    for categorical colors_configuration.palette
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                @test_throws chomp("""
+                                   ArgumentError: must specify (categorical) colors_data
+                                   for categorical colors_configuration.palette
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
             end
 
             nested_test("palette") do
                 configuration.palette = Dict("Foo" => "red", "Bar" => "green")
                 data = ["Foo", "Bar", "", "Baz"]
                 mask = [true, true, false, true]
-                @test_throws dedent("""
-                    invalid colors_data[4]: Baz
-                    does not exist in colors_configuration.palette
-                """) validate_colors(data_context, data, configuration_context, configuration, mask)
+                @test_throws chomp("""
+                                   ArgumentError: invalid colors_data[4]: Baz
+                                   does not exist in colors_configuration.palette
+                                   """) validate_colors(data_context, data, configuration_context, configuration, mask)
             end
 
             nested_test("continuous") do
                 configuration.palette = [0 => "red", 1 => "green"]
                 data = ["Foo", "Bar", "Baz"]
-                @test_throws dedent("""
-                    categorical colors_data
-                    specified for continuous colors_configuration.palette
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                @test_throws chomp("""
+                                   ArgumentError: categorical colors_data
+                                   specified for continuous colors_configuration.palette
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
             end
 
             nested_test("axis") do
                 configuration.axis.percent = true
                 data = ["Foo", "Bar"]
-                @test_throws dedent("""
-                    must specify numeric colors_data
-                    when using any of colors_configuration.axis.(minimum,maximum,log_scale,percent)
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                @test_throws chomp("""
+                                   ArgumentError: must specify numeric colors_data
+                                   when using any of colors_configuration.axis.(minimum,maximum,log_scale,percent)
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
             end
         end
 
         nested_test("continuous") do
             nested_test("missing") do
                 configuration.palette = [0 => "red", 1 => "green"]
-                @test_throws dedent("""
-                    must specify (numeric) colors_data
-                    for continuous colors_configuration.palette
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                @test_throws chomp("""
+                                   ArgumentError: must specify (numeric) colors_data
+                                   for continuous colors_configuration.palette
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
             end
 
             data = [0, 1]
@@ -249,19 +262,21 @@ nested_test("utilities") do
 
             nested_test("palette") do
                 configuration.palette = Dict("Foo" => "red", "Bar" => "green")
-                @test_throws dedent("""
-                    numeric colors_data
-                    specified for categorical colors_configuration.palette
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                @test_throws chomp("""
+                                   ArgumentError: numeric colors_data
+                                   specified for categorical colors_configuration.palette
+                                   """) validate_colors(data_context, data, configuration_context, configuration)
             end
 
             nested_test("log") do
                 configuration.axis.log_scale = Log2Scale
 
-                @test_throws dedent("""
-                    too low colors_data[1].(value + colors_configuration.axis.log_regularization): 0
+                @test_throws chomp(
+                    """
+                    ArgumentError: too low colors_data[1].(value + colors_configuration.axis.log_regularization): 0
                     is not above: 0
-                """) validate_colors(data_context, data, configuration_context, configuration)
+                    """,
+                ) validate_colors(data_context, data, configuration_context, configuration)
 
                 configuration.axis.log_regularization = 1
                 return validate_colors(data_context, data, configuration_context, configuration)

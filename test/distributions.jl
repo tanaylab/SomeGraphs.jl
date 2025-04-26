@@ -33,18 +33,18 @@ function test_distributions(
                     if kind == "histogram"
                         nested_test("~width") do
                             graph.configuration.distribution.line.width = 4
-                            @test_throws dedent("""
-                                unsupported graph.configuration.distribution.line.width: 4
-                                for graph.configuration.distribution.style: HistogramDistribution
-                            """) validate(ValidationContext(["graph"]), graph)
+                            @test_throws chomp("""
+                                               unsupported graph.configuration.distribution.line.width: 4
+                                               for graph.configuration.distribution.style: HistogramDistribution
+                                               """) validate(ValidationContext(["graph"]), graph)
                         end
 
                         nested_test("~fill") do
                             graph.configuration.distribution.line.is_filled = false
-                            @test_throws dedent("""
-                                unsupported graph.configuration.distribution.line.is_filled: false
-                                for graph.configuration.distribution.style: HistogramDistribution
-                            """) validate(ValidationContext(["graph"]), graph)
+                            @test_throws chomp("""
+                                         unsupported graph.configuration.distribution.line.is_filled: false
+                                         for graph.configuration.distribution.style: HistogramDistribution
+                                         """) validate(ValidationContext(["graph"]), graph)
                         end
                     else
                         graph.configuration.distribution.line.color = "red"
@@ -61,10 +61,10 @@ function test_distributions(
                         test_html(graph, "$(plurality).$(kind).$(name).outliers.html")
                         return nothing
                     else
-                        @test_throws dedent(
+                        @test_throws chomp(
                             """
-                                specified graph.configuration.distribution.show_outliers
-                                for non-box graph.configuration.distribution.style: $(graph.configuration.distribution.style)
+                            specified graph.configuration.distribution.show_outliers
+                            for non-box graph.configuration.distribution.style: $(graph.configuration.distribution.style)
                             """,
                         ) validate(ValidationContext(["graph"]), graph)
                     end
@@ -221,7 +221,7 @@ function test_distributions(
                         end
 
                         nested_test("priorities") do
-                            graph.data.distributions_priorities = [1, 0]
+                            graph.data.distributions_order = [2, 1]
                             test_html(graph, "$(plurality).$(kind).$(name).names.priorities.html")
                             return nothing
                         end
@@ -283,26 +283,26 @@ nested_test("distribution") do
     nested_test("invalid") do
         nested_test("~cumulative_axis") do
             graph.configuration.cumulative_axis.units = CumulativeCounts
-            @test_throws dedent("""
-                specified graph.configuration.cumulative_axis
-                for non-cumulative graph.configuration.distribution.style: CurveDistribution
-            """) graph.figure
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.cumulative_axis
+                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
         end
 
         nested_test("~bands") do
             graph.configuration.cumulative_bands.middle.offset = 0.5
-            @test_throws dedent("""
-                specified graph.configuration.cumulative_bands
-                for non-cumulative graph.configuration.distribution.style: CurveDistribution
-            """) graph.figure
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.cumulative_bands
+                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
         end
 
         nested_test("~cumulative_axis_title") do
             graph.data.cumulative_axis_title = "Title"
-            @test_throws dedent("""
-                specified graph.data.cumulative_axis_title: Title
-                for non-cumulative graph.configuration.distribution.style: CurveDistribution
-            """) graph.figure
+            @test_throws chomp("""
+                               ArgumentError: specified graph.data.cumulative_axis_title: Title
+                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
         end
     end
 
@@ -361,41 +361,41 @@ nested_test("distributions") do
     nested_test("invalid") do
         nested_test("~cumulative_axis") do
             graph.configuration.cumulative_axis.units = CumulativeCounts
-            @test_throws dedent("""
-                specified graph.configuration.cumulative_axis
-                for non-cumulative graph.configuration.distribution.style: CurveDistribution
-            """) graph.figure
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.cumulative_axis
+                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
         end
 
         nested_test("!values") do
             empty!(graph.data.distributions_values)
-            @test_throws "empty vector graph.data.distributions_values" graph.figure
+            @test_throws "ArgumentError: empty vector graph.data.distributions_values" graph.figure
         end
 
         nested_test("!value") do
             empty!(graph.data.distributions_values[1])
-            @test_throws "empty vector graph.data.distributions_values[1]" graph.figure
+            @test_throws "ArgumentError: empty vector graph.data.distributions_values[1]" graph.figure
         end
 
         nested_test("~names") do
             graph.data.distributions_names = ["Foo"]
-            @test_throws dedent("""
-                invalid length of graph.data.distributions_names: 1
-                is different from length of graph.data.distributions_values: 2
-            """) graph.figure
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.distributions_names: 1
+                               is different from length of graph.data.distributions_values: 2
+                               """) graph.figure
         end
 
         nested_test("!colors") do
             graph.data.distributions_colors = ["Red", "Oobleck"]
-            @test_throws "invalid graph.data.distributions_colors[2]: Oobleck" graph.figure
+            @test_throws "ArgumentError: invalid graph.data.distributions_colors[2]: Oobleck" graph.figure
         end
 
         nested_test("~colors") do
             graph.data.distributions_colors = ["Red"]
-            @test_throws dedent("""
-                invalid length of graph.data.distributions_colors: 1
-                is different from length of graph.data.distributions_values: 2
-            """) graph.figure
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.distributions_colors: 1
+                               is different from length of graph.data.distributions_values: 2
+                               """) graph.figure
         end
     end
 

@@ -9,6 +9,7 @@ for pkg in (
     "LanguageServer",
     "Logging",
     "LoggingExtras",
+    "PlotlyDocumenter",
     "SnoopCompile",
     "StaticLint",
     "SymbolServer",

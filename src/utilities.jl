@@ -4,13 +4,16 @@ Utility functions for defining graph types. We do not re-export all symbols from
 """
 module Utilities
 
+export ConfiguredColors
 export MaybeRange
 export Range
-export collect_range!
 export axis_ticks_prefix
 export axis_ticks_suffix
+export configured_colors
+export collect_range!
 export fill_color
 export final_scaled_range
+export plotly_coloraxis
 export plotly_figure
 export plotly_layout
 export plotly_line_dash
@@ -25,6 +28,7 @@ export scale_axis_values
 export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
+export validate_axis_sizes
 export validate_colors
 export validate_graph_bands
 export validate_values
@@ -166,13 +170,22 @@ function validate_colors(
         return nothing
     end
 
-    if colors_configuration.show_legend && colors_data === nothing
-        throw(
-            ArgumentError(
-                "must specify $(location(colors_data_context))\n" *
-                "for $(location(colors_configuration_context)).show_legend",
-            ),
-        )
+    if colors_configuration.show_legend
+        if colors_data === nothing
+            throw(
+                ArgumentError(
+                    "must specify $(location(colors_data_context))\n" *
+                    "for $(location(colors_configuration_context)).show_legend",
+                ),
+            )
+        elseif eltype(colors_data) <: AbstractString && colors_configuration.palette === nothing
+            throw(
+                ArgumentError(
+                    "can't specify $(location(colors_configuration_context)).show_legend\n" *
+                    "for named $(location(colors_data_context))",
+                ),
+            )
+        end
     end
 
     if colors_configuration.axis.minimum !== nothing ||
@@ -306,7 +319,7 @@ end
     plotly_layout(
         figure_configuration::FigureConfiguration;
         title::Maybe{AbstractString},
-        showlegend::Bool,
+        has_legend::Bool,
         shapes::AbstractVector{Shape},
     )::Layout
 
@@ -315,13 +328,13 @@ Create a Plotly `Layout` object.
 function plotly_layout(
     figure_configuration::FigureConfiguration;
     title::Maybe{AbstractString},
-    showlegend::Bool,
+    has_legend::Bool,
     shapes::AbstractVector{Shape},
 )::Layout
     return Layout(;  # NOJET
         title,
-        showlegend,
-        legend_itemdoubleclick = showlegend ? false : nothing,
+        showlegend = has_legend,
+        legend_itemdoubleclick = has_legend ? false : nothing,
         legend_tracegroupgap = 0,
         shapes,
         margin_l = figure_configuration.margins.left,
@@ -355,28 +368,49 @@ function set_layout_axis!(
     title::Maybe{AbstractString},
     range::Range,
     domain::Maybe{AbstractVector{<:Real}} = nothing,
+    is_annotation::Bool = false,
 )::Nothing
     layout[axis] = Dict(
         :title => title,
         :range => [range.minimum, range.maximum],
         :showgrid => axis_configuration.show_grid,
         :gridcolor => axis_configuration.show_grid ? axis_configuration.grid_color : nothing,
-        :showticklabels => axis_configuration.show_ticks,
-        :tickprefix => axis_ticks_prefix(axis_configuration),
-        :ticksuffix => axis_ticks_suffix(axis_configuration),
-        :zeroline => axis_configuration.log_scale === nothing,
+        :showticklabels => is_annotation ? false : axis_configuration.show_ticks,
+        :tickprefix => is_annotation ? nothing : axis_ticks_prefix(axis_configuration),
+        :ticksuffix => is_annotation ? nothing : axis_ticks_suffix(axis_configuration),
+        :zeroline => is_annotation ? false : axis_configuration.log_scale === nothing,
         :domain => domain,
     )
     return nothing
 end
 
 """
-    set_layout_colorscale!(
+    plotly_coloraxis(colors_scale_index::Maybe{Integer})::Maybe{AbstractString}
+
+Return the Plotly `coloraxis` name for a given color scale index.
+"""
+function plotly_coloraxis(colors_scale_index::Integer)::AbstractString
+    if colors_scale_index == 1
+        return "coloraxis"
+    else
+        return "coloraxis$(colors_scale_index)"
+    end
+end
+
+function plotly_coloraxis(::Nothing)::Nothing
+    return nothing
+end
+
+"""
+    set_layout_colorscale!(;
         layout::Layout,
-        colorscale::AbstractString,
-        colors_configuration::ColorsConfiguration;
+        colors_scale_index::Integer,
+        colors_configuration::ColorsConfiguration,
+        scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
         offset::Maybe{Real},
+        range::Maybe{Range} = nothing,
         title::Maybe{AbstractString},
+        show_scale::Bool,
     )::Nothing
 
 Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. Since Plotly is dumb when it comes to
@@ -384,13 +418,14 @@ placement of color scales, the `offset` must be specified manually to avoid over
 """
 function set_layout_colorscale!(;
     layout::Layout,
-    colors_scale::AbstractString,
+    colors_scale_index::Integer,
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
-    offset::Maybe{Real},
     range::Maybe{Range} = nothing,
     title::Maybe{AbstractString},
-    show_legend::Bool,
+    show_scale::Bool,
+    next_colors_scale_offset_index::AbstractVector{<:Integer},
+    colors_scale_offsets::AbstractVector{<:Real},
 )::Nothing
     if colors_configuration.palette isa CategoricalColors
         @assert false
@@ -411,22 +446,30 @@ function set_layout_colorscale!(;
         colorscale = nothing
     end
 
-    layout[colors_scale] = Dict(
-        :showscale => show_legend,
+    layout[plotly_coloraxis(colors_scale_index)] = Dict(
+        :showscale => show_scale,
         :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range.minimum,
         :cmax => range === nothing ? nothing : range.maximum,
-        :colorbar => if !show_legend
+        :colorbar => if !show_scale
             nothing
         else
             Dict(
                 :title => Dict(:text => title),
-                :x => offset,
+                :x => if next_colors_scale_offset_index[1] == 0
+                    nothing
+                else
+                    colors_scale_offsets[next_colors_scale_offset_index[1]]
+                end,
                 :ticksprefix => axis_ticks_prefix(colors_configuration.axis),
                 :tickssuffix => axis_ticks_suffix(colors_configuration.axis),
             )
         end,
     )
+
+    if show_scale
+        next_colors_scale_offset_index[1] += 1
+    end
 
     return nothing
 end
@@ -1294,16 +1337,88 @@ end
 """
     plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
 
-Return the Plotly "domain" for a sub-graph.
+Return the Plotly "domain" for a sub-graph (or an annotation).
 """
 function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
-    if sub_graph.n_graphs == 1 || sub_graph.gap === nothing
+    @assert sub_graph.index != 0
+    if (sub_graph.n_graphs == 1 || sub_graph.graphs_gap === nothing) && sub_graph.n_annotations == 0
         return nothing
-    else
-        graph_size = 1 / (sub_graph.n_graphs + (sub_graph.n_graphs - 1) * sub_graph.gap)
-        gap = graph_size * sub_graph.gap
-        return [(sub_graph.index - 1) * (graph_size + gap), (sub_graph.index - 1) * (graph_size + gap) + graph_size]
     end
+
+    if sub_graph.index > 0
+        @assert 1 <= sub_graph.index <= sub_graph.n_graphs
+
+        if sub_graph.n_annotations == 0
+            start_graph_offset = 0
+        else
+            @assert sub_graph.annotation_size !== nothing
+            start_graph_offset =
+                (sub_graph.annotation_size.gap + sub_graph.annotation_size.size) * sub_graph.n_annotations
+        end
+
+        graphs_total_size = 1 - start_graph_offset - (sub_graph.n_graphs - 1) * prefer_data(sub_graph.graphs_gap, 0)
+        graph_size = graphs_total_size / sub_graph.n_graphs
+        start_graph_offset += (sub_graph.index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
+        end_graph_offset = start_graph_offset + graph_size
+
+    else
+        @assert sub_graph.n_annotations != 0
+        @assert 1 <= -sub_graph.index <= sub_graph.n_annotations
+        @assert sub_graph.annotation_size !== nothing
+        start_graph_offset = (-sub_graph.index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
+        end_graph_offset = start_graph_offset + sub_graph.annotation_size.size
+    end
+
+    @assert 0 <= start_graph_offset < end_graph_offset <= 1
+    return [start_graph_offset, end_graph_offset]
+end
+
+"""
+    validate_axis_sizes(;
+        axis_name::AbstractString,
+        graphs_gap::Maybe{Real} = nothing,
+        n_graphs::Integer = 1,
+        annotation_size::AnnotationSize,
+        n_annotations::Integer,
+    )::nothing
+
+Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations.
+"""
+function validate_axis_sizes(;
+    axis_name::AbstractString,
+    graphs_gap::Maybe{Real} = nothing,
+    n_graphs::Integer = 1,
+    annotation_size::AnnotationSize,
+    n_annotations::Integer,
+)::Nothing
+    if graphs_gap === nothing
+        graph_gaps_overhead = 0
+    else
+        graph_gaps_overhead = (n_graphs - 1) * graphs_gap
+    end
+
+    annotations_gaps_overhead = n_annotations * annotation_size.gap
+    annotations_sizes_overhead = n_annotations * annotation_size.size
+    total_overhead_size = graph_gaps_overhead + annotations_gaps_overhead + annotations_sizes_overhead
+
+    if total_overhead_size >= 1
+        text = "no space left in the $(axis_name) axis"
+        if graph_gaps_overhead > 0
+            text *=
+                "\nnumber of graphs: $(n_graphs)" *
+                "\nwith gap between graphs: $(graphs_gap) (total: $(graph_gaps_overhead))"
+        end
+        if n_annotations > 0
+            text *=
+                "\nnumber of annotations: $(n_annotations)" *
+                "\nwith gap between annotations: $(annotation_size.gap) (total: $(annotations_gaps_overhead))" *
+                "\nwith size of each annotation: $(annotation_size.size) (total: $(annotations_sizes_overhead))"
+        end
+        text *= "\nthe total overhead: $(total_overhead_size)" * "\nis not less than: 1"
+        throw(ArgumentError(text))  # NOJET
+    end
+
+    return nothing
 end
 
 """
@@ -1321,35 +1436,155 @@ function plotly_sub_graph_axes(
     values_orientation::ValuesOrientation;
     flip::Bool = false,
 )::Tuple{Maybe{AbstractString}, Maybe{AbstractFloat}, Maybe{AbstractString}, Maybe{AbstractFloat}}
-    if (values_orientation == HorizontalValues) != flip
-        yaxis = nothing
-        y0 = nothing
+    xaxis = nothing
+    x0 = nothing
+    yaxis = nothing
+    y0 = nothing
 
-        if sub_graph === nothing
-            xaxis = nothing
-            x0 = nothing
-        else
-            xaxis = sub_graph.gap === nothing || sub_graph.index == 1 ? "x" : "x$(sub_graph.index)"
+    if sub_graph !== nothing
+        index = sub_graph.index
+        if index < 0
+            index = sub_graph.n_graphs - index
+        end
+
+        if (values_orientation == HorizontalValues) != flip
+            xaxis = (sub_graph.index > 0 && sub_graph.graphs_gap === nothing) || index == 1 ? "x" : "x$(index)"
             x0 = 0
-        end
 
-    elseif (values_orientation == VerticalValues) != flip
-        xaxis = nothing
-        x0 = nothing
-
-        if sub_graph === nothing
-            yaxis = nothing
-            y0 = nothing
-        else
-            yaxis = sub_graph.gap === nothing || sub_graph.index == 1 ? "y" : "y$(sub_graph.index)"
+        elseif (values_orientation == VerticalValues) != flip
+            yaxis = (sub_graph.index > 0 && sub_graph.graphs_gap === nothing) || index == 1 ? "y" : "y$(index)"
             y0 = 0
-        end
 
-    else
-        @assert false
+        else
+            @assert false
+        end
     end
 
     return (xaxis, x0, yaxis, y0)
+end
+
+"""
+    @kwdef mutable struct ConfiguredColors
+        colors_title::Maybe{AbstractString}
+        colors_configuration::ColorsConfiguration
+        colors_scale_index::Maybe{Integer}
+        original_color_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
+        final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
+        final_colors_range::Maybe{Range}
+        scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
+        show_in_legend::Bool
+        show_scale::Bool
+    end
+
+Colors data after applying the configuration.
+"""
+@kwdef mutable struct ConfiguredColors
+    colors_title::Maybe{AbstractString}
+    colors_configuration::ColorsConfiguration
+    colors_scale_index::Maybe{Integer}
+    original_color_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
+    final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
+    final_colors_range::Maybe{Range}
+    scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
+    show_in_legend::Bool
+    show_scale::Bool
+end
+
+"""
+    configured_colors(;
+        colors_configuration::ColorsConfiguration,
+        colors_title::Maybe{AbstractString},
+        colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
+        next_colors_scale_index::AbstractVector{<:Integer},
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+    )::ConfiguredColors
+
+Apply the colors configuration to the colors data.
+"""
+function configured_colors(;
+    colors_configuration::ColorsConfiguration,
+    colors_title::Maybe{AbstractString},
+    colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
+    next_colors_scale_index::AbstractVector{<:Integer},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+)::ConfiguredColors
+    original_color_values = colors_values
+    scaled_colors_palette = nothing
+
+    colors_scale_index = nothing
+    final_colors_range = nothing
+    final_colors_values = nothing
+    show_in_legend = false
+    show_scale = false
+
+    if colors_values isa AbstractVector{<:AbstractString}
+        show_in_legend = colors_configuration.show_legend
+
+        if colors_configuration.palette isa CategoricalColors
+            @assert colors_values isa AbstractVector{<:AbstractString}
+            final_colors_values = [
+                color != "" && prefer_data(mask, index, true) ? colors_configuration.palette[color] : ""  #
+                for (index, color) in enumerate(colors_values)
+            ]
+        else
+            @assert colors_configuration.palette === nothing
+            final_colors_values = colors_values
+        end
+
+    elseif colors_values isa AbstractVector{<:Real}
+        show_scale = colors_configuration.show_legend
+        colors_scale_index = next_colors_scale_index[1]
+        next_colors_scale_index[1] += 1
+
+        final_colors_values = Float64.(scale_axis_values(colors_configuration.axis, colors_values))
+        if colors_configuration.palette isa ContinuousColors
+            color_palette_values = [entry[1] for entry in colors_configuration.palette]
+            scaled_colors_palette_values = scale_axis_values(colors_configuration.axis, color_palette_values)
+            implicit_scaled_colors_range =
+                Range(; minimum = scaled_colors_palette_values[1], maximum = scaled_colors_palette_values[end])
+            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
+
+            scale = implicit_scaled_colors_range.maximum - implicit_scaled_colors_range.minimum
+            @assert scale > 0
+            final_color_palette_values = (scaled_colors_palette_values .- implicit_scaled_colors_range.minimum) ./ scale
+            final_color_palette_values[1] = 0
+            final_color_palette_values[end] = 1
+            scaled_colors_palette = [  # NOJET
+                (final_value, entry[2]) for
+                (final_value, entry) in zip(final_color_palette_values, colors_configuration.palette)
+            ]
+        else
+            implicit_scaled_colors_range =
+                Range(; minimum = minimum(final_colors_values), maximum = maximum(final_colors_values))
+            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
+        end
+    end
+
+    return ConfiguredColors(;
+        colors_title,
+        colors_configuration,
+        colors_scale_index,
+        original_color_values,
+        final_colors_values,
+        final_colors_range,
+        scaled_colors_palette,
+        show_in_legend,
+        show_scale,
+    )
+end
+
+"""
+    @kwdef mutable struct ConfiguredAnnotation
+        annotation_data::AnnotationData
+        final_colors_values::AbstractVector{<:Real}
+        final_colors_range::Maybe{Range}
+    end
+"""
+@kwdef mutable struct ConfiguredAnnotation
+    annotation_data::AnnotationData
+    final_hovers::AbstractVector{<:AbstractString}
+    final_colors_values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}
+    final_colors_range::Maybe{Range}
 end
 
 end  # module

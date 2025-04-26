@@ -5,6 +5,8 @@ module Common
 
 export AbstractGraphConfiguration
 export AbstractGraphData
+export AnnotationData
+export AnnotationSize
 export AxisConfiguration
 export BandConfiguration
 export BandsConfiguration
@@ -35,6 +37,7 @@ export Stacking
 export SubGraph
 export ValuesOrientation
 export VerticalValues
+export categorical_palette
 export save_graph
 
 using Base.Multimedia
@@ -194,7 +197,7 @@ end
         grid_color::AbstractString = "lightgrey"
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
-        color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4]
+        colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -209,18 +212,18 @@ the axes.
 
 If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
 will happily place them all on top of each other. We therefore need to tell it how to position each and every color
-scale (except the 1st one if there's no legend) by specifying an explicit offset.
+scale (except the 1st one if there's no legend) by specifying an explicit offset. Great fun!
 
-These `color_scale_offsets` are specified in what Plotly calls "paper coordinates" which are singularly unsuitable for
+These `colors_scale_offsets` are specified in what Plotly calls "paper coordinates" which are singularly unsuitable for
 this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the
 preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an
 interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For
 optimal results you will need to manually tweak these to match your specific graph. In 21st century, when "AI" is a
 thing. Sigh.
 
-We only provide two offsets here, because plotly in its infinite wisdom is incapable of displaying more than two color
-scales in a single graph. That is, you are restricted to at most two [`ColorsConfiguration`](@ref) that use continuous
-colors and specify `show_legend`.
+We provide "too many" (5) offsets here. Normally a graph displays one color scale, but in theory it can have any number
+(e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that
+requires more offsets.
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
@@ -229,7 +232,7 @@ colors and specify `show_legend`.
     template::Maybe{AbstractString} = nothing
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
-    color_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4]
+    colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -612,11 +615,11 @@ function continuous_colors_scale(  # ONLY SEEMS UNTESTED
     return [(((index - 1) / (size - 1)), color) for (index, color) in enumerate(colors)]
 end
 
-function reverse_color_scale(palette::ContinuousColors)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
+function reverse_colors_scale(palette::ContinuousColors)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
     return reverse!([(1 - value, color) for (value, color) in palette])
 end
 
-function zero_color_scale(
+function zero_colors_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
@@ -661,7 +664,7 @@ function zero_color_scale(
     return result
 end
 
-function center_color_scale(
+function center_colors_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     color_fraction::AbstractFloat,
@@ -731,7 +734,7 @@ function center_color_scale(
     return result
 end
 
-function overflow_color_scale(
+function overflow_colors_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     overflow_color::AbstractString,
@@ -750,7 +753,7 @@ function overflow_color_scale(
     return result
 end
 
-function underflow_color_scale(
+function underflow_colors_scale(
     palette::ContinuousColors,
     value_fraction::AbstractFloat,
     underflow_color::AbstractString,
@@ -1094,8 +1097,8 @@ COLOR_SCALES_LOCK = ReentrantLock()
 
 CACHED_COLOR_SCALES = Dict{String, ContinuousColors}()
 
-function ensure_cached_scale(context::ValidationContext, palette::AbstractString)::Nothing
-    lock(COLOR_SCALES_LOCK) do
+function ensure_cached_scale(context::ValidationContext, palette::AbstractString)::ContinuousColors
+    return lock(COLOR_SCALES_LOCK) do
         actual_palette = get(CACHED_COLOR_SCALES, palette, nothing)
         if actual_palette === nothing
             parts = split(palette, "_")
@@ -1109,20 +1112,20 @@ function ensure_cached_scale(context::ValidationContext, palette::AbstractString
                 pieces = split(part, ":")
                 try
                     if pieces[1] == "r" && length(pieces) == 1
-                        actual_palette = reverse_color_scale(actual_palette)
+                        actual_palette = reverse_colors_scale(actual_palette)
                         continue
                     elseif pieces[1] == "z" && length(pieces) == 3
                         value_fraction = parse(Float32, pieces[2])
                         color_fraction = parse(Float32, pieces[3])
                         if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
-                            actual_palette = zero_color_scale(actual_palette, value_fraction, color_fraction)
+                            actual_palette = zero_colors_scale(actual_palette, value_fraction, color_fraction)
                             continue
                         end
                     elseif pieces[1] == "c" && length(pieces) == 3
                         value_fraction = parse(Float32, pieces[2])
                         color_fraction = parse(Float32, pieces[3])
                         if 0 <= value_fraction < 1 && 0 <= color_fraction < 1
-                            actual_palette = center_color_scale(actual_palette, value_fraction, color_fraction)
+                            actual_palette = center_colors_scale(actual_palette, value_fraction, color_fraction)
                             continue
                         end
                     elseif pieces[1] == "o" && length(pieces) == 3
@@ -1130,7 +1133,7 @@ function ensure_cached_scale(context::ValidationContext, palette::AbstractString
                         color = pieces[3]
                         parse(Colorant, color)  # NOJET
                         if 0 <= value_fraction < 1
-                            actual_palette = overflow_color_scale(actual_palette, value_fraction, color)
+                            actual_palette = overflow_colors_scale(actual_palette, value_fraction, color)
                             continue
                         end
                     elseif pieces[1] == "u" && length(pieces) == 3
@@ -1138,7 +1141,7 @@ function ensure_cached_scale(context::ValidationContext, palette::AbstractString
                         color = pieces[3]
                         parse(Colorant, color)  # NOJET
                         if 0 <= value_fraction < 1
-                            actual_palette = underflow_color_scale(actual_palette, value_fraction, color)
+                            actual_palette = underflow_colors_scale(actual_palette, value_fraction, color)
                             continue
                         end
                     end
@@ -1149,9 +1152,69 @@ function ensure_cached_scale(context::ValidationContext, palette::AbstractString
 
             CACHED_COLOR_SCALES[palette] = actual_palette
         end
+        return actual_palette
+    end
+end
+
+"""
+    categorical_palette(
+        values::Union{AbstractSet{<:AbstractString}, AbstractVector{<:AbstractString}},
+        palette::Union{AbstractString, ContinuousColors} = "HSV",
+    )::CategoricalColors
+
+Given some string `values`, generate a categorical palette for them based on some continuous `palette`. This is done by
+giving each unique value an index from 1 to N and then mapping the range 0 to N into the continuous palette (adding 0
+allows for safely using cyclical palettes). This palette should have as many distinct colors in it as possible, to
+maximize legibility of the result; `HSV` is a good default choice.
+
+!!! note
+
+    This is *not* the best way to color categorical data. It is merely an adequate one for quick and dirty results. A
+    manually created palette would be better for a low number of values, and for a high number of values, `HSV` uses
+    only a 1D subset of the 3D color space. It would be nice to offer a robust "generate N colors most different from
+    each other" function... PRs are welcome :-)
+"""
+function categorical_palette(
+    values::AbstractVector{<:AbstractString},
+    palette::Union{AbstractString, ContinuousColors} = "HSV",
+)::CategoricalColors
+    return categorical_palette(Set(values), palette)
+end
+
+function categorical_palette(values::AbstractSet{<:AbstractString}, palette::AbstractString = "HSV")::CategoricalColors
+    return categorical_palette(values, ensure_cached_scale(ValidationContext(["categorical_palette"]), palette))
+end
+
+function categorical_palette(values::AbstractSet{<:AbstractString}, palette::ContinuousColors)::CategoricalColors
+    scale = 1 / length(values)
+    return Dict([
+        value => interpolate_color(palette, index * scale) for (index, value) in enumerate(sort!(collect(values)))
+    ])  # NOJET
+end
+
+function interpolate_color(palette::ContinuousColors, value::Real)::AbstractString
+    @assert 0 <= value <= 1
+
+    if eltype(palette) <: Pair
+        positions = searchsorted(palette, value => "")  # UNTESTED
+    elseif eltype(palette) <: Tuple
+        positions = searchsorted(palette, (value, ""))
+    else
+        @assert false
     end
 
-    return nothing
+    if positions.start == positions.stop
+        return palette[positions.start][2]  # UNTESTED
+    else
+        high_value = palette[positions.start][1]
+        high_xyz = parse(XYZ, palette[positions.start][2])
+        low_value = palette[positions.stop][1]
+        low_xyz = parse(XYZ, palette[positions.stop][2])
+        @assert low_value < high_value
+        alpha = (value - low_value) / (high_value - low_value)
+        interpolated_xyz = low_xyz * (1 - alpha) + high_xyz * alpha
+        return "#$(hex(interpolated_xyz))"
+    end
 end
 
 """
@@ -1187,7 +1250,7 @@ plotted. If the `fixed` color is specified, it is ignored.
 
 **Auto scale (4):** The colors data (transformed by the `axis`) will be shown in a color scale chosen by Plotly.
 
-**Names scale (5):** The colors data (transformed by the `axis`) will be shown using the named standard Plotly
+**Named scale (5):** The colors data (transformed by the `axis`) will be shown using the named standard Plotly
 [color scale](https://plotly.com/python/builtin-colorscales/) (see [`NAMED_COLOR_SCALES`](@ref)).
 
 **Manual scale (6):** The colors data (transformed by the `axis`) will be shown using the specified palette (whose values will also be
@@ -1195,11 +1258,11 @@ transformed by the `axis`). The values must be in non-decreasing order, and the 
 empty.
 
 **Categorical (7):** The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the
-dictionary will prevent the matching data from being plotted.
+data or the dictionary will prevent the matching data from being plotted.
 
 If `show_legend` is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be
 shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each
-other); see the `color_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
+other); see the `colors_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
 """
 @kwdef mutable struct ColorsConfiguration <: Validated
     palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
@@ -1319,23 +1382,6 @@ function Validations.validate(
 end
 
 """
-    @kwdef struct SubGraph
-        index::Integer
-        gap::Maybe{AbstractFloat}
-    end
-
-Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
-top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs are plotted on top
-of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout
-parameters.
-"""
-@kwdef struct SubGraph
-    index::Integer
-    n_graphs::Integer
-    gap::Maybe{AbstractFloat}
-end
-
-"""
 If stacking elements, how to do so:
 
 `StackValues` just adds the raw values on top of each other.
@@ -1344,5 +1390,97 @@ If stacking elements, how to do so:
 relevant [`AxisConfiguration`](@ref) to display percents.
 """
 @enum Stacking StackValues StackFractions
+
+"""
+    @kwdef mutable struct AnnotationData <: Validated
+        title::Maybe{AbstractString} = nothing
+        values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}} = Float32[]
+        hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        colors::ColorsConfiguration = ColorsConfiguration()
+    end
+
+An annotation to attach to an axis. This applies to discrete axes (bars axis for a [`BarsGraph`](@ref
+SomeGraphs.Bars.BarsGraph) or the rows and/or columns of a `HeatmapGraph`). The number of the `values` and the optional
+`hovers` must be the same as the number of entries in the axis.
+
+The `colors` configuration is part of the data, because the color of annotations (in particular, categorical ones) is
+tightly coupled with the data.
+
+!!! note
+
+    If you want to show the color scale of some annotation(s) using `show_legend`, keep in mind Plotly places a limit of
+    at most two color scales in a graph, because "reasons".
+"""
+@kwdef mutable struct AnnotationData <: Validated
+    title::Maybe{AbstractString} = nothing
+    values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}} = Float32[]
+    hovers::Maybe{Union{AbstractVector{<:AbstractString}}} = nothing
+    colors::ColorsConfiguration = ColorsConfiguration()
+end
+
+function Validations.validate(context::ValidationContext, annotation_data::AnnotationData)::Nothing
+    validate_field(context, "colors", annotation_data.colors)
+
+    if annotation_data.colors.fixed !== nothing
+        throw(ArgumentError("can't specify $(location(context)).colors.fixed"))
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct AnnotationSize
+        size::AbstractFloat = 0.05
+        gap::AbstractFloat = 0.005
+    end
+
+Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The
+sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.
+"""
+@kwdef mutable struct AnnotationSize <: Validated
+    size::AbstractFloat = 0.05
+    gap::AbstractFloat = 0.005
+end
+
+function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
+    validate_in(context, "annotation_size") do
+        validate_is_above(context, annotation_size.size, 0)
+        validate_is_below(context, annotation_size.size, 1)
+        return nothing
+    end
+
+    validate_in(context, "gap_size") do
+        validate_is_at_least(context, annotation_size.gap, 0)
+        validate_is_below(context, annotation_size.gap, 1)
+        return nothing
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef struct SubGraph
+        index::Integer
+        n_graphs::Integer
+        gap::Maybe{AbstractFloat}
+        n_annotations::Integer = 0
+        annotation_size::Maybe{AnnotationSize} = nothing
+    end
+
+Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
+top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs are plotted on top
+of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout
+parameters.
+
+This also supports `n_annotations` with `annotation_size`. If the index is negative, it is the (negated) index of an
+annotation.
+"""
+@kwdef struct SubGraph
+    index::Integer
+    n_graphs::Integer
+    graphs_gap::Maybe{AbstractFloat}
+    n_annotations::Integer = 0
+    annotation_size::Maybe{AnnotationSize} = nothing
+end
 
 end  # module

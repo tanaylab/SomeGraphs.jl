@@ -289,7 +289,7 @@ nested_test("points") do
             end
 
             nested_test("priorities") do
-                graph.data.edges_priorities = -collect(1:5)
+                graph.data.edges_order = reverse!(collect(1:5))
                 test_html(graph, "points.edges.categorical.priorities.html")
                 return nothing
             end
@@ -372,7 +372,7 @@ nested_test("points") do
         end
 
         nested_test("priorities") do
-            graph.data.points_priorities = -collect(0:10)
+            graph.data.points_order = reverse(collect(1:11))
             test_html(graph, "points.points.categorical.priorities.html")
             return nothing
         end
@@ -579,7 +579,7 @@ nested_test("points") do
         end
 
         nested_test("priorities") do
-            graph.data.points_priorities = graph.data.points_colors
+            graph.data.points_order = sortperm(graph.data.points_colors)
             return test_html(graph, "points.density.priorities.html")
         end
     end
@@ -724,11 +724,11 @@ nested_test("lines") do
         nested_test("negative") do
             graph.configuration.stacking = StackFractions
             graph.data.lines_points_ys[1][1] = -1
-            @test_throws dedent("""
-                too low scaled graph.data.lines_points_ys[1][1]: -1.0
-                is not at least: 0
-                when using graph.configuration.stacking: StackFractions
-            """) validate(context, graph)
+            @test_throws chomp("""
+                               ArgumentError: too low scaled graph.data.lines_points_ys[1][1]: -1.0
+                               is not at least: 0
+                               when using graph.configuration.stacking: StackFractions
+                               """) validate(context, graph)
         end
 
         nested_test("legend") do
@@ -761,7 +761,7 @@ nested_test("lines") do
         end
 
         nested_test("priorities") do
-            graph.data.lines_priorities = [1, 0]
+            graph.data.lines_order = [2, 1]
             test_html(graph, "lines.fill.priorities.html")
             return nothing
         end

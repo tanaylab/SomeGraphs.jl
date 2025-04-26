@@ -257,7 +257,7 @@ Size of gap between distributions:
 ```@example
 using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
-graph.configuration.distributions_gap = 1.0
+graph.configuration.distributions_gap = 0.05
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

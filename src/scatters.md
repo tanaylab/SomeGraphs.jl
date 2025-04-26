@@ -133,7 +133,7 @@ graph.data.points_ys = [
     -0.631083973233279,
 ]
 graph.data.points_colors = points_density(graph.data.points_xs, graph.data.points_ys)
-graph.data.points_priorities = graph.data.points_colors
+graph.data.points_order = sortperm(graph.data.points_colors)
 graph.configuration.points.colors.palette = "Viridis"
 graph.configuration.points.sizes.fixed = 16
 graph.configuration.figure.width = 200

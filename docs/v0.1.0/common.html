@@ -333,7 +333,7 @@
     grid_color::AbstractString = &quot;lightgrey&quot;
     background_color::AbstractString = &quot;white&quot;
     paper_color::AbstractString = &quot;white&quot;
-    color_scale_offsets::AbstractVector{&lt;:Real} = [1.2, 1.4]
+    colors_scale_offsets::AbstractVector{&lt;:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
 end
 </code>
 </pre>
@@ -359,19 +359,13 @@ end
 <code>paper_color
 </code> (outside the graph&#39;s area, that is, the margins). the axes.
 </p>
-<p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position each and every color scale (except the 1st one if there&#39;s no legend) by specifying an explicit offset.
+<p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position each and every color scale (except the 1st one if there&#39;s no legend) by specifying an explicit offset. Great fun!
 </p>
 <p>These 
-<code>color_scale_offsets
+<code>colors_scale_offsets
 </code> are specified in what Plotly calls &quot;paper coordinates&quot; which are singularly unsuitable for this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For optimal results you will need to manually tweak these to match your specific graph. In 21st century, when &quot;AI&quot; is a thing. Sigh.
 </p>
-<p>We only provide two offsets here, because plotly in its infinite wisdom is incapable of displaying more than two color scales in a single graph. That is, you are restricted to at most two 
-<a href="common.html#SomeGraphs.Common.ColorsConfiguration">
-<code>ColorsConfiguration
-</code>
-</a> that use continuous colors and specify 
-<code>show_legend
-</code>.
+<p>We provide &quot;too many&quot; (5) offsets here. Normally a graph displays one color scale, but in theory it can have any number (e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that requires more offsets.
 </p>
 </div>
 </section>
@@ -423,13 +417,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='noegWX55Ef' class='' style=';'>
+<div id='0XkFO2dcVG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("noegWX55Ef")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("0XkFO2dcVG")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -451,13 +445,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='3qmUvsg0Of' class='' style=';'>
+<div id='u6rV0lRVdH' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("3qmUvsg0Of")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("u6rV0lRVdH")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"plot_bgcolor":"white","yaxis":{"showticklabels":false},"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -479,13 +473,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='TIs14iW8sy' class='' style=';'>
+<div id='ZnN6GSsLNg' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("TIs14iW8sy")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"lightyellow","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("ZnN6GSsLNg")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"lightyellow","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -542,13 +536,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='qzIH6gi77S' class='' style=';'>
+<div id='OlLVwJsXlH' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("qzIH6gi77S")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("OlLVwJsXlH")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -638,13 +632,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='G5iErcpypn' class='' style=';'>
+<div id='HheoTpS0xt' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("G5iErcpypn")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("HheoTpS0xt")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -665,13 +659,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='2jCD4kOGbF' class='' style=';'>
+<div id='8pEwY89rZr' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("2jCD4kOGbF")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("8pEwY89rZr")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -692,13 +686,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='MCBMw0pxma' class='' style=';'>
+<div id='JzU8ehAKTe' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("MCBMw0pxma")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0,0,1,1,1,3],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("JzU8ehAKTe")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -720,13 +714,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='QXqNiBrhlT' class='' style=';'>
+<div id='FS2JFPRGo9' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QXqNiBrhlT")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,3.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.97,4.03]},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("FS2JFPRGo9")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.97,4.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -747,13 +741,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='DWGRQlRtfj' class='' style=';'>
+<div id='RIOurGsH0y' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("DWGRQlRtfj")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,100.0,100.0,100.0,300.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("RIOurGsH0y")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,100.0,100.0,100.0,300.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -813,13 +807,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZYAk2TdiyS' class='' style=';'>
+<div id='w2HALpqkkX' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZYAk2TdiyS")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[0.0,0.0,1.0,1.0,1.0,2.0],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("w2HALpqkkX")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,2.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -841,13 +835,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='9IgVWWrwGD' class='' style=';'>
+<div id='3ywG3AUqAv' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("9IgVWWrwGD")
-    const plot_obj = {"data": [{"boxpoints":false,"box":{"visible":false},"x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273],"name":"Trace","type":"violin","points":false,"spanmode":"hard","side":"positive"}], "layout": {"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showticklabels":false},"plot_bgcolor":"white","showlegend":false,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("3ywG3AUqAv")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1353,7 +1347,7 @@ end
 </code>) will be shown in a color scale chosen by Plotly.
 </p>
 <p>
-<strong>Names scale (5):
+<strong>Named scale (5):
 </strong> The colors data (transformed by the 
 <code>axis
 </code>) will be shown using the named standard Plotly 
@@ -1374,12 +1368,12 @@ end
 </p>
 <p>
 <strong>Categorical (7):
-</strong> The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the dictionary will prevent the matching data from being plotted.
+</strong> The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the data or the dictionary will prevent the matching data from being plotted.
 </p>
 <p>If 
 <code>show_legend
 </code> is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each other); see the 
-<code>color_scale_offsets
+<code>colors_scale_offsets
 </code> vector of 
 <a href="common.html#SomeGraphs.Common.FigureConfiguration">
 <code>FigureConfiguration
@@ -1432,6 +1426,51 @@ end
 <div>
 <p>A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown (as if it was masked or never included in the data).
 </p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.categorical_palette" href="#SomeGraphs.Common.categorical_palette">
+<code>SomeGraphs.Common.categorical_palette
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">categorical_palette(
+    values::Union{AbstractSet{&lt;:AbstractString}, AbstractVector{&lt;:AbstractString}},
+    palette::Union{AbstractString, ContinuousColors} = &quot;HSV&quot;,
+)::CategoricalColors
+</code>
+</pre>
+<p>Given some string 
+<code>values
+</code>, generate a categorical palette for them based on some continuous 
+<code>palette
+</code>. This is done by giving each unique value an index from 1 to N and then mapping the range 0 to N into the continuous palette (adding 0 allows for safely using cyclical palettes). This palette should have as many distinct colors in it as possible, to maximize legibility of the result; 
+<code>HSV
+</code> is a good default choice.
+</p>
+<div class="admonition is-info">
+<header class="admonition-header">Note
+</header>
+<div class="admonition-body">
+<p>This is 
+<em>not
+</em> the best way to color categorical data. It is merely an adequate one for quick and dirty results. A manually created palette would be better for a low number of values, and for a high number of values, 
+<code>HSV
+</code> uses only a 1D subset of the 3D color space. It would be nice to offer a robust &quot;generate N colors most different from each other&quot; function... PRs are welcome :-)
+</p>
+</div>
+</div>
 </div>
 </section>
 </article>
@@ -1639,7 +1678,10 @@ end
 <pre>
 <code class="language-julia hljs">@kwdef struct SubGraph
     index::Integer
+    n_graphs::Integer
     gap::Maybe{AbstractFloat}
+    n_annotations::Integer = 0
+    annotation_size::Maybe{AnnotationSize} = nothing
 end
 </code>
 </pre>
@@ -1652,6 +1694,92 @@ end
 </code> is 
 <code>nothing
 </code> then the sub-graphs are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout parameters.
+</p>
+<p>This also supports 
+<code>n_annotations
+</code> with 
+<code>annotation_size
+</code>. If the index is negative, it is the (negated) index of an annotation.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AnnotationData" href="#SomeGraphs.Common.AnnotationData">
+<code>SomeGraphs.Common.AnnotationData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct AnnotationData &lt;: Validated
+    title::Maybe{AbstractString} = nothing
+    values::Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}} = Float32[]
+    hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    colors::ColorsConfiguration = ColorsConfiguration()
+end
+</code>
+</pre>
+<p>An annotation to attach to an axis. This applies to discrete axes (bars axis for a 
+<a href="bars.html#SomeGraphs.Bars.BarsGraph">
+<code>BarsGraph
+</code>
+</a> or the rows and/or columns of a 
+<code>HeatmapGraph
+</code>). The number of the 
+<code>values
+</code> and the optional 
+<code>hovers
+</code> must be the same as the number of entries in the axis.
+</p>
+<p>The 
+<code>colors
+</code> configuration is part of the data, because the color of annotations (in particular, categorical ones) is tightly coupled with the data.
+</p>
+<div class="admonition is-info">
+<header class="admonition-header">Note
+</header>
+<div class="admonition-body">
+<p>If you want to show the color scale of some annotation(s) using 
+<code>show_legend
+</code>, keep in mind Plotly places a limit of at most two color scales in a graph, because &quot;reasons&quot;.
+</p>
+</div>
+</div>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AnnotationSize" href="#SomeGraphs.Common.AnnotationSize">
+<code>SomeGraphs.Common.AnnotationSize
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct AnnotationSize
+    size::AbstractFloat = 0.05
+    gap::AbstractFloat = 0.005
+end
+</code>
+</pre>
+<p>Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.
 </p>
 </div>
 </section>
@@ -1692,6 +1820,18 @@ end
 <li>
 <a href="common.html#SomeGraphs.Common.AbstractGraphData">
 <code>SomeGraphs.Common.AbstractGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AnnotationData">
+<code>SomeGraphs.Common.AnnotationData
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AnnotationSize">
+<code>SomeGraphs.Common.AnnotationSize
 </code>
 </a>
 </li>
@@ -1804,6 +1944,12 @@ end
 </a>
 </li>
 <li>
+<a href="common.html#SomeGraphs.Common.categorical_palette">
+<code>SomeGraphs.Common.categorical_palette
+</code>
+</a>
+</li>
+<li>
 <a href="common.html#SomeGraphs.Common.save_graph">
 <code>SomeGraphs.Common.save_graph
 </code>
@@ -1862,7 +2008,7 @@ end
 <hr/>
 <p>This document was generated with 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.8.0. Using Julia version 1.11.3.
+</a> version 1.10.1. Using Julia version 1.11.5.
 </p>
 </section>
 <footer class="modal-card-foot">

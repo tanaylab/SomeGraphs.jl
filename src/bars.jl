@@ -26,38 +26,47 @@ import ..Utilities.Maybe
         value_axis::AxisConfiguration = AxisConfiguration()
         value_bands::BandsConfiguration = BandsConfiguration()
         values_orientation::ValuesOrientation = VerticalValues
-        bars_color::Maybe{AbstractString} = nothing
-        bars_gap::Real = 0.05,
+        bars_colors::ColorsConfiguration = ColorsConfiguration()
+        bars_gap::Real = 0.02,
+        bars_annotations::AnnotationSize = AnnotationSize()
     end
 
 Configure a graph for showing a single series of bars.
 
 By default the values are the `y` axis (`VerticalValues`). You can flip the axes using the `values_orientation`. You can
-specify bands for this axis using `value_bands`. The `bars_gap` is the fraction of white space between bars (0 for no
-gap, must be less than 1). The `bars_colors` is used to control the color of the bars (if not specified, chosen
-automatically by Plotly), in combination with the data bar colors (if any).
+specify bands for this axis using `value_bands`. The `bars_gap` is added between the graps, and is in the usual
+inconvenient units of fractions of the total graph size. The `bars_colors` is used to control the color of the bars (if
+not specified, chosen automatically by Plotly), in combination with the data bar colors (if any).
 """
 @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
-    bars_color::Maybe{AbstractString} = nothing
-    bars_gap::Real = 0.05
+    bars_colors::ColorsConfiguration = ColorsConfiguration()
+    bars_gap::Real = 0.02
+    bars_annotations::AnnotationSize = AnnotationSize()
 end
 
 function Validations.validate(context::ValidationContext, configuration::BarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
     validate_field(context, "value_bands", configuration.value_bands)
-
-    validate_in(context, "bars_color") do
-        return validate_is_color(context, configuration.bars_color)
-    end
+    validate_field(context, "bars_annotations", configuration.bars_annotations)
+    validate_field(context, "bars_colors", configuration.bars_colors)
 
     validate_in(context, "bars_gap") do
         validate_is_at_least(context, configuration.bars_gap, 0)
         return validate_is_below(context, configuration.bars_gap, 1)
+    end
+
+    if configuration.bars_colors.show_legend && configuration.bars_colors.palette isa CategoricalColors
+        throw(
+            ArgumentError(
+                "can't specify $(location(context)).bars_colors.show_legend\n" *
+                "for a categorical $(location(context)).bars_colors.palette",
+            ),
+        )
     end
 
     return nothing
@@ -68,28 +77,34 @@ end
         figure_title::Maybe{AbstractString} = nothing
         bar_axis_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
+        bars_colors_title::Maybe{AbstractString} = nothing
         bars_values::AbstractVector{<:Real} = Float32[]
         bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        bars_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+        bars_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}} = nothing
         bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         value_bands::BandsData = BandsData()
+        bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     end
 
 The data for a graph of a single series of bars.
 
 By default, all the titles are empty. You can specify the overall `figure_title` as well as the `bars_axis_title` and
-`value_axis_title` for the axes, , and a name for each bar in `bars_names`. You can specify a color for each bar in
-`bars_colors`.
+`value_axis_title` for the axes, , and a name for each bar in `bars_names`. The `bars_colors` are optional; typically
+all bars have the same color.
+
+You can even add annotations to the bars.
 """
 @kwdef mutable struct BarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     bar_axis_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
+    bars_colors_title::Maybe{AbstractString} = nothing
     bars_values::AbstractVector{<:Real} = Float32[]
     bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-    bars_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+    bars_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
     bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     value_bands::BandsData = BandsData()
+    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
 
 function Validations.validate(context::ValidationContext, data::BarsGraphData)::Nothing
@@ -103,8 +118,10 @@ function Validations.validate(context::ValidationContext, data::BarsGraphData)::
 
     validate_vector_length(context, "bars_hovers", data.bars_hovers, "bars_values", n_bars)
 
-    validate_vector_entries(context, "bars_colors", data.bars_colors) do _, bars_color
-        validate_is_color(context, bars_color)
+    validate_vector_entries(context, "bars_annotations", data.bars_annotations) do _, bars_annotation
+        validate(context, bars_annotation)
+        validate_vector_length(context, "values", bars_annotation.values, "bars_values", n_bars)
+        validate_vector_length(context, "hovers", bars_annotation.hovers, "bars_values", n_bars)
         return nothing
     end
 
@@ -163,11 +180,24 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
         graph.configuration.value_axis,
     )
 
+    validate_colors(
+        ValidationContext(["graph.data.bars_colors"]),
+        graph.data.bars_colors,
+        ValidationContext(["graph.configuration.bars_colors"]),
+        graph.configuration.bars_colors,
+    )
+
     validate_graph_bands(
         "value_bands",
         graph.configuration.value_bands,
         graph.data.value_bands,
         graph.configuration.value_axis,
+    )
+
+    validate_axis_sizes(;
+        axis_name = "value",
+        annotation_size = graph.configuration.bars_annotations,
+        n_annotations = length(graph.data.bars_annotations),
     )
 
     return nothing
@@ -180,21 +210,37 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     implicit_values_range = MaybeRange()
 
+    next_colors_scale_index = [1]
+    colors = configured_colors(;
+        colors_configuration = graph.configuration.bars_colors,
+        colors_title = graph.data.bars_colors_title,
+        colors_values = graph.data.bars_colors,
+        next_colors_scale_index,
+    )
+
     push_bar_trace!(;
         traces,
         graph,
         values = graph.data.bars_values,
-        color = prefer_data(graph.data.bars_colors, graph.configuration.bars_color),
+        color = prefer_data(colors.final_colors_values, colors.colors_configuration.fixed),
         hovers = graph.data.bars_hovers,
         names = graph.data.bars_names,
+        show_in_legend = false,
         implicit_values_range,
+        colors_scale_index = colors.colors_scale_index,
     )
+
+    has_legend_only_traces = [false]
+    annotations_colors = push_annotations_traces(; traces, graph, next_colors_scale_index, has_legend_only_traces)
 
     layout = bars_layout(;
         graph,
         has_tick_names = graph.data.bars_names !== nothing,
-        show_legend = false,
+        has_legend = false,
         implicit_values_range,
+        colors,
+        annotations_colors,
+        has_legend_only_traces,
     )
 
     return plotly_figure(traces, layout)
@@ -206,6 +252,7 @@ end
         value_axis::AxisConfiguration = AxisConfiguration()
         values_orientation::ValuesOrientation = VerticalValues
         bars_gap::Maybe{Real} = nothing
+        bars_annotations::AnnotationSize = AnnotationSize(),
         series_gap::Maybe{Real} = nothing
         stacking::Maybe{Stacking} = nothing
     end
@@ -222,7 +269,8 @@ then the gaps will be the same size as the graphs. If neither is specified, then
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
-    bars_gap::Real = 0.05
+    bars_gap::Real = 0.02
+    bars_annotations::AnnotationSize = AnnotationSize()
     series_gap::Maybe{Real} = nothing
     stacking::Maybe{Stacking} = nothing
 end
@@ -230,6 +278,7 @@ end
 function Validations.validate(context::ValidationContext, configuration::SeriesBarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
+    validate_field(context, "bars_annotations", configuration.bars_annotations)
 
     validate_in(context, "bars_gap") do
         validate_is_at_least(context, configuration.bars_gap, 0)
@@ -242,7 +291,10 @@ function Validations.validate(context::ValidationContext, configuration::SeriesB
     end
 
     if configuration.stacking !== nothing && configuration.series_gap !== nothing
-        throw(ArgumentError("can't specify both $(location(context)).stacking and $(location(context)).series_gap"))
+        throw(ArgumentError("""
+                            can't specify both $(location(context)).stacking
+                            and $(location(context)).series_gap
+                            """))
     end
 
     return nothing
@@ -256,6 +308,7 @@ end
         series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}()
         bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
         series_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         series_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
         series_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -277,6 +330,7 @@ All the bars of each series have the same color. If the `series_names` are speci
     series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}()
     bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     series_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     series_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
     series_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -300,6 +354,13 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
 
     validate_vector_length(context, "bars_names", data.bars_names, "series_bars_values[*]", n_bars)
     validate_vector_length(context, "bars_hovers", data.bars_hovers, "series_bars_values[*]", n_bars)
+
+    validate_vector_entries(context, "bars_annotations", data.bars_annotations) do _, bars_annotation
+        validate(context, bars_annotation)
+        validate_vector_length(context, "values", bars_annotation.values, "series_bars_values[*]", n_bars)
+        validate_vector_length(context, "hovers", bars_annotation.hovers, "series_bars_values[*]", n_bars)
+        return nothing
+    end
 
     validate_vector_length(context, "series_names", data.series_names, "series_bars_values", n_series)
     validate_vector_length(context, "series_colors", data.series_colors, "series_bars_values", n_series)
@@ -397,6 +458,14 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         )
     end
 
+    validate_axis_sizes(;
+        axis_name = "value",
+        graphs_gap = graph.configuration.series_gap,
+        n_graphs = n_series,
+        annotation_size = graph.configuration.bars_annotations,
+        n_annotations = length(graph.data.bars_annotations),
+    )
+
     return nothing
 end
 
@@ -419,6 +488,8 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         specific_scaled_ranges = Vector{MaybeRange}(undef, n_series)
     end
 
+    show_in_legend = graph.data.series_names !== nothing && graph.configuration.series_gap === nothing
+
     for series_index in 1:n_series
         if graph.data.series_hovers === nothing
             hovers = graph.data.bars_hovers
@@ -438,12 +509,16 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         scaled_values = push_bar_trace!(;
             traces,
             graph,
-            sub_graph = SubGraph(; index = series_index, n_graphs = n_series, gap = graph.configuration.series_gap),
+            sub_graph = SubGraph(;
+                index = series_index,
+                n_graphs = n_series,
+                graphs_gap = graph.configuration.series_gap,
+            ),
             name = prefer_data(graph.data.series_names, series_index, nothing),
             values = graph.data.series_bars_values[series_index],
             color = prefer_data(graph.data.series_colors, series_index, nothing),
             hovers,
-            show_legend = graph.data.series_names !== nothing && graph.configuration.series_gap === nothing,
+            show_in_legend,
             names = graph.data.bars_names,
             implicit_values_range,
         )
@@ -487,12 +562,25 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         implicit_values_range = common_implicit_values_range
     end
 
+    next_colors_scale_index = [1]
+    has_legend_only_traces = [false]
+    annotations_colors = push_annotations_traces(;
+        traces,
+        graph,
+        n_graphs = n_series,
+        graphs_gap = graph.configuration.series_gap,
+        next_colors_scale_index,
+        has_legend_only_traces,
+    )
+
     layout = bars_layout(;
         graph,
         has_tick_names = graph.data.bars_names !== nothing,
-        show_legend = graph.data.series_names !== nothing && graph.configuration.series_gap === nothing,
+        has_legend = show_in_legend,
         implicit_values_range,
         specific_scaled_ranges,
+        annotations_colors,
+        has_legend_only_traces,
     )
 
     return plotly_figure(traces, layout)
@@ -502,21 +590,22 @@ function push_bar_trace!(;
     traces::Vector{GenericTrace},
     graph::Union{BarsGraph, SeriesBarsGraph},
     values::AbstractVector{<:Real},
-    color::Maybe{Union{AbstractVector{<:AbstractString}, AbstractString}} = nothing,
+    color::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractString}} = nothing,
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     name::Maybe{AbstractString} = nothing,
     sub_graph::Maybe{SubGraph} = nothing,
-    show_legend::Bool = false,
+    show_in_legend::Bool = false,
     implicit_values_range::MaybeRange,
+    colors_scale_index::Maybe{Integer} = nothing,
 )::AbstractVector{<:AbstractFloat}
+    xaxis, x0, yaxis, y0 = plotly_sub_graph_axes(sub_graph, graph.configuration.values_orientation)
+
     scaled_values = scale_axis_values(graph.configuration.value_axis, values; clamp = false)
     if eltype(scaled_values) <: Integer
         scaled_values = Float32.(scaled_values)
     end
     collect_range!(implicit_values_range, scaled_values)
-
-    xaxis, x0, yaxis, y0 = plotly_sub_graph_axes(sub_graph, graph.configuration.values_orientation)
 
     if names === nothing
         names = ["Bar $(index)" for index in 1:length(scaled_values)]
@@ -546,21 +635,143 @@ function push_bar_trace!(;
             name,
             orientation = orientation,
             marker_color = color,
+            marker_coloraxis = plotly_coloraxis(colors_scale_index),
             customdata = hovers,
             hovertemplate = hovers === nothing ? nothing : "%{customdata}<extra></extra>",
-            showlegend = show_legend,
+            showlegend = show_in_legend,
         ),
     )
 
     return scaled_values
 end
 
+function push_annotations_traces(;
+    traces::Vector{GenericTrace},
+    graph::Union{BarsGraph, SeriesBarsGraph},
+    n_graphs::Integer = 1,
+    graphs_gap::Maybe{Real} = nothing,
+    next_colors_scale_index::AbstractVector{<:Integer},
+    has_legend_only_traces::AbstractVector{Bool},
+)::Maybe{AbstractVector{ConfiguredColors}}
+    return ConfiguredColors[
+        push_annotation_traces!(;
+            traces,
+            graph,
+            n_graphs,
+            graphs_gap,
+            annotation_index,
+            annotation_data = annotation_data,
+            next_colors_scale_index,
+            has_legend_only_traces,
+        ) for (annotation_index, annotation_data) in enumerate(graph.data.bars_annotations)
+    ]
+end
+
+function push_annotation_traces!(;
+    traces::Vector{GenericTrace},
+    graph::Union{BarsGraph, SeriesBarsGraph},
+    n_graphs::Integer,
+    graphs_gap::Maybe{Real},
+    annotation_index::Integer,
+    annotation_data::AnnotationData,
+    next_colors_scale_index::AbstractVector{<:Integer},
+    has_legend_only_traces::AbstractVector{Bool},
+)::ConfiguredColors
+    colors = configured_colors(;
+        colors_configuration = annotation_data.colors,
+        colors_title = annotation_data.title,
+        colors_values = annotation_data.values,
+        next_colors_scale_index,
+    )
+
+    sub_graph = SubGraph(;
+        index = -annotation_index,
+        n_graphs,
+        graphs_gap,
+        n_annotations = length(graph.data.bars_annotations),
+        annotation_size = graph.configuration.bars_annotations,
+    )
+
+    if colors.show_in_legend && colors.colors_configuration.palette isa CategoricalColors
+        legend_group = "Annotation$(annotation_index)"
+        for (index, (value, color)) in enumerate(colors.colors_configuration.palette)
+            has_legend_only_traces[1] = true
+            push_annotation_legend_trace!(;
+                traces,
+                color,
+                value,
+                legend_group,
+                legend_group_title = index == 1 ? annotation_data.title : nothing,
+            )
+        end
+        push_bar_trace!(;
+            traces,
+            graph,
+            values = fill(1.0, length(annotation_data.values)),
+            color = colors.final_colors_values,
+            hovers = annotation_data.hovers,
+            names = graph.data.bars_names,
+            name = annotation_data.title,
+            sub_graph,
+            show_in_legend = false,
+            implicit_values_range = MaybeRange(),
+            colors_scale_index = colors.colors_scale_index,
+        )
+    else
+        push_bar_trace!(;
+            traces,
+            graph,
+            values = fill(1.0, length(annotation_data.values)),
+            color = colors.final_colors_values,
+            hovers = annotation_data.hovers,
+            names = graph.data.bars_names,
+            name = annotation_data.title,
+            sub_graph,
+            show_in_legend = false,
+            implicit_values_range = MaybeRange(),
+            colors_scale_index = colors.colors_scale_index,
+        )
+    end
+
+    return colors
+end
+
+function push_annotation_legend_trace!(;
+    traces::Vector{GenericTrace},
+    color::AbstractString,
+    value::AbstractString,
+    legend_group::Maybe{AbstractString},
+    legend_group_title::Maybe{AbstractString},
+)::Nothing
+    push!(
+        traces,
+        bar(;
+            x = [0],
+            y = [0],
+            x0 = 0,
+            y0 = 0,
+            xaxis = "x99",
+            yaxis = "y99",
+            name = value,
+            marker_color = color,
+            legendgroup = legend_group,
+            legendgrouptitle_text = legend_group_title,
+            showlegend = true,
+        ),
+    )
+
+    return nothing
+end
+
 function bars_layout(;
     graph::Union{BarsGraph, SeriesBarsGraph},
     has_tick_names::Bool,
-    show_legend::Bool,
+    has_legend::Bool,
     implicit_values_range::MaybeRange,
     specific_scaled_ranges::Maybe{AbstractVector{MaybeRange}} = nothing,
+    colors::Maybe{ConfiguredColors} = nothing,
+    annotations_colors::Maybe{AbstractVector{ConfiguredColors}},
+    has_legend_only_traces::AbstractVector{Bool},
 )::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
@@ -572,6 +783,9 @@ function bars_layout(;
     end
 
     shapes = Shape[]
+
+    n_annotations = length(graph.data.bars_annotations)
+    annotation_size = graph.configuration.bars_annotations
 
     if graph isa BarsGraph
         if graph.configuration.values_orientation == VerticalValues
@@ -593,8 +807,11 @@ function bars_layout(;
         end
     end
 
-    layout =
-        plotly_layout(graph.configuration.figure; title = graph.data.figure_title, showlegend = show_legend, shapes)
+    if annotations_colors !== nothing
+        has_legend = has_legend || any([annotation_colors.show_in_legend for annotation_colors in annotations_colors])
+    end
+
+    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
 
     if graph isa SeriesBarsGraph
         if graph.configuration.stacking == StackValues
@@ -604,6 +821,11 @@ function bars_layout(;
         else
             @assert graph.configuration.stacking === nothing
         end
+        n_graphs = length(graph.data.series_bars_values)
+        graphs_gap = graph.configuration.series_gap
+    else
+        n_graphs = 1
+        graphs_gap = nothing
     end
 
     if graph.configuration.values_orientation == VerticalValues
@@ -626,12 +848,14 @@ function bars_layout(;
             graph.configuration.value_axis;
             title = graph.data.value_axis_title,
             range = scaled_values_range,
+            domain = plotly_sub_graph_domain(
+                SubGraph(; index = 1, n_graphs, graphs_gap, n_annotations, annotation_size),
+            ),
         )
     else
         @assert graph isa SeriesBarsGraph
         @assert specific_scaled_ranges !== nothing
-        n_series = length(graph.data.series_bars_values)
-        for series_index in 1:n_series
+        for series_index in 1:n_graphs
             set_layout_axis!(  # NOJET
                 layout,
                 series_index == 1 ? "$(value_axis_letter)axis" : "$(value_axis_letter)axis$(series_index)",
@@ -639,14 +863,65 @@ function bars_layout(;
                 title = prefer_data(graph.data.series_names, series_index, graph.data.value_axis_title),
                 range = specific_scaled_ranges[series_index],
                 domain = plotly_sub_graph_domain(
-                    SubGraph(; index = series_index, n_graphs = n_series, gap = graph.configuration.series_gap),
+                    SubGraph(; index = series_index, n_graphs, graphs_gap, n_annotations, annotation_size),
                 ),
             )
         end
     end
 
+    next_colors_scale_offset_index = [Int(has_legend)]
+
     layout["$(bar_axis_letter)axis"] =
         Dict(:showgrid => false, :showticklabels => has_tick_names, :title => graph.data.bar_axis_title)
+
+    if colors !== nothing && colors.colors_scale_index !== nothing
+        set_layout_colorscale!(;
+            layout,
+            colors_scale_index = colors.colors_scale_index,
+            colors_configuration = colors.colors_configuration,
+            scaled_colors_palette = colors.scaled_colors_palette,
+            range = colors.final_colors_range,
+            title = colors.colors_title,
+            show_scale = colors.show_scale,
+            next_colors_scale_offset_index,
+            colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+        )
+    end
+
+    if annotations_colors !== nothing
+        for (annotation_index, annotation_colors) in enumerate(annotations_colors)
+            annotation_data = graph.data.bars_annotations[annotation_index]
+            set_layout_axis!(  # NOJET
+                layout,
+                "$(value_axis_letter)axis$(n_graphs + annotation_index)",
+                graph.configuration.value_axis;
+                title = annotation_data.title,
+                range = Range(; minimum = 0, maximum = 1),
+                domain = plotly_sub_graph_domain(
+                    SubGraph(; index = -annotation_index, n_graphs, graphs_gap, n_annotations, annotation_size),
+                ),
+                is_annotation = true,
+            )
+            if annotation_colors.colors_scale_index !== nothing
+                set_layout_colorscale!(;
+                    layout,
+                    colors_scale_index = annotation_colors.colors_scale_index,
+                    colors_configuration = annotation_data.colors,
+                    scaled_colors_palette = annotation_colors.scaled_colors_palette,
+                    range = nothing,
+                    annotation_data.title,
+                    show_scale = annotation_colors.show_scale,
+                    next_colors_scale_offset_index,
+                    colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+                )
+            end
+        end
+    end
+
+    if has_legend_only_traces[1]
+        layout["xaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
+        layout["yaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
+    end
 
     return layout
 end

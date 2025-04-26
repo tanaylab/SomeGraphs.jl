@@ -113,7 +113,7 @@ end
 function Validations.validate(
     context::ValidationContext,
     distribution_configuration::DistributionConfiguration,
-)::Maybe{AbstractString}
+)::Nothing
     if distribution_configuration.show_outliers &&
        !(distribution_configuration.style in (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution))
         throw(
@@ -312,7 +312,7 @@ end
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
-        distributions_priorities::Maybe{AbstractVector} = nothing
+        distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
 The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall
@@ -320,8 +320,8 @@ The data for a multiple distributions graph. By default, all the titles are empt
 `distributions_colors` vectors must contain the same number of elements as the number of vectors in the
 `distributions_values`.
 
-If `distributions_priorities` are specified, we reorder the lines in ascending priority order. This allows controlling
-which distributions will appear on top of the others.
+If `distributions_order` are specified, we reorder the distributions accordingly. This allows controlling which
+distributions will appear on top of the others.
 """
 @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -329,7 +329,7 @@ which distributions will appear on top of the others.
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
-    distributions_priorities::Maybe{AbstractVector} = nothing
+    distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionsGraphData)::Maybe{AbstractString}
@@ -353,8 +353,8 @@ function Validations.validate(context::ValidationContext, data::DistributionsGra
     )
     validate_vector_length(
         context,
-        "distributions_priorities",
-        data.distributions_priorities,
+        "distributions_order",
+        data.distributions_order,
         "distributions_values",
         n_distributions,
     )
@@ -508,7 +508,7 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
         ),
     )
 
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, show_legend = false))
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend = false))
 end
 
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
@@ -518,11 +518,7 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
 
     n_distributions = length(graph.data.distributions_values)
 
-    if graph.data.distributions_priorities === nothing
-        distributions_indices = 1:n_distributions
-    else
-        distributions_indices = sortperm(graph.data.distributions_priorities)
-    end
+    distributions_indices = prefer_data(graph.data.distributions_order, 1:n_distributions)
 
     traces = [
         distribution_trace(;
@@ -535,16 +531,16 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
             sub_graph = SubGraph(;
                 index = position,
                 n_graphs = n_distributions,
-                gap = graph.configuration.distributions_gap,
+                graphs_gap = graph.configuration.distributions_gap,
             ),
             implicit_values_range,
             scale_group = "Distributions",
         ) for (position, index) in enumerate(distributions_indices)
     ]
 
-    show_legend = graph.configuration.distributions_gap === nothing && graph.data.distributions_names !== nothing
+    has_legend = graph.configuration.distributions_gap === nothing && graph.data.distributions_names !== nothing
 
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, show_legend))
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend))
 end
 
 function distribution_trace(;
@@ -677,7 +673,7 @@ end
 function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
     implicit_values_range::MaybeRange,
-    show_legend::Bool,
+    has_legend::Bool,
 )::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
@@ -713,8 +709,7 @@ function distribution_layout(;
         end
     end
 
-    layout =
-        plotly_layout(graph.configuration.figure; title = graph.data.figure_title, showlegend = show_legend, shapes)
+    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
 
     set_layout_axis!(
         layout,
@@ -813,7 +808,7 @@ function distribution_layout(;
                     end,
                     range = cumulative_range,
                     domain = plotly_sub_graph_domain(
-                        SubGraph(; index, n_graphs = n_distributions, gap = distributions_gap),
+                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
                     ),
                 )
             end
@@ -840,7 +835,7 @@ function distribution_layout(;
                         prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
                     end,  # NOJET
                     :domain => plotly_sub_graph_domain(
-                        SubGraph(; index, n_graphs = n_distributions, gap = distributions_gap),
+                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
                     ),
                 )
             end

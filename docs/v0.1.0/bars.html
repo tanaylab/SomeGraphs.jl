@@ -251,11 +251,13 @@
     figure_title::Maybe{AbstractString} = nothing
     bar_axis_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
+    bars_colors_title::Maybe{AbstractString} = nothing
     bars_values::AbstractVector{&lt;:Real} = Float32[]
     bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
-    bars_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    bars_colors::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}} = nothing
     bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     value_bands::BandsData = BandsData()
+    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
 </code>
 </pre>
@@ -269,9 +271,11 @@ end
 <code>value_axis_title
 </code> for the axes, , and a name for each bar in 
 <code>bars_names
-</code>. You can specify a color for each bar in 
+</code>. The 
 <code>bars_colors
-</code>.
+</code> are optional; typically all bars have the same color.
+</p>
+<p>You can even add annotations to the bars.
 </p>
 </div>
 </section>
@@ -297,8 +301,9 @@ end
     value_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
-    bars_color::Maybe{AbstractString} = nothing
-    bars_gap::Real = 0.05,
+    bars_colors::ColorsConfiguration = ColorsConfiguration()
+    bars_gap::Real = 0.02,
+    bars_annotations::AnnotationSize = AnnotationSize()
 end
 </code>
 </pre>
@@ -314,7 +319,7 @@ end
 <code>value_bands
 </code>. The 
 <code>bars_gap
-</code> is the fraction of white space between bars (0 for no gap, must be less than 1). The 
+</code> is added between the graps, and is in the usual inconvenient units of fractions of the total graph size. The 
 <code>bars_colors
 </code> is used to control the color of the bars (if not specified, chosen automatically by Plotly), in combination with the data bar colors (if any).
 </p>
@@ -334,13 +339,40 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='T4JKQ387w0' class='' style=';'>
+<div id='RLvOrc0FOw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("T4JKQ387w0")
-    const plot_obj = {"data": [{"orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"],"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"plot_bgcolor":"white","showlegend":false,"bargap":0.05,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("RLvOrc0FOw")
+    const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Annotations:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = bars_graph(; bars_values = collect(0:10) .* 10)
+graph.data.bars_annotations = [AnnotationData(; title = &quot;score&quot;, values = collect(0:10) .% 3)]
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='TYYFe9Ozbu' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("TYYFe9Ozbu")
+    const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","y0":0.0,"name":"score","yaxis":"y2","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":false,"title":"score","range":[0.0,1.0],"domain":[0.0,0.05]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -444,6 +476,7 @@ to_documenter(graph.figure)
     series_bars_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Vector{Float32}}()
     bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
+    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     series_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     series_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     series_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
@@ -498,6 +531,7 @@ end
     value_axis::AxisConfiguration = AxisConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
     bars_gap::Maybe{Real} = nothing
+    bars_annotations::AnnotationSize = AnnotationSize(),
     series_gap::Maybe{Real} = nothing
     stacking::Maybe{Stacking} = nothing
 end
@@ -535,13 +569,40 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='eI920CXFj3' class='' style=';'>
+<div id='Hu62DQqENT' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("eI920CXFj3")
-    const plot_obj = {"data": [{"yaxis":"y","orientation":"v","y0":0.0,"x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"],"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar"},{"yaxis":"y","orientation":"v","y0":0.0,"x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"],"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar"}], "layout": {"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"plot_bgcolor":"white","showlegend":false,"bargap":0.05,"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("Hu62DQqENT")
+    const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","y0":0.0,"yaxis":"y","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","y0":0.0,"yaxis":"y","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Annotations:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = series_bars_graph(; series_bars_values = [collect(0:10) .* 5, collect(0:10) .^ 2])
+graph.data.bars_annotations = [AnnotationData(; title = &quot;score&quot;, values = collect(0:10) .% 3)]
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='DX4UKgGNwW' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("DX4UKgGNwW")
+    const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","y0":0.0,"yaxis":"y","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","y0":0.0,"yaxis":"y","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","y0":0.0,"name":"score","yaxis":"y3","orientation":"v","x":["Bar 1","Bar 2","Bar 3","Bar 4","Bar 5","Bar 6","Bar 7","Bar 8","Bar 9","Bar 10","Bar 11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":false,"title":"score","range":[0.0,1.0],"domain":[0.0,0.05]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,0.5275]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -668,7 +729,7 @@ to_documenter(graph.figure)
 <hr/>
 <p>This document was generated with 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.8.0. Using Julia version 1.11.3.
+</a> version 1.10.1. Using Julia version 1.11.5.
 </p>
 </section>
 <footer class="modal-card-foot">

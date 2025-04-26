@@ -14,34 +14,34 @@ nested_test("common") do
 
         nested_test("left") do
             margins.left = -1
-            @test_throws dedent("""
-                too low margins.left: -1
-                is not at least: 0
-            """) validate(context, margins)
+            @test_throws chomp("""
+                               ArgumentError: too low margins.left: -1
+                               is not at least: 0
+                               """) validate(context, margins)
         end
 
         nested_test("right") do
             margins.right = -1
-            @test_throws dedent("""
-                too low margins.right: -1
-                is not at least: 0
-            """) validate(context, margins)
+            @test_throws chomp("""
+                               ArgumentError: too low margins.right: -1
+                               is not at least: 0
+                               """) validate(context, margins)
         end
 
         nested_test("top") do
             margins.top = -1
-            @test_throws dedent("""
-                too low margins.top: -1
-                is not at least: 0
-            """) validate(context, margins)
+            @test_throws chomp("""
+                               ArgumentError: too low margins.top: -1
+                               is not at least: 0
+                               """) validate(context, margins)
         end
 
         nested_test("bottom") do
             margins.bottom = -1
-            @test_throws dedent("""
-                too low margins.bottom: -1
-                is not at least: 0
-            """) validate(context, margins)
+            @test_throws chomp("""
+                               ArgumentError: too low margins.bottom: -1
+                               is not at least: 0
+                               """) validate(context, margins)
         end
     end
 
@@ -52,26 +52,26 @@ nested_test("common") do
 
         nested_test("margins") do
             figure.margins.left = -1
-            @test_throws dedent("""
-                too low figure.margins.left: -1
-                is not at least: 0
-            """) validate(context, figure)
+            @test_throws chomp("""
+                               ArgumentError: too low figure.margins.left: -1
+                               is not at least: 0
+                               """) validate(context, figure)
         end
 
         nested_test("width") do
             figure.width = 0
-            @test_throws dedent("""
-                too low figure.width: 0
-                is not above: 0
-            """) validate(context, figure)
+            @test_throws chomp("""
+                               ArgumentError: too low figure.width: 0
+                               is not above: 0
+                               """) validate(context, figure)
         end
 
         nested_test("height") do
             figure.height = 0
-            @test_throws dedent("""
-                too low figure.height: 0
-                is not above: 0
-            """) validate(context, figure)
+            @test_throws chomp("""
+                               ArgumentError: too low figure.height: 0
+                               is not above: 0
+                               """) validate(context, figure)
         end
     end
 
@@ -82,18 +82,18 @@ nested_test("common") do
 
         nested_test("smallest") do
             size.smallest = 0
-            @test_throws dedent("""
-                too low size.smallest: 0
-                is not above: 0
-            """) validate(context, size)
+            @test_throws chomp("""
+                               ArgumentError: too low size.smallest: 0
+                               is not above: 0
+                               """) validate(context, size)
         end
 
         nested_test("span") do
             size.span = 0
-            @test_throws dedent("""
-                too low size.span: 0
-                is not above: 0
-            """) validate(context, size)
+            @test_throws chomp("""
+                               ArgumentError: too low size.span: 0
+                               is not above: 0
+                               """) validate(context, size)
         end
     end
 
@@ -109,42 +109,42 @@ nested_test("common") do
 
         nested_test("~fixed") do
             sizes.fixed = 0
-            @test_throws dedent("""
-                too low sizes.fixed: 0
-                is not above: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: too low sizes.fixed: 0
+                               is not above: 0
+                               """) validate(context, sizes)
         end
 
         nested_test("!fixed") do
             sizes.fixed = 1
             sizes.log_scale = true
-            @test_throws dedent("""
-                can't specify both sizes.fixed
-                and any of sizes.(minimum,maximum,log_scale,log_regularization,span)
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: can't specify both sizes.fixed
+                               and any of sizes.(minimum,maximum,log_scale,log_regularization,span)
+                               """) validate(context, sizes)
         end
 
         nested_test("range") do
             sizes.minimum = 0
             sizes.maximum = 0
-            @test_throws dedent("""
-                range low limit sizes.minimum: 0
-                is not below high limit sizes.maximum: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: range low limit sizes.minimum: 0
+                               is not below high limit sizes.maximum: 0
+                               """) validate(context, sizes)
         end
 
         nested_test("~log_regularization") do
             sizes.log_regularization = 1
-            @test_throws "non-zero non-log sizes.log_regularization: 1" validate(context, sizes)
+            @test_throws "ArgumentError: non-zero non-log sizes.log_regularization: 1" validate(context, sizes)
         end
 
         nested_test("log_regularization") do
             sizes.log_scale = true
             sizes.log_regularization = -1
-            @test_throws dedent("""
-                too low sizes.log_regularization: -1
-                is not at least: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: too low sizes.log_regularization: -1
+                               is not at least: 0
+                               """) validate(context, sizes)
         end
 
         nested_test("log_regularization+minimum") do
@@ -152,10 +152,10 @@ nested_test("common") do
             sizes.log_regularization = 1
 
             sizes.minimum = -3
-            @test_throws dedent("""
-                too low sizes.(minimum + log_regularization): -2
-                is not above: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: too low sizes.(minimum + log_regularization): -2
+                               is not above: 0
+                               """) validate(context, sizes)
 
             sizes.minimum = 2
             return validate(context, sizes)
@@ -166,10 +166,10 @@ nested_test("common") do
             sizes.log_regularization = 1
 
             sizes.maximum = -3
-            @test_throws dedent("""
-                too low sizes.(maximum + log_regularization): -2
-                is not above: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: too low sizes.(maximum + log_regularization): -2
+                               is not above: 0
+                               """) validate(context, sizes)
 
             sizes.maximum = 2
             return validate(context, sizes)
@@ -177,18 +177,18 @@ nested_test("common") do
 
         nested_test("smallest") do
             sizes.smallest = 0
-            @test_throws dedent("""
-                too low sizes.smallest: 0
-                is not above: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: too low sizes.smallest: 0
+                               is not above: 0
+                               """) validate(context, sizes)
         end
 
         nested_test("span") do
             sizes.span = 0
-            @test_throws dedent("""
-                too low sizes.span: 0
-                is not above: 0
-            """) validate(context, sizes)
+            @test_throws chomp("""
+                               ArgumentError: too low sizes.span: 0
+                               is not above: 0
+                               """) validate(context, sizes)
         end
     end
 
@@ -200,24 +200,24 @@ nested_test("common") do
         nested_test("range") do
             axis.minimum = 0
             axis.maximum = 0
-            @test_throws dedent("""
-                range low limit axis.minimum: 0
-                is not below high limit axis.maximum: 0
-            """) validate(context, axis)
+            @test_throws chomp("""
+                               ArgumentError: range low limit axis.minimum: 0
+                               is not below high limit axis.maximum: 0
+                               """) validate(context, axis)
         end
 
         nested_test("~log_regularization") do
             axis.log_regularization = 1
-            @test_throws "non-zero non-log axis.log_regularization: 1" validate(context, axis)
+            @test_throws "ArgumentError: non-zero non-log axis.log_regularization: 1" validate(context, axis)
         end
 
         nested_test("log_regularization") do
             axis.log_scale = Log10Scale
             axis.log_regularization = -1
-            @test_throws dedent("""
-                too low axis.log_regularization: -1
-                is not at least: 0
-            """) validate(context, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low axis.log_regularization: -1
+                               is not at least: 0
+                               """) validate(context, axis)
         end
 
         nested_test("log_regularization+minimum") do
@@ -225,10 +225,10 @@ nested_test("common") do
             axis.log_regularization = 1
 
             axis.minimum = -3
-            @test_throws dedent("""
-                too low axis.(minimum + log_regularization): -2
-                is not above: 0
-            """) validate(context, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low axis.(minimum + log_regularization): -2
+                               is not above: 0
+                               """) validate(context, axis)
 
             axis.minimum = 2
             return validate(context, axis)
@@ -239,10 +239,10 @@ nested_test("common") do
             axis.log_regularization = 1
 
             axis.maximum = -3
-            @test_throws dedent("""
-                too low axis.(maximum + log_regularization): -2
-                is not above: 0
-            """) validate(context, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low axis.(maximum + log_regularization): -2
+                               is not above: 0
+                               """) validate(context, axis)
 
             axis.maximum = 2
             return validate(context, axis)
@@ -256,15 +256,15 @@ nested_test("common") do
 
         nested_test("width") do
             line.width = 0
-            @test_throws dedent("""
-                too low line.width: 0
-                is not above: 0
-            """) validate(context, line)
+            @test_throws chomp("""
+                               ArgumentError: too low line.width: 0
+                               is not above: 0
+                               """) validate(context, line)
         end
 
         nested_test("color") do
             line.color = "Oobleck"
-            @test_throws "invalid line.color: Oobleck" validate(context, line)
+            @test_throws "ArgumentError: invalid line.color: Oobleck" validate(context, line)
         end
     end
 
@@ -277,18 +277,18 @@ nested_test("common") do
         nested_test("offsets") do
             axis.log_scale = Log2Scale
             band.offset = -1
-            @test_throws dedent("""
-                too low root.band.offset: -1
-                is not above: 0
-            """) validate(context, band, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low root.band.offset: -1
+                               is not above: 0
+                               """) validate(context, band, axis)
         end
 
         nested_test("line") do
             band.line.width = 0
-            @test_throws dedent("""
-                too low root.band.line.width: 0
-                is not above: 0
-            """) validate(context, band, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low root.band.line.width: 0
+                               is not above: 0
+                               """) validate(context, band, axis)
         end
     end
 
@@ -300,10 +300,10 @@ nested_test("common") do
 
         nested_test("low") do
             bands.low.line.width = 0
-            @test_throws dedent("""
-                too low root.bands.low.line.width: 0
-                is not above: 0
-            """) validate(context, bands, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low root.bands.low.line.width: 0
+                               is not above: 0
+                               """) validate(context, bands, axis)
         end
 
         nested_test("fill") do
@@ -330,45 +330,45 @@ nested_test("common") do
 
         nested_test("middle") do
             bands.middle.line.width = 0
-            @test_throws dedent("""
-                too low root.bands.middle.line.width: 0
-                is not above: 0
-            """) validate(context, bands, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low root.bands.middle.line.width: 0
+                               is not above: 0
+                               """) validate(context, bands, axis)
         end
 
         nested_test("high") do
             bands.high.line.width = 0
-            @test_throws dedent("""
-                too low root.bands.high.line.width: 0
-                is not above: 0
-            """) validate(context, bands, axis)
+            @test_throws chomp("""
+                               ArgumentError: too low root.bands.high.line.width: 0
+                               is not above: 0
+                               """) validate(context, bands, axis)
         end
 
         nested_test("low-middle") do
             bands.low.offset = 0
             bands.middle.offset = 0
-            @test_throws dedent("""
-                range low limit root.bands.low.offset: 0
-                is not below high limit root.bands.middle.offset: 0
-            """) validate(context, bands, axis)
+            @test_throws chomp("""
+                               ArgumentError: range low limit root.bands.low.offset: 0
+                               is not below high limit root.bands.middle.offset: 0
+                               """) validate(context, bands, axis)
         end
 
         nested_test("middle-high") do
             bands.middle.offset = 0
             bands.high.offset = 0
-            @test_throws dedent("""
-                range low limit root.bands.middle.offset: 0
-                is not below high limit root.bands.high.offset: 0
-            """) validate(context, bands, axis)
+            @test_throws chomp("""
+                               ArgumentError: range low limit root.bands.middle.offset: 0
+                               is not below high limit root.bands.high.offset: 0
+                               """) validate(context, bands, axis)
         end
 
         nested_test("low-high") do
             bands.low.offset = 0
             bands.high.offset = 0
-            @test_throws dedent("""
-                range low limit root.bands.low.offset: 0
-                is not below high limit root.bands.high.offset: 0
-            """) validate(context, bands, axis)
+            @test_throws chomp("""
+                               ArgumentError: range low limit root.bands.low.offset: 0
+                               is not below high limit root.bands.high.offset: 0
+                               """) validate(context, bands, axis)
         end
     end
 
@@ -377,21 +377,21 @@ nested_test("common") do
 
         nested_test("r") do
             return test_same_palette(
-                SomeGraphs.Common.reverse_color_scale(palette),
+                SomeGraphs.Common.reverse_colors_scale(palette),
                 [(0, "blue"), (0.5, "green"), (1, "red")],
             )
         end
 
         nested_test("z") do
             return test_same_palette(
-                SomeGraphs.Common.zero_color_scale(palette, 0.2, 0.4),
+                SomeGraphs.Common.zero_colors_scale(palette, 0.2, 0.4),
                 [(0.0, "white"), (0.2 - 1e-6, "white"), (0.2, "#7C7300"), (1 / 3, "green"), (1.0, "blue")],
             )
         end
 
         nested_test("c") do
             return test_same_palette(
-                SomeGraphs.Common.center_color_scale(palette, 0.2, 0.4),
+                SomeGraphs.Common.center_colors_scale(palette, 0.2, 0.4),
                 [
                     (0, "red"),
                     (0.4, "#AA6500"),
@@ -405,16 +405,21 @@ nested_test("common") do
 
         nested_test("o") do
             return test_same_palette(
-                SomeGraphs.Common.overflow_color_scale(palette, 0.2, "magenta"),
+                SomeGraphs.Common.overflow_colors_scale(palette, 0.2, "magenta"),
                 [(0, "red"), (0.4, "green"), (0.8, "blue"), (0.8 + 1e-6, "magenta"), (1, "magenta")],
             )
         end
 
         nested_test("u") do
             return test_same_palette(
-                SomeGraphs.Common.underflow_color_scale(palette, 0.2, "magenta"),
+                SomeGraphs.Common.underflow_colors_scale(palette, 0.2, "magenta"),
                 [(0, "magenta"), (0.2 - 1e-6, "magenta"), (0.2, "red"), (0.6, "green"), (1, "blue")],
             )
+        end
+
+        nested_test("categorical") do
+            @test categorical_palette(["c", "b", "a", "a", "d"]) ==
+                  Dict("c" => "#8404FF", "b" => "#00DFD6", "a" => "#9AFF00", "d" => "#FF0000")
         end
     end
 
@@ -431,34 +436,34 @@ nested_test("common") do
 
             nested_test("invalid") do
                 colors.fixed = "Oobleck"
-                @test_throws "invalid colors.fixed: Oobleck" validate(context, colors)
+                @test_throws "ArgumentError: invalid colors.fixed: Oobleck" validate(context, colors)
             end
 
             nested_test("legend") do
                 colors.fixed = "red"
                 colors.show_legend = true
-                @test_throws dedent("""
-                    can't specify both colors.fixed
-                    and colors.show_legend
-                """) validate(context, colors)
+                @test_throws chomp("""
+                                   ArgumentError: can't specify both colors.fixed
+                                   and colors.show_legend
+                                   """) validate(context, colors)
             end
 
             nested_test("precent") do
                 colors.fixed = "red"
                 colors.axis.percent = true
-                @test_throws dedent("""
-                    can't specify both colors.fixed
-                    and any of colors.axis.(minimum,maximum,log_scale,percent)
-                """) validate(context, colors)
+                @test_throws chomp("""
+                                   ArgumentError: can't specify both colors.fixed
+                                   and any of colors.axis.(minimum,maximum,log_scale,percent)
+                                   """) validate(context, colors)
             end
 
             nested_test("palette") do
                 colors.fixed = "red"
                 colors.palette = "Viridis"
-                @test_throws dedent("""
-                    can't specify both colors.fixed
-                    and colors.palette
-                """) validate(context, colors)
+                @test_throws chomp("""
+                                   ArgumentError: can't specify both colors.fixed
+                                   and colors.palette
+                                   """) validate(context, colors)
             end
         end
 
@@ -467,7 +472,7 @@ nested_test("common") do
             validate(context, colors)
 
             colors.palette = "Oobleck_r"
-            @test_throws "invalid colors.palette: Oobleck" validate(context, colors)
+            @test_throws "ArgumentError: invalid colors.palette: Oobleck" validate(context, colors)
         end
 
         nested_test("cached") do
@@ -566,38 +571,38 @@ nested_test("common") do
 
             nested_test("invalid") do
                 colors.palette = "Reds_z:0.2:magenta"
-                @test_throws "invalid colors.palette: Reds_z:0.2:magenta" validate(context, colors)
+                @test_throws "ArgumentError: invalid colors.palette: Reds_z:0.2:magenta" validate(context, colors)
             end
         end
 
         nested_test("order") do
             colors.palette = [0 => "red", 1 => "green", 1 => "blue", 0 => "red"]
-            @test_throws dedent("""
-                palette value colors.palette[3].value: 1
-                is above value colors.palette[4].value: 0
-            """) validate(context, colors)
+            @test_throws chomp("""
+                               ArgumentError: palette value colors.palette[3].value: 1
+                               is above value colors.palette[4].value: 0
+                               """) validate(context, colors)
         end
 
         nested_test("color") do
             colors.palette = [0 => "red", 1 => "green", 1 => "Oobleck"]
-            @test_throws "invalid colors.palette[3].color: Oobleck" validate(context, colors)
+            @test_throws "ArgumentError: invalid colors.palette[3].color: Oobleck" validate(context, colors)
         end
 
         nested_test("range") do
             colors.palette = [0 => "red", 0 => "green", 0 => "blue"]
-            @test_throws dedent("""
-                range low limit colors.palette[1].value: 0
-                is not below high limit colors.palette[end].value: 0
-            """) validate(context, colors)
+            @test_throws chomp("""
+                               ArgumentError: range low limit colors.palette[1].value: 0
+                               is not below high limit colors.palette[end].value: 0
+                               """) validate(context, colors)
         end
 
         nested_test("log_regularization+cmin") do
             colors.palette = [0 => "red", 1 => "green", 1 => "blue"]
             colors.axis.log_scale = Log10Scale
-            @test_throws dedent("""
-                too low colors.(palette[1].value + axis.log_regularization): 0
-                is not above: 0
-            """) validate(context, colors)
+            @test_throws chomp("""
+                               ArgumentError: too low colors.(palette[1].value + axis.log_regularization): 0
+                               is not above: 0
+                               """) validate(context, colors)
 
             colors.axis.log_regularization = 1
             return validate(context, colors)
@@ -611,21 +616,21 @@ nested_test("common") do
 
             nested_test("empty") do
                 colors.palette = Dict{String, String}()
-                @test_throws "empty dict colors.palette" validate(context, colors)
+                @test_throws "ArgumentError: empty dict colors.palette" validate(context, colors)
             end
 
             nested_test("invalid") do
                 colors.palette = Dict(["baz" => "Oobleck"])
-                @test_throws "invalid colors.palette[baz].color: Oobleck" validate(context, colors)
+                @test_throws "ArgumentError: invalid colors.palette[baz].color: Oobleck" validate(context, colors)
             end
 
             nested_test("percent") do
                 colors.palette = Dict(["foo" => "red", "bar" => "green"])
                 colors.axis.percent = true
-                @test_throws dedent("""
-                    can't specify both categorical colors.palette
-                    and any of colors.axis.(minimum,maximum,log_scale,percent)
-                """) validate(context, colors)
+                @test_throws chomp("""
+                                   ArgumentError: can't specify both categorical colors.palette
+                                   and any of colors.axis.(minimum,maximum,log_scale,percent)
+                                   """) validate(context, colors)
             end
         end
     end

@@ -8,6 +8,10 @@ SomeGraphs.Utilities.graph_to_figure
 SomeGraphs.Utilities.plotly_figure
 SomeGraphs.Utilities.validate_colors
 SomeGraphs.Utilities.fill_color
+SomeGraphs.Utilities.ConfiguredColors
+SomeGraphs.Utilities.configured_colors
+SomeGraphs.Utilities.ConfiguredAnnotation
+SomeGraphs.Utilities.validate_axis_sizes
 SomeGraphs.Utilities.validate_values
 SomeGraphs.Utilities.scale_axis_value
 SomeGraphs.Utilities.scale_axis_values
@@ -20,6 +24,7 @@ SomeGraphs.Utilities.set_layout_colorscale!
 SomeGraphs.Utilities.plotly_line_dash
 SomeGraphs.Utilities.plotly_sub_graph_axes
 SomeGraphs.Utilities.plotly_sub_graph_domain
+SomeGraphs.Utilities.plotly_coloraxis
 SomeGraphs.Utilities.validate_graph_bands
 SomeGraphs.Utilities.push_horizontal_bands_shapes
 SomeGraphs.Utilities.push_vertical_bands_shapes
