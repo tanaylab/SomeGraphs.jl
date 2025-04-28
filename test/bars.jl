@@ -132,7 +132,8 @@ nested_test("bars") do
                     ]
 
                     nested_test("()") do
-                        return test_html(graph, "bars.$(orientation_name).categorical.html")
+                        test_html(graph, "bars.$(orientation_name).categorical.html")
+                        return nothing
                     end
 
                     nested_test("legend") do
@@ -140,6 +141,22 @@ nested_test("bars") do
                         test_html(graph, "bars.$(orientation_name).categorical.legend.html")
                         return nothing
                     end
+                end
+
+                nested_test("both") do
+                    graph.data.bars_annotations = [
+                        AnnotationData(; title = "score", values = [1, 0.5, 0, 1]),
+                        AnnotationData(;
+                            title = "is",
+                            values = ["yes", "maybe", "no", "yes"],
+                            colors = ColorsConfiguration(;
+                                palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                            ),
+                        ),
+                    ]
+                    graph.data.bars_names = ["Foo", "Bar", "Baz", "Vaz"]
+                    test_html(graph, "bars.$(orientation_name).both.html")
+                    return nothing
                 end
             end
         end
@@ -235,6 +252,87 @@ nested_test("series_bars") do
                     test_html(graph, "series_bars.$(orientation_name).gap.names.html")
                     return nothing
                 end
+
+                nested_test("annotations") do
+                    nested_test("continuous") do
+                        graph.data.bars_annotations =
+                            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+
+                        nested_test("()") do
+                            test_html(graph, "series_bars.$(orientation_name).gap.continuous.html")
+                            return nothing
+                        end
+
+                        nested_test("legend") do
+                            graph.data.bars_annotations[1].colors.show_legend = true
+                            test_html(graph, "series_bars.$(orientation_name).gap.continuous.legend.html")
+                            return nothing
+                        end
+                    end
+
+                    nested_test("categorical") do
+                        graph.data.bars_annotations = [
+                            AnnotationData(;
+                                title = "is",
+                                values = [
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                    "maybe",
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                    "maybe",
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                ],
+                                colors = ColorsConfiguration(;
+                                    palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                                ),
+                            ),
+                        ]
+
+                        nested_test("()") do
+                            test_html(graph, "series_bars.$(orientation_name).gap.categorical.html")
+                            return nothing
+                        end
+
+                        nested_test("legend") do
+                            graph.data.bars_annotations[1].colors.show_legend = true
+                            test_html(graph, "series_bars.$(orientation_name).gap.categorical.legend.html")
+                            return nothing
+                        end
+                    end
+
+                    nested_test("both") do
+                        graph.data.bars_annotations = [
+                            AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                            AnnotationData(;
+                                title = "is",
+                                values = [
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                    "maybe",
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                    "maybe",
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                ],
+                                colors = ColorsConfiguration(;
+                                    palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                                ),
+                            ),
+                        ]
+                        graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                        test_html(graph, "series_bars.$(orientation_name).gap.both.html")
+                        return nothing
+                    end
+                end
             end
 
             nested_test("hovers") do
@@ -254,6 +352,87 @@ nested_test("series_bars") do
                 nested_test("series") do
                     graph.data.series_hovers = ["Foo", "Bar"]
                     test_html(graph, "series_bars.$(orientation_name).hovers.series.html")
+                    return nothing
+                end
+            end
+
+            nested_test("annotations") do
+                nested_test("continuous") do
+                    graph.data.bars_annotations =
+                        [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+
+                    nested_test("()") do
+                        test_html(graph, "series_bars.$(orientation_name).continuous.html")
+                        return nothing
+                    end
+
+                    nested_test("legend") do
+                        graph.data.bars_annotations[1].colors.show_legend = true
+                        test_html(graph, "series_bars.$(orientation_name).continuous.legend.html")
+                        return nothing
+                    end
+                end
+
+                nested_test("categorical") do
+                    graph.data.bars_annotations = [
+                        AnnotationData(;
+                            title = "is",
+                            values = [
+                                "yes",
+                                "maybe",
+                                "no",
+                                "maybe",
+                                "yes",
+                                "maybe",
+                                "no",
+                                "maybe",
+                                "yes",
+                                "maybe",
+                                "no",
+                            ],
+                            colors = ColorsConfiguration(;
+                                palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                            ),
+                        ),
+                    ]
+
+                    nested_test("()") do
+                        test_html(graph, "series_bars.$(orientation_name).categorical.html")
+                        return nothing
+                    end
+
+                    nested_test("legend") do
+                        graph.data.bars_annotations[1].colors.show_legend = true
+                        test_html(graph, "series_bars.$(orientation_name).categorical.legend.html")
+                        return nothing
+                    end
+                end
+
+                nested_test("both") do
+                    graph.data.bars_annotations = [
+                        AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                        AnnotationData(;
+                            title = "is",
+                            values = [
+                                "yes",
+                                "maybe",
+                                "no",
+                                "maybe",
+                                "yes",
+                                "maybe",
+                                "no",
+                                "maybe",
+                                "yes",
+                                "maybe",
+                                "no",
+                            ],
+                            colors = ColorsConfiguration(;
+                                palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                            ),
+                        ),
+                    ]
+                    graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                    test_html(graph, "series_bars.$(orientation_name).both.html")
                     return nothing
                 end
             end
@@ -330,7 +509,8 @@ nested_test("series_bars") do
                         ]
 
                         nested_test("()") do
-                            return test_html(graph, "series_bars.$(orientation_name).values.categorical.html")
+                            test_html(graph, "series_bars.$(orientation_name).values.categorical.html")
+                            return nothing
                         end
 
                         nested_test("legend") do
@@ -339,56 +519,32 @@ nested_test("series_bars") do
                             return nothing
                         end
                     end
-                end
-            end
 
-            nested_test("annotations") do
-                nested_test("continuous") do
-                    graph.data.bars_annotations =
-                        [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
-
-                    nested_test("()") do
-                        test_html(graph, "series_bars.$(orientation_name).continuous.html")
-                        return nothing
-                    end
-
-                    nested_test("legend") do
-                        graph.data.bars_annotations[1].colors.show_legend = true
-                        test_html(graph, "series_bars.$(orientation_name).continuous.legend.html")
-                        return nothing
-                    end
-                end
-
-                nested_test("categorical") do
-                    graph.data.bars_annotations = [
-                        AnnotationData(;
-                            title = "is",
-                            values = [
-                                "yes",
-                                "maybe",
-                                "no",
-                                "maybe",
-                                "yes",
-                                "maybe",
-                                "no",
-                                "maybe",
-                                "yes",
-                                "maybe",
-                                "no",
-                            ],
-                            colors = ColorsConfiguration(;
-                                palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                    nested_test("both") do
+                        graph.data.bars_annotations = [
+                            AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                            AnnotationData(;
+                                title = "is",
+                                values = [
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                    "maybe",
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                    "maybe",
+                                    "yes",
+                                    "maybe",
+                                    "no",
+                                ],
+                                colors = ColorsConfiguration(;
+                                    palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                                ),
                             ),
-                        ),
-                    ]
-
-                    nested_test("()") do
-                        return test_html(graph, "series_bars.$(orientation_name).categorical.html")
-                    end
-
-                    nested_test("legend") do
-                        graph.data.bars_annotations[1].colors.show_legend = true
-                        test_html(graph, "series_bars.$(orientation_name).categorical.legend.html")
+                        ]
+                        graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                        test_html(graph, "series_bars.values.$(orientation_name).both.html")
                         return nothing
                     end
                 end

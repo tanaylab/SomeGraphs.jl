@@ -85,6 +85,10 @@
 </a>
 </li>
 <li>
+<a class="tocitem" href="heatmaps.html">Heatmaps
+</a>
+</li>
+<li>
 <a class="tocitem" href="utilities.html">Utilities
 </a>
 </li>
@@ -211,7 +215,8 @@
     value_axis_title::Maybe{AbstractString} = nothing,
     cumulative_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{&lt;:Real} = Float32[],
-    distribution_name::Maybe{AbstractString} = nothing],
+    distribution_name::Maybe{AbstractString} = nothing,
+    configuration::DistributionGraphConfiguration = DistributionGraphConfiguration()]
 )::DistributionGraph
 </code>
 </pre>
@@ -223,7 +228,11 @@
 <a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
 <code>DistributionGraphData
 </code>
-</a> fields.
+</a> fields (with an optional 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
+<code>DistributionGraphConfiguration
+</code>
+</a>).
 </p>
 </div>
 </section>
@@ -294,13 +303,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='iBMzuofqKT' class='' style=';'>
+<div id='nfjxyokAvm' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("iBMzuofqKT")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("nfjxyokAvm")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -323,13 +332,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='CaMfFoey0O' class='' style=';'>
+<div id='3wVTUD7fyy' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("CaMfFoey0O")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Distribution name","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"title":"Values axis","range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"showticklabels":false,"title":"Distribution name"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("3wVTUD7fyy")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Distribution name","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03],"title":"Values axis"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"showticklabels":false,"title":"Distribution name"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -350,13 +359,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='AbPfOPlDcL' class='' style=';'>
+<div id='fDjzjp9Hgp' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("AbPfOPlDcL")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"fillcolor":"FF000080","line":{"color":"red"},"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("fDjzjp9Hgp")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"fillcolor":"FF000080","line":{"color":"red"},"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -469,13 +478,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Q520JdQjYH' class='' style=';'>
+<div id='irgTtJxi8O' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Q520JdQjYH")
-    const plot_obj = {"data": [{"boxpoints":false,"y":[0,0,1,1,1,3],"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","side":"positive"}], "layout": {"showlegend":false,"xaxis":{"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("irgTtJxi8O")
+    const plot_obj = {"data": [{"boxpoints":false,"y":[0.0,0.0,1.0,1.0,1.0,3.0],"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","side":"positive"}], "layout": {"showlegend":false,"xaxis":{"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -546,13 +555,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='eLn8811KgH' class='' style=';'>
+<div id='g0c6Vb9Qvw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("eLn8811KgH")
-    const plot_obj = {"data": [{"boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("g0c6Vb9Qvw")
+    const plot_obj = {"data": [{"boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -573,13 +582,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='n05oHEioEu' class='' style=';'>
+<div id='ncDU4o041v' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("n05oHEioEu")
-    const plot_obj = {"data": [{"boxpoints":false,"type":"box","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("ncDU4o041v")
+    const plot_obj = {"data": [{"boxpoints":false,"type":"box","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -601,13 +610,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='V9rk0eSkak' class='' style=';'>
+<div id='XDc3fQXad9' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("V9rk0eSkak")
-    const plot_obj = {"data": [{"boxpoints":"outliers","type":"box","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("XDc3fQXad9")
+    const plot_obj = {"data": [{"boxpoints":"outliers","type":"box","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -628,13 +637,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='yOsnTQ40NU' class='' style=';'>
+<div id='UOCcoPOwt2' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("yOsnTQ40NU")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("UOCcoPOwt2")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -655,13 +664,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='RtCZ86FEPr' class='' style=';'>
+<div id='Xp8B34ZiXc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("RtCZ86FEPr")
-    const plot_obj = {"data": [{"boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("Xp8B34ZiXc")
+    const plot_obj = {"data": [{"boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -682,13 +691,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='kmIr4BLhPp' class='' style=';'>
+<div id='u1xMuQK8CE' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("kmIr4BLhPp")
-    const plot_obj = {"data": [{"boxpoints":false,"type":"histogram","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("u1xMuQK8CE")
+    const plot_obj = {"data": [{"boxpoints":false,"type":"histogram","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -709,13 +718,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ROZN7VYdo2' class='' style=';'>
+<div id='goNqFP0YMd' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ROZN7VYdo2")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"fillcolor":"FF000080","line":{"color":"red"},"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("goNqFP0YMd")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"fillcolor":"FF000080","line":{"color":"red"},"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -737,13 +746,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XqF9EH07Vq' class='' style=';'>
+<div id='VXStJQYt7H' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XqF9EH07Vq")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"fillcolor":"transparent","line":{"width":4},"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("VXStJQYt7H")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"fillcolor":"transparent","line":{"width":4},"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -764,13 +773,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='S2aAPuSwBn' class='' style=';'>
+<div id='if6nG7lj2A' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("S2aAPuSwBn")
-    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"shapes":[{"line":{"color":null,"dash":null},"x0":2.0,"type":"line","y0":0,"y1":1,"yref":"y domain","xref":"x","x1":2.0}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("if6nG7lj2A")
+    const plot_obj = {"data": [{"side":"positive","boxpoints":false,"type":"violin","name":"Trace","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"shapes":[{"line":{"color":null,"dash":null},"x0":2.0,"type":"line","y0":0,"y1":1,"yref":"y domain","xref":"x","x1":2.0}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -835,6 +844,7 @@ to_documenter(graph.figure)
     show_ticks::Bool = true
     show_grid::Bool = true
     grid_color::AbstractString = &quot;lightgrey&quot;
+    title::Maybe{AbstractString} = nothing
 end
 </code>
 </pre>
@@ -868,13 +878,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='KGEpaXkiI5' class='' style=';'>
+<div id='fV0c9deMoO' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("KGEpaXkiI5")
-    const plot_obj = {"data": [{"mode":"lines","y":[0.16666667,0.33333334,0.5,0.8333333,1.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("fV0c9deMoO")
+    const plot_obj = {"data": [{"mode":"lines","y":[0.16666667,0.33333334,0.5,0.8333333,1.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -897,13 +907,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='4e2YCZ9zGb' class='' style=';'>
+<div id='hy4B0apZCG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("4e2YCZ9zGb")
-    const plot_obj = {"data": [{"mode":"lines","y":[16.666666,33.333332,50.0,83.333336,100.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,101.0],"ticksuffix":"<sub>%</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("hy4B0apZCG")
+    const plot_obj = {"data": [{"mode":"lines","y":[16.666666,33.333332,50.0,83.333336,100.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,101.0],"ticksuffix":"<sub>%</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -926,13 +936,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='l1fBnTUXGv' class='' style=';'>
+<div id='SLyFqnzOsL' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("l1fBnTUXGv")
-    const plot_obj = {"data": [{"mode":"lines","y":[1.0,2.0,3.0,5.0,6.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,7.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("SLyFqnzOsL")
+    const plot_obj = {"data": [{"mode":"lines","y":[1.0,2.0,3.0,5.0,6.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,7.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -955,13 +965,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FTQVWeYX0Q' class='' style=';'>
+<div id='Ahyy1s5X0C' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FTQVWeYX0Q")
-    const plot_obj = {"data": [{"mode":"lines","y":[1.0,0.8333333,0.6666667,0.33333334,0.16666667],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0,0,1,1,3]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("Ahyy1s5X0C")
+    const plot_obj = {"data": [{"mode":"lines","y":[1.0,0.8333333,0.6666667,0.33333334,0.16666667],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1021,7 +1031,8 @@ to_documenter(graph.figure)
     value_axis_title::Maybe{AbstractString} = nothing,
     distributions_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
-    distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing],
+    distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration()]
 )::DistributionsGraph
 </code>
 </pre>
@@ -1033,7 +1044,11 @@ to_documenter(graph.figure)
 <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
 <code>DistributionsGraphData
 </code>
-</a> fields.
+</a> fields (with an optional 
+<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration">
+<code>DistributionsGraphConfiguration
+</code>
+</a>).
 </p>
 </div>
 </section>
@@ -1096,13 +1111,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='3wANmcVots' class='' style=';'>
+<div id='zVvxu5N3t4' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("3wANmcVots")
-    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y","box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4,4,3,3,3,1]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("zVvxu5N3t4")
+    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1176,13 +1191,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='z5THpiAfUU' class='' style=';'>
+<div id='THXLDAKGYr' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("z5THpiAfUU")
-    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","name":"Foo","yaxis":"y","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]},{"side":"positive","scalegroup":"Distributions","name":"Bar","yaxis":"y2","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[4,4,3,3,3,1]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"title":"Values title","range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"title":"Foo","domain":[0.0,0.475]},"yaxis2":{"title":"Bar","domain":[0.525,1.0]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("THXLDAKGYr")
+    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"name":"Foo","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","name":"Bar","yaxis":"y2","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04],"title":"Values title"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"title":"Foo","domain":[0.0,0.475]},"yaxis2":{"title":"Bar","domain":[0.525,1.0]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1203,13 +1218,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='U29hbJNtsi' class='' style=';'>
+<div id='yAhIE2gi56' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("U29hbJNtsi")
-    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y","box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4,4,3,3,3,1]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("yAhIE2gi56")
+    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1230,13 +1245,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='9P6rHMubqm' class='' style=';'>
+<div id='8QJdN7UKlh' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("9P6rHMubqm")
-    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y","box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","y0":0.0,"points":false,"yaxis":"y","box":{"visible":false},"spanmode":"hard","x":[4,4,3,3,3,1]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("8QJdN7UKlh")
+    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","points":false,"box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1260,13 +1275,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='SlaiQL2B7B' class='' style=';'>
+<div id='kmJ6Dtr0Ao' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("SlaiQL2B7B")
-    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","name":"Foo","yaxis":"y","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]},{"side":"positive","scalegroup":"Distributions","name":"Bar","yaxis":"y","boxpoints":false,"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[4,4,3,3,3,1]}], "layout": {"showlegend":true,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0,"itemdoubleclick":false},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("kmJ6Dtr0Ao")
+    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","name":"Foo","points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","boxpoints":false,"type":"violin","name":"Bar","points":false,"box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":true,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0,"itemdoubleclick":false},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1289,13 +1304,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='fnGFwiFSgL' class='' style=';'>
+<div id='lrBxz7N9v6' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("fnGFwiFSgL")
-    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","fillcolor":"FF000080","yaxis":"y","boxpoints":false,"line":{"color":"red"},"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[0,0,1,1,1,3]},{"side":"positive","scalegroup":"Distributions","fillcolor":"00800080","yaxis":"y2","boxpoints":false,"line":{"color":"green"},"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[4,4,3,3,3,1]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("lrBxz7N9v6")
+    const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","fillcolor":"FF000080","boxpoints":false,"line":{"color":"red"},"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","fillcolor":"00800080","yaxis":"y2","boxpoints":false,"line":{"color":"green"},"type":"violin","y0":0.0,"points":false,"box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1319,13 +1334,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='tcduiz8JHz' class='' style=';'>
+<div id='fnuPe59iqZ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("tcduiz8JHz")
-    const plot_obj = {"data": [{"xaxis":"x","scalegroup":"Distributions","x0":0.0,"fillcolor":"FF000080","boxpoints":"outliers","line":{"color":"red"},"y":[0,0,1,1,1,3],"type":"box","points":false,"box":{"visible":true},"spanmode":"hard"},{"xaxis":"x2","scalegroup":"Distributions","x0":0.0,"fillcolor":"FF000080","boxpoints":"outliers","line":{"color":"red"},"y":[4,4,3,3,3,1],"type":"box","points":false,"box":{"visible":true},"spanmode":"hard"}], "layout": {"showlegend":false,"xaxis":{"domain":[0.0,0.475]},"paper_bgcolor":"white","xaxis2":{"domain":[0.525,1.0]},"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("fnuPe59iqZ")
+    const plot_obj = {"data": [{"scalegroup":"Distributions","boxpoints":"outliers","x0":0.0,"fillcolor":"FF000080","line":{"color":"red"},"y":[0.0,0.0,1.0,1.0,1.0,3.0],"type":"box","points":false,"box":{"visible":true},"spanmode":"hard"},{"xaxis":"x2","scalegroup":"Distributions","x0":0.0,"fillcolor":"FF000080","boxpoints":"outliers","line":{"color":"red"},"y":[4.0,4.0,3.0,3.0,3.0,1.0],"type":"box","points":false,"box":{"visible":true},"spanmode":"hard"}], "layout": {"showlegend":false,"xaxis":{"domain":[0.0,0.475]},"paper_bgcolor":"white","xaxis2":{"domain":[0.525,1.0]},"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%

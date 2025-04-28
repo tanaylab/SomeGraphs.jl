@@ -16,14 +16,14 @@ nested_test("utilities") do
         values = [1, nothing]
 
         nested_test("default") do
-            @test scale_axis_values(AxisConfiguration(), values) === values
+            @test scale_axis_values(AxisConfiguration(), values) == [1.0, nothing]
         end
 
         nested_test("log10") do
             values = [1, 10, nothing]
             return test_same_values(
                 scale_axis_values(AxisConfiguration(; log_scale = Log10Scale), values),
-                [0, 1, nothing],
+                [0.0, 1.0, nothing],
             )
         end
 
@@ -31,7 +31,7 @@ nested_test("utilities") do
             values = [1, 2, nothing]
             return test_same_values(
                 scale_axis_values(AxisConfiguration(; log_scale = Log2Scale), values),
-                [0, 1, nothing],
+                [0.0, 1.0, nothing],
             )
         end
 
@@ -41,7 +41,7 @@ nested_test("utilities") do
             end
 
             nested_test("log10") do
-                values = [1, sqrt(10), 10, nothing]
+                values = [1.0, sqrt(10), 10.0, nothing]
                 return test_same_values(
                     scale_axis_values(AxisConfiguration(; log_scale = Log10Scale), values),
                     [0.0, 0.5, 1.0, nothing],
@@ -49,7 +49,7 @@ nested_test("utilities") do
             end
 
             nested_test("log2") do
-                values = [1, sqrt(2), 2, nothing]
+                values = [1.0, sqrt(2), 2.0, nothing]
                 return test_same_values(
                     scale_axis_values(AxisConfiguration(; log_scale = Log2Scale), values),
                     [0.0, 0.5, 1.0, nothing],

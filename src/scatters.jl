@@ -301,10 +301,12 @@ PointsGraph = Graph{PointsGraphData, PointsGraphConfiguration}
         edges_order::Maybe{AbstractVector{<:Integer}} = nothing,
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
-        diagonal_bands::BandsData = BandsData()]
+        diagonal_bands::BandsData = BandsData(),
+        configuration::PointsGraphConfiguration = PointsGraphConfiguration()]
     )::PointsGraph
 
-Create a [`PointsGraph`](@ref) by initializing only the [`PointsGraphData`](@ref) fields.
+Create a [`PointsGraph`](@ref) by initializing only the [`PointsGraphData`](@ref) fields (with an optional
+[`PointsGraphConfiguration`](@ref)).
 """
 function points_graph(;
     figure_title::Maybe{AbstractString} = nothing,
@@ -332,6 +334,7 @@ function points_graph(;
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
+    configuration::PointsGraphConfiguration = PointsGraphConfiguration(),
 )::PointsGraph
     return PointsGraph(
         PointsGraphData(;
@@ -361,7 +364,7 @@ function points_graph(;
             horizontal_bands,
             diagonal_bands,
         ),
-        PointsGraphConfiguration(),
+        configuration,
     )
 end
 
@@ -471,7 +474,7 @@ end
     range::Range
 end
 
-function scaled_data(axis_configuration::AxisConfiguration, values::Maybe{AbstractVector{<:Real}})::ScaledData
+function scaled_data(axis_configuration::AxisConfiguration, values::AbstractVector{<:Real})::ScaledData
     scaled_values = scale_axis_values(axis_configuration, values)
     implicit_scaled_range = Range(; minimum = minimum(scaled_values), maximum = maximum(scaled_values))
     scaled_range = final_scaled_range(implicit_scaled_range, axis_configuration)
@@ -545,7 +548,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     configured_points = configured_scatters(;
         legend_group = "Points",
         scatters_configuration = graph.configuration.points,
-        colors_title = graph.data.points_colors_title,
+        colors_title = prefer_data(graph.data.points_colors_title, graph.configuration.points.colors.title),
         colors_values = graph.data.points_colors,
         next_colors_scale_index,
         size_values = graph.data.points_sizes,
@@ -556,7 +559,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     configured_borders = configured_scatters(;
         legend_group = "Borders",
         scatters_configuration = graph.configuration.borders,
-        colors_title = graph.data.borders_colors_title,
+        colors_title = prefer_data(graph.data.borders_colors_title, graph.configuration.borders.colors.title),
         colors_values = graph.data.borders_colors,
         next_colors_scale_index,
         size_values = graph.data.borders_sizes,
@@ -581,7 +584,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     configured_edges = configured_scatters(;
         legend_group = "Edges",
         scatters_configuration = graph.configuration.edges,
-        colors_title = graph.data.edges_colors_title,
+        colors_title = prefer_data(graph.data.edges_colors_title, graph.configuration.edges.colors.title),
         colors_values = graph.data.edges_colors,
         next_colors_scale_index,
         size_values = graph.data.edges_sizes,
@@ -855,7 +858,7 @@ function push_edge_traces!(;
                     legendgroup = show_in_legend ? legend_group : nothing,
                     legendgrouptitle_text = show_in_legend ? legend_group_title : nothing,
                     showlegend = show_in_legend,
-                    coloraxis = plotly_coloraxis(configured_edges.colors.colors_scale_index),
+                    coloraxis = plotly_axis("color", configured_edges.colors.colors_scale_index),
                 ),
             )
             legend_group_title = nothing
@@ -988,7 +991,7 @@ function push_points_trace!(;
                 configured_points.pixel_size,
             ),
             marker_color = prefer_data(color, configured_points.colors.colors_configuration.fixed),
-            marker_coloraxis = plotly_coloraxis(configured_points.colors.colors_scale_index),
+            marker_coloraxis = plotly_axis("color", configured_points.colors.colors_scale_index),
             marker_showscale = configured_points.colors.show_scale,
             legendgroup = show_in_legend ? legend_group : nothing,
             legendgrouptitle_text = show_in_legend && is_first ? configured_points.colors.colors_title : nothing,
@@ -1091,10 +1094,12 @@ LineGraph = Graph{LineGraphData, LineGraphConfiguration}
         points_ys::AbstractVector{<:Real} = Float32[],
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
-        diagonal_bands::BandsData = BandsData()]
+        diagonal_bands::BandsData = BandsData(),
+        configuration::LineGraphConfiguration = LineGraphConfiguration()]
     )::LineGraph
 
-Create a [`LineGraph`](@ref) by initializing only the [`LineGraphData`](@ref) fields.
+Create a [`LineGraph`](@ref) by initializing only the [`LineGraphData`](@ref) fields (with an optional
+[`LineGraphConfiguration`](@ref)).
 """
 function line_graph(;
     figure_title::Maybe{AbstractString} = nothing,
@@ -1105,6 +1110,7 @@ function line_graph(;
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
+    configuration::LineGraphConfiguration = LineGraphConfiguration(),
 )::LineGraph
     return LineGraph(
         LineGraphData(;
@@ -1117,7 +1123,7 @@ function line_graph(;
             horizontal_bands,
             diagonal_bands,
         ),
-        LineGraphConfiguration(),
+        configuration,
     )
 end
 
@@ -1369,10 +1375,12 @@ LinesGraph = Graph{LinesGraphData, LinesGraphConfiguration}
         lines_order::Maybe{<:AbstractVector{<:Integer}} = nothing
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
-        diagonal_bands::BandsData = BandsData()]
+        diagonal_bands::BandsData = BandsData(),
+        configuration::LinesGraphConfiguration = LinesGraphConfiguration()]
     )::LinesGraph
 
-Create a [`LinesGraph`](@ref) by initializing only the [`LinesGraphData`](@ref) fields.
+Create a [`LinesGraph`](@ref) by initializing only the [`LinesGraphData`](@ref) fields (with an optional
+[`LinesGraphConfiguration`](@ref)).
 """
 function lines_graph(;
     figure_title::Maybe{AbstractString} = nothing,
@@ -1390,6 +1398,7 @@ function lines_graph(;
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
+    configuration::LinesGraphConfiguration = LinesGraphConfiguration(),
 )::LinesGraph
     return LinesGraph(
         LinesGraphData(;
@@ -1409,7 +1418,7 @@ function lines_graph(;
             horizontal_bands,
             diagonal_bands,
         ),
-        LinesGraphConfiguration(),
+        configuration,
     )
 end
 
@@ -1796,7 +1805,7 @@ function scatters_layout(;
         layout,
         "xaxis",
         graph.configuration.x_axis;
-        title = graph.data.x_axis_title,
+        title = prefer_data(graph.data.x_axis_title, graph.configuration.x_axis.title),
         range = scaled_xs_range,
     )
 
@@ -1804,7 +1813,7 @@ function scatters_layout(;
         layout,
         "yaxis",
         graph.configuration.y_axis;
-        title = graph.data.y_axis_title,
+        title = prefer_data(graph.data.y_axis_title, graph.configuration.y_axis.title),
         range = scaled_ys_range,
     )
 

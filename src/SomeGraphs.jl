@@ -23,4 +23,7 @@ include("scatters.jl")
 include("bars.jl")
 @reexport using .Bars
 
+include("heatmaps.jl")
+@reexport using .Heatmaps
+
 end  # module

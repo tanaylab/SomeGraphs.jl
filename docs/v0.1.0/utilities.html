@@ -76,6 +76,10 @@
 <a class="tocitem" href="bars.html">Bar Plots
 </a>
 </li>
+<li>
+<a class="tocitem" href="heatmaps.html">Heatmaps
+</a>
+</li>
 <li class="is-active">
 <a class="tocitem" href="utilities.html">Utilities
 </a>
@@ -194,7 +198,7 @@
 </header>
 <div class="admonition-body">
 <p>This is replicated from 
-<code>DataAxesFormats
+<code>TanayLabUtilities
 </code> to avoid making it a dependency. We do not export it but use it extensively in the type signatures.
 </p>
 </div>
@@ -338,6 +342,13 @@ plotly_figure(traces::AbstractVector{&lt;:GenericTrace}, layout::Layout)::Plotly
     colors_configuration::ColorsConfiguration,
     mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
 )::Nothing
+validate_colors(
+    colors_data_context::ValidationContext,
+    colors_data::AbstractMatrix{&lt;:Real},
+    colors_configuration_context::ValidationContext,
+    colors_configuration::ColorsConfiguration,
+    mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+)::Nothing
 </code>
 </pre>
 <p>Validate that the 
@@ -436,7 +447,7 @@ end
 <code class="language-julia hljs">configured_colors(;
     colors_configuration::ColorsConfiguration,
     colors_title::Maybe{AbstractString},
-    colors_values::Maybe{Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}}},
+    colors_values::Maybe{Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}, AbstractMatrix{&lt;:Real}}},
     next_colors_scale_index::AbstractVector{&lt;:Integer},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::ConfiguredColors
@@ -593,7 +604,12 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
     axis_configuration::AxisConfiguration,
     values::Maybe{AbstractVector{&lt;:Maybe{Real}}};
     clamp::Bool = true
-)::Maybe{AbstractVector{&lt;:Maybe{Real}}}
+)::Maybe{AbstractVector{&lt;:Maybe{AbstractFloat}}}
+scale_axis_values(
+    axis_configuration::AxisConfiguration,
+    values::Maybe{AbstractMatrix{&lt;:Maybe{Real}}};
+    clamp::Bool = true
+)::Maybe{AbstractMatrix{&lt;:Maybe{AbstractFloat}}}
 </code>
 </pre>
 <p>Scale a vector of 
@@ -886,8 +902,8 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
-<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_coloraxis" href="#SomeGraphs.Utilities.plotly_coloraxis">
-<code>SomeGraphs.Utilities.plotly_coloraxis
+<a class="docstring-binding" id="SomeGraphs.Utilities.plotly_axis" href="#SomeGraphs.Utilities.plotly_axis">
+<code>SomeGraphs.Utilities.plotly_axis
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -898,12 +914,10 @@ scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::B
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">plotly_coloraxis(colors_scale_index::Maybe{Integer})::Maybe{AbstractString}
+<code class="language-julia hljs">plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false)::Maybe{AbstractString}
 </code>
 </pre>
-<p>Return the Plotly 
-<code>coloraxis
-</code> name for a given color scale index.
+<p>Return the Plotly axis name for a given index.
 </p>
 </div>
 </section>
@@ -1266,8 +1280,8 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.plotly_coloraxis">
-<code>SomeGraphs.Utilities.plotly_coloraxis
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis">
+<code>SomeGraphs.Utilities.plotly_axis
 </code>
 </a>
 </li>
@@ -1382,7 +1396,7 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </ul>
 </article>
 <nav class="docs-footer">
-<a class="docs-footer-prevpage" href="bars.html">« Bar Plots
+<a class="docs-footer-prevpage" href="heatmaps.html">« Heatmaps
 </a>
 <div class="flexbox-break">
 </div>

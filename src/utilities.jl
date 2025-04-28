@@ -13,7 +13,7 @@ export configured_colors
 export collect_range!
 export fill_color
 export final_scaled_range
-export plotly_coloraxis
+export plotly_axis
 export plotly_figure
 export plotly_layout
 export plotly_line_dash
@@ -40,7 +40,7 @@ using Reexport
 using ..Validations
 using ..Common
 
-import .Common.Maybe
+import .Validations.Maybe
 
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
@@ -139,6 +139,13 @@ end
     validate_colors(
         colors_data_context::ValidationContext,
         colors_data::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}},
+        colors_configuration_context::ValidationContext,
+        colors_configuration::ColorsConfiguration,
+        mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+    )::Nothing
+    validate_colors(
+        colors_data_context::ValidationContext,
+        colors_data::AbstractMatrix{<:Real},
         colors_configuration_context::ValidationContext,
         colors_configuration::ColorsConfiguration,
         mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
@@ -283,6 +290,42 @@ function validate_colors(
     return nothing
 end
 
+function validate_colors(
+    colors_data_context::ValidationContext,
+    colors_data::AbstractMatrix{<:Real},
+    colors_configuration_context::ValidationContext,
+    colors_configuration::ColorsConfiguration,
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+)::Nothing
+    @assert mask === nothing
+    if colors_configuration.axis.minimum !== nothing ||
+       colors_configuration.axis.maximum !== nothing ||
+       colors_configuration.axis.log_scale !== nothing ||
+       colors_configuration.axis.percent
+        if colors_configuration.axis.log_scale !== nothing
+            validate_matrix_entries(colors_data_context, "entries_colors", colors_data) do _, _, color
+                if colors_configuration.axis.minimum === nothing || color >= colors_configuration.axis.minimum
+                    validate_in(
+                        colors_data_context,
+                        "(value + $(location(colors_configuration_context)).axis.log_regularization)",
+                    ) do
+                        validate_is_above(colors_data_context, color + colors_configuration.axis.log_regularization, 0)
+                        return nothing
+                    end
+                end
+            end
+        end
+    end
+
+    if colors_configuration.palette isa AbstractString
+        lock(COLOR_SCALES_LOCK) do          # UNTESTED
+            @assert haskey(NAMED_COLOR_SCALES, colors_configuration.palette)
+        end
+    end
+
+    return nothing
+end
+
 """
     validate_values(
         values_data_context::ValidationContext,
@@ -329,7 +372,7 @@ function plotly_layout(
     figure_configuration::FigureConfiguration;
     title::Maybe{AbstractString},
     has_legend::Bool,
-    shapes::AbstractVector{Shape},
+    shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
     return Layout(;  # NOJET
         title,
@@ -366,38 +409,52 @@ function set_layout_axis!(
     axis::AbstractString,
     axis_configuration::AxisConfiguration;
     title::Maybe{AbstractString},
-    range::Range,
+    range::Maybe{Range} = nothing,
+    ticks_labels::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    ticks_values::Maybe{AbstractVector{<:Real}} = nothing,
     domain::Maybe{AbstractVector{<:Real}} = nothing,
-    is_annotation::Bool = false,
+    is_tick_axis::Bool = true,
+    is_zeroable::Bool = true,
 )::Nothing
+    show_ticks = is_tick_axis && axis_configuration.show_ticks
     layout[axis] = Dict(
         :title => title,
-        :range => [range.minimum, range.maximum],
+        :range => range === nothing ? nothing : [range.minimum, range.maximum],
         :showgrid => axis_configuration.show_grid,
         :gridcolor => axis_configuration.show_grid ? axis_configuration.grid_color : nothing,
-        :showticklabels => is_annotation ? false : axis_configuration.show_ticks,
-        :tickprefix => is_annotation ? nothing : axis_ticks_prefix(axis_configuration),
-        :ticksuffix => is_annotation ? nothing : axis_ticks_suffix(axis_configuration),
-        :zeroline => is_annotation ? false : axis_configuration.log_scale === nothing,
+        :showticklabels => show_ticks,
+        :tickprefix => show_ticks ? axis_ticks_prefix(axis_configuration) : nothing,
+        :ticksuffix => show_ticks ? axis_ticks_suffix(axis_configuration) : nothing,
+        :tickvals => show_ticks ? ticks_values : nothing,
+        :ticktext => show_ticks ? ticks_labels : nothing,
+        :zeroline => is_zeroable ? axis_configuration.log_scale === nothing : nothing,
         :domain => domain,
     )
     return nothing
 end
 
 """
-    plotly_coloraxis(colors_scale_index::Maybe{Integer})::Maybe{AbstractString}
+    plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false)::Maybe{AbstractString}
 
-Return the Plotly `coloraxis` name for a given color scale index.
+Return the Plotly axis name for a given index.
 """
-function plotly_coloraxis(colors_scale_index::Integer)::AbstractString
-    if colors_scale_index == 1
-        return "coloraxis"
+function plotly_axis(prefix::AbstractString, index::Integer; short::Bool = false)::Maybe{AbstractString}
+    if index == 1
+        if short
+            return nothing
+        else
+            return "$(prefix)axis"
+        end
     else
-        return "coloraxis$(colors_scale_index)"
+        if short
+            return "$(prefix)$(index)"
+        else
+            return "$(prefix)axis$(index)"
+        end
     end
 end
 
-function plotly_coloraxis(::Nothing)::Nothing
+function plotly_axis(::AbstractString, ::Nothing)::Nothing
     return nothing
 end
 
@@ -446,7 +503,7 @@ function set_layout_colorscale!(;
         colorscale = nothing
     end
 
-    layout[plotly_coloraxis(colors_scale_index)] = Dict(
+    layout[plotly_axis("color", colors_scale_index)] = Dict(
         :showscale => show_scale,
         :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range.minimum,
@@ -515,9 +572,8 @@ end
 Return the prefix for the ticks of an `axis_configuration`.
 """
 function axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
-    if !axis_configuration.show_ticks
-        return nothing
-    elseif axis_configuration.log_scale == Log10Scale
+    @assert axis_configuration.show_ticks
+    if axis_configuration.log_scale == Log10Scale
         return "<sub>10</sub>"
     elseif axis_configuration.log_scale == Log2Scale
         return "<sub>2</sub>"
@@ -547,7 +603,7 @@ end
 Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling. By
 default, `clamp` the values to a specified explicit range.
 """
-function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::Real
+function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::AbstractFloat
     if clamp
         if axis_configuration.minimum !== nothing && value < axis_configuration.minimum
             value = axis_configuration.minimum  # UNTESTED
@@ -584,7 +640,12 @@ end
         axis_configuration::AxisConfiguration,
         values::Maybe{AbstractVector{<:Maybe{Real}}};
         clamp::Bool = true
-    )::Maybe{AbstractVector{<:Maybe{Real}}}
+    )::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
+    scale_axis_values(
+        axis_configuration::AxisConfiguration,
+        values::Maybe{AbstractMatrix{<:Maybe{Real}}};
+        clamp::Bool = true
+    )::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
 
 Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling. By
 default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so it can be
@@ -595,17 +656,47 @@ function scale_axis_values(
     values::Maybe{AbstractVector{<:Maybe{Real}}};
     clamp::Bool = true,
     copy::Bool = false,
-)::Maybe{AbstractVector{<:Maybe{Real}}}
+)::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
     if values === nothing
         return nothing  # UNTESTED
     elseif !axis_configuration.percent &&
            axis_configuration.log_scale === nothing &&
            axis_configuration.minimum === nothing &&
            axis_configuration.maximum === nothing
-        return copy ? Vector(values) : values
+        return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
     else
-        return [scale_axis_value(axis_configuration, value; clamp) for value in values]
+        function scale(value)
+            return scale_axis_value(axis_configuration, value; clamp)
+        end
+        return scale.(values)
     end
+end
+
+function scale_axis_values(
+    axis_configuration::AxisConfiguration,
+    values::AbstractMatrix{<:Maybe{Real}};
+    clamp::Bool = true,
+    copy::Bool = false,
+)::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
+    if !axis_configuration.percent &&
+       axis_configuration.log_scale === nothing &&
+       axis_configuration.minimum === nothing &&
+       axis_configuration.maximum === nothing
+        return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
+    else
+        function scale(value)
+            return scale_axis_value(axis_configuration, value; clamp)
+        end
+        return scale.(values)
+    end
+end
+
+function floatify(::Nothing)::Nothing
+    return nothing
+end
+
+function floatify(value::Real)::Float64
+    return Float64(value)
 end
 
 """
@@ -1341,12 +1432,22 @@ Return the Plotly "domain" for a sub-graph (or an annotation).
 """
 function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
     @assert sub_graph.index != 0
-    if (sub_graph.n_graphs == 1 || sub_graph.graphs_gap === nothing) && sub_graph.n_annotations == 0
+
+    index = sub_graph.index
+    n_graphs = sub_graph.n_graphs
+    if sub_graph.graphs_gap === nothing
+        n_graphs = 1
+        if index > 0
+            index = 1
+        end
+    end
+
+    if n_graphs == 1 && sub_graph.n_annotations == 0
         return nothing
     end
 
-    if sub_graph.index > 0
-        @assert 1 <= sub_graph.index <= sub_graph.n_graphs
+    if index > 0
+        @assert 1 <= index <= n_graphs
 
         if sub_graph.n_annotations == 0
             start_graph_offset = 0
@@ -1356,16 +1457,16 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
                 (sub_graph.annotation_size.gap + sub_graph.annotation_size.size) * sub_graph.n_annotations
         end
 
-        graphs_total_size = 1 - start_graph_offset - (sub_graph.n_graphs - 1) * prefer_data(sub_graph.graphs_gap, 0)
-        graph_size = graphs_total_size / sub_graph.n_graphs
-        start_graph_offset += (sub_graph.index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
+        graphs_total_size = 1 - start_graph_offset - (n_graphs - 1) * prefer_data(sub_graph.graphs_gap, 0)
+        graph_size = graphs_total_size / n_graphs
+        start_graph_offset += (index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
         end_graph_offset = start_graph_offset + graph_size
 
     else
         @assert sub_graph.n_annotations != 0
-        @assert 1 <= -sub_graph.index <= sub_graph.n_annotations
+        @assert 1 <= -index <= sub_graph.n_annotations
         @assert sub_graph.annotation_size !== nothing
-        start_graph_offset = (-sub_graph.index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
+        start_graph_offset = (-index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
         end_graph_offset = start_graph_offset + sub_graph.annotation_size.size
     end
 
@@ -1435,6 +1536,7 @@ function plotly_sub_graph_axes(
     sub_graph::Maybe{SubGraph},
     values_orientation::ValuesOrientation;
     flip::Bool = false,
+    base_axis_index::Maybe{Integer} = nothing,
 )::Tuple{Maybe{AbstractString}, Maybe{AbstractFloat}, Maybe{AbstractString}, Maybe{AbstractFloat}}
     xaxis = nothing
     x0 = nothing
@@ -1443,18 +1545,41 @@ function plotly_sub_graph_axes(
 
     if sub_graph !== nothing
         index = sub_graph.index
+        n_graphs = sub_graph.n_graphs
+
+        if sub_graph.graphs_gap === nothing
+            n_graphs = 1
+            if index > 0
+                index = 1
+            end
+        end
+
         if index < 0
-            index = sub_graph.n_graphs - index
+            index = n_graphs + sub_graph.n_annotations + 1 + index
+        end
+
+        if sub_graph.n_annotations > 0
+            index = index % (sub_graph.n_annotations + n_graphs) + 1
         end
 
         if (values_orientation == HorizontalValues) != flip
-            xaxis = (sub_graph.index > 0 && sub_graph.graphs_gap === nothing) || index == 1 ? "x" : "x$(index)"
-            x0 = 0
+            xaxis = plotly_axis("x", index; short = true)
+            x0 = sub_graph.index > 0 && n_graphs > 1 ? 0 : nothing
 
         elseif (values_orientation == VerticalValues) != flip
-            yaxis = (sub_graph.index > 0 && sub_graph.graphs_gap === nothing) || index == 1 ? "y" : "y$(index)"
-            y0 = 0
+            yaxis = plotly_axis("y", index; short = true)
+            y0 = sub_graph.index > 0 && n_graphs > 1 ? 0 : nothing
 
+        else
+            @assert false
+        end
+    end
+
+    if base_axis_index !== nothing
+        if (values_orientation == HorizontalValues) != flip
+            yaxis = plotly_axis("y", base_axis_index; short = true)
+        elseif (values_orientation == VerticalValues) != flip
+            xaxis = plotly_axis("x", base_axis_index; short = true)
         else
             @assert false
         end
@@ -1482,8 +1607,10 @@ Colors data after applying the configuration.
     colors_title::Maybe{AbstractString}
     colors_configuration::ColorsConfiguration
     colors_scale_index::Maybe{Integer}
-    original_color_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
-    final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
+    original_color_values::Maybe{
+        Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}},
+    }
+    final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}}}
     final_colors_range::Maybe{Range}
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
     show_in_legend::Bool
@@ -1494,7 +1621,7 @@ end
     configured_colors(;
         colors_configuration::ColorsConfiguration,
         colors_title::Maybe{AbstractString},
-        colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
+        colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractMatrix{<:Real}}},
         next_colors_scale_index::AbstractVector{<:Integer},
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
     )::ConfiguredColors
@@ -1504,7 +1631,7 @@ Apply the colors configuration to the colors data.
 function configured_colors(;
     colors_configuration::ColorsConfiguration,
     colors_title::Maybe{AbstractString},
-    colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
+    colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractMatrix{<:Real}}},
     next_colors_scale_index::AbstractVector{<:Integer},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::ConfiguredColors
@@ -1531,12 +1658,12 @@ function configured_colors(;
             final_colors_values = colors_values
         end
 
-    elseif colors_values isa AbstractVector{<:Real}
+    elseif colors_values !== nothing && eltype(colors_values) <: Real
         show_scale = colors_configuration.show_legend
         colors_scale_index = next_colors_scale_index[1]
         next_colors_scale_index[1] += 1
 
-        final_colors_values = Float64.(scale_axis_values(colors_configuration.axis, colors_values))
+        final_colors_values = scale_axis_values(colors_configuration.axis, colors_values)
         if colors_configuration.palette isa ContinuousColors
             color_palette_values = [entry[1] for entry in colors_configuration.palette]
             scaled_colors_palette_values = scale_axis_values(colors_configuration.axis, color_palette_values)

@@ -77,13 +77,13 @@ function test_svg(graph::Graph, path::AbstractString)::Nothing  # UNTESTED
         write(file, actual_svg)
         return nothing
     end
-    actual_result = ResultFile("test/" * actual_path, actual_svg)
+    actual_result = chomp(ResultFile("test/" * actual_path, actual_svg))
 
     expected_path = "expected/" * path
     expected_svg = open(expected_path, "r") do file
         return read(file, String)
     end
-    expected_result = ResultFile("test/" * expected_path, expected_svg)
+    expected_result = chomp(ResultFile("test/" * expected_path, expected_svg))
 
     @test actual_result == expected_result
     return nothing
@@ -142,3 +142,4 @@ include("utilities.jl")
 include("distributions.jl")
 include("scatters.jl")
 include("bars.jl")
+include("heatmaps.jl")

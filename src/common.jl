@@ -376,6 +376,7 @@ end
         show_ticks::Bool = true
         show_grid::Bool = true
         grid_color::AbstractString = "lightgrey"
+        title::Maybe{AbstractString} = nothing
     end
 
 Generic configuration for a graph axis. Everything is optional; by default, the `minimum` and `maximum` are computed
@@ -391,6 +392,9 @@ the grid lines are shown in `lightgrey`.
 
 The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able
 to control log scale and/or percent scaling without changing anything else.
+
+If `title` is specified, it will be shown next to the axis. However, in some cases the correct title depends on the data
+set, so you can override this in the data.
 """
 @kwdef mutable struct AxisConfiguration <: Validated
     minimum::Maybe{Real} = nothing
@@ -401,6 +405,7 @@ to control log scale and/or percent scaling without changing anything else.
     show_ticks::Bool = true
     show_grid::Bool = true
     grid_color::AbstractString = "lightgrey"
+    title::Maybe{AbstractString} = nothing
 end
 
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
@@ -1223,6 +1228,7 @@ end
         palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
         axis::AxisConfiguration = AxisConfiguration()
         show_legend::Bool = false
+        title::Maybe{AbstractString} = nothing
     end
 
 Configure how to color some data. Supported combinations of configuration and data are:
@@ -1263,12 +1269,16 @@ data or the dictionary will prevent the matching data from being plotted.
 If `show_legend` is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be
 shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each
 other); see the `colors_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
+
+If `title` is specified, it will be used when showing the legend (whatever it is). However, in some cases the correct
+title depends on the data set, so you can override this in the data.
 """
 @kwdef mutable struct ColorsConfiguration <: Validated
     palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
     fixed::Maybe{AbstractString} = nothing
     axis::AxisConfiguration = AxisConfiguration()
     show_legend::Bool = false
+    title::Maybe{AbstractString} = nothing
 end
 
 function Validations.validate(

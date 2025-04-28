@@ -43,7 +43,7 @@ with `Nothing` but is shorter and more readable. This is extremely common.
 
 !!! note
 
-    This is replicated from `DataAxesFormats` to avoid making it a dependency. We do not export it but use it
+    This is replicated from `TanayLabUtilities` to avoid making it a dependency. We do not export it but use it
     extensively in the type signatures.
 """
 Maybe = Union{T, Nothing} where {T}
@@ -426,7 +426,7 @@ function validate_matrix_entries(
             n_rows, n_columns = size(matrix)
             for row_index in 1:n_rows
                 validate_in(context, row_index) do
-                    for column_index in n_columns
+                    for column_index in 1:n_columns
                         validate_in(context, column_index) do
                             return validation(row_index, column_index, matrix[row_index, column_index])
                         end

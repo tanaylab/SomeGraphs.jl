@@ -24,7 +24,7 @@ SomeGraphs.Utilities.set_layout_colorscale!
 SomeGraphs.Utilities.plotly_line_dash
 SomeGraphs.Utilities.plotly_sub_graph_axes
 SomeGraphs.Utilities.plotly_sub_graph_domain
-SomeGraphs.Utilities.plotly_coloraxis
+SomeGraphs.Utilities.plotly_axis
 SomeGraphs.Utilities.validate_graph_bands
 SomeGraphs.Utilities.push_horizontal_bands_shapes
 SomeGraphs.Utilities.push_vertical_bands_shapes

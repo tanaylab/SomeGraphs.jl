@@ -69,6 +69,7 @@ Possible units for the distribution axis of a cumulative distribution:
         show_ticks::Bool = true
         show_grid::Bool = true
         grid_color::AbstractString = "lightgrey"
+        title::Maybe{AbstractString} = nothing
     end
 
 Possible configurations for the distribution axis of a cumulative distribution, using the specified `units`. Normally we
@@ -83,6 +84,7 @@ This intentionally offers only a subset of the fields of [`AxisConfiguration`](@
     show_ticks::Bool = true
     show_grid::Bool = true
     grid_color::AbstractString = "lightgrey"
+    title::Maybe{AbstractString} = nothing
 end
 
 """
@@ -384,10 +386,12 @@ DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
         value_axis_title::Maybe{AbstractString} = nothing,
         cumulative_axis_title::Maybe{AbstractString} = nothing,
         distribution_values::AbstractVector{<:Real} = Float32[],
-        distribution_name::Maybe{AbstractString} = nothing],
+        distribution_name::Maybe{AbstractString} = nothing,
+        configuration::DistributionGraphConfiguration = DistributionGraphConfiguration()]
     )::DistributionGraph
 
-Create a [`DistributionGraph`](@ref) by initializing only the [`DistributionGraphData`](@ref) fields.
+Create a [`DistributionGraph`](@ref) by initializing only the [`DistributionGraphData`](@ref) fields (with an optional
+[`DistributionGraphConfiguration`](@ref)).
 """
 function distribution_graph(;
     figure_title::Maybe{AbstractString} = nothing,
@@ -395,6 +399,7 @@ function distribution_graph(;
     cumulative_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{<:Real} = Float32[],
     distribution_name::Maybe{AbstractString} = nothing,
+    configuration::DistributionGraphConfiguration = DistributionGraphConfiguration(),
 )::DistributionGraph
     return DistributionGraph(
         DistributionGraphData(;
@@ -404,7 +409,7 @@ function distribution_graph(;
             distribution_values,
             distribution_name,
         ),
-        DistributionGraphConfiguration(),
+        configuration,
     )
 end
 
@@ -420,10 +425,12 @@ DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfigurati
         value_axis_title::Maybe{AbstractString} = nothing,
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing],
+        distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration()]
     )::DistributionsGraph
 
-Create a [`DistributionsGraph`](@ref) by initializing only the [`DistributionsGraphData`](@ref) fields.
+Create a [`DistributionsGraph`](@ref) by initializing only the [`DistributionsGraphData`](@ref) fields (with an optional
+[`DistributionsGraphConfiguration`](@ref)).
 """
 function distributions_graph(;
     figure_title::Maybe{AbstractString} = nothing,
@@ -431,6 +438,7 @@ function distributions_graph(;
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration(),
 )::DistributionsGraph
     return DistributionsGraph(
         DistributionsGraphData(;
@@ -440,7 +448,7 @@ function distributions_graph(;
             distributions_names,
             distributions_colors,
         ),
-        DistributionsGraphConfiguration(),
+        configuration,
     )
 end
 
@@ -715,7 +723,7 @@ function distribution_layout(;
         layout,
         "$(value_axis_letter)axis",
         graph.configuration.value_axis;
-        title = graph.data.value_axis_title,
+        title = prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
         range = scaled_values_range,
     )
 
@@ -747,7 +755,7 @@ function distribution_layout(;
                 layout,
                 "$(density_axis_letter)axis",
                 cumulative_axis_configuration;
-                title = graph.data.cumulative_axis_title,
+                title = prefer_data(graph.data.cumulative_axis_title, graph.configuration.cumulative_axis.title),
                 range = cumulative_range,
             )
 
@@ -796,10 +804,9 @@ function distribution_layout(;
                     @assert false
                 end
 
-                density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
                 set_layout_axis!(
                     layout,
-                    density_axis_name,
+                    plotly_axis(density_axis_letter, index),
                     cumulative_axis_configuration;
                     title = if distributions_gap === nothing
                         nothing
@@ -827,8 +834,7 @@ function distribution_layout(;
             distributions_gap = graph.configuration.distributions_gap  # NOJET
 
             for index in 1:n_distributions
-                density_axis_name = index == 1 ? "$(density_axis_letter)axis" : "$(density_axis_letter)axis$(index)"
-                layout[density_axis_name] = Dict(
+                layout[plotly_axis(density_axis_letter, index)] = Dict(
                     :title => if distributions_gap === nothing
                         nothing  # NOJET
                     else
