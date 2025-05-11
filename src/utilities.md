@@ -22,6 +22,7 @@ SomeGraphs.Utilities.axis_ticks_suffix
 SomeGraphs.Utilities.set_layout_axis!
 SomeGraphs.Utilities.set_layout_colorscale!
 SomeGraphs.Utilities.plotly_line_dash
+SomeGraphs.Utilities.SubGraph
 SomeGraphs.Utilities.plotly_sub_graph_axes
 SomeGraphs.Utilities.plotly_sub_graph_domain
 SomeGraphs.Utilities.plotly_axis

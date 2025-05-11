@@ -169,7 +169,6 @@ SomeGraphs.Common.CategoricalColors
 SomeGraphs.Common.categorical_palette
 SomeGraphs.Common.NAMED_COLOR_SCALES
 SomeGraphs.Common.COLOR_SCALES_LOCK
-SomeGraphs.Common.SubGraph
 ```
 
 ```@docs

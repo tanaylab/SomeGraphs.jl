@@ -34,7 +34,6 @@ export SolidLine
 export StackFractions
 export StackValues
 export Stacking
-export SubGraph
 export ValuesOrientation
 export VerticalValues
 export categorical_palette
@@ -1466,31 +1465,6 @@ function Validations.validate(context::ValidationContext, annotation_size::Annot
     end
 
     return nothing
-end
-
-"""
-    @kwdef struct SubGraph
-        index::Integer
-        n_graphs::Integer
-        gap::Maybe{AbstractFloat}
-        n_annotations::Integer = 0
-        annotation_size::Maybe{AnnotationSize} = nothing
-    end
-
-Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
-top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs are plotted on top
-of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout
-parameters.
-
-This also supports `n_annotations` with `annotation_size`. If the index is negative, it is the (negated) index of an
-annotation.
-"""
-@kwdef struct SubGraph
-    index::Integer
-    n_graphs::Integer
-    graphs_gap::Maybe{AbstractFloat}
-    n_annotations::Integer = 0
-    annotation_size::Maybe{AnnotationSize} = nothing
 end
 
 end  # module

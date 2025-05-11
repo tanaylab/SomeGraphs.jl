@@ -4,15 +4,14 @@ Utility functions for defining graph types. We do not re-export all symbols from
 """
 module Utilities
 
-export ConfiguredColors
-export MaybeRange
-export Range
 export axis_ticks_prefix
 export axis_ticks_suffix
-export configured_colors
 export collect_range!
+export configured_colors
+export ConfiguredColors
 export fill_color
 export final_scaled_range
+export MaybeRange
 export plotly_axis
 export plotly_figure
 export plotly_layout
@@ -23,11 +22,13 @@ export prefer_data
 export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
 export push_vertical_bands_shapes
+export Range
 export scale_axis_value
 export scale_axis_values
 export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
+export SubGraph
 export validate_axis_sizes
 export validate_colors
 export validate_graph_bands
@@ -318,7 +319,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do          # UNTESTED
+        lock(COLOR_SCALES_LOCK) do            # UNTESTED
             @assert haskey(NAMED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -1423,6 +1424,31 @@ function collect_range!(range::MaybeRange, values::Maybe{AbstractVector{<:Maybe{
     end
 
     return nothing
+end
+
+"""
+    @kwdef struct SubGraph
+        index::Integer
+        n_graphs::Integer
+        gap::Maybe{AbstractFloat}
+        n_annotations::Integer = 0
+        annotation_size::Maybe{AnnotationSize} = nothing
+    end
+
+Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
+top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs are plotted on top
+of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout
+parameters.
+
+This also supports `n_annotations` with `annotation_size`. If the index is negative, it is the (negated) index of an
+annotation.
+"""
+@kwdef struct SubGraph
+    index::Integer
+    n_graphs::Integer
+    graphs_gap::Maybe{AbstractFloat}
+    n_annotations::Integer = 0
+    annotation_size::Maybe{AnnotationSize} = nothing
 end
 
 """

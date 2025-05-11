@@ -849,6 +849,50 @@ scale_axis_values(
 <header>
 <a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
 </a>
+<a class="docstring-binding" id="SomeGraphs.Utilities.SubGraph" href="#SomeGraphs.Utilities.SubGraph">
+<code>SomeGraphs.Utilities.SubGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef struct SubGraph
+    index::Integer
+    n_graphs::Integer
+    gap::Maybe{AbstractFloat}
+    n_annotations::Integer = 0
+    annotation_size::Maybe{AnnotationSize} = nothing
+end
+</code>
+</pre>
+<p>Identify one sub-graph out of a set of 
+<code>n_graphs
+</code> adjacent graphs. If the 
+<code>index
+</code> is 1, this is the 1st sub-graph (used top initialize some values such as the legend group title). If 
+<code>gap
+</code> is 
+<code>nothing
+</code> then the sub-graphs are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout parameters.
+</p>
+<p>This also supports 
+<code>n_annotations
+</code> with 
+<code>annotation_size
+</code>. If the index is negative, it is the (negated) index of an annotation.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
 <a class="docstring-binding" id="SomeGraphs.Utilities.plotly_sub_graph_axes" href="#SomeGraphs.Utilities.plotly_sub_graph_axes">
 <code>SomeGraphs.Utilities.plotly_sub_graph_axes
 </code>
@@ -1222,6 +1266,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.Range">
 <code>SomeGraphs.Utilities.Range
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.SubGraph">
+<code>SomeGraphs.Utilities.SubGraph
 </code>
 </a>
 </li>
