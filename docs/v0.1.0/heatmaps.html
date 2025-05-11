@@ -447,6 +447,12 @@ end
 </code>.
 </p>
 </li>
+<li>
+<p>The symbol 
+<code>:same
+</code>. This can only be used for square matrices, and indicates the order of this axis should be copied from the computed order of the other axis. It is obviously invalid to specify this for both axes, or when the other axis has no order specified.
+</p>
+</li>
 </ul>
 </div>
 </section>
@@ -468,12 +474,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ujSGlT1S3x' class='' style=';'>
+<div id='ZtwZ350VpY' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ujSGlT1S3x")
+    const PLOT = document.getElementById("ZtwZ350VpY")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[0.0,7.0,8.0],[1.0,6.0,9.0],[2.0,5.0,10.0],[3.0,4.0,11.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":-0.11,"cmax":11.11,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -515,12 +521,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='nOJefmKgLQ' class='' style=';'>
+<div id='ca43fmR9Bk' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nOJefmKgLQ")
+    const PLOT = document.getElementById("ca43fmR9Bk")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3],"type":"heatmap","name":"","yaxis":"y2","z":[[0.0,7.0,8.0],[1.0,6.0,9.0],[2.0,5.0,10.0],[3.0,4.0,11.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"xaxis":"x2","y":[1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4"]},{"showlegend":true,"xaxis":"x99","x0":0,"name":"yes","yaxis":"y99","legendgroup":"Annotation1","legendgrouptitle":{"text":"is"},"marker":{"color":"black"},"y":[0],"type":"bar","y0":0,"x":[0]},{"showlegend":true,"xaxis":"x99","x0":0,"name":"maybe","yaxis":"y99","legendgroup":"Annotation1","marker":{"color":"darkgray"},"y":[0],"type":"bar","y0":0,"x":[0]},{"showlegend":true,"xaxis":"x99","x0":0,"name":"no","yaxis":"y99","legendgroup":"Annotation1","marker":{"color":"lightgray"},"y":[0],"type":"bar","y0":0,"x":[0]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"y":["1","2","3"],"type":"bar","name":"is","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0]}], "layout": {"showlegend":true,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"coloraxis":{"colorbar":{"title":{"text":"values"},"x":1.2},"cmin":-0.11,"cmax":11.11,"showscale":true},"paper_bgcolor":"white","yaxis99":{"showgrid":false,"showticklabels":false,"domain":[0.0,0.001]},"template":"simple_white","bargap":0,"legend":{"tracegroupgap":0,"itemdoubleclick":false},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is"},"xaxis99":{"showgrid":false,"showticklabels":false,"domain":[0.0,0.001]},"xaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

@@ -14,6 +14,46 @@ nested_test("heatmaps") do
             )
         end
 
+        nested_test("same") do
+            nested_test("entries") do
+                graph.configuration.entries_order = :same
+                @test_throws "ArgumentError: can't specify heatmap graph.configuration.entries_order: :same" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("both") do
+                graph.configuration.rows_order = :same
+                graph.configuration.columns_order = :same
+                @test_throws chomp("""
+                                   can't specify both heatmap graph.configuration.rows_order: :same
+                                   and heatmap graph.configuration.columns_order: :same
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("rectangle") do
+                graph.configuration.rows_order = :same
+                @test_throws chomp("""
+                                   can't specify graph.configuration.rows_order: :same
+                                   for a non-square matrix: 3 rows x 4 columns
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("missing") do
+                graph = heatmap_graph(; entries_values = [
+                    0 1 2;
+                    7 6 5;
+                    8 9 10;
+                ])
+                graph.configuration.rows_order = :same
+                @test_throws chomp("""
+                                   no columns order to copy into rows order
+                                   for graph.configuration.rows_order: same
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
+
         nested_test("categorical") do
             graph.configuration.entries_colors.palette = Dict("Foo" => "red", "Bar" => "green")
             @test_throws "ArgumentError: can't specify heatmap categorical graph.configuration.entries_colors.palette" validate(
@@ -108,6 +148,26 @@ nested_test("heatmaps") do
                 graph.configuration.columns_order = :ward
                 return test_html(graph, "heatmap.reorder.ward.html")
             end
+        end
+    end
+
+    nested_test("same") do
+        graph = heatmap_graph(; entries_values = [
+            0 1 2;
+            7 6 5;
+            8 9 10;
+        ])
+        nested_test("rows") do
+            graph.configuration.rows_order = :same
+            graph.data.columns_order = [1, 3, 2]
+            test_html(graph, "heatmap.reorder.rows=columns.html")
+            return nothing
+        end
+
+        nested_test("columns") do
+            graph.data.rows_order = [1, 3, 2]
+            graph.configuration.columns_order = :same
+            return test_html(graph, "heatmap.reorder.columns=rows.html")
         end
     end
 end

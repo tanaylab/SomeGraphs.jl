@@ -28,6 +28,9 @@ Specify how to re-order the rows and/or columns of a matrix for display. Options
 
   - A symbol which is a valid value for the `branchorder` parameter for `hclust` (that is, one of `:r`,
     `:barjoseph`/`:optimal`). TODO: Also allow `:slanter`.
+  - The symbol `:same`. This can only be used for square matrices, and indicates the order of this axis should be copied
+    from the computed order of the other axis. It is obviously invalid to specify this for both axes, or when the other
+    axis has no order specified.
 """
 Reorder = Union{Symbol, Tuple{Symbol, Symbol}}
 
@@ -105,6 +108,17 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
         configuration.rows_metric,
         configuration.columns_metric,
     )
+
+    if configuration.entries_order == :same
+        throw(ArgumentError("can't specify heatmap $(location(context)).entries_order: :same"))
+    end
+
+    if configuration.rows_order == :same && configuration.columns_order == :same
+        throw(ArgumentError(chomp("""
+                                  can't specify both heatmap $(location(context)).rows_order: :same
+                                  and heatmap $(location(context)).columns_order: :same
+                                  """)))
+    end
 
     return nothing
 end
@@ -322,6 +336,44 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
         annotation_size = graph.configuration.rows_annotations,
         n_annotations = length(graph.data.rows_annotations),
     )
+
+    n_rows, n_columns = size(graph.data.entries_values)
+    if n_rows != n_columns
+        for (name, value) in (("rows", graph.configuration.rows_order), ("columns", graph.configuration.columns_order))
+            if value == :same
+                throw(ArgumentError(chomp("""
+                                          can't specify graph.configuration.$(name)_order: :same
+                                          for a non-square matrix: $(n_rows) rows x $(n_columns) columns
+                                          """)))
+            end
+        end
+    end
+
+    for (name, conf_order, data_order, other_name, other_conf_order, other_data_order) in (
+        (
+            "rows",
+            graph.configuration.rows_order,
+            graph.data.rows_order,
+            "columns",
+            graph.configuration.columns_order,
+            graph.data.columns_order,
+        ),
+        (
+            "columns",
+            graph.configuration.columns_order,
+            graph.data.columns_order,
+            "rows",
+            graph.configuration.rows_order,
+            graph.data.rows_order,
+        ),
+    )
+        if conf_order == :same && data_order === nothing && other_conf_order === nothing && other_data_order === nothing
+            throw(ArgumentError(chomp("""
+                                      no $(other_name) order to copy into $(name) order
+                                      for graph.configuration.$(name)_order: same
+                                      """)))
+        end
+    end
 
     return nothing
 end
@@ -552,6 +604,16 @@ function reorder_data(
         order_by = transpose(data_rows_order_by),
     )
 
+    if data_rows_order === nothing && configuration_rows_order == :same
+        @assert data_columns_order !== nothing
+        data_rows_order = data_columns_order
+    end
+
+    if data_columns_order === nothing && configuration_columns_order == :same
+        @assert data_rows_order !== nothing
+        data_columns_order = data_rows_order
+    end
+
     if data_rows_order === nothing
         if data_columns_order === nothing
             z = colors.final_colors_values
@@ -588,7 +650,7 @@ function finalize_order(;
     configuration_order::Maybe{Reorder},
     order_by::Maybe{AbstractMatrix{<:Real}},
 )::Maybe{AbstractVector{<:Integer}}
-    if data_order !== nothing || configuration_order === nothing
+    if data_order !== nothing || configuration_order === nothing || configuration_order == :same
         return data_order
     end
 
