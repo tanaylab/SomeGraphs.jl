@@ -95,8 +95,7 @@ Box with outliers:
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
-graph.configuration.distribution.style = BoxDistribution
-graph.configuration.distribution.show_outliers = true
+graph.configuration.distribution.style = BoxOutliersDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -304,8 +303,7 @@ using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
 graph.configuration.distribution.values_orientation = VerticalValues
 graph.configuration.distribution.line.color = "red"
-graph.configuration.distribution.style = BoxDistribution
-graph.configuration.distribution.show_outliers = true
+graph.configuration.distribution.style = BoxOutliersDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

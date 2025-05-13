@@ -143,6 +143,7 @@ BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
         bars_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
         bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
         value_bands::BandsData = BandsData(),
+        bars_annotations::AbstractVector{AnnotationData} = AnnotationData[],
         configuration::BarsGraphConfiguration = BarsGraphConfiguration()]
     )::BarsGraph
 
@@ -158,6 +159,7 @@ function bars_graph(;
     bars_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
     bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     value_bands::BandsData = BandsData(),
+    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     configuration::BarsGraphConfiguration = BarsGraphConfiguration(),
 )::BarsGraph
     return BarsGraph(
@@ -170,6 +172,7 @@ function bars_graph(;
             bars_colors,
             bars_hovers,
             value_bands,
+            bars_annotations,
         ),
         configuration,
     )

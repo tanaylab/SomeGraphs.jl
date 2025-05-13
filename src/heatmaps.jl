@@ -23,14 +23,14 @@ import ..Validations.Maybe
 """
 Specify how to re-order the rows and/or columns of a matrix for display. Options are:
 
-  - A symbol which is a valid value for the `linkage` parameter for `hclust` (that is, one of `:single`, `:average`,
-    `:complete`, `:ward`, or `:ward_presquared`). TODO: Also allow `:slanter`.
-
-  - A symbol which is a valid value for the `branchorder` parameter for `hclust` (that is, one of `:r`,
-    `:barjoseph`/`:optimal`). TODO: Also allow `:slanter`.
   - The symbol `:same`. This can only be used for square matrices, and indicates the order of this axis should be copied
     from the computed order of the other axis. It is obviously invalid to specify this for both axes, or when the other
     axis has no order specified.
+
+  - A symbol which is a valid value for the `linkage` parameter for `hclust` (that is, one of `:single`, `:average`,
+    `:complete`, `:ward`, or `:ward_presquared`). TODO: Also allow `:slanter`.
+  - A tuple with a symbol as above and another symbol which is a valid value for the `branchorder` parameter for
+    `hclust` (that is, one of `:r`, `:barjoseph`/`:optimal`). TODO: Also allow `:slanter`.
 """
 Reorder = Union{Symbol, Tuple{Symbol, Symbol}}
 

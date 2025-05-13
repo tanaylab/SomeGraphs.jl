@@ -55,21 +55,6 @@ function test_distributions(
                     end
                 end
 
-                nested_test("outliers") do
-                    graph.configuration.distribution.show_outliers = true
-                    if contains(kind, "box")
-                        test_html(graph, "$(plurality).$(kind).$(name).outliers.html")
-                        return nothing
-                    else
-                        @test_throws chomp(
-                            """
-                            specified graph.configuration.distribution.show_outliers
-                            for non-box graph.configuration.distribution.style: $(graph.configuration.distribution.style)
-                            """,
-                        ) validate(ValidationContext(["graph"]), graph)
-                    end
-                end
-
                 nested_test("!grid") do
                     graph.configuration.value_axis.show_grid = false
                     if startswith(kind, "cumulative")
@@ -312,6 +297,7 @@ nested_test("distribution") do
         ("violin", ViolinDistribution),
         ("violin_box", ViolinBoxDistribution),
         ("box", BoxDistribution),
+        ("box_outliers", BoxOutliersDistribution),
         ("histogram", HistogramDistribution),
     )
         test_distributions(graph, "distribution", name) do

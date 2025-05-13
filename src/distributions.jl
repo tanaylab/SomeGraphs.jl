@@ -4,6 +4,7 @@ Graphs for showing probability distributions.
 module Distributions
 
 export BoxDistribution
+export BoxOutliersDistribution
 export CumulativeAxisConfiguration
 export CumulativeCounts
 export CumulativeDistribution
@@ -41,6 +42,8 @@ Possible styles for visualizing a distribution:
 
 `BoxDistribution` - a box with whiskers to show important distribution values.
 
+`BoxOutliersDistribution` - a box with outlier points and whiskers to show important distribution values.
+
 `CurveBoxDistribution` - combine a curve and a box.
 
 `ViolinBoxDistribution` - combine a violin and a box.
@@ -49,7 +52,7 @@ Possible styles for visualizing a distribution:
 
 'CumulativeDistribution' - a cumulative distribution (aka "CDF"). This one allows for additional configuration options.
 """
-@enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution CurveBoxDistribution ViolinBoxDistribution HistogramDistribution CumulativeDistribution
+@enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution BoxOutliersDistribution CurveBoxDistribution ViolinBoxDistribution HistogramDistribution CumulativeDistribution
 
 """
 Possible units for the distribution axis of a cumulative distribution:
@@ -91,15 +94,12 @@ end
     @kwdef mutable struct DistributionConfiguration <: Validated
         values_orientation::ValuesOrientation = HorizontalValues
         style::DistributionStyle = CurveDistribution
-        show_outliers::Bool = false
         line::LineConfiguration = LineConfiguration(; is_filled = true)
     end
 
 Configure the style of the distribution(s) in a graph.
 
 The `values_orientation` will determine the overall orientation of the graph.
-
-If `style` uses a box, then if `show_outliers`, also show the extreme (outlier) points.
 
 The `line.color` is chosen automatically by default. When showing multiple distributions, you can override it per each
 one in the [`DistributionsGraphData`](@ref). By default, the distribution is filled. Plotly only allows for solid lines
@@ -108,7 +108,6 @@ for distributions, and always fills histogram plots without any line.
 @kwdef mutable struct DistributionConfiguration <: Validated
     values_orientation::ValuesOrientation = HorizontalValues
     style::DistributionStyle = CurveDistribution
-    show_outliers::Bool = false
     line::LineConfiguration = LineConfiguration(; is_filled = true)
 end
 
@@ -116,16 +115,6 @@ function Validations.validate(
     context::ValidationContext,
     distribution_configuration::DistributionConfiguration,
 )::Nothing
-    if distribution_configuration.show_outliers &&
-       !(distribution_configuration.style in (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution))
-        throw(
-            ArgumentError(
-                "specified $(location(context)).show_outliers\n" *
-                "for non-box $(location(context)).style: $(distribution_configuration.style)",
-            ),
-        )
-    end
-
     validate_field(context, "line", distribution_configuration.line)
 
     if distribution_configuration.line.style != SolidLine
@@ -249,8 +238,8 @@ function Validations.validate(
 
     validate_is_at_least(context, configuration.distributions_gap, 0)
 
-    if configuration.distributions_gap === nothing &&
-       configuration.distribution.style in (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution)
+    if configuration.distributions_gap === nothing && configuration.distribution.style in
+       (BoxDistribution, BoxOutliersDistribution, ViolinBoxDistribution, CurveBoxDistribution)
         throw(ArgumentError("overlay (no $(location(context)).distributions_gap specified) for box distributions"))
     end
 
@@ -283,10 +272,10 @@ end
         cumulative_bands::BandsData = BandsData()
     end
 
-By default, all the titles are empty. You can specify the overall `figure_title` as well as the `value_axis_title`. The
-optional `distribution_name` is used as the name of the density axis. You can also specify the `distribution_color`
-and/or `value_bands` offsets here, if they are more of a data than a configuration parameter in the specific graph. This
-will override whatever is specified in the configuration.
+The data for a single distribution graph. By default, all the titles are empty. You can specify the overall
+`figure_title` as well as the `value_axis_title`. The optional `distribution_name` is used as the name of the density
+axis. You can also specify the `distribution_color` and/or `value_bands` offsets here, if they are more of a data than a
+configuration parameter in the specific graph. This will override whatever is specified in the configuration.
 
 The `cumulative_axis_title` and/of `cumulative_bands` should only be specified if the `distribution.style` is
 `CumulativeDistribution`.
@@ -438,6 +427,7 @@ function distributions_graph(;
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
     configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration(),
 )::DistributionsGraph
     return DistributionsGraph(
@@ -447,6 +437,7 @@ function distributions_graph(;
             distributions_values,
             distributions_names,
             distributions_colors,
+            distributions_order,
         ),
         configuration,
     )
@@ -638,7 +629,15 @@ function distribution_trace(;
             @assert false
         end
 
-        if configuration.distribution.style == BoxDistribution
+        if configuration.distribution.style == BoxOutliersDistribution
+            boxpoints = "outliers"
+        elseif configuration.distribution.style == BoxDistribution
+            boxpoints = false
+        else
+            boxpoints = nothing
+        end
+
+        if configuration.distribution.style in (BoxDistribution, BoxOutliersDistribution)
             tracer = box
         elseif configuration.distribution.style == HistogramDistribution
             tracer = histogram
@@ -653,21 +652,14 @@ function distribution_trace(;
             yaxis,
             x0,
             y0,
-            side = configuration.distribution.style in (CurveDistribution, CurveBoxDistribution) ? "positive" : nothing,
+            side = if configuration.distribution.style in (CurveDistribution, CurveBoxDistribution)
+                "positive"
+            else
+                nothing
+            end,
             box_visible = configuration.distribution.style in
                           (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution),
-            points = if configuration.distribution.style in (ViolinBoxDistribution, CurveBoxDistribution) &&
-                        configuration.distribution.show_outliers
-                "outliers"
-            else
-                false
-            end,
-            boxpoints = if configuration.distribution.style == BoxDistribution &&
-                           configuration.distribution.show_outliers
-                "outliers"
-            else
-                false
-            end,
+            boxpoints,
             name,
             line_color = color,
             line_width = width,
