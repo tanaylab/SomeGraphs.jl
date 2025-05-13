@@ -1,216 +1,5 @@
-
 <!DOCTYPE html>
-
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Scatter Plots · SomeGraphs.jl v0.1.0
-</title>
-<meta name="title" content="Scatter Plots · SomeGraphs.jl v0.1.0"/>
-<meta property="og:title" content="Scatter Plots · SomeGraphs.jl v0.1.0"/>
-<meta property="twitter:title" content="Scatter Plots · SomeGraphs.jl v0.1.0"/>
-<meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/>
-<meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
-<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
-<script data-outdated-warner src="assets/warner.js">
-</script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
-<script>documenterBaseURL="."
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
-</script>
-<script src="search_index.js">
-</script>
-<script src="siteinfo.js">
-</script>
-<script src="../versions.js">
-</script>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
-<script src="assets/themeswap.js">
-</script>
-</head>
-<body>
-<div id="documenter">
-<nav class="docs-sidebar">
-<div class="docs-package-name">
-<span class="docs-autofit">
-<a href="index.html">SomeGraphs.jl v0.1.0
-</a>
-</span>
-</div>
-<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
-</button>
-<ul class="docs-menu">
-<li>
-<a class="tocitem" href="index.html">SomeGraphs
-</a>
-</li>
-<li>
-<a class="tocitem" href="validations.html">Validations
-</a>
-</li>
-<li>
-<a class="tocitem" href="common.html">Common
-</a>
-</li>
-<li>
-<a class="tocitem" href="distributions.html">Distributions
-</a>
-</li>
-<li class="is-active">
-<a class="tocitem" href="scatters.html">Scatter Plots
-</a>
-<ul class="internal">
-<li>
-<a class="tocitem" href="#Index">
-<span>Index
-</span>
-</a>
-</li>
-</ul>
-</li>
-<li>
-<a class="tocitem" href="bars.html">Bar Plots
-</a>
-</li>
-<li>
-<a class="tocitem" href="heatmaps.html">Heatmaps
-</a>
-</li>
-<li>
-<a class="tocitem" href="utilities.html">Utilities
-</a>
-</li>
-</ul>
-<div class="docs-version-selector field has-addons">
-<div class="control">
-<span class="docs-label button is-static is-size-7">Version
-</span>
-</div>
-<div class="docs-selector control is-expanded">
-<div class="select is-fullwidth is-size-7">
-<select id="documenter-version-selector">
-</select>
-</div>
-</div>
-</div>
-</nav>
-<div class="docs-main">
-<header class="docs-navbar">
-<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
-</a>
-<nav class="breadcrumb">
-<ul class="is-hidden-mobile">
-<li class="is-active">
-<a href="scatters.html">Scatter Plots
-</a>
-</li>
-</ul>
-<ul class="is-hidden-tablet">
-<li class="is-active">
-<a href="scatters.html">Scatter Plots
-</a>
-</li>
-</ul>
-</nav>
-<div class="docs-right">
-<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
-<span class="docs-icon fa-brands">
-</span>
-<span class="docs-label is-hidden-touch">GitHub
-</span>
-</a>
-<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
-</a>
-<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
-</a>
-</div>
-</header>
-<article class="content" id="documenter-page">
-<h1 id="Scatter-Plots">
-<a class="docs-heading-anchor" href="#Scatter-Plots">Scatter Plots
-</a>
-<a id="Scatter-Plots-1">
-</a>
-<a class="docs-heading-anchor-permalink" href="#Scatter-Plots" title="Permalink">
-</a>
-</h1>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters" href="#SomeGraphs.Scatters">
-<code>SomeGraphs.Scatters
-</code>
-</a> — 
-<span class="docstring-category">Module
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>Graphs for showing scatter points and/or lines.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.PointsGraph" href="#SomeGraphs.Scatters.PointsGraph">
-<code>SomeGraphs.Scatters.PointsGraph
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>A graph visualizing scattered points (possibly with edges between them). See 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphData">
-<code>PointsGraphData
-</code>
-</a> and 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration">
-<code>PointsGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.points_graph" href="#SomeGraphs.Scatters.points_graph">
-<code>SomeGraphs.Scatters.points_graph
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">function points_graph(;
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Scatter Plots · SomeGraphs.jl v0.1.0</title><meta name="title" content="Scatter Plots · SomeGraphs.jl v0.1.0"/><meta property="og:title" content="Scatter Plots · SomeGraphs.jl v0.1.0"/><meta property="twitter:title" content="Scatter Plots · SomeGraphs.jl v0.1.0"/><meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">SomeGraphs.jl v0.1.0</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="index.html">SomeGraphs</a></li><li><a class="tocitem" href="validations.html">Validations</a></li><li><a class="tocitem" href="common.html">Common</a></li><li><a class="tocitem" href="distributions.html">Distributions</a></li><li class="is-active"><a class="tocitem" href="scatters.html">Scatter Plots</a><ul class="internal"><li><a class="tocitem" href="#Index"><span>Index</span></a></li></ul></li><li><a class="tocitem" href="bars.html">Bar Plots</a></li><li><a class="tocitem" href="heatmaps.html">Heatmaps</a></li><li><a class="tocitem" href="utilities.html">Utilities</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="scatters.html">Scatter Plots</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="scatters.html">Scatter Plots</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Scatter-Plots"><a class="docs-heading-anchor" href="#Scatter-Plots">Scatter Plots</a><a id="Scatter-Plots-1"></a><a class="docs-heading-anchor-permalink" href="#Scatter-Plots" title="Permalink"></a></h1><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters" href="#SomeGraphs.Scatters"><code>SomeGraphs.Scatters</code></a> — <span class="docstring-category">Module</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Graphs for showing scatter points and/or lines.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.PointsGraph" href="#SomeGraphs.Scatters.PointsGraph"><code>SomeGraphs.Scatters.PointsGraph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A graph visualizing scattered points (possibly with edges between them). See <a href="scatters.html#SomeGraphs.Scatters.PointsGraphData"><code>PointsGraphData</code></a> and <a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration"><code>PointsGraphConfiguration</code></a>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.points_graph" href="#SomeGraphs.Scatters.points_graph"><code>SomeGraphs.Scatters.points_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">function points_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     x_axis_title::Maybe{AbstractString} = nothing,
     y_axis_title::Maybe{AbstractString} = nothing,
@@ -237,43 +26,7 @@
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
     configuration::PointsGraphConfiguration = PointsGraphConfiguration()]
-)::PointsGraph
-</code>
-</pre>
-<p>Create a 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraph">
-<code>PointsGraph
-</code>
-</a> by initializing only the 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphData">
-<code>PointsGraphData
-</code>
-</a> fields (with an optional 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration">
-<code>PointsGraphConfiguration
-</code>
-</a>).
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.PointsGraphData" href="#SomeGraphs.Scatters.PointsGraphData">
-<code>SomeGraphs.Scatters.PointsGraphData
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct PointsGraphData &lt;: AbstractGraphData
+)::PointsGraph</code></pre><p>Create a <a href="scatters.html#SomeGraphs.Scatters.PointsGraph"><code>PointsGraph</code></a> by initializing only the <a href="scatters.html#SomeGraphs.Scatters.PointsGraphData"><code>PointsGraphData</code></a> fields (with an optional <a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration"><code>PointsGraphConfiguration</code></a>).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.PointsGraphData" href="#SomeGraphs.Scatters.PointsGraphData"><code>SomeGraphs.Scatters.PointsGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct PointsGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     x_axis_title::Maybe{AbstractString} = nothing
     y_axis_title::Maybe{AbstractString} = nothing
@@ -299,125 +52,7 @@
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
-end
-</code>
-</pre>
-<p>The data for a scatter graph of points.
-</p>
-<p>By default, all the titles are empty. You can specify the overall 
-<code>figure_title
-</code> as well as the 
-<code>x_axis_title
-</code> and 
-<code>y_axis_title
-</code> for the axes, and the 
-<code>points_colors_title
-</code> and 
-<code>borders_colors_title
-</code> for the legends.
-</p>
-<p>The 
-<code>points_xs
-</code> and 
-<code>points_ys
-</code> vectors must be of the same size. If specified, the 
-<code>points_colors
-</code>, 
-<code>points_sizes
-</code> 
-<code>points_hovers
-</code>, 
-<code>points_order
-</code> and/or 
-<code>points_mask
-</code> vectors must also be of the same size. The 
-<code>points_colors
-</code> can be explicit color names if no 
-<code>palette
-</code> is specified in the configuration; otherwise, they are either numeric values or category names depending on the type of palette specified. Sizes are the diameter in pixels (1/96th of an inch). Hovers are only shown in interactive graphs (or when saving an HTML file).
-</p>
-<p>The 
-<code>borders_colors
-</code>, 
-<code>borders_sizes
-</code> and/or 
-<code>borders_mask
-</code> vectors can be used to provide additional data per point. The border size is in addition to the point size.
-</p>
-<p>It is possible to draw straight 
-<code>edges_points
-</code> between specific point pairs. In this case the 
-<code>edges
-</code> of the 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration">
-<code>PointsGraphConfiguration
-</code>
-</a> will be used, and the 
-<code>edges_colors
-</code>, 
-<code>edges_sizes
-</code> (widths) and 
-<code>edges_styles
-</code> will override it per edge.
-</p>
-<p>The 
-<code>points_mask
-</code>, 
-<code>borders_mask
-</code> and 
-<code>edges_mask
-</code> allow disabling an arbitrary subset of the points, borders and/or edges. This is often more convenient than excluding the data from the arrays. This is also useful for defining points which are only used to draw edges between them and aren&#39;t drawn as actual points. The properties of excluded entities, other than their coordinates, are ignored (e.g., the 
-<code>points_colors
-</code> of points with a zero 
-<code>points_mask
-</code> value need not be valid color names).
-</p>
-<p>If 
-<code>points_order
-</code> and/or 
-<code>edges_order
-</code> are specified, we reorder the points and/or edges accordingly. This allows controlling which points and/or edges will appear on top of the others. Due to Plotly limitations, when using categorical colors, all the points (or edges) of one category must all be either above or below all the points of each other category. We therefore compute an overall priority for each category as the mean reordered index of all the points (or edges) of that category, and reorder the categories based on that.
-</p>
-<p>The 
-<code>points_colors_title
-</code>, 
-<code>borders_colors_title
-</code> and 
-<code>edges_colors_title
-</code> are only used if 
-<code>show_legend
-</code> is set for the relevant color configurations. You can&#39;t specify 
-<code>show_legend
-</code> if the colors data contains explicit color names. palette.
-</p>
-<div class="admonition is-info">
-<header class="admonition-header">Note
-</header>
-<div class="admonition-body">
-<p>Continuous colors for edges are not implemented due to the difficulty of getting Plotly to render them, and given we didn&#39;t find (m)any use cases for them.
-</p>
-</div>
-</div>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.PointsGraphConfiguration" href="#SomeGraphs.Scatters.PointsGraphConfiguration">
-<code>SomeGraphs.Scatters.PointsGraphConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct PointsGraphConfiguration &lt;: AbstractGraphConfiguration
+end</code></pre><p>The data for a scatter graph of points.</p><p>By default, all the titles are empty. You can specify the overall <code>figure_title</code> as well as the <code>x_axis_title</code> and <code>y_axis_title</code> for the axes, and the <code>points_colors_title</code> and <code>borders_colors_title</code> for the legends.</p><p>The <code>points_xs</code> and <code>points_ys</code> vectors must be of the same size. If specified, the <code>points_colors</code>, <code>points_sizes</code> <code>points_hovers</code>, <code>points_order</code> and/or <code>points_mask</code> vectors must also be of the same size. The <code>points_colors</code> can be explicit color names if no <code>palette</code> is specified in the configuration; otherwise, they are either numeric values or category names depending on the type of palette specified. Sizes are the diameter in pixels (1/96th of an inch). Hovers are only shown in interactive graphs (or when saving an HTML file).</p><p>The <code>borders_colors</code>, <code>borders_sizes</code> and/or <code>borders_mask</code> vectors can be used to provide additional data per point. The border size is in addition to the point size.</p><p>It is possible to draw straight <code>edges_points</code> between specific point pairs. In this case the <code>edges</code> of the <a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration"><code>PointsGraphConfiguration</code></a> will be used, and the <code>edges_colors</code>, <code>edges_sizes</code> (widths) and <code>edges_styles</code> will override it per edge.</p><p>The <code>points_mask</code>, <code>borders_mask</code> and <code>edges_mask</code> allow disabling an arbitrary subset of the points, borders and/or edges. This is often more convenient than excluding the data from the arrays. This is also useful for defining points which are only used to draw edges between them and aren&#39;t drawn as actual points. The properties of excluded entities, other than their coordinates, are ignored (e.g., the <code>points_colors</code> of points with a zero <code>points_mask</code> value need not be valid color names).</p><p>If <code>points_order</code> and/or <code>edges_order</code> are specified, we reorder the points and/or edges accordingly. This allows controlling which points and/or edges will appear on top of the others. Due to Plotly limitations, when using categorical colors, all the points (or edges) of one category must all be either above or below all the points of each other category. We therefore compute an overall priority for each category as the mean reordered index of all the points (or edges) of that category, and reorder the categories based on that.</p><p>The <code>points_colors_title</code>, <code>borders_colors_title</code> and <code>edges_colors_title</code> are only used if <code>show_legend</code> is set for the relevant color configurations. You can&#39;t specify <code>show_legend</code> if the colors data contains explicit color names. palette.</p><div class="admonition is-info" id="Note-f6f059ed7768f171"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-f6f059ed7768f171" title="Permalink"></a></header><div class="admonition-body"><p>Continuous colors for edges are not implemented due to the difficulty of getting Plotly to render them, and given we didn&#39;t find (m)any use cases for them.</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.PointsGraphConfiguration" href="#SomeGraphs.Scatters.PointsGraphConfiguration"><code>SomeGraphs.Scatters.PointsGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct PointsGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration()
     y_axis::AxisConfiguration = AxisConfiguration()
@@ -428,114 +63,16 @@ end
     vertical_bands::BandsConfiguration = BandsConfiguration()
     horizontal_bands::BandsConfiguration = BandsConfiguration()
     diagonal_bands::BandsConfiguration = BandsConfiguration()
-end
-</code>
-</pre>
-<p>Configure a graph for showing a scatter of points and/or edges.
-</p>
-<p>If 
-<code>edges_over_points
-</code> is set, the edges will be plotted above the points; otherwise, the points will be plotted above the edges. Edges are plotted using the 
-<code>edges_style
-</code> unless the styles are specified in the data.
-</p>
-<p>The 
-<code>borders
-</code> is used if the 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphData">
-<code>PointsGraphData
-</code>
-</a> contains either the 
-<code>borders_colors
-</code> and/or 
-<code>borders_sizes
-</code>. This allows displaying some additional data per point.
-</p>
-<p>Using the 
-<code>vertical_bands
-</code>, 
-<code>horizontal_bands
-</code> and/or 
-<code>diagonal_bands
-</code> you can partition the graph into regions. The 
-<code>diagonal_bands
-</code> can only be used if both axes are linear or both axes are in (the same) log scale. They are parallel to the X = Y line. For linear axes, the offset is additive, (Y = X + offset). For log scale axes, the offset is multiplicative (Y = X * offset), and the offset must be positive. This is a rare case where we must break orthogonality between flags, as switching between linear and log scales must be accompanied by patching the diagonal band offsets to match.
-</p>
-<div class="admonition is-info">
-<header class="admonition-header">Note
-</header>
-<div class="admonition-body">
-<p>There is no 
-<code>show_legend
-</code> here. Instead you probably want to set the 
-<code>show_legend
-</code> of the 
-<code>points
-</code>, 
-<code>borders
-</code> and/or 
-<code>edges
-</code>. There&#39;s no way to create a legend for sizes or edge styles.
-</p>
-</div>
-</div>
-<div class="admonition is-info">
-<header class="admonition-header">Note
-</header>
-<div class="admonition-body">
-<p>Continuous colors for edges are not implemented due to the difficulty of getting Plotly to render them, and given we didn&#39;t find (m)any use cases for them.
-</p>
-</div>
-</div>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.ScattersConfiguration" href="#SomeGraphs.Scatters.ScattersConfiguration">
-<code>SomeGraphs.Scatters.ScattersConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct ScattersConfiguration &lt;: Validated
+end</code></pre><p>Configure a graph for showing a scatter of points and/or edges.</p><p>If <code>edges_over_points</code> is set, the edges will be plotted above the points; otherwise, the points will be plotted above the edges. Edges are plotted using the <code>edges_style</code> unless the styles are specified in the data.</p><p>The <code>borders</code> is used if the <a href="scatters.html#SomeGraphs.Scatters.PointsGraphData"><code>PointsGraphData</code></a> contains either the <code>borders_colors</code> and/or <code>borders_sizes</code>. This allows displaying some additional data per point.</p><p>Using the <code>vertical_bands</code>, <code>horizontal_bands</code> and/or <code>diagonal_bands</code> you can partition the graph into regions. The <code>diagonal_bands</code> can only be used if both axes are linear or both axes are in (the same) log scale. They are parallel to the X = Y line. For linear axes, the offset is additive, (Y = X + offset). For log scale axes, the offset is multiplicative (Y = X * offset), and the offset must be positive. This is a rare case where we must break orthogonality between flags, as switching between linear and log scales must be accompanied by patching the diagonal band offsets to match.</p><div class="admonition is-info" id="Note-5238aae5cce5bb53"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-5238aae5cce5bb53" title="Permalink"></a></header><div class="admonition-body"><p>There is no <code>show_legend</code> here. Instead you probably want to set the <code>show_legend</code> of the <code>points</code>, <code>borders</code> and/or <code>edges</code>. There&#39;s no way to create a legend for sizes or edge styles.</p></div></div><div class="admonition is-info" id="Note-f6f059ed7768f171"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-f6f059ed7768f171" title="Permalink"></a></header><div class="admonition-body"><p>Continuous colors for edges are not implemented due to the difficulty of getting Plotly to render them, and given we didn&#39;t find (m)any use cases for them.</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.ScattersConfiguration" href="#SomeGraphs.Scatters.ScattersConfiguration"><code>SomeGraphs.Scatters.ScattersConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct ScattersConfiguration &lt;: Validated
     colors::ColorsConfiguration = ColorsConfiguration()
     sizes::SizesConfiguration() = SizesConfiguration()
-end
-</code>
-</pre>
-<p>Configure points (or borders, which are just larger points drawn under the actual points) or edges in a scatter graph. Point sizes are the diameter of the points. Border sizes are added to the point sizes. Edge sizes are the width of the lines.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Default (serves as a baseline to compare with when modifying options):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>Configure points (or borders, which are just larger points drawn under the actual points) or edges in a scatter graph. Point sizes are the diameter of the points. Border sizes are added to the point sizes. Edge sizes are the width of the lines.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='c30GavaUWF' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='UThyipi0T0' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("c30GavaUWF")
+    const PLOT = document.getElementById("UThyipi0T0")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -544,26 +81,16 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Borders:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Borders:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 graph.configuration.borders.colors.fixed = &quot;black&quot;
 graph.configuration.borders.sizes.fixed = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='nqUgSkq9Vx' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='ivJ3AuVmVF' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nqUgSkq9Vx")
+    const PLOT = document.getElementById("ivJ3AuVmVF")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":"black","size":7,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -572,28 +99,18 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Edges:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Edges:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = points_graph(;
     points_xs = collect(0:10) .* 10,
     points_ys = collect(0:10) .^ 2,
     edges_points = [(1, 8), (2, 9), (3, 10), (4, 11)],
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='QktpQE7DBk' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='4llDhLCRqC' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QktpQE7DBk")
+    const PLOT = document.getElementById("4llDhLCRqC")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[0.0,49.0],"type":"scatter","x":[0.0,70.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[1.0,64.0],"type":"scatter","x":[10.0,80.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[4.0,81.0],"type":"scatter","x":[20.0,90.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[9.0,100.0],"type":"scatter","x":[30.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -602,27 +119,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Diagonal bands (linear scales):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Diagonal bands (linear scales):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 graph.configuration.diagonal_bands.low.offset = -25
 graph.configuration.diagonal_bands.middle.offset = 0
 graph.configuration.diagonal_bands.high.offset = +25
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='2orAREX5pP' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='BboIrRCHuo' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("2orAREX5pP")
+    const PLOT = document.getElementById("BboIrRCHuo")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"shapes":[{"line":{"color":null,"dash":"dot"},"x0":24.0,"type":"line","y0":-1.0,"y1":76.0,"yref":"y","xref":"x","x1":101.0},{"line":{"color":null,"dash":null},"x0":-1.0,"type":"line","y0":-1.0,"y1":101.0,"yref":"y","xref":"x","x1":101.0},{"line":{"color":null,"dash":"dash"},"x0":-1.0,"type":"line","y0":24.0,"y1":101.0,"yref":"y","xref":"x","x1":76.0}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -631,13 +138,8 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Diagonal bands (log scales):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Diagonal bands (log scales):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 graph.configuration.x_axis.log_scale = Log10Scale
 graph.configuration.y_axis.log_scale = Log10Scale
@@ -647,29 +149,11 @@ graph.configuration.diagonal_bands.low.offset = 1 / 4
 graph.configuration.diagonal_bands.middle.offset = 1
 graph.configuration.diagonal_bands.high.offset = 4
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='9RqQFjVOM5' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='pYO884k3L7' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("9RqQFjVOM5")
-    const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,0.3010299956639812,0.6989700043360189,1.0,1.2304489213782739,1.414973347970818,1.568201724066995,1.6989700043360187,1.8129133566428555,1.9138138523837167,2.0043213737826426],"type":"scatter","text":["X: 0 = <sub>10</sub>0.0
-<br>Y: 0 = <sub>10</sub>0.0","X: 10 = <sub>10</sub>1.0413926851582251
-<br>Y: 1 = <sub>10</sub>0.3010299956639812","X: 20 = <sub>10</sub>1.3222192947339193
-<br>Y: 4 = <sub>10</sub>0.6989700043360189","X: 30 = <sub>10</sub>1.4913616938342726
-<br>Y: 9 = <sub>10</sub>1.0","X: 40 = <sub>10</sub>1.6127838567197355
-<br>Y: 16 = <sub>10</sub>1.2304489213782739","X: 50 = <sub>10</sub>1.7075701760979363
-<br>Y: 25 = <sub>10</sub>1.414973347970818","X: 60 = <sub>10</sub>1.7853298350107671
-<br>Y: 36 = <sub>10</sub>1.568201724066995","X: 70 = <sub>10</sub>1.8512583487190752
-<br>Y: 49 = <sub>10</sub>1.6989700043360187","X: 80 = <sub>10</sub>1.9084850188786497
-<br>Y: 64 = <sub>10</sub>1.8129133566428555","X: 90 = <sub>10</sub>1.9590413923210936
-<br>Y: 81 = <sub>10</sub>1.9138138523837167","X: 100 = <sub>10</sub>2.0043213737826426
-<br>Y: 100 = <sub>10</sub>2.0043213737826426"],"hovertemplate":"%{text}
-<extra>
-</extra>","x":[0.0,1.0413926851582251,1.3222192947339193,1.4913616938342726,1.6127838567197355,1.7075701760979363,1.7853298350107671,1.8512583487190752,1.9084850188786497,1.9590413923210936,2.0043213737826426]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.020043213,2.0243645],"tickprefix":"<sub>10</sub>"},"shapes":[{"line":{"color":null,"dash":"dot"},"x0":0.5820167784075351,"type":"line","y0":-0.020043213,"y1":1.4223044801075844,"yref":"y","xref":"x","x1":2.0243645},{"line":{"color":null,"dash":null},"x0":-0.020043212920427322,"type":"line","y0":-0.020043213,"y1":2.0243645,"yref":"y","xref":"x","x1":2.024364471435547},{"line":{"color":null,"dash":"dash"},"x0":-0.020043213,"type":"line","y0":0.5820167784075351,"y1":2.0243645,"yref":"y","xref":"x","x1":1.4223044801075844}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.020043213,2.0243645],"tickprefix":"<sub>10</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("pYO884k3L7")
+    const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,0.3010299956639812,0.6989700043360189,1.0,1.2304489213782739,1.414973347970818,1.568201724066995,1.6989700043360187,1.8129133566428555,1.9138138523837167,2.0043213737826426],"type":"scatter","text":["X: 0 = <sub>10</sub>0.0<br>Y: 0 = <sub>10</sub>0.0","X: 10 = <sub>10</sub>1.0413926851582251<br>Y: 1 = <sub>10</sub>0.3010299956639812","X: 20 = <sub>10</sub>1.3222192947339193<br>Y: 4 = <sub>10</sub>0.6989700043360189","X: 30 = <sub>10</sub>1.4913616938342726<br>Y: 9 = <sub>10</sub>1.0","X: 40 = <sub>10</sub>1.6127838567197355<br>Y: 16 = <sub>10</sub>1.2304489213782739","X: 50 = <sub>10</sub>1.7075701760979363<br>Y: 25 = <sub>10</sub>1.414973347970818","X: 60 = <sub>10</sub>1.7853298350107671<br>Y: 36 = <sub>10</sub>1.568201724066995","X: 70 = <sub>10</sub>1.8512583487190752<br>Y: 49 = <sub>10</sub>1.6989700043360187","X: 80 = <sub>10</sub>1.9084850188786497<br>Y: 64 = <sub>10</sub>1.8129133566428555","X: 90 = <sub>10</sub>1.9590413923210936<br>Y: 81 = <sub>10</sub>1.9138138523837167","X: 100 = <sub>10</sub>2.0043213737826426<br>Y: 100 = <sub>10</sub>2.0043213737826426"],"hovertemplate":"%{text}<extra></extra>","x":[0.0,1.0413926851582251,1.3222192947339193,1.4913616938342726,1.6127838567197355,1.7075701760979363,1.7853298350107671,1.8512583487190752,1.9084850188786497,1.9590413923210936,2.0043213737826426]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.020043213,2.0243645],"tickprefix":"<sub>10</sub>"},"shapes":[{"line":{"color":null,"dash":"dot"},"x0":0.5820167784075351,"type":"line","y0":-0.020043213,"y1":1.4223044801075844,"yref":"y","xref":"x","x1":2.0243645},{"line":{"color":null,"dash":null},"x0":-0.020043212920427322,"type":"line","y0":-0.020043213,"y1":2.0243645,"yref":"y","xref":"x","x1":2.024364471435547},{"line":{"color":null,"dash":"dash"},"x0":-0.020043213,"type":"line","y0":0.5820167784075351,"y1":2.0243645,"yref":"y","xref":"x","x1":1.4223044801075844}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.020043213,2.0243645],"tickprefix":"<sub>10</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -677,42 +161,11 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.points_density" href="#SomeGraphs.Scatters.points_density">
-<code>SomeGraphs.Scatters.points_density
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">points_density(
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.points_density" href="#SomeGraphs.Scatters.points_density"><code>SomeGraphs.Scatters.points_density</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">points_density(
     points_xs::AbstractVector{&lt;:Real},
     points_ys::AbstractVector{&lt;:Real},
-)::AbstractVector{&lt;:AbstractFloat}
-</code>
-</pre>
-<p>Given a set of point coordinates, compute for each one the density of its environment. This can be used to color the points by density.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+)::AbstractVector{&lt;:AbstractFloat}</code></pre><p>Given a set of point coordinates, compute for each one the density of its environment. This can be used to color the points by density.</p></div></section></article><p><strong>Examples:</strong></p><pre><code class="language-julia hljs">using SomeGraphs
 graph = points_graph()
 graph.data.points_xs = [
     0.2698393176826803,
@@ -769,58 +222,11 @@ graph.configuration.y_axis.minimum = -3
 graph.configuration.x_axis.maximum = 3
 graph.configuration.y_axis.maximum = 3
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='KFK7gIEjaE' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='aMCBUZrbEw' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("KFK7gIEjaE")
-    const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.141279296807241,0.12431086777251586,0.09647551309633877,0.1416260379187742,0.08003334489911197,0.09455735213727326,0.06928854494884887,0.06840273959933996,0.14863891820291758,0.11359008702086126,0.07179339753276073,0.09512792759744401,0.0702649710694865,0.04816043288439293,0.09732083832407683,0.04597381898914894,0.06566349951060343,0.13723939393743936,0.07408380410388117,0.1433299322228674],"coloraxis":"coloraxis","size":16,"showscale":false},"y":[-0.1764741545510277,0.5007984744043152,-1.0092288051861404,0.28862095432807144,0.3216029374844889,1.1177946117474804,0.11865114901055787,-2.173777902643006,-0.5131646448399668,-0.4180196978042471,-1.7758801658517032,0.5019767811414706,0.6519383169746722,1.306115558967419,-0.6077449865370641,0.6968047575410379,1.7053341710917538,-0.6584463274588279,0.9034430051864035,-0.631083973233279],"type":"scatter","text":["Color: 0.141279296807241
-<br>X: 0.2698393176826803
-<br>Y: -0.1764741545510277","Color: 0.12431086777251586
-<br>X: 0.21199888259395777
-<br>Y: 0.5007984744043152","Color: 0.09647551309633877
-<br>X: -1.1403772919081927
-<br>Y: -1.0092288051861404","Color: 0.1416260379187742
-<br>X: 0.015375662421357001
-<br>Y: 0.28862095432807144","Color: 0.08003334489911197
-<br>X: -1.067372097104871
-<br>Y: 0.3216029374844889","Color: 0.09455735213727326
-<br>X: -0.05131680407322392
-<br>Y: 1.1177946117474804","Color: 0.06928854494884887
-<br>X: 1.1476690271171557
-<br>Y: 0.11865114901055787","Color: 0.06840273959933996
-<br>X: 0.2619998741581797
-<br>Y: -2.173777902643006","Color: 0.14863891820291758
-<br>X: -0.3294624837610639
-<br>Y: -0.5131646448399668","Color: 0.11359008702086126
-<br>X: 0.3990906575326256
-<br>Y: -0.4180196978042471","Color: 0.07179339753276073
-<br>X: 0.016185972979333094
-<br>Y: -1.7758801658517032","Color: 0.09512792759744401
-<br>X: -0.6295842065710322
-<br>Y: 0.5019767811414706","Color: 0.0702649710694865
-<br>X: 1.74273570356108
-<br>Y: 0.6519383169746722","Color: 0.04816043288439293
-<br>X: -1.612316716623975
-<br>Y: 1.306115558967419","Color: 0.09732083832407683
-<br>X: -1.2696818434826393
-<br>Y: -0.6077449865370641","Color: 0.04597381898914894
-<br>X: -2.3942962323946806
-<br>Y: 0.6968047575410379","Color: 0.06566349951060343
-<br>X: -0.0683194741744384
-<br>Y: 1.7053341710917538","Color: 0.13723939393743936
-<br>X: -0.6991502371264332
-<br>Y: -0.6584463274588279","Color: 0.07408380410388117
-<br>X: 1.3005476302710504
-<br>Y: 0.9034430051864035","Color: 0.1433299322228674
-<br>X: -0.3156364801379863
-<br>Y: -0.631083973233279"],"hovertemplate":"%{text}
-<extra>
-</extra>","x":[0.2698393176826803,0.21199888259395777,-1.1403772919081927,0.015375662421357001,-1.067372097104871,-0.05131680407322392,1.1476690271171557,0.2619998741581797,-0.3294624837610639,0.3990906575326256,0.016185972979333094,-0.6295842065710322,1.74273570356108,-1.612316716623975,-1.2696818434826393,-2.3942962323946806,-0.0683194741744384,-0.6991502371264332,1.3005476302710504,-0.3156364801379863]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.044947166,"colorscale":[[0.0,"#440154"],[0.0625,"#48186a"],[0.125,"#472d7b"],[0.1875,"#424086"],[0.25,"#3b528b"],[0.3125,"#33638d"],[0.375,"#2c728e"],[0.4375,"#26828e"],[0.5,"#21918c"],[0.5625,"#1fa088"],[0.625,"#28ae80"],[0.6875,"#3fbc73"],[0.75,"#5ec962"],[0.8125,"#84d44b"],[0.875,"#addc30"],[0.9375,"#d8e219"],[1.0,"#fde725"]],"cmax":0.14966556,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.06,3.06]},"paper_bgcolor":"white","template":"simple_white","height":200,"legend":{"tracegroupgap":0},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.06,3.06]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50},"width":200}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("aMCBUZrbEw")
+    const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.141279296807241,0.12431086777251586,0.09647551309633877,0.1416260379187742,0.08003334489911197,0.09455735213727326,0.06928854494884887,0.06840273959933996,0.14863891820291758,0.11359008702086126,0.07179339753276073,0.09512792759744401,0.0702649710694865,0.04816043288439293,0.09732083832407683,0.04597381898914894,0.06566349951060343,0.13723939393743936,0.07408380410388117,0.1433299322228674],"coloraxis":"coloraxis","size":16,"showscale":false},"y":[-0.1764741545510277,0.5007984744043152,-1.0092288051861404,0.28862095432807144,0.3216029374844889,1.1177946117474804,0.11865114901055787,-2.173777902643006,-0.5131646448399668,-0.4180196978042471,-1.7758801658517032,0.5019767811414706,0.6519383169746722,1.306115558967419,-0.6077449865370641,0.6968047575410379,1.7053341710917538,-0.6584463274588279,0.9034430051864035,-0.631083973233279],"type":"scatter","text":["Color: 0.141279296807241<br>X: 0.2698393176826803<br>Y: -0.1764741545510277","Color: 0.12431086777251586<br>X: 0.21199888259395777<br>Y: 0.5007984744043152","Color: 0.09647551309633877<br>X: -1.1403772919081927<br>Y: -1.0092288051861404","Color: 0.1416260379187742<br>X: 0.015375662421357001<br>Y: 0.28862095432807144","Color: 0.08003334489911197<br>X: -1.067372097104871<br>Y: 0.3216029374844889","Color: 0.09455735213727326<br>X: -0.05131680407322392<br>Y: 1.1177946117474804","Color: 0.06928854494884887<br>X: 1.1476690271171557<br>Y: 0.11865114901055787","Color: 0.06840273959933996<br>X: 0.2619998741581797<br>Y: -2.173777902643006","Color: 0.14863891820291758<br>X: -0.3294624837610639<br>Y: -0.5131646448399668","Color: 0.11359008702086126<br>X: 0.3990906575326256<br>Y: -0.4180196978042471","Color: 0.07179339753276073<br>X: 0.016185972979333094<br>Y: -1.7758801658517032","Color: 0.09512792759744401<br>X: -0.6295842065710322<br>Y: 0.5019767811414706","Color: 0.0702649710694865<br>X: 1.74273570356108<br>Y: 0.6519383169746722","Color: 0.04816043288439293<br>X: -1.612316716623975<br>Y: 1.306115558967419","Color: 0.09732083832407683<br>X: -1.2696818434826393<br>Y: -0.6077449865370641","Color: 0.04597381898914894<br>X: -2.3942962323946806<br>Y: 0.6968047575410379","Color: 0.06566349951060343<br>X: -0.0683194741744384<br>Y: 1.7053341710917538","Color: 0.13723939393743936<br>X: -0.6991502371264332<br>Y: -0.6584463274588279","Color: 0.07408380410388117<br>X: 1.3005476302710504<br>Y: 0.9034430051864035","Color: 0.1433299322228674<br>X: -0.3156364801379863<br>Y: -0.631083973233279"],"hovertemplate":"%{text}<extra></extra>","x":[0.2698393176826803,0.21199888259395777,-1.1403772919081927,0.015375662421357001,-1.067372097104871,-0.05131680407322392,1.1476690271171557,0.2619998741581797,-0.3294624837610639,0.3990906575326256,0.016185972979333094,-0.6295842065710322,1.74273570356108,-1.612316716623975,-1.2696818434826393,-2.3942962323946806,-0.0683194741744384,-0.6991502371264332,1.3005476302710504,-0.3156364801379863]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.044947166,"colorscale":[[0.0,"#440154"],[0.0625,"#48186a"],[0.125,"#472d7b"],[0.1875,"#424086"],[0.25,"#3b528b"],[0.3125,"#33638d"],[0.375,"#2c728e"],[0.4375,"#26828e"],[0.5,"#21918c"],[0.5625,"#1fa088"],[0.625,"#28ae80"],[0.6875,"#3fbc73"],[0.75,"#5ec962"],[0.8125,"#84d44b"],[0.875,"#addc30"],[0.9375,"#d8e219"],[1.0,"#fde725"]],"cmax":0.14966556,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.06,3.06]},"paper_bgcolor":"white","template":"simple_white","height":200,"legend":{"tracegroupgap":0},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.06,3.06]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50},"width":200}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -828,54 +234,8 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.LineGraph" href="#SomeGraphs.Scatters.LineGraph">
-<code>SomeGraphs.Scatters.LineGraph
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>A graph showing a single line. See 
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphData">
-<code>LineGraphData
-</code>
-</a> and 
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration">
-<code>LineGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.line_graph" href="#SomeGraphs.Scatters.line_graph">
-<code>SomeGraphs.Scatters.line_graph
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">function line_graph(;
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.LineGraph" href="#SomeGraphs.Scatters.LineGraph"><code>SomeGraphs.Scatters.LineGraph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A graph showing a single line. See <a href="scatters.html#SomeGraphs.Scatters.LineGraphData"><code>LineGraphData</code></a> and <a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration"><code>LineGraphConfiguration</code></a>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.line_graph" href="#SomeGraphs.Scatters.line_graph"><code>SomeGraphs.Scatters.line_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">function line_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     x_axis_title::Maybe{AbstractString} = nothing,
     y_axis_title::Maybe{AbstractString} = nothing,
@@ -885,43 +245,7 @@ to_documenter(graph.figure)
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
     configuration::LineGraphConfiguration = LineGraphConfiguration()]
-)::LineGraph
-</code>
-</pre>
-<p>Create a 
-<a href="scatters.html#SomeGraphs.Scatters.LineGraph">
-<code>LineGraph
-</code>
-</a> by initializing only the 
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphData">
-<code>LineGraphData
-</code>
-</a> fields (with an optional 
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration">
-<code>LineGraphConfiguration
-</code>
-</a>).
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.LineGraphData" href="#SomeGraphs.Scatters.LineGraphData">
-<code>SomeGraphs.Scatters.LineGraphData
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct LineGraphData &lt;: AbstractGraphData
+)::LineGraph</code></pre><p>Create a <a href="scatters.html#SomeGraphs.Scatters.LineGraph"><code>LineGraph</code></a> by initializing only the <a href="scatters.html#SomeGraphs.Scatters.LineGraphData"><code>LineGraphData</code></a> fields (with an optional <a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration"><code>LineGraphConfiguration</code></a>).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.LineGraphData" href="#SomeGraphs.Scatters.LineGraphData"><code>SomeGraphs.Scatters.LineGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct LineGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     x_axis_title::Maybe{AbstractString} = nothing
     y_axis_title::Maybe{AbstractString} = nothing
@@ -931,47 +255,7 @@ to_documenter(graph.figure)
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
-end
-</code>
-</pre>
-<p>The data for a single line graph.
-</p>
-<p>By default, all the titles are empty. You can specify the overall 
-<code>figure_title
-</code> as well as the 
-<code>x_axis_title
-</code> and 
-<code>y_axis_title
-</code> for the axes.
-</p>
-<p>The 
-<code>points_xs
-</code> and 
-<code>points_ys
-</code> vectors must be of the same size. If specified, the 
-<code>points_hovers
-</code> vector must also be of the same size.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.LineGraphConfiguration" href="#SomeGraphs.Scatters.LineGraphConfiguration">
-<code>SomeGraphs.Scatters.LineGraphConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct LineGraphConfiguration &lt;: AbstractGraphConfiguration
+end</code></pre><p>The data for a single line graph.</p><p>By default, all the titles are empty. You can specify the overall <code>figure_title</code> as well as the <code>x_axis_title</code> and <code>y_axis_title</code> for the axes.</p><p>The <code>points_xs</code> and <code>points_ys</code> vectors must be of the same size. If specified, the <code>points_hovers</code> vector must also be of the same size.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.LineGraphConfiguration" href="#SomeGraphs.Scatters.LineGraphConfiguration"><code>SomeGraphs.Scatters.LineGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct LineGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration()
     y_axis::AxisConfiguration = AxisConfiguration()
@@ -982,45 +266,13 @@ end
     vertical_bands::BandsConfiguration = BandsConfiguration()
     horizontal_bands::BandsConfiguration = BandsConfiguration()
     diagonal_bands::BandsConfiguration = BandsConfiguration()
-end
-</code>
-</pre>
-<p>Configure a graph for showing a single line.
-</p>
-<p>If 
-<code>show_points
-</code> is set, each point is drawn, using the 
-<code>points_size
-</code> and/or 
-<code>points_color
-</code> if specified. The bands are similar to 
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration">
-<code>PointsGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Default (serves as a baseline to compare with when modifying options):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>Configure a graph for showing a single line.</p><p>If <code>show_points</code> is set, each point is drawn, using the <code>points_size</code> and/or <code>points_color</code> if specified. The bands are similar to <a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration"><code>PointsGraphConfiguration</code></a>.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='FJaYwG5GKC' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='WEjFMjD63g' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FJaYwG5GKC")
+    const PLOT = document.getElementById("WEjFMjD63g")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1029,25 +281,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>With points:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>With points:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 graph.configuration.show_points = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='iQpjSwZ8LA' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='QRPRYe1Z8d' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("iQpjSwZ8LA")
+    const PLOT = document.getElementById("QRPRYe1Z8d")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines+markers","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1056,25 +298,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Filled:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Filled:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='n2yeVdptwD' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='TIV2WCxZu4' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("n2yeVdptwD")
+    const PLOT = document.getElementById("TIV2WCxZu4")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"tozeroy","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1083,54 +315,8 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.LinesGraph" href="#SomeGraphs.Scatters.LinesGraph">
-<code>SomeGraphs.Scatters.LinesGraph
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>A graph showing multiple lines. See 
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphData">
-<code>LinesGraphData
-</code>
-</a> and 
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration">
-<code>LinesGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.lines_graph" href="#SomeGraphs.Scatters.lines_graph">
-<code>SomeGraphs.Scatters.lines_graph
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">function lines_graph(;
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.LinesGraph" href="#SomeGraphs.Scatters.LinesGraph"><code>SomeGraphs.Scatters.LinesGraph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A graph showing multiple lines. See <a href="scatters.html#SomeGraphs.Scatters.LinesGraphData"><code>LinesGraphData</code></a> and <a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration"><code>LinesGraphConfiguration</code></a>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.lines_graph" href="#SomeGraphs.Scatters.lines_graph"><code>SomeGraphs.Scatters.lines_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">function lines_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     x_axis_title::Maybe{AbstractString} = nothing,
     y_axis_title::Maybe{AbstractString} = nothing,
@@ -1147,43 +333,7 @@ to_documenter(graph.figure)
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
     configuration::LinesGraphConfiguration = LinesGraphConfiguration()]
-)::LinesGraph
-</code>
-</pre>
-<p>Create a 
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraph">
-<code>LinesGraph
-</code>
-</a> by initializing only the 
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphData">
-<code>LinesGraphData
-</code>
-</a> fields (with an optional 
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration">
-<code>LinesGraphConfiguration
-</code>
-</a>).
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.LinesGraphData" href="#SomeGraphs.Scatters.LinesGraphData">
-<code>SomeGraphs.Scatters.LinesGraphData
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct LinesGraphData &lt;: AbstractGraphData
+)::LinesGraph</code></pre><p>Create a <a href="scatters.html#SomeGraphs.Scatters.LinesGraph"><code>LinesGraph</code></a> by initializing only the <a href="scatters.html#SomeGraphs.Scatters.LinesGraphData"><code>LinesGraphData</code></a> fields (with an optional <a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration"><code>LinesGraphConfiguration</code></a>).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.LinesGraphData" href="#SomeGraphs.Scatters.LinesGraphData"><code>SomeGraphs.Scatters.LinesGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct LinesGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     x_axis_title::Maybe{AbstractString} = nothing
     y_axis_title::Maybe{AbstractString} = nothing
@@ -1199,61 +349,7 @@ to_documenter(graph.figure)
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
-end
-</code>
-</pre>
-<p>The data for a multi-line graph.
-</p>
-<p>By default, all the titles are empty. You can specify the overall 
-<code>figure_title
-</code> as well as the 
-<code>x_axis_title
-</code> and 
-<code>y_axis_title
-</code> for the axes.
-</p>
-<p>All the 
-<code>lines_*
-</code> vectors must be of the same size (the number of lines), and contain a vector per line. The 
-<code>lines_points_xs
-</code> and 
-<code>lines_points_ys
-</code> contain a vector per line; these vectors must all be of the same size for each line (the number of points in that specific line).
-</p>
-<p>The 
-<code>lines_titles
-</code> is required if 
-<code>show_legend
-</code> is specified in the 
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration">
-<code>LinesGraphConfiguration
-</code>
-</a>.
-</p>
-<p>If 
-<code>lines_order
-</code> is specified, we reorder the lines accordingly.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Scatters.LinesGraphConfiguration" href="#SomeGraphs.Scatters.LinesGraphConfiguration">
-<code>SomeGraphs.Scatters.LinesGraphConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct LinesGraphConfiguration &lt;: AbstractGraphConfiguration
+end</code></pre><p>The data for a multi-line graph.</p><p>By default, all the titles are empty. You can specify the overall <code>figure_title</code> as well as the <code>x_axis_title</code> and <code>y_axis_title</code> for the axes.</p><p>All the <code>lines_*</code> vectors must be of the same size (the number of lines), and contain a vector per line. The <code>lines_points_xs</code> and <code>lines_points_ys</code> contain a vector per line; these vectors must all be of the same size for each line (the number of points in that specific line).</p><p>The <code>lines_titles</code> is required if <code>show_legend</code> is specified in the <a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration"><code>LinesGraphConfiguration</code></a>.</p><p>If <code>lines_order</code> is specified, we reorder the lines accordingly.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Scatters.LinesGraphConfiguration" href="#SomeGraphs.Scatters.LinesGraphConfiguration"><code>SomeGraphs.Scatters.LinesGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct LinesGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration()
     y_axis::AxisConfiguration = AxisConfiguration()
@@ -1265,45 +361,13 @@ end
     horizontal_bands::BandsConfiguration = BandsConfiguration()
     diagonal_bands::BandsConfiguration = BandsConfiguration()
     show_legend::Bool = false
-end
-</code>
-</pre>
-<p>Configure a graph for showing multiple lines.
-</p>
-<p>This is similar to 
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration">
-<code>LineGraphConfiguration
-</code>
-</a>, with the addition of 
-<code>show_legend
-</code>. If this is set, then the data must specify the title to use for each line.
-</p>
-<p>If 
-<code>stacking
-</code> is specified, we stack the values on top of each other.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Default (serves as a baseline to compare with when modifying options):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>Configure a graph for showing multiple lines.</p><p>This is similar to <a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration"><code>LineGraphConfiguration</code></a>, with the addition of <code>show_legend</code>. If this is set, then the data must specify the title to use for each line.</p><p>If <code>stacking</code> is specified, we stack the values on top of each other.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='jMbpT401ov' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='dkLSUNk71r' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("jMbpT401ov")
+    const PLOT = document.getElementById("dkLSUNk71r")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"none","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,0.0],"type":"scatter","fill":"none","x":[0.0,90.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1312,25 +376,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Filled:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Filled:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='K5vwqWYBnK' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='27KoDqPq0J' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("K5vwqWYBnK")
+    const PLOT = document.getElementById("27KoDqPq0J")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"tozeroy","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,0.0],"type":"scatter","fill":"tozeroy","x":[0.0,90.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1339,26 +393,16 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Stacked:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Stacked:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackValues
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='61cOqeVw3G' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='7h1IbVmoEx' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("61cOqeVw3G")
+    const PLOT = document.getElementById("7h1IbVmoEx")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"tozeroy","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,44.444443,38.88889,33.333332,27.777779,22.222221,16.666666,11.111111,5.5555553,0.0,0.0,0.0],"type":"scatter","fill":"tonexty","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,90.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1367,26 +411,16 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Fractions:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Fractions:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='YLuhjx5Fgp' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='vah5m0smRu' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YLuhjx5Fgp")
+    const PLOT = document.getElementById("vah5m0smRu")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","groupnorm":"fraction","fill":"tozeroy","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,44.444443,38.88889,33.333332,27.777779,22.222221,16.666666,11.111111,5.5555553,0.0,0.0,0.0],"type":"scatter","groupnorm":"fraction","fill":"tonexty","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,90.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.01,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1395,27 +429,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Percents:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Percents:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
 graph.configuration.y_axis.percent = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='YPP0hc9Zu7' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='343by7p7Bi' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YPP0hc9Zu7")
+    const PLOT = document.getElementById("343by7p7Bi")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,100.0,400.0,900.0,1600.0,2500.0,3600.0,4900.0,6400.0,8100.0,10000.0],"type":"scatter","groupnorm":"percent","fill":"tozeroy","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[5000.0,4444.4443,3888.889,3333.3333,2777.7778,2222.2222,1666.6666,1111.1111,555.55554,0.0,0.0,0.0],"type":"scatter","groupnorm":"percent","fill":"tonexty","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,90.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"ticksuffix":"<sub>%</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1424,168 +448,5 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<h2 id="Index">
-<a class="docs-heading-anchor" href="#Index">Index
-</a>
-<a id="Index-1">
-</a>
-<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
-</a>
-</h2>
-<ul>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters">
-<code>SomeGraphs.Scatters
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.LineGraph">
-<code>SomeGraphs.Scatters.LineGraph
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration">
-<code>SomeGraphs.Scatters.LineGraphConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.LineGraphData">
-<code>SomeGraphs.Scatters.LineGraphData
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraph">
-<code>SomeGraphs.Scatters.LinesGraph
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration">
-<code>SomeGraphs.Scatters.LinesGraphConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.LinesGraphData">
-<code>SomeGraphs.Scatters.LinesGraphData
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraph">
-<code>SomeGraphs.Scatters.PointsGraph
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration">
-<code>SomeGraphs.Scatters.PointsGraphConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.PointsGraphData">
-<code>SomeGraphs.Scatters.PointsGraphData
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.ScattersConfiguration">
-<code>SomeGraphs.Scatters.ScattersConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.line_graph">
-<code>SomeGraphs.Scatters.line_graph
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.lines_graph">
-<code>SomeGraphs.Scatters.lines_graph
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.points_density">
-<code>SomeGraphs.Scatters.points_density
-</code>
-</a>
-</li>
-<li>
-<a href="scatters.html#SomeGraphs.Scatters.points_graph">
-<code>SomeGraphs.Scatters.points_graph
-</code>
-</a>
-</li>
-</ul>
-</article>
-<nav class="docs-footer">
-<a class="docs-footer-prevpage" href="distributions.html">« Distributions
-</a>
-<a class="docs-footer-nextpage" href="bars.html">Bar Plots »
-</a>
-<div class="flexbox-break">
-</div>
-<p class="footer-message">Powered by 
-<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> and the 
-<a href="https://julialang.org/">Julia Programming Language
-</a>.
-</p>
-</nav>
-</div>
-<div class="modal" id="documenter-settings">
-<div class="modal-background">
-</div>
-<div class="modal-card">
-<header class="modal-card-head">
-<p class="modal-card-title">Settings
-</p>
-<button class="delete">
-</button>
-</header>
-<section class="modal-card-body">
-<p>
-<label class="label">Theme
-</label>
-<div class="select">
-<select id="documenter-themepicker">
-<option value="auto">Automatic (OS)
-</option>
-<option value="documenter-light">documenter-light
-</option>
-<option value="documenter-dark">documenter-dark
-</option>
-<option value="catppuccin-latte">catppuccin-latte
-</option>
-<option value="catppuccin-frappe">catppuccin-frappe
-</option>
-<option value="catppuccin-macchiato">catppuccin-macchiato
-</option>
-<option value="catppuccin-mocha">catppuccin-mocha
-</option>
-</select>
-</div>
-</p>
-<hr/>
-<p>This document was generated with 
-<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.10.1. Using Julia version 1.11.5.
-</p>
-</section>
-<footer class="modal-card-foot">
-</footer>
-</div>
-</div>
-</div>
-</body>
-</html>
+<h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="scatters.html#SomeGraphs.Scatters"><code>SomeGraphs.Scatters</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.LineGraph"><code>SomeGraphs.Scatters.LineGraph</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.LineGraphConfiguration"><code>SomeGraphs.Scatters.LineGraphConfiguration</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.LineGraphData"><code>SomeGraphs.Scatters.LineGraphData</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.LinesGraph"><code>SomeGraphs.Scatters.LinesGraph</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.LinesGraphConfiguration"><code>SomeGraphs.Scatters.LinesGraphConfiguration</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.LinesGraphData"><code>SomeGraphs.Scatters.LinesGraphData</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.PointsGraph"><code>SomeGraphs.Scatters.PointsGraph</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration"><code>SomeGraphs.Scatters.PointsGraphConfiguration</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.PointsGraphData"><code>SomeGraphs.Scatters.PointsGraphData</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.ScattersConfiguration"><code>SomeGraphs.Scatters.ScattersConfiguration</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.line_graph"><code>SomeGraphs.Scatters.line_graph</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.lines_graph"><code>SomeGraphs.Scatters.lines_graph</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.points_density"><code>SomeGraphs.Scatters.points_density</code></a></li><li><a href="scatters.html#SomeGraphs.Scatters.points_graph"><code>SomeGraphs.Scatters.points_graph</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="distributions.html">« Distributions</a><a class="docs-footer-nextpage" href="bars.html">Bar Plots »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 15:00">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -13,7 +13,8 @@ SomeGraphs.Heatmaps.HeatmapGraph
 SomeGraphs.Heatmaps.heatmap_graph
 SomeGraphs.Heatmaps.HeatmapGraphData
 SomeGraphs.Heatmaps.HeatmapGraphConfiguration
-SomeGraphs.Heatmaps.Reorder
+SomeGraphs.Heatmaps.HeatmapReorder
+SomeGraphs.Heatmaps.HeatmapOrigin
 ```
 
 **Examples:**

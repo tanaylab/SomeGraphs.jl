@@ -1,259 +1,12 @@
-
 <!DOCTYPE html>
-
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Distributions · SomeGraphs.jl v0.1.0
-</title>
-<meta name="title" content="Distributions · SomeGraphs.jl v0.1.0"/>
-<meta property="og:title" content="Distributions · SomeGraphs.jl v0.1.0"/>
-<meta property="twitter:title" content="Distributions · SomeGraphs.jl v0.1.0"/>
-<meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/>
-<meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
-<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
-<script data-outdated-warner src="assets/warner.js">
-</script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
-<script>documenterBaseURL="."
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
-</script>
-<script src="search_index.js">
-</script>
-<script src="siteinfo.js">
-</script>
-<script src="../versions.js">
-</script>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
-<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
-<script src="assets/themeswap.js">
-</script>
-</head>
-<body>
-<div id="documenter">
-<nav class="docs-sidebar">
-<div class="docs-package-name">
-<span class="docs-autofit">
-<a href="index.html">SomeGraphs.jl v0.1.0
-</a>
-</span>
-</div>
-<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
-</button>
-<ul class="docs-menu">
-<li>
-<a class="tocitem" href="index.html">SomeGraphs
-</a>
-</li>
-<li>
-<a class="tocitem" href="validations.html">Validations
-</a>
-</li>
-<li>
-<a class="tocitem" href="common.html">Common
-</a>
-</li>
-<li class="is-active">
-<a class="tocitem" href="distributions.html">Distributions
-</a>
-<ul class="internal">
-<li>
-<a class="tocitem" href="#Index">
-<span>Index
-</span>
-</a>
-</li>
-</ul>
-</li>
-<li>
-<a class="tocitem" href="scatters.html">Scatter Plots
-</a>
-</li>
-<li>
-<a class="tocitem" href="bars.html">Bar Plots
-</a>
-</li>
-<li>
-<a class="tocitem" href="heatmaps.html">Heatmaps
-</a>
-</li>
-<li>
-<a class="tocitem" href="utilities.html">Utilities
-</a>
-</li>
-</ul>
-<div class="docs-version-selector field has-addons">
-<div class="control">
-<span class="docs-label button is-static is-size-7">Version
-</span>
-</div>
-<div class="docs-selector control is-expanded">
-<div class="select is-fullwidth is-size-7">
-<select id="documenter-version-selector">
-</select>
-</div>
-</div>
-</div>
-</nav>
-<div class="docs-main">
-<header class="docs-navbar">
-<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
-</a>
-<nav class="breadcrumb">
-<ul class="is-hidden-mobile">
-<li class="is-active">
-<a href="distributions.html">Distributions
-</a>
-</li>
-</ul>
-<ul class="is-hidden-tablet">
-<li class="is-active">
-<a href="distributions.html">Distributions
-</a>
-</li>
-</ul>
-</nav>
-<div class="docs-right">
-<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
-<span class="docs-icon fa-brands">
-</span>
-<span class="docs-label is-hidden-touch">GitHub
-</span>
-</a>
-<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
-</a>
-<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
-</a>
-</div>
-</header>
-<article class="content" id="documenter-page">
-<h1 id="Distributions">
-<a class="docs-heading-anchor" href="#Distributions">Distributions
-</a>
-<a id="Distributions-1">
-</a>
-<a class="docs-heading-anchor-permalink" href="#Distributions" title="Permalink">
-</a>
-</h1>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions" href="#SomeGraphs.Distributions">
-<code>SomeGraphs.Distributions
-</code>
-</a> — 
-<span class="docstring-category">Module
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>Graphs for showing probability distributions.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraph" href="#SomeGraphs.Distributions.DistributionGraph">
-<code>SomeGraphs.Distributions.DistributionGraph
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>A graph for visualizing a single distribution. See 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
-<code>DistributionGraphData
-</code>
-</a> and 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
-<code>DistributionGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.distribution_graph" href="#SomeGraphs.Distributions.distribution_graph">
-<code>SomeGraphs.Distributions.distribution_graph
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">distribution_graph(;
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Distributions · SomeGraphs.jl v0.1.0</title><meta name="title" content="Distributions · SomeGraphs.jl v0.1.0"/><meta property="og:title" content="Distributions · SomeGraphs.jl v0.1.0"/><meta property="twitter:title" content="Distributions · SomeGraphs.jl v0.1.0"/><meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">SomeGraphs.jl v0.1.0</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="index.html">SomeGraphs</a></li><li><a class="tocitem" href="validations.html">Validations</a></li><li><a class="tocitem" href="common.html">Common</a></li><li class="is-active"><a class="tocitem" href="distributions.html">Distributions</a><ul class="internal"><li><a class="tocitem" href="#Index"><span>Index</span></a></li></ul></li><li><a class="tocitem" href="scatters.html">Scatter Plots</a></li><li><a class="tocitem" href="bars.html">Bar Plots</a></li><li><a class="tocitem" href="heatmaps.html">Heatmaps</a></li><li><a class="tocitem" href="utilities.html">Utilities</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="distributions.html">Distributions</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="distributions.html">Distributions</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Distributions"><a class="docs-heading-anchor" href="#Distributions">Distributions</a><a id="Distributions-1"></a><a class="docs-heading-anchor-permalink" href="#Distributions" title="Permalink"></a></h1><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions" href="#SomeGraphs.Distributions"><code>SomeGraphs.Distributions</code></a> — <span class="docstring-category">Module</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Graphs for showing probability distributions.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraph" href="#SomeGraphs.Distributions.DistributionGraph"><code>SomeGraphs.Distributions.DistributionGraph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A graph for visualizing a single distribution. See <a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData"><code>DistributionGraphData</code></a> and <a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration"><code>DistributionGraphConfiguration</code></a>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.distribution_graph" href="#SomeGraphs.Distributions.distribution_graph"><code>SomeGraphs.Distributions.distribution_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">distribution_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
     cumulative_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{&lt;:Real} = Float32[],
     distribution_name::Maybe{AbstractString} = nothing,
     configuration::DistributionGraphConfiguration = DistributionGraphConfiguration()]
-)::DistributionGraph
-</code>
-</pre>
-<p>Create a 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraph">
-<code>DistributionGraph
-</code>
-</a> by initializing only the 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
-<code>DistributionGraphData
-</code>
-</a> fields (with an optional 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
-<code>DistributionGraphConfiguration
-</code>
-</a>).
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphData" href="#SomeGraphs.Distributions.DistributionGraphData">
-<code>SomeGraphs.Distributions.DistributionGraphData
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct DistributionGraphData &lt;: AbstractGraphData
+)::DistributionGraph</code></pre><p>Create a <a href="distributions.html#SomeGraphs.Distributions.DistributionGraph"><code>DistributionGraph</code></a> by initializing only the <a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData"><code>DistributionGraphData</code></a> fields (with an optional <a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration"><code>DistributionGraphConfiguration</code></a>).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphData" href="#SomeGraphs.Distributions.DistributionGraphData"><code>SomeGraphs.Distributions.DistributionGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct DistributionGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
     cumulative_axis_title::Maybe{AbstractString} = nothing
@@ -262,53 +15,13 @@
     distribution_color::Maybe{AbstractString} = nothing
     value_bands::BandsData = BandsData()
     cumulative_bands::BandsData = BandsData()
-end
-</code>
-</pre>
-<p>The data for a single distribution graph. By default, all the titles are empty. You can specify the overall 
-<code>figure_title
-</code> as well as the 
-<code>value_axis_title
-</code>. The optional 
-<code>distribution_name
-</code> is used as the name of the density axis. You can also specify the 
-<code>distribution_color
-</code> and/or 
-<code>value_bands
-</code> offsets here, if they are more of a data than a configuration parameter in the specific graph. This will override whatever is specified in the configuration.
-</p>
-<p>The 
-<code>cumulative_axis_title
-</code> and/of 
-<code>cumulative_bands
-</code> should only be specified if the 
-<code>distribution.style
-</code> is 
-<code>CumulativeDistribution
-</code>.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Default (serves as a baseline to compare with when modifying options):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>The data for a single distribution graph. By default, all the titles are empty. You can specify the overall <code>figure_title</code> as well as the <code>value_axis_title</code>. The optional <code>distribution_name</code> is used as the name of the density axis. You can also specify the <code>distribution_color</code> and/or <code>value_bands</code> offsets here, if they are more of a data than a configuration parameter in the specific graph. This will override whatever is specified in the configuration.</p><p>The <code>cumulative_axis_title</code> and/of <code>cumulative_bands</code> should only be specified if the <code>distribution.style</code> is <code>CumulativeDistribution</code>.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='8JOPfF3hM8' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='zEZMM76bwY' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8JOPfF3hM8")
+    const PLOT = document.getElementById("zEZMM76bwY")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -317,27 +30,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Titles:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Titles:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.data.figure_title = &quot;Figure title&quot;
 graph.data.value_axis_title = &quot;Values axis&quot;
 graph.data.distribution_name = &quot;Distribution name&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='MDFgUqqtve' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='ysFUrBUq0z' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("MDFgUqqtve")
+    const PLOT = document.getElementById("ysFUrBUq0z")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Distribution name","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03],"title":"Values axis"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"showticklabels":false,"title":"Distribution name"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -346,25 +49,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Color (if it is more of a data than a configuration parameter):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Color (if it is more of a data than a configuration parameter):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.data.distribution_color = &quot;red&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='6xKVafZOzE' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='GanR6rOvOQ' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("6xKVafZOzE")
+    const PLOT = document.getElementById("GanR6rOvOQ")
     const plot_obj = {"data": [{"side":"positive","line":{"color":"red"},"fillcolor":"FF000080","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -373,110 +66,24 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphConfiguration" href="#SomeGraphs.Distributions.DistributionGraphConfiguration">
-<code>SomeGraphs.Distributions.DistributionGraphConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct DistributionGraphConfiguration &lt;: AbstractGraphConfiguration
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionGraphConfiguration" href="#SomeGraphs.Distributions.DistributionGraphConfiguration"><code>SomeGraphs.Distributions.DistributionGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct DistributionGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
-end
-</code>
-</pre>
-<p>Configure a graph for showing a single distribution. The 
-<code>cumulative_axis
-</code> and 
-<code>cumulative_bands
-</code> are only used if the 
-<code>distribution.style
-</code> is 
-<code>CumulativeDistribution
-</code>. The offsets of the 
-<code>cumulative_bands
-</code> are always in fractions (between 0 and 1) regardless of the 
-<code>cumulative_axis.units
-</code>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionConfiguration" href="#SomeGraphs.Distributions.DistributionConfiguration">
-<code>SomeGraphs.Distributions.DistributionConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct DistributionConfiguration &lt;: Validated
+end</code></pre><p>Configure a graph for showing a single distribution. The <code>cumulative_axis</code> and <code>cumulative_bands</code> are only used if the <code>distribution.style</code> is <code>CumulativeDistribution</code>. The offsets of the <code>cumulative_bands</code> are always in fractions (between 0 and 1) regardless of the <code>cumulative_axis.units</code>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionConfiguration" href="#SomeGraphs.Distributions.DistributionConfiguration"><code>SomeGraphs.Distributions.DistributionConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct DistributionConfiguration &lt;: Validated
     values_orientation::ValuesOrientation = HorizontalValues
     style::DistributionStyle = CurveDistribution
     line::LineConfiguration = LineConfiguration(; is_filled = true)
-end
-</code>
-</pre>
-<p>Configure the style of the distribution(s) in a graph.
-</p>
-<p>The 
-<code>values_orientation
-</code> will determine the overall orientation of the graph.
-</p>
-<p>The 
-<code>line.color
-</code> is chosen automatically by default. When showing multiple distributions, you can override it per each one in the 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
-<code>DistributionsGraphData
-</code>
-</a>. By default, the distribution is filled. Plotly only allows for solid lines for distributions, and always fills histogram plots without any line.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Change orientation:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>Configure the style of the distribution(s) in a graph.</p><p>The <code>values_orientation</code> will determine the overall orientation of the graph.</p><p>The <code>line.color</code> is chosen automatically by default. When showing multiple distributions, you can override it per each one in the <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData"><code>DistributionsGraphData</code></a>. By default, the distribution is filled. Plotly only allows for solid lines for distributions, and always fills histogram plots without any line.</p></div></section></article><p><strong>Examples:</strong></p><p>Change orientation:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.values_orientation = VerticalValues
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='0YPEgpjJYe' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='jHmX3CXASV' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("0YPEgpjJYe")
+    const PLOT = document.getElementById("jHmX3CXASV")
     const plot_obj = {"data": [{"y":[0.0,0.0,1.0,1.0,1.0,3.0],"type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","side":"positive"}], "layout": {"showlegend":false,"xaxis":{"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -485,79 +92,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionStyle" href="#SomeGraphs.Distributions.DistributionStyle">
-<code>SomeGraphs.Distributions.DistributionStyle
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>Possible styles for visualizing a distribution:
-</p>
-<p>
-<code>CurveDistribution
-</code> - a density curve (the default).
-</p>
-<p>
-<code>ViolinDistribution
-</code> - same as a density curve but mirrored below the values axis.
-</p>
-<p>
-<code>BoxDistribution
-</code> - a box with whiskers to show important distribution values.
-</p>
-<p>
-<code>BoxOutliersDistribution
-</code> - a box with outlier points and whiskers to show important distribution values.
-</p>
-<p>
-<code>CurveBoxDistribution
-</code> - combine a curve and a box.
-</p>
-<p>
-<code>ViolinBoxDistribution
-</code> - combine a violin and a box.
-</p>
-<p>
-<code>HistogramDistribution
-</code> - a histogram of the distribution.
-</p>
-<p>&#39;CumulativeDistribution&#39; - a cumulative distribution (aka &quot;CDF&quot;). This one allows for additional configuration options.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Violin:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionStyle" href="#SomeGraphs.Distributions.DistributionStyle"><code>SomeGraphs.Distributions.DistributionStyle</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Possible styles for visualizing a distribution:</p><p><code>CurveDistribution</code> - a density curve (the default).</p><p><code>ViolinDistribution</code> - same as a density curve but mirrored below the values axis.</p><p><code>BoxDistribution</code> - a box with whiskers to show important distribution values.</p><p><code>BoxOutliersDistribution</code> - a box with outlier points and whiskers to show important distribution values.</p><p><code>CurveBoxDistribution</code> - combine a curve and a box.</p><p><code>ViolinBoxDistribution</code> - combine a violin and a box.</p><p><code>HistogramDistribution</code> - a histogram of the distribution.</p><p>&#39;CumulativeDistribution&#39; - a cumulative distribution (aka &quot;CDF&quot;). This one allows for additional configuration options.</p></div></section></article><p><strong>Examples:</strong></p><p>Violin:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = ViolinDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='pr6mBxWsf1' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='fF3XShBSmD' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("pr6mBxWsf1")
+    const PLOT = document.getElementById("fF3XShBSmD")
     const plot_obj = {"data": [{"type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -566,25 +109,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Box:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Box:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = BoxDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='pxQlEtfq4k' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='7fYU1bxZd7' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("pxQlEtfq4k")
+    const PLOT = document.getElementById("7fYU1bxZd7")
     const plot_obj = {"data": [{"boxpoints":false,"type":"box","name":"Trace","box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -593,25 +126,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Box with outliers:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Box with outliers:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = BoxOutliersDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='jSudjiZx4I' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='pHsZTOY7mS' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("jSudjiZx4I")
+    const PLOT = document.getElementById("pHsZTOY7mS")
     const plot_obj = {"data": [{"boxpoints":"outliers","type":"box","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -620,25 +143,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Curve and Box:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Curve and Box:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = CurveBoxDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='4ORHv7w6qm' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='ZzynFgzX7g' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("4ORHv7w6qm")
+    const PLOT = document.getElementById("ZzynFgzX7g")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -647,25 +160,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Violin and Box:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Violin and Box:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = ViolinBoxDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='lmYxbZe6r0' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='jhMYhacgzK' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("lmYxbZe6r0")
+    const PLOT = document.getElementById("jhMYhacgzK")
     const plot_obj = {"data": [{"type":"violin","name":"Trace","box":{"visible":true},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -674,25 +177,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Histogram:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Histogram:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = HistogramDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='ByyVR0Wf7l' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='IjZ8D018Fr' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ByyVR0Wf7l")
+    const PLOT = document.getElementById("IjZ8D018Fr")
     const plot_obj = {"data": [{"type":"histogram","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -701,25 +194,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Color (if it is more of a configuration parameter than data):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Color (if it is more of a configuration parameter than data):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.line.color = &quot;red&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='MmskUN9wwu' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='xgUFB0OUgV' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("MmskUN9wwu")
+    const PLOT = document.getElementById("xgUFB0OUgV")
     const plot_obj = {"data": [{"side":"positive","line":{"color":"red"},"fillcolor":"FF000080","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -728,26 +211,16 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Line width and disable fill:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Line width and disable fill:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.line.width = 4
 graph.configuration.distribution.line.is_filled = false
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='d19zFVeblN' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='Hxbaf7V3i9' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("d19zFVeblN")
+    const PLOT = document.getElementById("Hxbaf7V3i9")
     const plot_obj = {"data": [{"side":"positive","line":{"width":4},"fillcolor":"transparent","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -756,25 +229,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Bands (if the offset is more of a configuration parameter than data):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Bands (if the offset is more of a configuration parameter than data):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_bands.middle.offset = 2
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='otjvN2g9Vp' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='okNZFlvfR4' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("otjvN2g9Vp")
+    const PLOT = document.getElementById("okNZFlvfR4")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"shapes":[{"line":{"color":null,"dash":null},"x0":2.0,"type":"line","y0":0,"y1":1,"yref":"y domain","xref":"x","x1":2.0}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -783,103 +246,23 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.CumulativeUnits" href="#SomeGraphs.Distributions.CumulativeUnits">
-<code>SomeGraphs.Distributions.CumulativeUnits
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>Possible units for the distribution axis of a cumulative distribution:
-</p>
-<p>
-<code>CumulativeFractions
-</code> - the axis is the fraction of entries.
-</p>
-<p>
-<code>CumulativePercents
-</code> - the axis is the percent of entries.
-</p>
-<p>
-<code>CumulativeCounts
-</code> - the axis is the number of entries.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.CumulativeAxisConfiguration" href="#SomeGraphs.Distributions.CumulativeAxisConfiguration">
-<code>SomeGraphs.Distributions.CumulativeAxisConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct CumulativeAxisConfiguration
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.CumulativeUnits" href="#SomeGraphs.Distributions.CumulativeUnits"><code>SomeGraphs.Distributions.CumulativeUnits</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Possible units for the distribution axis of a cumulative distribution:</p><p><code>CumulativeFractions</code> - the axis is the fraction of entries.</p><p><code>CumulativePercents</code> - the axis is the percent of entries.</p><p><code>CumulativeCounts</code> - the axis is the number of entries.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.CumulativeAxisConfiguration" href="#SomeGraphs.Distributions.CumulativeAxisConfiguration"><code>SomeGraphs.Distributions.CumulativeAxisConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct CumulativeAxisConfiguration
     units::CumulativeUnits = CumulativeFractions
     descending::Bool = false
     show_ticks::Bool = true
     show_grid::Bool = true
     grid_color::AbstractString = &quot;lightgrey&quot;
     title::Maybe{AbstractString} = nothing
-end
-</code>
-</pre>
-<p>Possible configurations for the distribution axis of a cumulative distribution, using the specified 
-<code>units
-</code>. Normally we count the entries up to some value, so the graph is ascending; if 
-<code>descending
-</code>, we count the entries down to some value, so the graph is descending.
-</p>
-<p>This intentionally offers only a subset of the fields of 
-<a href="common.html#SomeGraphs.Common.AxisConfiguration">
-<code>AxisConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Cumulative distribution functions are an undervalued tool for showing distributions. They have the advantage that the second axis is in actual units (by default, fractions). This opens up additional configuration options.
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>Possible configurations for the distribution axis of a cumulative distribution, using the specified <code>units</code>. Normally we count the entries up to some value, so the graph is ascending; if <code>descending</code>, we count the entries down to some value, so the graph is descending.</p><p>This intentionally offers only a subset of the fields of <a href="common.html#SomeGraphs.Common.AxisConfiguration"><code>AxisConfiguration</code></a>.</p></div></section></article><p><strong>Examples:</strong></p><p>Cumulative distribution functions are an undervalued tool for showing distributions. They have the advantage that the second axis is in actual units (by default, fractions). This opens up additional configuration options.</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='PTnVWcp5L3' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='aOETMIo15c' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("PTnVWcp5L3")
+    const PLOT = document.getElementById("aOETMIo15c")
     const plot_obj = {"data": [{"mode":"lines","y":[0.16666667,0.33333334,0.5,0.8333333,1.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -888,27 +271,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Percents:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Percents:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.cumulative_axis.units = CumulativePercents
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='cfEtFCqlnA' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='IrCryvzba8' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("cfEtFCqlnA")
+    const PLOT = document.getElementById("IrCryvzba8")
     const plot_obj = {"data": [{"mode":"lines","y":[16.666666,33.333332,50.0,83.333336,100.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,101.0],"ticksuffix":"<sub>%</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -917,27 +290,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Counts:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Counts:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.cumulative_axis.units = CumulativeCounts
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='ZLSrKOKmvr' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='Hxik44c4Ez' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZLSrKOKmvr")
+    const PLOT = document.getElementById("Hxik44c4Ez")
     const plot_obj = {"data": [{"mode":"lines","y":[1.0,2.0,3.0,5.0,6.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,7.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -946,27 +309,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Descending:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Descending:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.cumulative_axis.descending = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='FZLdXMWbEF' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='jTRbDbz0do' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FZLdXMWbEF")
+    const PLOT = document.getElementById("jTRbDbz0do")
     const plot_obj = {"data": [{"mode":"lines","y":[1.0,0.8333333,0.6666667,0.33333334,0.16666667],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -975,144 +328,28 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraph" href="#SomeGraphs.Distributions.DistributionsGraph">
-<code>SomeGraphs.Distributions.DistributionsGraph
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<p>A graph for visualizing multiple distributions. See 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
-<code>DistributionsGraphData
-</code>
-</a> and 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration">
-<code>DistributionsGraphConfiguration
-</code>
-</a>.
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.distributions_graph" href="#SomeGraphs.Distributions.distributions_graph">
-<code>SomeGraphs.Distributions.distributions_graph
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">distributions_graph(;
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraph" href="#SomeGraphs.Distributions.DistributionsGraph"><code>SomeGraphs.Distributions.DistributionsGraph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A graph for visualizing multiple distributions. See <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData"><code>DistributionsGraphData</code></a> and <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration"><code>DistributionsGraphConfiguration</code></a>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.distributions_graph" href="#SomeGraphs.Distributions.distributions_graph"><code>SomeGraphs.Distributions.distributions_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">distributions_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
     distributions_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
     configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration()]
-)::DistributionsGraph
-</code>
-</pre>
-<p>Create a 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph">
-<code>DistributionsGraph
-</code>
-</a> by initializing only the 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
-<code>DistributionsGraphData
-</code>
-</a> fields (with an optional 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration">
-<code>DistributionsGraphConfiguration
-</code>
-</a>).
-</p>
-</div>
-</section>
-</article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraphData" href="#SomeGraphs.Distributions.DistributionsGraphData">
-<code>SomeGraphs.Distributions.DistributionsGraphData
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct DistributionsGraphData &lt;: AbstractGraphData
+)::DistributionsGraph</code></pre><p>Create a <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph"><code>DistributionsGraph</code></a> by initializing only the <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData"><code>DistributionsGraphData</code></a> fields (with an optional <a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration"><code>DistributionsGraphConfiguration</code></a>).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraphData" href="#SomeGraphs.Distributions.DistributionsGraphData"><code>SomeGraphs.Distributions.DistributionsGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct DistributionsGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
     distributions_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     distributions_order::Maybe{AbstractVector{&lt;:Integer}} = nothing
-end
-</code>
-</pre>
-<p>The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall 
-<code>figure_title
-</code> as well as the 
-<code>value_axis_title
-</code>. If specified, the 
-<code>distributions_names
-</code> and/or the 
-<code>distributions_colors
-</code> vectors must contain the same number of elements as the number of vectors in the 
-<code>distributions_values
-</code>.
-</p>
-<p>If 
-<code>distributions_order
-</code> are specified, we reorder the distributions accordingly. This allows controlling which distributions will appear on top of the others.
-</p>
-</div>
-</section>
-</article>
-<p>
-<strong>Examples:
-</strong>
-</p>
-<p>Default (serves as a baseline to compare with when modifying options):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall <code>figure_title</code> as well as the <code>value_axis_title</code>. If specified, the <code>distributions_names</code> and/or the <code>distributions_colors</code> vectors must contain the same number of elements as the number of vectors in the <code>distributions_values</code>.</p><p>If <code>distributions_order</code> are specified, we reorder the distributions accordingly. This allows controlling which distributions will appear on top of the others.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='eD3LL5rG0u' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='i2NirQ6PoZ' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("eD3LL5rG0u")
+    const PLOT = document.getElementById("i2NirQ6PoZ")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1121,62 +358,13 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraphConfiguration" href="#SomeGraphs.Distributions.DistributionsGraphConfiguration">
-<code>SomeGraphs.Distributions.DistributionsGraphConfiguration
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct DistributionsGraphConfiguration &lt;: AbstractGraphConfiguration
+<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Distributions.DistributionsGraphConfiguration" href="#SomeGraphs.Distributions.DistributionsGraphConfiguration"><code>SomeGraphs.Distributions.DistributionsGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct DistributionsGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
     distributions_gap::Maybe{Real} = 0.05
-end
-</code>
-</pre>
-<p>Configure a graph for showing multiple distributions.
-</p>
-<p>This is similar to 
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
-<code>DistributionGraphConfiguration
-</code>
-</a>, with additions to deal with having multiple distributions.
-</p>
-<p>If 
-<code>distributions_gap
-</code> is set to 
-<code>nothing
-</code>, overlay the distributions on top of each other. Otherwise, the distributions are plotted next to each other, with the 
-<code>distributions_gap
-</code> specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the graphs. The 
-<code>cumulative_axis
-</code> is only used if the 
-<code>distribution.style
-</code> is 
-<code>CumulativeDistribution
-</code>.
-</p>
-</div>
-</section>
-</article>
-<p>Titles:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+end</code></pre><p>Configure a graph for showing multiple distributions.</p><p>This is similar to <a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration"><code>DistributionGraphConfiguration</code></a>, with additions to deal with having multiple distributions.</p><p>If <code>distributions_gap</code> is set to <code>nothing</code>, overlay the distributions on top of each other. Otherwise, the distributions are plotted next to each other, with the <code>distributions_gap</code> specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the graphs. The <code>cumulative_axis</code> is only used if the <code>distribution.style</code> is <code>CumulativeDistribution</code>.</p></div></section></article><p>Titles:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]],
     distributions_names = [&quot;Foo&quot;, &quot;Bar&quot;],
@@ -1184,15 +372,10 @@ graph = distributions_graph(;
     value_axis_title = &quot;Values title&quot;,
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='ZwHhY3e9zo' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='E8en9MJVs7' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZwHhY3e9zo")
+    const PLOT = document.getElementById("E8en9MJVs7")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"name":"Foo","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"name":"Bar","yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04],"title":"Values title"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"title":"Foo","domain":[0.0,0.475]},"yaxis2":{"title":"Bar","domain":[0.525,1.0]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1201,25 +384,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Size of gap between distributions:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Size of gap between distributions:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
 graph.configuration.distributions_gap = 0.05
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='zfNP89hGNZ' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='B2O4zjOWBH' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("zfNP89hGNZ")
+    const PLOT = document.getElementById("B2O4zjOWBH")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1228,25 +401,15 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Overlay the distributions:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Overlay the distributions:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
 graph.configuration.distributions_gap = nothing
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='CxF7K373rp' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='yyzGBiQyRW' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("CxF7K373rp")
+    const PLOT = document.getElementById("yyzGBiQyRW")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1255,28 +418,18 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Overlay the distributions with a legend:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Overlay the distributions with a legend:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]],
     distributions_names = [&quot;Foo&quot;, &quot;Bar&quot;],
 )
 graph.configuration.distributions_gap = nothing
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='2tfXZO9oau' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='4G8lPyIqYr' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("2tfXZO9oau")
+    const PLOT = document.getElementById("4G8lPyIqYr")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","name":"Foo","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","name":"Bar","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":true,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0,"itemdoubleclick":false},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1285,27 +438,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>Colors (if they are part of the data):
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>Colors (if they are part of the data):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]],
     distributions_colors = [&quot;red&quot;, &quot;green&quot;],
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='8z3iWNNlJK' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='htNfd7sJJu' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8z3iWNNlJK")
+    const PLOT = document.getElementById("htNfd7sJJu")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","fillcolor":"FF000080","line":{"color":"red"},"type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","fillcolor":"00800080","line":{"color":"green"},"type":"violin","y0":0.0,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"domain":[0.0,0.475]},"yaxis2":{"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1314,27 +457,17 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<p>You can also apply any of the distribution and/or value axis configuration options; these will apply to all the distributions:
-</p>
-<pre>
-<code class="language-julia hljs">using SomeGraphs
+<p>You can also apply any of the distribution and/or value axis configuration options; these will apply to all the distributions:</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(; distributions_values = [[0, 0, 1, 1, 1, 3], [4, 4, 3, 3, 3, 1]])
 graph.configuration.distribution.values_orientation = VerticalValues
 graph.configuration.distribution.line.color = &quot;red&quot;
 graph.configuration.distribution.style = BoxOutliersDistribution
 using PlotlyDocumenter
-to_documenter(graph.figure)
-</code>
-</pre>
-<div id='z5onSq1nIe' class='' style=';'>
-</div>
-
+to_documenter(graph.figure)</code></pre><div id='vRdfShctds' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("z5onSq1nIe")
+    const PLOT = document.getElementById("vRdfShctds")
     const plot_obj = {"data": [{"scalegroup":"Distributions","boxpoints":"outliers","x0":0.0,"fillcolor":"FF000080","line":{"color":"red"},"y":[0.0,0.0,1.0,1.0,1.0,3.0],"type":"box","box":{"visible":false},"spanmode":"hard"},{"xaxis":"x2","scalegroup":"Distributions","boxpoints":"outliers","x0":0.0,"fillcolor":"FF000080","line":{"color":"red"},"y":[4.0,4.0,3.0,3.0,3.0,1.0],"type":"box","box":{"visible":false},"spanmode":"hard"}], "layout": {"showlegend":false,"xaxis":{"domain":[0.0,0.475]},"paper_bgcolor":"white","xaxis2":{"domain":[0.525,1.0]},"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1343,156 +476,5 @@ to_documenter(graph.figure)
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-
 </script>
-
-<h2 id="Index">
-<a class="docs-heading-anchor" href="#Index">Index
-</a>
-<a id="Index-1">
-</a>
-<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
-</a>
-</h2>
-<ul>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions">
-<code>SomeGraphs.Distributions
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.CumulativeAxisConfiguration">
-<code>SomeGraphs.Distributions.CumulativeAxisConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.CumulativeUnits">
-<code>SomeGraphs.Distributions.CumulativeUnits
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionConfiguration">
-<code>SomeGraphs.Distributions.DistributionConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraph">
-<code>SomeGraphs.Distributions.DistributionGraph
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration">
-<code>SomeGraphs.Distributions.DistributionGraphConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData">
-<code>SomeGraphs.Distributions.DistributionGraphData
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionStyle">
-<code>SomeGraphs.Distributions.DistributionStyle
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph">
-<code>SomeGraphs.Distributions.DistributionsGraph
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration">
-<code>SomeGraphs.Distributions.DistributionsGraphConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData">
-<code>SomeGraphs.Distributions.DistributionsGraphData
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.distribution_graph">
-<code>SomeGraphs.Distributions.distribution_graph
-</code>
-</a>
-</li>
-<li>
-<a href="distributions.html#SomeGraphs.Distributions.distributions_graph">
-<code>SomeGraphs.Distributions.distributions_graph
-</code>
-</a>
-</li>
-</ul>
-</article>
-<nav class="docs-footer">
-<a class="docs-footer-prevpage" href="common.html">« Common
-</a>
-<a class="docs-footer-nextpage" href="scatters.html">Scatter Plots »
-</a>
-<div class="flexbox-break">
-</div>
-<p class="footer-message">Powered by 
-<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> and the 
-<a href="https://julialang.org/">Julia Programming Language
-</a>.
-</p>
-</nav>
-</div>
-<div class="modal" id="documenter-settings">
-<div class="modal-background">
-</div>
-<div class="modal-card">
-<header class="modal-card-head">
-<p class="modal-card-title">Settings
-</p>
-<button class="delete">
-</button>
-</header>
-<section class="modal-card-body">
-<p>
-<label class="label">Theme
-</label>
-<div class="select">
-<select id="documenter-themepicker">
-<option value="auto">Automatic (OS)
-</option>
-<option value="documenter-light">documenter-light
-</option>
-<option value="documenter-dark">documenter-dark
-</option>
-<option value="catppuccin-latte">catppuccin-latte
-</option>
-<option value="catppuccin-frappe">catppuccin-frappe
-</option>
-<option value="catppuccin-macchiato">catppuccin-macchiato
-</option>
-<option value="catppuccin-mocha">catppuccin-mocha
-</option>
-</select>
-</div>
-</p>
-<hr/>
-<p>This document was generated with 
-<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.10.1. Using Julia version 1.11.5.
-</p>
-</section>
-<footer class="modal-card-foot">
-</footer>
-</div>
-</div>
-</div>
-</body>
-</html>
+<h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="distributions.html#SomeGraphs.Distributions"><code>SomeGraphs.Distributions</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.CumulativeAxisConfiguration"><code>SomeGraphs.Distributions.CumulativeAxisConfiguration</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.CumulativeUnits"><code>SomeGraphs.Distributions.CumulativeUnits</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionConfiguration"><code>SomeGraphs.Distributions.DistributionConfiguration</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionGraph"><code>SomeGraphs.Distributions.DistributionGraph</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionGraphConfiguration"><code>SomeGraphs.Distributions.DistributionGraphConfiguration</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionGraphData"><code>SomeGraphs.Distributions.DistributionGraphData</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionStyle"><code>SomeGraphs.Distributions.DistributionStyle</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionsGraph"><code>SomeGraphs.Distributions.DistributionsGraph</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphConfiguration"><code>SomeGraphs.Distributions.DistributionsGraphConfiguration</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.DistributionsGraphData"><code>SomeGraphs.Distributions.DistributionsGraphData</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.distribution_graph"><code>SomeGraphs.Distributions.distribution_graph</code></a></li><li><a href="distributions.html#SomeGraphs.Distributions.distributions_graph"><code>SomeGraphs.Distributions.distributions_graph</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="common.html">« Common</a><a class="docs-footer-nextpage" href="scatters.html">Scatter Plots »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 15:00">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

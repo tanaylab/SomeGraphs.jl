@@ -84,6 +84,32 @@ nested_test("heatmaps") do
         return nothing
     end
 
+    nested_test("origin") do
+        nested_test("bottom_left") do
+            graph.configuration.origin = HeatmapBottomLeft
+            test_html(graph, "heatmap.bottom_left.html")
+            return nothing
+        end
+
+        nested_test("bottom_right") do
+            graph.configuration.origin = HeatmapBottomRight
+            test_html(graph, "heatmap.bottom_right.html")
+            return nothing
+        end
+
+        nested_test("top_left") do
+            graph.configuration.origin = HeatmapTopLeft
+            test_html(graph, "heatmap.top_left.html")
+            return nothing
+        end
+
+        nested_test("top_right") do
+            graph.configuration.origin = HeatmapTopRight
+            test_html(graph, "heatmap.top_right.html")
+            return nothing
+        end
+    end
+
     nested_test("log") do
         graph.configuration.entries_colors.axis.log_scale = Log2Scale
         graph.configuration.entries_colors.axis.log_regularization = 1
