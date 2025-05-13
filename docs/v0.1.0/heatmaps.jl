@@ -40,7 +40,11 @@ Specify how to re-order the rows and/or columns of a matrix for display. Options
 HeatmapReorder = Union{Symbol, Tuple{Symbol, Symbol}}
 
 """
+<<<<<<< HEAD
 Specify where the origin (row 1 column 1) should be displayed. The Plotly default is `BottomLeft`.
+=======
+Specify where the origin (row 1 column 1) should be displayed. The Plotly default is `HeatmapBottomLeft`.
+>>>>>>> 0e6a412 (Control heatmap origin point.)
 """
 @enum HeatmapOrigin HeatmapTopLeft HeatmapTopRight HeatmapBottomLeft HeatmapBottomRight
 

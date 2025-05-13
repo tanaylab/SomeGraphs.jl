@@ -10,10 +10,10 @@
 end</code></pre><p>Generic configuration that applies to the whole figure. Each complete <a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration"><code>AbstractGraphConfiguration</code></a> contains a <code>figure</code> field of this type.</p><p>The optional <code>width</code> and <code>height</code> are in pixels, that is, 1/96 of an inch. The <code>margins</code> are specified in the same units.</p><p>You can also manually change the <code>background_color</code> (inside the graph&#39;s area) and <code>paper_color</code> (outside the graph&#39;s area, that is, the margins). the axes.</p><p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position each and every color scale (except the 1st one if there&#39;s no legend) by specifying an explicit offset. Great fun!</p><p>These <code>colors_scale_offsets</code> are specified in what Plotly calls &quot;paper coordinates&quot; which are singularly unsuitable for this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For optimal results you will need to manually tweak these to match your specific graph. In 21st century, when &quot;AI&quot; is a thing. Sigh.</p><p>We provide &quot;too many&quot; (5) offsets here. Normally a graph displays one color scale, but in theory it can have any number (e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that requires more offsets.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.Stacking" href="#SomeGraphs.Common.Stacking"><code>SomeGraphs.Common.Stacking</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>If stacking elements, how to do so:</p><p><code>StackValues</code> just adds the raw values on top of each other.</p><p><code>StackFractions</code> normalizes the values so their sum is 1. This can be combined with setting the <code>percent</code> field of the relevant <a href="common.html#SomeGraphs.Common.AxisConfiguration"><code>AxisConfiguration</code></a> to display percents.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='yxmzyIyjE2' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='Hpc7UmsMBF' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("yxmzyIyjE2")
+    const PLOT = document.getElementById("Hpc7UmsMBF")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -28,10 +28,10 @@ graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.figure.width = 300
 graph.configuration.figure.height = 300
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='7CbhDz5yyN' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='WoOPW8vNer' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("7CbhDz5yyN")
+    const PLOT = document.getElementById("WoOPW8vNer")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"plot_bgcolor":"white","yaxis":{"showticklabels":false},"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -46,10 +46,10 @@ graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.figure.background_color = &quot;lightyellow&quot;
 graph.configuration.figure.paper_color = &quot;lightgrey&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='sQSN7IRvPU' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='D7jiG8qKt7' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("sQSN7IRvPU")
+    const PLOT = document.getElementById("D7jiG8qKt7")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"lightyellow","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -71,10 +71,10 @@ graph.configuration.figure.margins.right = 200
 graph.configuration.figure.margins.top = 150
 graph.configuration.figure.margins.bottom = 250
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='8JuzvFionS' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='lFi9nKPLSb' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8JuzvFionS")
+    const PLOT = document.getElementById("lFi9nKPLSb")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -98,10 +98,10 @@ end</code></pre><p>Generic configuration for a graph axis. Everything is optiona
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.show_ticks = false
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='4fIDwqYIoN' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='XjnR9QF1Nd' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("4fIDwqYIoN")
+    const PLOT = document.getElementById("XjnR9QF1Nd")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -115,10 +115,10 @@ to_documenter(graph.figure)</code></pre><div id='4fIDwqYIoN' class='' style=';'>
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.show_grid = false
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='9Qn3BMCDwt' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='4o45AIuVcB' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("9Qn3BMCDwt")
+    const PLOT = document.getElementById("4o45AIuVcB")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -132,10 +132,10 @@ to_documenter(graph.figure)</code></pre><div id='9Qn3BMCDwt' class='' style=';'>
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.grid_color = &quot;red&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='tQGAH3OrRG' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='aankaMYV3F' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("tQGAH3OrRG")
+    const PLOT = document.getElementById("aankaMYV3F")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -150,10 +150,10 @@ graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.minimum = 1
 graph.configuration.value_axis.maximum = 4
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='jwLr6AoX7F' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='RaDOR2rHyO' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("jwLr6AoX7F")
+    const PLOT = document.getElementById("RaDOR2rHyO")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.97,4.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -167,10 +167,10 @@ to_documenter(graph.figure)</code></pre><div id='jwLr6AoX7F' class='' style=';'>
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.percent = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='k3C462fdkk' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='w7H6QZ92K7' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("k3C462fdkk")
+    const PLOT = document.getElementById("w7H6QZ92K7")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,100.0,100.0,100.0,300.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -185,10 +185,10 @@ graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.log_scale = Log2Scale
 graph.configuration.value_axis.log_regularization = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='uv6p6iosC8' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='kb3ZOOZ8Tc' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("uv6p6iosC8")
+    const PLOT = document.getElementById("kb3ZOOZ8Tc")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,2.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -203,10 +203,10 @@ graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.log_scale = Log10Scale
 graph.configuration.value_axis.log_regularization = 1e-5
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='83BjnNVDLq' class='' style=';'></div>
+to_documenter(graph.figure)</code></pre><div id='Xx6KH0AKhA' class='' style=';'></div>
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("83BjnNVDLq")
+    const PLOT = document.getElementById("Xx6KH0AKhA")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -257,4 +257,4 @@ end</code></pre><p>Configure how to color some data. Supported combinations of c
 end</code></pre><p>An annotation to attach to an axis. This applies to discrete axes (bars axis for a <a href="bars.html#SomeGraphs.Bars.BarsGraph"><code>BarsGraph</code></a> or the rows and/or columns of a <code>HeatmapGraph</code>). The number of the <code>values</code> and the optional <code>hovers</code> must be the same as the number of entries in the axis.</p><p>The <code>colors</code> configuration is part of the data, because the color of annotations (in particular, categorical ones) is tightly coupled with the data.</p><div class="admonition is-info" id="Note-ca3ff6a79bc78fcb"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-ca3ff6a79bc78fcb" title="Permalink"></a></header><div class="admonition-body"><p>If you want to show the color scale of some annotation(s) using <code>show_legend</code>, keep in mind Plotly places a limit of at most two color scales in a graph, because &quot;reasons&quot;.</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.AnnotationSize" href="#SomeGraphs.Common.AnnotationSize"><code>SomeGraphs.Common.AnnotationSize</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct AnnotationSize
     size::AbstractFloat = 0.05
     gap::AbstractFloat = 0.005
-end</code></pre><p>Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.</p></div></section></article><h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="common.html#SomeGraphs.Common"><code>SomeGraphs.Common</code></a></li><li><a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK"><code>SomeGraphs.Common.COLOR_SCALES_LOCK</code></a></li><li><a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES"><code>SomeGraphs.Common.NAMED_COLOR_SCALES</code></a></li><li><a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration"><code>SomeGraphs.Common.AbstractGraphConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.AbstractGraphData"><code>SomeGraphs.Common.AbstractGraphData</code></a></li><li><a href="common.html#SomeGraphs.Common.AnnotationData"><code>SomeGraphs.Common.AnnotationData</code></a></li><li><a href="common.html#SomeGraphs.Common.AnnotationSize"><code>SomeGraphs.Common.AnnotationSize</code></a></li><li><a href="common.html#SomeGraphs.Common.AxisConfiguration"><code>SomeGraphs.Common.AxisConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandConfiguration"><code>SomeGraphs.Common.BandConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandsConfiguration"><code>SomeGraphs.Common.BandsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandsData"><code>SomeGraphs.Common.BandsData</code></a></li><li><a href="common.html#SomeGraphs.Common.CategoricalColors"><code>SomeGraphs.Common.CategoricalColors</code></a></li><li><a href="common.html#SomeGraphs.Common.ColorsConfiguration"><code>SomeGraphs.Common.ColorsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.ContinuousColors"><code>SomeGraphs.Common.ContinuousColors</code></a></li><li><a href="common.html#SomeGraphs.Common.FigureConfiguration"><code>SomeGraphs.Common.FigureConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.Graph"><code>SomeGraphs.Common.Graph</code></a></li><li><a href="common.html#SomeGraphs.Common.LineConfiguration"><code>SomeGraphs.Common.LineConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.LineStyle"><code>SomeGraphs.Common.LineStyle</code></a></li><li><a href="common.html#SomeGraphs.Common.LogScale"><code>SomeGraphs.Common.LogScale</code></a></li><li><a href="common.html#SomeGraphs.Common.MarginsConfiguration"><code>SomeGraphs.Common.MarginsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.PlotlyFigure"><code>SomeGraphs.Common.PlotlyFigure</code></a></li><li><a href="common.html#SomeGraphs.Common.SizesConfiguration"><code>SomeGraphs.Common.SizesConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.Stacking"><code>SomeGraphs.Common.Stacking</code></a></li><li><a href="common.html#SomeGraphs.Common.ValuesOrientation"><code>SomeGraphs.Common.ValuesOrientation</code></a></li><li><a href="common.html#SomeGraphs.Common.categorical_palette"><code>SomeGraphs.Common.categorical_palette</code></a></li><li><a href="common.html#SomeGraphs.Common.save_graph"><code>SomeGraphs.Common.save_graph</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="validations.html">« Validations</a><a class="docs-footer-nextpage" href="distributions.html">Distributions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 15:00">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end</code></pre><p>Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.</p></div></section></article><h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="common.html#SomeGraphs.Common"><code>SomeGraphs.Common</code></a></li><li><a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK"><code>SomeGraphs.Common.COLOR_SCALES_LOCK</code></a></li><li><a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES"><code>SomeGraphs.Common.NAMED_COLOR_SCALES</code></a></li><li><a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration"><code>SomeGraphs.Common.AbstractGraphConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.AbstractGraphData"><code>SomeGraphs.Common.AbstractGraphData</code></a></li><li><a href="common.html#SomeGraphs.Common.AnnotationData"><code>SomeGraphs.Common.AnnotationData</code></a></li><li><a href="common.html#SomeGraphs.Common.AnnotationSize"><code>SomeGraphs.Common.AnnotationSize</code></a></li><li><a href="common.html#SomeGraphs.Common.AxisConfiguration"><code>SomeGraphs.Common.AxisConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandConfiguration"><code>SomeGraphs.Common.BandConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandsConfiguration"><code>SomeGraphs.Common.BandsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandsData"><code>SomeGraphs.Common.BandsData</code></a></li><li><a href="common.html#SomeGraphs.Common.CategoricalColors"><code>SomeGraphs.Common.CategoricalColors</code></a></li><li><a href="common.html#SomeGraphs.Common.ColorsConfiguration"><code>SomeGraphs.Common.ColorsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.ContinuousColors"><code>SomeGraphs.Common.ContinuousColors</code></a></li><li><a href="common.html#SomeGraphs.Common.FigureConfiguration"><code>SomeGraphs.Common.FigureConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.Graph"><code>SomeGraphs.Common.Graph</code></a></li><li><a href="common.html#SomeGraphs.Common.LineConfiguration"><code>SomeGraphs.Common.LineConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.LineStyle"><code>SomeGraphs.Common.LineStyle</code></a></li><li><a href="common.html#SomeGraphs.Common.LogScale"><code>SomeGraphs.Common.LogScale</code></a></li><li><a href="common.html#SomeGraphs.Common.MarginsConfiguration"><code>SomeGraphs.Common.MarginsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.PlotlyFigure"><code>SomeGraphs.Common.PlotlyFigure</code></a></li><li><a href="common.html#SomeGraphs.Common.SizesConfiguration"><code>SomeGraphs.Common.SizesConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.Stacking"><code>SomeGraphs.Common.Stacking</code></a></li><li><a href="common.html#SomeGraphs.Common.ValuesOrientation"><code>SomeGraphs.Common.ValuesOrientation</code></a></li><li><a href="common.html#SomeGraphs.Common.categorical_palette"><code>SomeGraphs.Common.categorical_palette</code></a></li><li><a href="common.html#SomeGraphs.Common.save_graph"><code>SomeGraphs.Common.save_graph</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="validations.html">« Validations</a><a class="docs-footer-nextpage" href="distributions.html">Distributions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 15:05">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
