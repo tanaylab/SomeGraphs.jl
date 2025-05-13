@@ -19,6 +19,8 @@ Non-goals are:
 
   - Provide "every" graph type and/or feature.
 
+See the [documentation](https://tanaylab.github.io/SomeGraphs.jl/v0.1.0) for details.
+
 ## Architecture
 
 The subset of graph types and features was picked to support a specific set of applications, so there's explicitly no
