@@ -3,16 +3,29 @@ Graphs for showing a 2D matrix.
 """
 module Heatmaps
 
+export AverageLinkage
+export CompleteLinkage
 export heatmap_graph
 export HeatmapBottomLeft
 export HeatmapBottomRight
 export HeatmapGraph
 export HeatmapGraphConfiguration
 export HeatmapGraphData
+export HeatmapLinkage
 export HeatmapOrigin
 export HeatmapReorder
 export HeatmapTopLeft
 export HeatmapTopRight
+export OptimalHclust
+export RCompatibleHclust
+export SameOrder
+export SingleLinkage
+export SlantedHclust
+export SlantedOrder
+export SlantedPreSquaredHclust
+export SlantedPreSquaredOrder
+export WardLinkage
+export WardPreSeuaredLinkage
 
 using ..Common
 using ..Utilities
@@ -21,23 +34,30 @@ using ..Validations
 using Clustering
 using Distances
 using PlotlyJS
+using Slanter
 
 import ..Bars.push_annotations_traces
 import ..Validations.Maybe
 
 """
-Specify how to re-order the rows and/or columns of a matrix for display. Options are:
+Specify how to reorder the rows and/or columns.
 
-  - The symbol `:same`. This can only be used for square matrices, and indicates the order of this axis should be copied
-    from the computed order of the other axis. It is obviously invalid to specify this for both axes, or when the other
-    axis has no order specified.
-
-  - A symbol which is a valid value for the `linkage` parameter for `hclust` (that is, one of `:single`, `:average`,
-    `:complete`, `:ward`, or `:ward_presquared`). TODO: Also allow `:slanter`.
-  - A tuple with a symbol as above and another symbol which is a valid value for the `branchorder` parameter for
-    `hclust` (that is, one of `:r`, `:barjoseph`/`:optimal`). TODO: Also allow `:slanter`.
+  - `OptimalHclust` orders `hclust` branches using the (better) Bar-Joseph method.
+  - `RCompatibleHclust` orders `hclust` branches in the same (bad) way that `R` does.
+  - `SlantedHclust` and `SlantedPreSquaredHclust` orders `hclust` branches using `Slanter` (using `slanted_orders`
+    and `reorder_hclust`).
+  - `SlantedOrder` and `SlantedPreSquaredOrder` uses `slanted_orders` (if a tree is needed, uses `oclust` to create
+    a tree preserving this order).
+  - `SameOrder` orders the rows/columns in the same way as the other axis. This can only be applied to square matrices
+    and can't be specified for both axes.
 """
-HeatmapReorder = Union{Symbol, Tuple{Symbol, Symbol}}
+@enum HeatmapReorder RCompatibleHclust OptimalHclust SlantedHclust SlantedPreSquaredHclust SlantedOrder SlantedPreSquaredOrder SameOrder
+
+"""
+Specify the linkage to use when performing hierarchical clustering (`hclust`). The default is `WardLinkage`. If using
+`oclust` (from `Slanter`), then only `WardLinkage` and `WardPreSeuaredLinkage` are supported.
+"""
+@enum HeatmapLinkage SingleLinkage AverageLinkage CompleteLinkage WardLinkage WardPreSeuaredLinkage
 
 """
 Specify where the origin (row 1 column 1) should be displayed. The Plotly default is `HeatmapBottomLeft`.
@@ -51,9 +71,12 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
         entries_colors::ColorsConfiguration = ColorsConfiguration()
         rows_annotations::AnnotationSize = AnnotationSize()
         columns_annotations::AnnotationSize = AnnotationSize()
-        entries_order::Maybe{HeatmapReorder} = nothing
-        rows_order::Maybe{HeatmapReorder} = nothing
-        columns_order::Maybe{HeatmapReorder} = nothing
+        entries_reorder::Maybe{HeatmapReorder} = nothing
+        rows_reorder::Maybe{HeatmapReorder} = nothing
+        columns_reorder::Maybe{HeatmapReorder} = nothing
+        entries_linkage::Maybe{HeatmapLinkage} = nothing
+        rows_linkage::Maybe{HeatmapLinkage} = nothing
+        columns_linkage::Maybe{HeatmapLinkage} = nothing
         entries_metric::Maybe{PreMetric} = nothing
         rows_metric::Maybe{PreMetric} = nothing
         columns_metric::Maybe{PreMetric} = nothing
@@ -66,14 +89,22 @@ This displays a matrix of values using a rectangle at each position. Due to Plot
 tweak the graph size for best results; there's no way to directly control the width and height of the rectangles. In
 addition, the only supported color configurations are using continuous color palettes.
 
-You can use `columns_order` and/or `rows_order` to reorder the data. By default, this uses the `Euclidean` distance
-metric. You can override this by specifying the `columns_metric` and/or `rows_metric` distance measure.
+You can use `columns_reorder` and/or `rows_reorder` to reorder the data. When specifying `columns_linkage` and/or
+`rows_linkage`, by default, the clustering uses the `Euclidean` distance metric. You can override this by specifying the
+`columns_metric` and/or `rows_metric` distance measure.
 
-Specifying `entries_order` is equivalent to specifying both `rows_order` and `columns_order`, and similarly for
-`entries_metric`.
+If you specify `columns_dendogram_size` and/or `rows_dendogram_size`, then you should either specify linkage (for
+computing a clustering) or must specify `Hclust` order in the data. The dendogram tree will be shown to the side of the
+data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
 
-There's no `x_axis` or `y_axis` configuration here, as none of the options apply, except for `show_ticks`, which is
-implied by setting the `rows_names` and/or `columns_names` of the data. You can however provide default axis titles here
+If a dendogram tee is shown, the `dendogram_line` can be used to control it. The `is_filled` field shouldn't be set as
+it has no meaning here.
+
+TODO: Implement dendograms.
+
+Specifying `entries_reorder` is equivalent to specifying both `rows_reorder` and `columns_reorder`, and similarly for
+`entries_linkage`, `entries_dendogram_size`, and `entries_metric`.
+
 (which you can override in the data as usual).
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
@@ -83,12 +114,19 @@ implied by setting the `rows_names` and/or `columns_names` of the data. You can 
     entries_colors::ColorsConfiguration = ColorsConfiguration()
     rows_annotations::AnnotationSize = AnnotationSize()
     columns_annotations::AnnotationSize = AnnotationSize()
-    entries_order::Maybe{HeatmapReorder} = nothing
-    rows_order::Maybe{HeatmapReorder} = nothing
-    columns_order::Maybe{HeatmapReorder} = nothing
+    entries_reorder::Maybe{HeatmapReorder} = nothing
+    rows_reorder::Maybe{HeatmapReorder} = nothing
+    columns_reorder::Maybe{HeatmapReorder} = nothing
+    entries_linkage::Maybe{HeatmapLinkage} = nothing
+    rows_linkage::Maybe{HeatmapLinkage} = nothing
+    columns_linkage::Maybe{HeatmapLinkage} = nothing
     entries_metric::Maybe{PreMetric} = nothing
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
+    entries_dendogram_size::Maybe{Real} = nothing
+    rows_dendogram_size::Maybe{Real} = nothing
+    columns_dendogram_size::Maybe{Real} = nothing
+    dendogram_line::LineConfiguration = LineConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
 end
 
@@ -108,10 +146,24 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
 
     validate_exclusive_entries(
         context,
-        "order",
-        configuration.entries_order,
-        configuration.rows_order,
-        configuration.columns_order,
+        "reorder",
+        configuration.entries_reorder,
+        configuration.rows_reorder,
+        configuration.columns_reorder,
+    )
+    validate_exclusive_entries(
+        context,
+        "linkage",
+        configuration.entries_linkage,
+        configuration.rows_linkage,
+        configuration.columns_linkage,
+    )
+    validate_exclusive_entries(
+        context,
+        "dendogram_size",
+        configuration.entries_dendogram_size,
+        configuration.rows_dendogram_size,
+        configuration.columns_dendogram_size,
     )
     validate_exclusive_entries(
         context,
@@ -121,14 +173,43 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
         configuration.columns_metric,
     )
 
-    if configuration.entries_order == :same
-        throw(ArgumentError("can't specify heatmap $(location(context)).entries_order: :same"))
+    validate_in(context, "entries_dendogram_size") do
+        return validate_is_above(context, configuration.entries_dendogram_size, 0)
+    end
+    validate_in(context, "rows_dendogram_size") do
+        return validate_is_above(context, configuration.rows_dendogram_size, 0)
+    end
+    validate_in(context, "columns_dendogram_size") do
+        return validate_is_above(context, configuration.columns_dendogram_size, 0)
     end
 
-    if configuration.rows_order == :same && configuration.columns_order == :same
+    if configuration.dendogram_line.is_filled
+        throw(ArgumentError("can't specify heatmap $(location(context)).dendogram_line.is_filled"))
+    end
+
+    if (
+        configuration.entries_dendogram_size === nothing &&
+        configuration.rows_dendogram_size === nothing &&
+        configuration.columns_dendogram_size === nothing
+    ) && (
+        configuration.dendogram_line.width !== nothing ||
+        configuration.dendogram_line.style != SolidLine ||
+        configuration.dendogram_line.color !== nothing
+    )
         throw(ArgumentError(chomp("""
-                                  can't specify both heatmap $(location(context)).rows_order: :same
-                                  and heatmap $(location(context)).columns_order: :same
+                                  can't specify heatmap $(location(context)).dendogram_line.*
+                                  without one of $(location(context)).*_dendogram_size
+                                  """)))
+    end
+
+    if configuration.entries_reorder == SameOrder
+        throw(ArgumentError("can't specify heatmap $(location(context)).entries_reorder: SameOrder"))
+    end
+
+    if configuration.rows_reorder == SameOrder && configuration.columns_reorder == SameOrder
+        throw(ArgumentError(chomp("""
+                                  can't specify both heatmap $(location(context)).rows_reorder: SameOrder
+                                  and heatmap $(location(context)).columns_reorder: SameOrder
                                   """)))
     end
 
@@ -146,7 +227,7 @@ function validate_exclusive_entries(
         for (name, value) in (("rows", rows_value), ("columns", columns_value))
             if value !== nothing
                 throw(ArgumentError(chomp("""
-                                          can't specify both $(location(context)).entries_$(field)
+                                          can't specify both heatmap $(location(context)).entries_$(field)
                                           and $(location(context)).$(name)_$(field)
                                           """)))
             end
@@ -168,12 +249,12 @@ end
         columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
         columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-        entries_order_by::Maybe{AbstractMatrix{<:Real}} = nothing
-        rows_order_by::Maybe{AbstractMatrix{<:Real}} = nothing
-        columns_order_by::Maybe{AbstractMatrix{<:Real}} = nothing
-        entries_order::Maybe{AbstractVector{<:Integer}} = nothing
-        rows_order::Maybe{AbstractVector{<:Integer}} = nothing
-        columns_order::Maybe{AbstractVector{<:Integer}} = nothing
+        entries_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+        rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+        columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+        entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+        rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+        columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     end
 
 The data for a graph showing a heatmap (matrix) of entries.
@@ -183,11 +264,36 @@ colors must be continuous. The hover for each rectangle is a combination of the 
 and `columns_hovers` for the entry.
 
 By default, if reordering the data, this is based on the `entries_values`. You can override this by specifying an
-`entries_order_by` matrix of the same size, or even separate `rows_order_by` and `columns_order_by` matrices. For
-efficiency the `rows_order_by` matrix should be in row-major layout.
+`entries_arrange_by` matrix of the same size, or even separate `rows_arrange_by` and `columns_arrange_by` matrices. For
+efficiency the `rows_arrange_by` matrix should be in row-major layout.
 
 Alternatively you can force the order of the data by specifying the `entries_order` permutation (for a square matrix) or
-separate `rows_order` and `columns_order` permutations.
+separate `rows_order` and `columns_order` permutations. You can also specify an `Hclust` object as the order, which
+would enable showing a dendogram tree (TODO: implement).
+
+Valid combinations of the fields controlling order and clustering are:
+
+| data `order`                | data `arrange_by`                   | config `reorder`                           | config `dendogram_size` | config `linkage`                                  | config `metric`        | result tree                                                                         | result order                         | notes                                                 |
+|:--------------------------- |:----------------------------------- |:------------------------------------------ |:----------------------- |:------------------------------------------------- |:---------------------- |:----------------------------------------------------------------------------------- |:------------------------------------ |:----------------------------------------------------- |
+| `nothing`                   | `nothing`                           | `nothing`                                  | `nothing`               | `nothing`                                         | `nothing`              | Not computed                                                                        | Original data order                  | Do not cluster, use the original data order (default) |
+| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `nothing`                                  | Any                     | `nothing`/ `WardLinkage`/ `WardPreSeuaredLinkage` | `nothing`/ `PreMetric` | `oclust` of original order with `linkage` or `WardLinkage`                          | Original data order                  | Cluster, preserving the original order                |
+| `nothing`                   | `nothing`                           | `SameOrder`                                | `nothing`/ Any          | `nothing`                                         | `nothing`              | Same as other axis                                                                  | Same as other axis                   | Square matrices only                                  |
+| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `OptimalHclust`/ `RCompatibleHclust`       | `nothing`/ Any          | `nothing`/ Any                                    | `nothing`/ `PreMetric` | `hclust` with `linkage` or `WardLinkage`                                            | `hclust` with `reorder`              | Cluster using `linkage` and branch `reorder`          |
+| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`/ Any                                    | `nothing`/ `PreMetric` | `hclust` with `linkage` or `WardLinkage`, then `reorder_hclust` by `slanted_orders` | `reorder_hclust` by `slanted_orders` | Cluster, then slant preserving the tree               |
+| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedOrder`/ `SlantedPreSquaredOrder`   | `nothing`/ Any          | `nothing`/ `WardLinkage`/ `WardPreSeuaredLinkage` | `nothing`/ `PreMetric` | `oclust` of `slanted_orders` with `linkage` or `WardLinkage`                        | `slanted_orders`                     | Slant, then cluster preserving the slanted order      |
+| `Hclust`                    | `nothing`                           | `nothing`                                  | `nothing`/ Any          | `nothing`                                         | `nothing`              | `Hclust` tree                                                                       | `Hclust` order                       | Force a specific tree and order on the data           |
+| `Hclust`                    | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`                                         | `nothing`              | `reorder_hclust` by `slanted_orders`                                                | `reorder_hclust` by `slanted_orders` | Slant, preserving a given tree                        |
+| `AbstractVector{<:Integer}` | `nothing`                           | `nothing`                                  | `nothing`               | `nothing`                                         | `nothing`              | Not computed                                                                        | `order` permutation                  | Do not cluster, use the specified order               |
+| `AbstractVector{<:Integer}` | `nothing`                           | `nothing`                                  | Any                     | `nothing`/ `WardLinkage`/ `WardPreSeuaredLinkage` | `nothing`/ `PreMetric` | `oclust` of `order` with `linkage` or `WardLinkage`                                 | `order` permutation                  | Cluster, preserving the specified order               |
+
+All other combinations are invalid. Note:
+
+  - Only `WardLinkage` and `WardPreSeuaredLinkage` are supported by `oclust`.
+
+  - When calling `hclust` and/or `oclust` and/or `slanted_orders`, then specifying `arrange_by` will use it instead of
+    the displayed data matrix.
+  - When calling `hclust` and/or `oclust`, then specifying a `metric` will be used instead of `Euclidean` to compute
+    the distances matrix.
 """
 @kwdef mutable struct HeatmapGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -202,12 +308,12 @@ separate `rows_order` and `columns_order` permutations.
     columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    entries_order_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    rows_order_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    columns_order_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    entries_order::Maybe{AbstractVector{<:Integer}} = nothing
-    rows_order::Maybe{AbstractVector{<:Integer}} = nothing
-    columns_order::Maybe{AbstractVector{<:Integer}} = nothing
+    entries_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+    rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+    columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+    entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
@@ -215,16 +321,16 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     validate_matrix_size(context, "entries_hovers", data.entries_hovers, "entries_values", size(data.entries_values))
     validate_matrix_size(
         context,
-        "entries_order_by",
-        data.entries_order_by,
+        "entries_arrange_by",
+        data.entries_arrange_by,
         "entries_values",
         size(data.entries_values),
     )
-    validate_matrix_size(context, "rows_order_by", data.rows_order_by, "entries_values", size(data.entries_values))
+    validate_matrix_size(context, "rows_arrange_by", data.rows_arrange_by, "entries_values", size(data.entries_values))
     validate_matrix_size(
         context,
-        "columns_order_by",
-        data.columns_order_by,
+        "columns_arrange_by",
+        data.columns_arrange_by,
         "entries_values",
         size(data.entries_values),
     )
@@ -235,21 +341,39 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     validate_vector_length(context, "columns_hovers", data.columns_hovers, "entries_values.columns", n_columns)
     validate_vector_length(context, "rows_hovers", data.rows_hovers, "entries_values.rows", n_rows)
 
-    validate_vector_length(context, "columns_order", data.columns_order, "entries_values.columns", n_columns)
-    validate_vector_length(context, "rows_order", data.rows_order, "entries_values.rows", n_rows)
+    for (field_name, field_value, base_name, base_value) in (
+        ("columns_order", data.columns_order, "entries_values.columns", n_columns),
+        ("rows_order", data.rows_order, "entries_values.rows", n_rows),
+        ("entries_order", data.entries_order, "entries_values.columns", n_columns),
+        ("entries_order", data.entries_order, "entries_values.rows", n_rows),
+    )
+        if field_value isa Hclust
+            field_value = field_value.order
+        end
+        validate_vector_length(context, field_name, field_value, base_name, base_value)
+    end
 
     validate_vector_entries(context, "columns_annotations", data.columns_annotations) do _, columns_annotation
-        validate(context, columns_annotation)
+        validate(context, columns_annotation, "entries_values.columns", n_columns)
         return nothing
     end
 
     validate_vector_entries(context, "rows_annotations", data.rows_annotations) do _, rows_annotation
-        validate(context, rows_annotation)
+        validate(context, rows_annotation, "entries_values.rows", n_rows)
         return nothing
     end
 
-    validate_exclusive_entries(context, "order_by", data.entries_order_by, data.rows_order_by, data.columns_order_by)
-    return validate_exclusive_entries(context, "order", data.entries_order, data.rows_order, data.columns_order)
+    validate_exclusive_entries(
+        context,
+        "arrange_by",
+        data.entries_arrange_by,
+        data.rows_arrange_by,
+        data.columns_arrange_by,
+    )
+
+    validate_exclusive_entries(context, "order", data.entries_order, data.rows_order, data.columns_order)
+
+    return nothing
 end
 
 """
@@ -271,12 +395,12 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
         columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
         rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
         columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-        entries_order_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-        rows_order_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-        columns_order_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-        entries_order::Maybe{AbstractVector{<:Integer}} = nothing,
-        rows_order::Maybe{AbstractVector{<:Integer}} = nothing,
-        columns_order::Maybe{AbstractVector{<:Integer}} = nothing,
+        entries_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
+        rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
+        columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
+        entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+        rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+        columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
     )::HeatmapGraph
 
@@ -296,12 +420,12 @@ function heatmap_graph(;
     columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-    entries_order_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    rows_order_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    columns_order_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    entries_order::Maybe{AbstractVector{<:Integer}} = nothing,
-    rows_order::Maybe{AbstractVector{<:Integer}} = nothing,
-    columns_order::Maybe{AbstractVector{<:Integer}} = nothing,
+    entries_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
+    rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
+    columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
+    entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
 )::HeatmapGraph
     return HeatmapGraph(
@@ -318,9 +442,9 @@ function heatmap_graph(;
             columns_hovers,
             rows_annotations,
             columns_annotations,
-            entries_order_by,
-            rows_order_by,
-            columns_order_by,
+            entries_arrange_by,
+            rows_arrange_by,
+            columns_arrange_by,
             entries_order,
             rows_order,
             columns_order,
@@ -351,40 +475,251 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
 
     n_rows, n_columns = size(graph.data.entries_values)
     if n_rows != n_columns
-        for (name, value) in (("rows", graph.configuration.rows_order), ("columns", graph.configuration.columns_order))
-            if value == :same
+        for (name, value) in
+            (("rows", graph.configuration.rows_reorder), ("columns", graph.configuration.columns_reorder))
+            if value == SameOrder
                 throw(ArgumentError(chomp("""
-                                          can't specify graph.configuration.$(name)_order: :same
+                                          can't specify heatmap graph.configuration.$(name)_reorder: SameOrder
                                           for a non-square matrix: $(n_rows) rows x $(n_columns) columns
                                           """)))
             end
         end
     end
 
-    for (name, conf_order, data_order, other_name, other_conf_order, other_data_order) in (
+    data_rows_order, data_columns_order =
+        effective_field_values(graph.data.entries_order, graph.data.rows_order, graph.data.columns_order)
+
+    data_rows_arrange_by, data_columns_arrange_by =
+        effective_field_values(graph.data.entries_arrange_by, graph.data.rows_arrange_by, graph.data.columns_arrange_by)
+
+    configuration_rows_reorder, configuration_columns_reorder = effective_field_values(
+        graph.configuration.entries_reorder,
+        graph.configuration.rows_reorder,
+        graph.configuration.columns_reorder,
+    )
+
+    configuration_rows_dendogram_size, configuration_columns_dendogram_size = effective_field_values(
+        graph.configuration.entries_dendogram_size,
+        graph.configuration.rows_dendogram_size,
+        graph.configuration.columns_dendogram_size,
+    )
+
+    configuration_rows_linkage, configuration_columns_linkage = effective_field_values(
+        graph.configuration.entries_linkage,
+        graph.configuration.rows_linkage,
+        graph.configuration.columns_linkage,
+    )
+
+    configuration_rows_metric, configuration_columns_metric = effective_field_values(
+        graph.configuration.entries_metric,
+        graph.configuration.rows_metric,
+        graph.configuration.columns_metric,
+    )
+
+    for (
+        name,
+        data_order,
+        data_arrange_by,
+        configuration_reorder,
+        configuration_dendogram_size,
+        configuration_linkage,
+        configuration_metric,
+        other_name,
+        other_data_order,
+        other_configuration_reorder,
+        other_configuration_dendogram_size,
+    ) in (
         (
-            "rows",
-            graph.configuration.rows_order,
-            graph.data.rows_order,
             "columns",
-            graph.configuration.columns_order,
-            graph.data.columns_order,
+            data_columns_order,
+            data_columns_arrange_by,
+            configuration_columns_reorder,
+            configuration_columns_dendogram_size,
+            configuration_columns_linkage,
+            configuration_columns_metric,
+            "rows",
+            data_rows_order,
+            configuration_rows_reorder,
+            configuration_rows_dendogram_size,
         ),
         (
-            "columns",
-            graph.configuration.columns_order,
-            graph.data.columns_order,
             "rows",
-            graph.configuration.rows_order,
-            graph.data.rows_order,
+            data_rows_order,
+            data_rows_arrange_by,
+            configuration_rows_reorder,
+            configuration_rows_dendogram_size,
+            configuration_rows_linkage,
+            configuration_rows_metric,
+            "columns",
+            data_columns_order,
+            configuration_columns_reorder,
+            configuration_columns_dendogram_size,
         ),
     )
-        if conf_order == :same && data_order === nothing && other_conf_order === nothing && other_data_order === nothing
-            throw(ArgumentError(chomp("""
-                                      no $(other_name) order to copy into $(name) order
-                                      for graph.configuration.$(name)_order: same
-                                      """)))
+        if data_order === nothing
+            if configuration_reorder === nothing
+                if configuration_dendogram_size === nothing
+                    if data_arrange_by !== nothing
+                        throw(ArgumentError(chomp("""
+                                                  can't specify heatmap graph.data.$(name)_arrange_by
+                                                  without graph.configuration.$(name)_dendogram_size
+                                                  or graph.configuration.$(name)_reorder
+                                                  """)))
+                    end
+                    if configuration_linkage !== nothing
+                        throw(ArgumentError(chomp("""
+                                                  can't specify heatmap graph.configuration.$(name)_linkage
+                                                  without graph.configuration.$(name)_dendogram_size
+                                                  or graph.configuration.$(name)_reorder
+                                                  """)))
+                    end
+                    if configuration_metric !== nothing
+                        throw(ArgumentError(chomp("""
+                                                  can't specify heatmap graph.configuration.$(name)_metric
+                                                  without graph.configuration.$(name)_dendogram_size
+                                                  or graph.configuration.$(name)_reorder
+                                                  """)))
+                    end
+
+                else
+                    if !(configuration_linkage in (nothing, WardLinkage, WardPreSeuaredLinkage))
+                        throw(
+                            ArgumentError(
+                                "order preserving clustering does not support graph.configuration.$(name)_linkage: $(configuration_linkage)",
+                            ),
+                        )
+                    end
+                end
+
+            elseif configuration_reorder == SameOrder
+                if data_arrange_by !== nothing
+                    throw(ArgumentError(chomp("""
+                                              can't specify heatmap graph.data.$(name)_arrange_by
+                                              for graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              """)))
+                end
+                if configuration_linkage !== nothing
+                    throw(ArgumentError(chomp("""
+                                              can't specify heatmap graph.configuration.$(name)_linkage
+                                              for graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              """)))
+                end
+                if configuration_metric !== nothing
+                    throw(ArgumentError(chomp("""
+                                              can't specify heatmap graph.configuration.$(name)_metric
+                                              for graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              """)))
+                end
+                if other_data_order === nothing && other_configuration_reorder === nothing
+                    throw(
+                        ArgumentError(
+                            chomp("""
+                                  can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                  without an order to copy from the $(other_name)
+                                  """),
+                        ),
+                    )
+                end
+                if configuration_dendogram_size !== nothing &&
+                   !(other_data_order isa Hclust) &&
+                   other_configuration_reorder === nothing &&
+                   other_configuration_dendogram_size === nothing
+                    throw(ArgumentError(chomp("""
+                                              can't specify heatmap graph.configuration.$(name)_dendogram_size
+                                              with graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              without a tree to copy from the $(other_name)
+                                              """)))
+                end
+
+            elseif configuration_reorder in (SlantedOrder, SlantedPreSquaredOrder)
+                if !(configuration_linkage in (nothing, WardLinkage, WardPreSeuaredLinkage))
+                    throw(
+                        ArgumentError(
+                            "slanted order preserving clustering does not support graph.configuration.$(name)_linkage: $(configuration_linkage)",
+                        ),
+                    )
+                end
+            end
+
+        elseif data_order isa Hclust
+            if configuration_linkage !== nothing
+                throw(ArgumentError(chomp("""
+                                          can't specify heatmap graph.configuration.$(name)_linkage
+                                          for explicit hclust graph.data.$(name)_order
+                                          """)))
+            end
+            if configuration_metric !== nothing
+                throw(ArgumentError(chomp("""
+                                          can't specify heatmap graph.configuration.$(name)_metric
+                                          for explicit hclust graph.data.$(name)_order
+                                          """)))
+            end
+            if !(configuration_reorder in (nothing, SlantedHclust, SlantedPreSquaredHclust))
+                throw(
+                    ArgumentError(
+                        chomp("""
+                              can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
+                              for explicit hclust graph.data.$(name)_order
+                              """),
+                    ),
+                )
+            end
+            if configuration_reorder === nothing && data_arrange_by !== nothing
+                throw(ArgumentError(chomp("""
+                                          can't specify heatmap graph.data.$(name)_arrange_by
+                                          without graph.configuration.$(name)_reorder
+                                          for explicit hclust graph.data.$(name)_order
+                                          """)))
+            end
+
+        elseif data_order isa AbstractVector
+            if data_arrange_by !== nothing
+                throw(ArgumentError(chomp("""
+                                          can't specify heatmap graph.data.$(name)_arrange_by
+                                          for explicit vector graph.data.$(name)_order
+                                          """)))
+            end
+
+            if configuration_reorder !== nothing
+                throw(ArgumentError(chomp("""
+                                          can't specify both heatmap vector graph.data.$(name)_order
+                                          and graph.configuration.$(name)_reorder
+                                          """)))
+            end
+
+            if configuration_dendogram_size === nothing
+                if configuration_linkage !== nothing
+                    throw(ArgumentError(chomp("""
+                                              can't specify heatmap graph.configuration.$(name)_linkage
+                                              for explicit vector graph.data.$(name)_order
+                                              without graph.configuration.$(name)_dendogram_size
+                                              """)))
+                end
+                if configuration_metric !== nothing
+                    throw(ArgumentError(chomp("""
+                                              can't specify heatmap graph.configuration.$(name)_metric
+                                              for explicit vector graph.data.$(name)_order
+                                              without graph.configuration.$(name)_dendogram_size
+                                              """)))
+                end
+
+            else
+                if !(configuration_linkage in (nothing, WardLinkage, WardPreSeuaredLinkage))
+                    throw(
+                        ArgumentError(
+                            "order preserving clustering does not support graph.configuration.$(name)_linkage: $(configuration_linkage)",
+                        ),
+                    )
+                end
+            end
+
+        else
+            @assert false
         end
+    end
+
+    if configuration_rows_dendogram_size !== nothing || configuration_columns_dendogram_size !== nothing
+        @assert false
     end
 
     return nothing
@@ -579,10 +914,33 @@ function reorder_data(
     graph::HeatmapGraph,
     colors::ConfiguredColors,
 )::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{AbstractVector{<:Integer}}, AbstractMatrix{<:Real}}
-    configuration_rows_order, configuration_columns_order = effective_field_values(
-        graph.configuration.entries_order,
-        graph.configuration.rows_order,
-        graph.configuration.columns_order,
+    data_rows_order, data_columns_order =
+        effective_field_values(graph.data.entries_order, graph.data.rows_order, graph.data.columns_order)
+
+    data_rows_arrange_by, data_columns_arrange_by = effective_field_values(
+        graph.data.entries_arrange_by,
+        graph.data.rows_arrange_by,
+        graph.data.columns_arrange_by,
+        graph.data.entries_values,
+    )
+
+    configuration_rows_reorder, configuration_columns_reorder = effective_field_values(
+        graph.configuration.entries_reorder,
+        graph.configuration.rows_reorder,
+        graph.configuration.columns_reorder,
+    )
+
+    configuration_rows_dendogram_size, configuration_columns_dendogram_size = effective_field_values(
+        graph.configuration.entries_dendogram_size,
+        graph.configuration.rows_dendogram_size,
+        graph.configuration.columns_dendogram_size,
+    )
+
+    configuration_rows_linkage, configuration_columns_linkage = effective_field_values(
+        graph.configuration.entries_linkage,
+        graph.configuration.rows_linkage,
+        graph.configuration.columns_linkage,
+        WardLinkage,
     )
 
     configuration_rows_metric, configuration_columns_metric = effective_field_values(
@@ -592,38 +950,88 @@ function reorder_data(
         Euclidean(),
     )
 
-    data_rows_order_by, data_columns_order_by = effective_field_values(
-        graph.data.entries_order_by,
-        graph.data.rows_order_by,
-        graph.data.columns_order_by,
-        graph.data.entries_values,
-    )
+    data_rows_arrange_by = prefer_data(data_rows_arrange_by, graph.data.entries_values)
+    data_columns_arrange_by = prefer_data(data_columns_arrange_by, graph.data.entries_values)
+    @assert data_rows_arrange_by !== nothing
+    @assert data_columns_arrange_by !== nothing
 
-    data_rows_order, data_columns_order =
-        effective_field_values(graph.data.entries_order, graph.data.rows_order, graph.data.columns_order)
+    slant_rows =
+        configuration_rows_reorder in (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
+    slant_columns =
+        configuration_columns_reorder in (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
 
-    data_columns_order = finalize_order(;
-        data_order = data_columns_order,
-        metric = configuration_columns_metric,
-        configuration_order = configuration_columns_order,
-        order_by = data_columns_order_by,
-    )
+    slant_rows_is_pre_squared = configuration_rows_reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
+    slant_columns_is_pre_squared = configuration_columns_reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
 
-    data_rows_order = finalize_order(;
-        data_order = data_rows_order,
-        metric = configuration_rows_metric,
-        configuration_order = configuration_rows_order,
-        order_by = transpose(data_rows_order_by),
-    )
+    if slant_rows &&
+       slant_columns &&
+       slant_rows_is_pre_squared == slant_columns_is_pre_squared &&
+       data_rows_arrange_by === data_columns_arrange_by
+        slant_rows_order, slant_columns_order =
+            slanted_orders(data_rows_arrange_by; squared_order = slant_rows_is_pre_squared)
+    else
+        slant_rows_order = nothing
+        slant_columns_order = nothing
 
-    if data_rows_order === nothing && configuration_rows_order == :same
-        @assert data_columns_order !== nothing
-        data_rows_order = data_columns_order
+        if slant_rows
+            if configuration_columns_reorder == SameOrder
+                slant_rows_order, slant_columns_order =
+                    slanted_orders(data_rows_arrange_by; same_order = true, squared_order = slant_rows_is_pre_squared)
+            else
+                slant_rows_order, _ =
+                    slanted_orders(data_rows_arrange_by; order_cols = false, squared_order = slant_rows_is_pre_squared)
+            end
+        end
+
+        if slant_columns
+            if configuration_rows_reorder == SameOrder
+                slant_rows_order, slant_columns_order = slanted_orders(
+                    data_columns_arrange_by;
+                    same_order = true,
+                    squared_order = slant_columns_is_pre_squared,
+                )
+            else
+                _, slant_columns_order = slanted_orders(
+                    data_columns_arrange_by;
+                    order_rows = false,
+                    squared_order = slant_columns_is_pre_squared,
+                )
+            end
+        end
     end
 
-    if data_columns_order === nothing && configuration_columns_order == :same
-        @assert data_rows_order !== nothing
+    data_columns_order, data_columns_tree = finalize_order(;
+        data_order = data_columns_order,
+        data_arrange_by = data_columns_arrange_by,
+        slant_order = slant_columns_order,
+        configuration_reorder = configuration_columns_reorder,
+        configuration_dendogram_size = configuration_columns_dendogram_size,
+        configuration_linkage = configuration_columns_linkage,
+        configuration_metric = configuration_columns_metric,
+    )
+
+    data_rows_order, data_rows_tree = finalize_order(;
+        data_order = data_rows_order,
+        data_arrange_by = transpose(data_rows_arrange_by),
+        slant_order = slant_rows_order,
+        configuration_reorder = configuration_rows_reorder,
+        configuration_dendogram_size = configuration_rows_dendogram_size,
+        configuration_linkage = configuration_rows_linkage,
+        configuration_metric = configuration_rows_metric,
+    )
+
+    if configuration_rows_reorder == SameOrder
+        @assert data_rows_order === nothing
+        @assert data_rows_tree === nothing
+        data_rows_order = data_columns_order
+        data_rows_tree = data_columns_tree
+    end
+
+    if configuration_columns_reorder == SameOrder
+        @assert data_columns_order === nothing
+        @assert data_columns_tree === nothing
         data_columns_order = data_rows_order
+        data_columns_tree = data_rows_tree
     end
 
     n_rows, n_columns = size(graph.data.entries_values)
@@ -673,27 +1081,113 @@ function effective_field_values(
 end
 
 function finalize_order(;
-    data_order::Maybe{AbstractVector{<:Integer}},
-    metric::PreMetric,
-    configuration_order::Maybe{HeatmapReorder},
-    order_by::Maybe{AbstractMatrix{<:Real}},
-)::Maybe{AbstractVector{<:Integer}}
-    if data_order !== nothing || configuration_order === nothing || configuration_order == :same
-        return data_order
+    data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},
+    data_arrange_by::AbstractMatrix{<:Real},
+    slant_order::Maybe{AbstractVector{<:Integer}},
+    configuration_reorder::Maybe{HeatmapReorder},
+    configuration_dendogram_size::Maybe{Real},
+    configuration_linkage::HeatmapLinkage,
+    configuration_metric::PreMetric,
+)::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{Hclust}}
+    if data_order === nothing
+        if configuration_reorder === nothing
+            if configuration_dendogram_size === nothing
+                return (nothing, nothing)
+            else
+                distances = pairwise(configuration_metric, data_arrange_by; dims = 2)  # UNTESTED dendogram
+                clusters = oclust(distances; method = oclust_method(configuration_linkage))  # UNTESTED dendogram
+                return (clusters.order, clusters)  # UNTESTED dendogram
+            end
+
+        elseif configuration_reorder === SameOrder
+            return (nothing, nothing)
+
+        elseif configuration_reorder in (OptimalHclust, RCompatibleHclust)
+            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+            clusters = hclust(  # NOJET
+                distances;
+                linkage = hclust_linkage(configuration_linkage),
+                branchorder = hclust_branchorder(configuration_reorder),
+            )
+            return (clusters.order, clusters)
+
+        elseif configuration_reorder in (SlantedHclust, SlantedPreSquaredHclust)
+            @assert slant_order !== nothing
+            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+            clusters = hclust(distances; linkage = hclust_linkage(configuration_linkage))
+            clusters = reorder_hclust(clusters, slant_order)
+            return (clusters.order, clusters)
+
+        elseif configuration_reorder in (SlantedOrder, SlantedPreSquaredOrder)
+            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+            clusters = oclust(distances; order = slant_order, method = oclust_method(configuration_linkage))
+            return (slant_order, clusters)
+
+        else
+            @assert false
+        end
+
+    elseif data_order isa Hclust
+        if configuration_reorder === nothing
+            return (data_order.order, data_order)
+
+        elseif configuration_reorder in (SlantedHclust, SlantedPreSquaredHclust)
+            @assert slant_order !== nothing
+            clusters = reorder_hclust(data_order, slant_order)
+            return (clusters.order, clusters)
+
+        else
+            @assert false
+        end
+
+    elseif data_order isa AbstractVector
+        if configuration_dendogram_size === nothing
+            return (data_order, nothing)
+        else
+            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)  # UNTESTED
+            clusters = oclust(distances; order = data_order, method = oclust_method(configuration_linkage))  # UNTESTED
+            return (clusters.order, clusters)  # UNTESTED
+        end
+
+    else
+        @assert false
     end
+end
 
-    n_columns = size(order_by, 2)
-    distances = pairwise(metric, order_by; dims = 2)
-    @assert size(distances) == (n_columns, n_columns)
-
-    if typeof(configuration_order) <: Symbol
-        configuration_order = (configuration_order, :barjoseph)
+function hclust_linkage(linkage::HeatmapLinkage)::Symbol
+    if linkage == SingleLinkage
+        return :single  # UNTESTED
+    elseif linkage == AverageLinkage
+        return :average  # UNTESTED
+    elseif linkage == CompleteLinkage
+        return :complete  # UNTESTED
+    elseif linkage == WardLinkage
+        return :ward
+    elseif linkage == WardPreSeuaredLinkage  # UNTESTED
+        return :ward_presquared  # UNTESTED
+    else
+        @assert false
     end
+end
 
-    tree = hclust(distances; linkage = configuration_order[1], branchorder = configuration_order[2])  # NOJET
-    @assert length(tree.order) == n_columns
+function oclust_method(linkage::HeatmapLinkage)::Symbol
+    if linkage == WardLinkage
+        return :ward
+    elseif linkage == WardPreSeuaredLinkage  # UNTESTED
+        return :ward_presquared  # UNTESTED
+    else
+        @assert false
+    end
+end
 
-    return tree.order
+function hclust_branchorder(reorder::HeatmapReorder)::Symbol
+    if reorder == RCompatibleHclust
+        return :r  # UNTESTED
+    elseif reorder == OptimalHclust
+        return :optimal
+    else
+        @assert false
+    end
 end
 
 end

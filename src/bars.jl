@@ -119,9 +119,7 @@ function Validations.validate(context::ValidationContext, data::BarsGraphData)::
     validate_vector_length(context, "bars_hovers", data.bars_hovers, "bars_values", n_bars)
 
     validate_vector_entries(context, "bars_annotations", data.bars_annotations) do _, bars_annotation
-        validate(context, bars_annotation)
-        validate_vector_length(context, "values", bars_annotation.values, "bars_values", n_bars)
-        validate_vector_length(context, "hovers", bars_annotation.hovers, "bars_values", n_bars)
+        validate(context, bars_annotation, "bars_values", n_bars)
         return nothing
     end
 
@@ -379,9 +377,7 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
     validate_vector_length(context, "bars_hovers", data.bars_hovers, "series_bars_values[*]", n_bars)
 
     validate_vector_entries(context, "bars_annotations", data.bars_annotations) do _, bars_annotation
-        validate(context, bars_annotation)
-        validate_vector_length(context, "values", bars_annotation.values, "series_bars_values[*]", n_bars)
-        validate_vector_length(context, "hovers", bars_annotation.hovers, "series_bars_values[*]", n_bars)
+        validate(context, bars_annotation, "series_bars_values[*]", n_bars)
         return nothing
     end
 

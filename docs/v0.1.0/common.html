@@ -1,5 +1,339 @@
+
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Common · SomeGraphs.jl v0.1.0</title><meta name="title" content="Common · SomeGraphs.jl v0.1.0"/><meta property="og:title" content="Common · SomeGraphs.jl v0.1.0"/><meta property="twitter:title" content="Common · SomeGraphs.jl v0.1.0"/><meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">SomeGraphs.jl v0.1.0</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="index.html">SomeGraphs</a></li><li><a class="tocitem" href="validations.html">Validations</a></li><li class="is-active"><a class="tocitem" href="common.html">Common</a><ul class="internal"><li><a class="tocitem" href="#Index"><span>Index</span></a></li></ul></li><li><a class="tocitem" href="distributions.html">Distributions</a></li><li><a class="tocitem" href="scatters.html">Scatter Plots</a></li><li><a class="tocitem" href="bars.html">Bar Plots</a></li><li><a class="tocitem" href="heatmaps.html">Heatmaps</a></li><li><a class="tocitem" href="utilities.html">Utilities</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="common.html">Common</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="common.html">Common</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Common"><a class="docs-heading-anchor" href="#Common">Common</a><a id="Common-1"></a><a class="docs-heading-anchor-permalink" href="#Common" title="Permalink"></a></h1><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common" href="#SomeGraphs.Common"><code>SomeGraphs.Common</code></a> — <span class="docstring-category">Module</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Common data types and utilities for defining specific graph types.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.Graph" href="#SomeGraphs.Common.Graph"><code>SomeGraphs.Common.Graph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>The type of a figure we can display. This is a combination of some <a href="common.html#SomeGraphs.Common.AbstractGraphData"><code>AbstractGraphData</code></a> and <a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration"><code>AbstractGraphConfiguration</code></a>. Accessing the <code>.figure</code> property of the graph will return it as a <code>PlotlyFigure</code>, which can be displayed in interactive environments (Julia REPL and/or Jupyter notebooks).</p><div class="admonition is-info" id="Note-9f7d369b3dee693c"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-9f7d369b3dee693c" title="Permalink"></a></header><div class="admonition-body"><p>You should call <a href="common.html#SomeGraphs.Common.save_graph"><code>save_graph</code></a> to save the graph to a file, instead of calling <code>savefig</code> on the <code>.figure</code>, because the latter does&#39;t obey the graph size, because Plotly.</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.AbstractGraphConfiguration" href="#SomeGraphs.Common.AbstractGraphConfiguration"><code>SomeGraphs.Common.AbstractGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A configuration of a <a href="common.html#SomeGraphs.Common.Graph"><code>Graph</code></a> specifies how to display the data while being (as much as possible) independent of the data itself. That is, it should be possible to apply the same configuration to multiple sets of data to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.AbstractGraphData" href="#SomeGraphs.Common.AbstractGraphData"><code>SomeGraphs.Common.AbstractGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Some data of a <a href="common.html#SomeGraphs.Common.Graph"><code>Graph</code></a> specifies what to display the data while being (as much as possible) independent of how to display it. That is, it should be possible to apply multiple sets of data to the same configuration to to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.PlotlyFigure" href="#SomeGraphs.Common.PlotlyFigure"><code>SomeGraphs.Common.PlotlyFigure</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>The type of a rendered graph which Julia knows how to display.</p><p>A plotly figure contains everything needed to display an interactive graph (or generate a static one on disk). It can also be converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.save_graph" href="#SomeGraphs.Common.save_graph"><code>SomeGraphs.Common.save_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">save_graph(graph::Graph, output_file::AbstractString)::Nothing</code></pre><p>Save the graph to a file. Unlike the Plotly <code>savefig</code> function, this function will actually obey the <code>width</code> and <code>height</code> parameters specified in the graph&#39;s configuration. The format is deduced from the suffix of the file name.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.FigureConfiguration" href="#SomeGraphs.Common.FigureConfiguration"><code>SomeGraphs.Common.FigureConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct FigureConfiguration &lt;: Validated
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Common · SomeGraphs.jl v0.1.0
+</title>
+<meta name="title" content="Common · SomeGraphs.jl v0.1.0"/>
+<meta property="og:title" content="Common · SomeGraphs.jl v0.1.0"/>
+<meta property="twitter:title" content="Common · SomeGraphs.jl v0.1.0"/>
+<meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<script data-outdated-warner src="assets/warner.js">
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
+<script>documenterBaseURL="."
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
+</script>
+<script src="search_index.js">
+</script>
+<script src="siteinfo.js">
+</script>
+<script src="../versions.js">
+</script>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
+<script src="assets/themeswap.js">
+</script>
+<link href="assets/table.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="documenter">
+<nav class="docs-sidebar">
+<div class="docs-package-name">
+<span class="docs-autofit">
+<a href="index.html">SomeGraphs.jl v0.1.0
+</a>
+</span>
+</div>
+<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
+</button>
+<ul class="docs-menu">
+<li>
+<a class="tocitem" href="index.html">SomeGraphs
+</a>
+</li>
+<li>
+<a class="tocitem" href="validations.html">Validations
+</a>
+</li>
+<li class="is-active">
+<a class="tocitem" href="common.html">Common
+</a>
+<ul class="internal">
+<li>
+<a class="tocitem" href="#Index">
+<span>Index
+</span>
+</a>
+</li>
+</ul>
+</li>
+<li>
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+</li>
+<li>
+<a class="tocitem" href="scatters.html">Scatter Plots
+</a>
+</li>
+<li>
+<a class="tocitem" href="bars.html">Bar Plots
+</a>
+</li>
+<li>
+<a class="tocitem" href="heatmaps.html">Heatmaps
+</a>
+</li>
+<li>
+<a class="tocitem" href="utilities.html">Utilities
+</a>
+</li>
+</ul>
+<div class="docs-version-selector field has-addons">
+<div class="control">
+<span class="docs-label button is-static is-size-7">Version
+</span>
+</div>
+<div class="docs-selector control is-expanded">
+<div class="select is-fullwidth is-size-7">
+<select id="documenter-version-selector">
+</select>
+</div>
+</div>
+</div>
+</nav>
+<div class="docs-main">
+<header class="docs-navbar">
+<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
+</a>
+<nav class="breadcrumb">
+<ul class="is-hidden-mobile">
+<li class="is-active">
+<a href="common.html">Common
+</a>
+</li>
+</ul>
+<ul class="is-hidden-tablet">
+<li class="is-active">
+<a href="common.html">Common
+</a>
+</li>
+</ul>
+</nav>
+<div class="docs-right">
+<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
+<span class="docs-icon fa-brands">
+</span>
+<span class="docs-label is-hidden-touch">GitHub
+</span>
+</a>
+<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
+</a>
+<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
+</a>
+</div>
+</header>
+<article class="content" id="documenter-page">
+<h1 id="Common">
+<a class="docs-heading-anchor" href="#Common">Common
+</a>
+<a id="Common-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Common" title="Permalink">
+</a>
+</h1>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common" href="#SomeGraphs.Common">
+<code>SomeGraphs.Common
+</code>
+</a> — 
+<span class="docstring-category">Module
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Common data types and utilities for defining specific graph types.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.Graph" href="#SomeGraphs.Common.Graph">
+<code>SomeGraphs.Common.Graph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>The type of a figure we can display. This is a combination of some 
+<a href="common.html#SomeGraphs.Common.AbstractGraphData">
+<code>AbstractGraphData
+</code>
+</a> and 
+<a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration">
+<code>AbstractGraphConfiguration
+</code>
+</a>. Accessing the 
+<code>.figure
+</code> property of the graph will return it as a 
+<code>PlotlyFigure
+</code>, which can be displayed in interactive environments (Julia REPL and/or Jupyter notebooks).
+</p>
+<div class="admonition is-info" id="Note-a08a51fd828b902e">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-a08a51fd828b902e" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>You should call 
+<a href="common.html#SomeGraphs.Common.save_graph">
+<code>save_graph
+</code>
+</a> to save the graph to a file, instead of calling 
+<code>savefig
+</code> on the 
+<code>.figure
+</code>, because the latter does&#39;t obey the graph size, because Plotly.
+</p>
+</div>
+</div>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AbstractGraphConfiguration" href="#SomeGraphs.Common.AbstractGraphConfiguration">
+<code>SomeGraphs.Common.AbstractGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A configuration of a 
+<a href="common.html#SomeGraphs.Common.Graph">
+<code>Graph
+</code>
+</a> specifies how to display the data while being (as much as possible) independent of the data itself. That is, it should be possible to apply the same configuration to multiple sets of data to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AbstractGraphData" href="#SomeGraphs.Common.AbstractGraphData">
+<code>SomeGraphs.Common.AbstractGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Some data of a 
+<a href="common.html#SomeGraphs.Common.Graph">
+<code>Graph
+</code>
+</a> specifies what to display the data while being (as much as possible) independent of how to display it. That is, it should be possible to apply multiple sets of data to the same configuration to to generate multiple similar graphs. In some cases (e.g., colors) you can specify a default in the configuration and override it for specific entities in the data.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.PlotlyFigure" href="#SomeGraphs.Common.PlotlyFigure">
+<code>SomeGraphs.Common.PlotlyFigure
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>The type of a rendered graph which Julia knows how to display.
+</p>
+<p>A plotly figure contains everything needed to display an interactive graph (or generate a static one on disk). It can also be converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.save_graph" href="#SomeGraphs.Common.save_graph">
+<code>SomeGraphs.Common.save_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">save_graph(graph::Graph, output_file::AbstractString)::Nothing
+</code>
+</pre>
+<p>Save the graph to a file. Unlike the Plotly 
+<code>savefig
+</code> function, this function will actually obey the 
+<code>width
+</code> and 
+<code>height
+</code> parameters specified in the graph&#39;s configuration. The format is deduced from the suffix of the file name.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.FigureConfiguration" href="#SomeGraphs.Common.FigureConfiguration">
+<code>SomeGraphs.Common.FigureConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct FigureConfiguration &lt;: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
     width::Maybe{Int} = nothing
     height::Maybe{Int} = nothing
@@ -7,13 +341,95 @@
     background_color::AbstractString = &quot;white&quot;
     paper_color::AbstractString = &quot;white&quot;
     colors_scale_offsets::AbstractVector{&lt;:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
-end</code></pre><p>Generic configuration that applies to the whole figure. Each complete <a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration"><code>AbstractGraphConfiguration</code></a> contains a <code>figure</code> field of this type.</p><p>The optional <code>width</code> and <code>height</code> are in pixels, that is, 1/96 of an inch. The <code>margins</code> are specified in the same units.</p><p>You can also manually change the <code>background_color</code> (inside the graph&#39;s area) and <code>paper_color</code> (outside the graph&#39;s area, that is, the margins). the axes.</p><p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position each and every color scale (except the 1st one if there&#39;s no legend) by specifying an explicit offset. Great fun!</p><p>These <code>colors_scale_offsets</code> are specified in what Plotly calls &quot;paper coordinates&quot; which are singularly unsuitable for this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For optimal results you will need to manually tweak these to match your specific graph. In 21st century, when &quot;AI&quot; is a thing. Sigh.</p><p>We provide &quot;too many&quot; (5) offsets here. Normally a graph displays one color scale, but in theory it can have any number (e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that requires more offsets.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.Stacking" href="#SomeGraphs.Common.Stacking"><code>SomeGraphs.Common.Stacking</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>If stacking elements, how to do so:</p><p><code>StackValues</code> just adds the raw values on top of each other.</p><p><code>StackFractions</code> normalizes the values so their sum is 1. This can be combined with setting the <code>percent</code> field of the relevant <a href="common.html#SomeGraphs.Common.AxisConfiguration"><code>AxisConfiguration</code></a> to display percents.</p></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
+end
+</code>
+</pre>
+<p>Generic configuration that applies to the whole figure. Each complete 
+<a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration">
+<code>AbstractGraphConfiguration
+</code>
+</a> contains a 
+<code>figure
+</code> field of this type.
+</p>
+<p>The optional 
+<code>width
+</code> and 
+<code>height
+</code> are in pixels, that is, 1/96 of an inch. The 
+<code>margins
+</code> are specified in the same units.
+</p>
+<p>You can also manually change the 
+<code>background_color
+</code> (inside the graph&#39;s area) and 
+<code>paper_color
+</code> (outside the graph&#39;s area, that is, the margins). the axes.
+</p>
+<p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position each and every color scale (except the 1st one if there&#39;s no legend) by specifying an explicit offset. Great fun!
+</p>
+<p>These 
+<code>colors_scale_offsets
+</code> are specified in what Plotly calls &quot;paper coordinates&quot; which are singularly unsuitable for this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For optimal results you will need to manually tweak these to match your specific graph. In 21st century, when &quot;AI&quot; is a thing. Sigh.
+</p>
+<p>We provide &quot;too many&quot; (5) offsets here. Normally a graph displays one color scale, but in theory it can have any number (e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that requires more offsets.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.Stacking" href="#SomeGraphs.Common.Stacking">
+<code>SomeGraphs.Common.Stacking
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>If stacking elements, how to do so:
+</p>
+<p>
+<code>StackValues
+</code> just adds the raw values on top of each other.
+</p>
+<p>
+<code>StackFractions
+</code> normalizes the values so their sum is 1. This can be combined with setting the 
+<code>percent
+</code> field of the relevant 
+<a href="common.html#SomeGraphs.Common.AxisConfiguration">
+<code>AxisConfiguration
+</code>
+</a> to display percents.
+</p>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Default (serves as a baseline to compare with when modifying options):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='Hpc7UmsMBF' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='aaCHnjhmMM' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Hpc7UmsMBF")
+    const PLOT = document.getElementById("aaCHnjhmMM")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -22,16 +438,26 @@ to_documenter(graph.figure)</code></pre><div id='Hpc7UmsMBF' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Reduced size:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Reduced size:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.figure.width = 300
 graph.configuration.figure.height = 300
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='WoOPW8vNer' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='pMN8sHj7VV' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("WoOPW8vNer")
+    const PLOT = document.getElementById("pMN8sHj7VV")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","height":300,"plot_bgcolor":"white","yaxis":{"showticklabels":false},"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -40,16 +466,26 @@ to_documenter(graph.figure)</code></pre><div id='WoOPW8vNer' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Change colors:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Change colors:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.figure.background_color = &quot;lightyellow&quot;
 graph.configuration.figure.paper_color = &quot;lightgrey&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='D7jiG8qKt7' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='RnzPOq3qSt' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("D7jiG8qKt7")
+    const PLOT = document.getElementById("RnzPOq3qSt")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"lightyellow","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -58,23 +494,61 @@ to_documenter(graph.figure)</code></pre><div id='D7jiG8qKt7' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.MarginsConfiguration" href="#SomeGraphs.Common.MarginsConfiguration"><code>SomeGraphs.Common.MarginsConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct MarginsConfiguration &lt;: Validated
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.MarginsConfiguration" href="#SomeGraphs.Common.MarginsConfiguration">
+<code>SomeGraphs.Common.MarginsConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct MarginsConfiguration &lt;: Validated
     left::Int = 50
     bottom::Int = 50
     right::Int = 50
     top::Int = 50
-end</code></pre><p>Configure the margins of the graph. Sizes are in pixels (1/96th of an inch). Plotly is uncapable of automatically adjusting the margins to adapt to tick labels, so you may have to tweak this manually to avoid clipping or reduce wasted white space. In the 21st century. Sigh.</p></div></section></article><p><strong>Examples:</strong></p><p>Increased margins:</p><pre><code class="language-julia hljs">using SomeGraphs
+end
+</code>
+</pre>
+<p>Configure the margins of the graph. Sizes are in pixels (1/96th of an inch). Plotly is uncapable of automatically adjusting the margins to adapt to tick labels, so you may have to tweak this manually to avoid clipping or reduce wasted white space. In the 21st century. Sigh.
+</p>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Increased margins:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.figure.margins.left = 100
 graph.configuration.figure.margins.right = 200
 graph.configuration.figure.margins.top = 150
 graph.configuration.figure.margins.bottom = 250
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='lFi9nKPLSb' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='LV0UpnsRRW' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("lFi9nKPLSb")
+    const PLOT = document.getElementById("LV0UpnsRRW")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -83,8 +557,26 @@ to_documenter(graph.figure)</code></pre><div id='lFi9nKPLSb' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.AxisConfiguration" href="#SomeGraphs.Common.AxisConfiguration"><code>SomeGraphs.Common.AxisConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct AxisConfiguration &lt;: Validated
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AxisConfiguration" href="#SomeGraphs.Common.AxisConfiguration">
+<code>SomeGraphs.Common.AxisConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct AxisConfiguration &lt;: Validated
     minimum::Maybe{Real} = nothing
     maximum::Maybe{Real} = nothing
     log_scale::Maybe{LogScale} = nothing
@@ -94,14 +586,70 @@ to_documenter(graph.figure)</code></pre><div id='lFi9nKPLSb' class='' style=';'>
     show_grid::Bool = true
     grid_color::AbstractString = &quot;lightgrey&quot;
     title::Maybe{AbstractString} = nothing
-end</code></pre><p>Generic configuration for a graph axis. Everything is optional; by default, the <code>minimum</code> and <code>maximum</code> are computed automatically from the data.</p><p>If <code>log_scale</code> is specified, then the <code>log_regularization</code> is added to the coordinate to avoid zero values, and the axis is shown according to the <a href="common.html#SomeGraphs.Common.LogScale"><code>LogScale</code></a>. Otherwise, <code>log_regularization</code> must be 0.</p><p>If <code>percent</code> is set, then the values are multiplied by 100 and a <code>%</code> suffix is added to the tick labels.</p><p>The <code>show_ticks</code> and/or <code>show_grid</code> can be disabled for a cleaner (though less informative) graph appearance. By default the grid lines are shown in <code>lightgrey</code>.</p><p>The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able to control log scale and/or percent scaling without changing anything else.</p><p>If <code>title</code> is specified, it will be shown next to the axis. However, in some cases the correct title depends on the data set, so you can override this in the data.</p></div></section></article><p><strong>Examples:</strong></p><p>Disable ticks:</p><pre><code class="language-julia hljs">using SomeGraphs
+end
+</code>
+</pre>
+<p>Generic configuration for a graph axis. Everything is optional; by default, the 
+<code>minimum
+</code> and 
+<code>maximum
+</code> are computed automatically from the data.
+</p>
+<p>If 
+<code>log_scale
+</code> is specified, then the 
+<code>log_regularization
+</code> is added to the coordinate to avoid zero values, and the axis is shown according to the 
+<a href="common.html#SomeGraphs.Common.LogScale">
+<code>LogScale
+</code>
+</a>. Otherwise, 
+<code>log_regularization
+</code> must be 0.
+</p>
+<p>If 
+<code>percent
+</code> is set, then the values are multiplied by 100 and a 
+<code>%
+</code> suffix is added to the tick labels.
+</p>
+<p>The 
+<code>show_ticks
+</code> and/or 
+<code>show_grid
+</code> can be disabled for a cleaner (though less informative) graph appearance. By default the grid lines are shown in 
+<code>lightgrey
+</code>.
+</p>
+<p>The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able to control log scale and/or percent scaling without changing anything else.
+</p>
+<p>If 
+<code>title
+</code> is specified, it will be shown next to the axis. However, in some cases the correct title depends on the data set, so you can override this in the data.
+</p>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Disable ticks:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.show_ticks = false
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='XjnR9QF1Nd' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='ckdsiZddzC' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XjnR9QF1Nd")
+    const PLOT = document.getElementById("ckdsiZddzC")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -110,15 +658,25 @@ to_documenter(graph.figure)</code></pre><div id='XjnR9QF1Nd' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Disable grid:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Disable grid:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.show_grid = false
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='4o45AIuVcB' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='9aV3Nqofit' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("4o45AIuVcB")
+    const PLOT = document.getElementById("9aV3Nqofit")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -127,15 +685,25 @@ to_documenter(graph.figure)</code></pre><div id='4o45AIuVcB' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Override grid color:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Override grid color:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.grid_color = &quot;red&quot;
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='aankaMYV3F' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='dPZStOndkn' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("aankaMYV3F")
+    const PLOT = document.getElementById("dPZStOndkn")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -144,16 +712,26 @@ to_documenter(graph.figure)</code></pre><div id='aankaMYV3F' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Override range:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Override range:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.minimum = 1
 graph.configuration.value_axis.maximum = 4
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='RaDOR2rHyO' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='6uRk4De7SW' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("RaDOR2rHyO")
+    const PLOT = document.getElementById("6uRk4De7SW")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.97,4.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -162,15 +740,25 @@ to_documenter(graph.figure)</code></pre><div id='RaDOR2rHyO' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Percent:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Percent:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.percent = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='w7H6QZ92K7' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='0beGfNLc3m' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("w7H6QZ92K7")
+    const PLOT = document.getElementById("0beGfNLc3m")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,100.0,100.0,100.0,300.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -179,16 +767,64 @@ to_documenter(graph.figure)</code></pre><div id='w7H6QZ92K7' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.LogScale" href="#SomeGraphs.Common.LogScale"><code>SomeGraphs.Common.LogScale</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Supported log scales (when log scaling is enabled):</p><ul><li><p><code>Log10Scale</code> converts values to their log (base 10).</p></li><li><p><code>Log2Scale</code> converts values to their log (base 2).</p></li></ul></div></section></article><p><strong>Examples:</strong></p><p>Log 2:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.LogScale" href="#SomeGraphs.Common.LogScale">
+<code>SomeGraphs.Common.LogScale
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Supported log scales (when log scaling is enabled):
+</p>
+<ul>
+<li>
+<p>
+<code>Log10Scale
+</code> converts values to their log (base 10).
+</p>
+</li>
+<li>
+<p>
+<code>Log2Scale
+</code> converts values to their log (base 2).
+</p>
+</li>
+</ul>
+</div>
+</section>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Log 2:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.log_scale = Log2Scale
 graph.configuration.value_axis.log_regularization = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='kb3ZOOZ8Tc' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='SUWF2EJc8I' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("kb3ZOOZ8Tc")
+    const PLOT = document.getElementById("SUWF2EJc8I")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,2.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -197,16 +833,26 @@ to_documenter(graph.figure)</code></pre><div id='kb3ZOOZ8Tc' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Log 10:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Log 10:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
 graph.configuration.value_axis.log_scale = Log10Scale
 graph.configuration.value_axis.log_regularization = 1e-5
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='Xx6KH0AKhA' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='WZjx2A1BXX' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Xx6KH0AKhA")
+    const PLOT = document.getElementById("WZjx2A1BXX")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-5.0547714,0.5318939],"tickprefix":"<sub>10</sub>"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -215,8 +861,26 @@ to_documenter(graph.figure)</code></pre><div id='Xx6KH0AKhA' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.SizesConfiguration" href="#SomeGraphs.Common.SizesConfiguration"><code>SomeGraphs.Common.SizesConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct SizesConfiguration &lt;: Validated
+
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.SizesConfiguration" href="#SomeGraphs.Common.SizesConfiguration">
+<code>SomeGraphs.Common.SizesConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct SizesConfiguration &lt;: Validated
     fixed::Maybe{Real} = nothing
     minimum::Maybe{Real} = nothing
     maximum::Maybe{Real} = nothing
@@ -224,37 +888,1110 @@ to_documenter(graph.figure)</code></pre><div id='Xx6KH0AKhA' class='' style=';'>
     log_regularization::Real = 0
     smallest::Real = 6
     span::Real = 12
-end</code></pre><p>Configure how to map sizes data to a size in pixels (1/96th of an inch). If <code>fixed</code> is specified, it is the size to be used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be specified. The minimal size data value (or any values at most the specified <code>minimum</code>) is mapped to the <code>smallest</code> size in pixels, and the maximum size data value (or any values at least the specified <code>maximum</code>) is mapped to a size with an additional <code>span</code> in pixels. If <code>log_scale</code>, then we use the log of the data values (and of the specified <code>minimum</code> and/or <code>maximum</code>, if any), adding the <code>log_regularization</code> to avoid a log of zero or negative values.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.LineConfiguration" href="#SomeGraphs.Common.LineConfiguration"><code>SomeGraphs.Common.LineConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct LineConfiguration &lt;: Validated
+end
+</code>
+</pre>
+<p>Configure how to map sizes data to a size in pixels (1/96th of an inch). If 
+<code>fixed
+</code> is specified, it is the size to be used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be specified. The minimal size data value (or any values at most the specified 
+<code>minimum
+</code>) is mapped to the 
+<code>smallest
+</code> size in pixels, and the maximum size data value (or any values at least the specified 
+<code>maximum
+</code>) is mapped to a size with an additional 
+<code>span
+</code> in pixels. If 
+<code>log_scale
+</code>, then we use the log of the data values (and of the specified 
+<code>minimum
+</code> and/or 
+<code>maximum
+</code>, if any), adding the 
+<code>log_regularization
+</code> to avoid a log of zero or negative values.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.LineConfiguration" href="#SomeGraphs.Common.LineConfiguration">
+<code>SomeGraphs.Common.LineConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct LineConfiguration &lt;: Validated
     width::Maybe{Real} = nothing
     style::Maybe{LineStyle} = SolidLine
     is_filled::Bool = false
     color::Maybe{AbstractString} = nothing
-end</code></pre><p>Configure a line in a graph.</p><p>If <code>style</code> is <code>nothing</code> no line is drawn. If <code>is_filled</code> then the region defined by the line (below it in a lines graph) is filled. A line with no style and no filled is not drawn but can still be used to define a region (e.g., for a <a href="common.html#SomeGraphs.Common.BandsConfiguration"><code>BandsConfiguration</code></a>).</p><p>By default, the <code>color</code> is chosen automatically.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.LineStyle" href="#SomeGraphs.Common.LineStyle"><code>SomeGraphs.Common.LineStyle</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Styles of drawing a line</p><ul><li><p><code>SolidLine</code> draws a solid line (the default).</p></li><li><p><code>DashLine</code> draws a dashed line.</p></li><li><p><code>DotLine</code> draws a dotted line.</p></li><li><p><code>DashDotLine</code> draws a dash-dotted line.</p></li></ul></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.ValuesOrientation" href="#SomeGraphs.Common.ValuesOrientation"><code>SomeGraphs.Common.ValuesOrientation</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>The orientation of the values axis in a distribution(s) or bars graph:</p><p><code>HorizontalValues</code> - The values are the X axis</p><p><code>VerticalValues</code> - The values are the Y axis (the default).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.BandsConfiguration" href="#SomeGraphs.Common.BandsConfiguration"><code>SomeGraphs.Common.BandsConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct BandsConfiguration &lt;: Validated
+end
+</code>
+</pre>
+<p>Configure a line in a graph.
+</p>
+<p>If 
+<code>style
+</code> is 
+<code>nothing
+</code> no line is drawn. If 
+<code>is_filled
+</code> then the region defined by the line (below it in a lines graph) is filled. A line with no style and no filled is not drawn but can still be used to define a region (e.g., for a 
+<a href="common.html#SomeGraphs.Common.BandsConfiguration">
+<code>BandsConfiguration
+</code>
+</a>).
+</p>
+<p>By default, the 
+<code>color
+</code> is chosen automatically.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.LineStyle" href="#SomeGraphs.Common.LineStyle">
+<code>SomeGraphs.Common.LineStyle
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Styles of drawing a line
+</p>
+<ul>
+<li>
+<p>
+<code>SolidLine
+</code> draws a solid line (the default).
+</p>
+</li>
+<li>
+<p>
+<code>DashLine
+</code> draws a dashed line.
+</p>
+</li>
+<li>
+<p>
+<code>DotLine
+</code> draws a dotted line.
+</p>
+</li>
+<li>
+<p>
+<code>DashDotLine
+</code> draws a dash-dotted line.
+</p>
+</li>
+</ul>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.ValuesOrientation" href="#SomeGraphs.Common.ValuesOrientation">
+<code>SomeGraphs.Common.ValuesOrientation
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>The orientation of the values axis in a distribution(s) or bars graph:
+</p>
+<p>
+<code>HorizontalValues
+</code> - The values are the X axis
+</p>
+<p>
+<code>VerticalValues
+</code> - The values are the Y axis (the default).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.BandsConfiguration" href="#SomeGraphs.Common.BandsConfiguration">
+<code>SomeGraphs.Common.BandsConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct BandsConfiguration &lt;: Validated
     low::BandConfiguration = BandConfiguration(is_dashed = true)
     middle::BandConfiguration = BandConfiguration()
     high::BandConfiguration = BandConfiguration(is_dashed = true)
-end</code></pre><p>Configure the partition of the graph up to three band regions. The <code>low</code> and <code>high</code> bands are for the &quot;outer&quot; regions (so their lines are at their border, dashed by default) and the <code>middle</code> band is for the &quot;inner&quot; region between them (so its line is inside it, solid by default).</p><p>If <code>show_legend</code>, then a legend showing the bands will be shown.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.BandConfiguration" href="#SomeGraphs.Common.BandConfiguration"><code>SomeGraphs.Common.BandConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct BandConfiguration &lt;: Validated
+end
+</code>
+</pre>
+<p>Configure the partition of the graph up to three band regions. The 
+<code>low
+</code> and 
+<code>high
+</code> bands are for the &quot;outer&quot; regions (so their lines are at their border, dashed by default) and the 
+<code>middle
+</code> band is for the &quot;inner&quot; region between them (so its line is inside it, solid by default).
+</p>
+<p>If 
+<code>show_legend
+</code>, then a legend showing the bands will be shown.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.BandConfiguration" href="#SomeGraphs.Common.BandConfiguration">
+<code>SomeGraphs.Common.BandConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct BandConfiguration &lt;: Validated
     offset::Maybe{Real} = nothing
     line::LineConfiguration = LineConfiguration()
-end</code></pre><p>Configure a region of the graph defined by some band of values.</p><p>The <code>offset</code> specifies the band&#39;s defining line position. We allow up to three bands in a complete <a href="common.html#SomeGraphs.Common.BandsConfiguration"><code>BandsConfiguration</code></a>. A band exists only if its <code>offset</code> is specified, in which case the <code>line</code> specifies how to render its defining line. The low and high bands are defined the region below and above their defining line&#39;s <code>offset</code>. If both are defined, the middle band <code>offset</code> defines the center line of the band; the band can still be filled even if this offset is not specified.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.BandsData" href="#SomeGraphs.Common.BandsData"><code>SomeGraphs.Common.BandsData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct BandsData
+end
+</code>
+</pre>
+<p>Configure a region of the graph defined by some band of values.
+</p>
+<p>The 
+<code>offset
+</code> specifies the band&#39;s defining line position. We allow up to three bands in a complete 
+<a href="common.html#SomeGraphs.Common.BandsConfiguration">
+<code>BandsConfiguration
+</code>
+</a>. A band exists only if its 
+<code>offset
+</code> is specified, in which case the 
+<code>line
+</code> specifies how to render its defining line. The low and high bands are defined the region below and above their defining line&#39;s 
+<code>offset
+</code>. If both are defined, the middle band 
+<code>offset
+</code> defines the center line of the band; the band can still be filled even if this offset is not specified.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.BandsData" href="#SomeGraphs.Common.BandsData">
+<code>SomeGraphs.Common.BandsData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct BandsData
     low_offset::Maybe{Real} = nothing
     middle_offset::Maybe{Real} = nothing
     high_offset::Maybe{Real} = nothing
-end</code></pre><p>Specify data for bands.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.ColorsConfiguration" href="#SomeGraphs.Common.ColorsConfiguration"><code>SomeGraphs.Common.ColorsConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct ColorsConfiguration &lt;: Validated
+end
+</code>
+</pre>
+<p>Specify data for bands.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.ColorsConfiguration" href="#SomeGraphs.Common.ColorsConfiguration">
+<code>SomeGraphs.Common.ColorsConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct ColorsConfiguration &lt;: Validated
     fixed::Maybe{AbstractString} = nothing
     palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
     axis::AxisConfiguration = AxisConfiguration()
     show_legend::Bool = false
     title::Maybe{AbstractString} = nothing
-end</code></pre><p>Configure how to color some data. Supported combinations of configuration and data are:</p><table><tr><th style="text-align: left"><code>fixed</code></th><th style="text-align: left"><code>palette</code></th><th style="text-align: left">colors data</th><th style="text-align: left"><code>axis</code></th><th style="text-align: left"><code>show_legend</code></th><th style="text-align: left">Behavior</th></tr><tr><td style="text-align: left">color name</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Restricted(A)</td><td style="text-align: left"><code>false</code></td><td style="text-align: left">Named fixed (1)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Restricted(A)</td><td style="text-align: left"><code>false</code></td><td style="text-align: left">Auto fixed (2)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">str[]</td><td style="text-align: left">Restricted(A)</td><td style="text-align: left"><code>false</code></td><td style="text-align: left">Named data (3)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">num[]</td><td style="text-align: left">Any</td><td style="text-align: left">Any</td><td style="text-align: left">Auto scale (4)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">palette name</td><td style="text-align: left">num[]</td><td style="text-align: left">Any</td><td style="text-align: left">Any</td><td style="text-align: left">Named scale (5)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">(value::num, color::str)[]</td><td style="text-align: left">num[]</td><td style="text-align: left">Any</td><td style="text-align: left">Any</td><td style="text-align: left">Manual scale (6)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Dict{value::str =&gt; color::str}</td><td style="text-align: left">str[]</td><td style="text-align: left">Restricted(A)</td><td style="text-align: left">Any</td><td style="text-align: left">Categorical (7)</td></tr></table><p>Any other combination of configuration is not allowed.</p><p><strong>Restricted Axis:</strong> The <code>axis</code> can&#39;t specify <code>log_scale</code>, <code>percent</code>, <code>minimum</code>, <code>maximum</code> as they make no sense in this case.</p><p><strong>Named fixed (1):</strong> All the data entities will be given the same <code>fixed</code> color.</p><p><strong>Auto fixed (2):</strong> All the data entities will be given the same color, chosen automatically by Plotly.</p><p><strong>Named data (3):</strong> The colors data contains explicit color names. An empty color name will prevent the matching data from being plotted. If the <code>fixed</code> color is specified, it is ignored.</p><p><strong>Auto scale (4):</strong> The colors data (transformed by the <code>axis</code>) will be shown in a color scale chosen by Plotly.</p><p><strong>Named scale (5):</strong> The colors data (transformed by the <code>axis</code>) will be shown using the named standard Plotly <a href="https://plotly.com/python/builtin-colorscales/">color scale</a> (see <a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES"><code>NAMED_COLOR_SCALES</code></a>).</p><p><strong>Manual scale (6):</strong> The colors data (transformed by the <code>axis</code>) will be shown using the specified palette (whose values will also be transformed by the <code>axis</code>). The values must be in non-decreasing order, and the overall range of values must not be empty.</p><p><strong>Categorical (7):</strong> The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the data or the dictionary will prevent the matching data from being plotted.</p><p>If <code>show_legend</code> is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each other); see the <code>colors_scale_offsets</code> vector of <a href="common.html#SomeGraphs.Common.FigureConfiguration"><code>FigureConfiguration</code></a> for details.</p><p>If <code>title</code> is specified, it will be used when showing the legend (whatever it is). However, in some cases the correct title depends on the data set, so you can override this in the data.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.ContinuousColors" href="#SomeGraphs.Common.ContinuousColors"><code>SomeGraphs.Common.ContinuousColors</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make it easy to invoke the API from other languages such as Python which do not have the concept of a <code>Pair</code>. The <code>legend_title</code> is only used if <code>show_legend</code> is set in the configuration.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.CategoricalColors" href="#SomeGraphs.Common.CategoricalColors"><code>SomeGraphs.Common.CategoricalColors</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown (as if it was masked or never included in the data).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.categorical_palette" href="#SomeGraphs.Common.categorical_palette"><code>SomeGraphs.Common.categorical_palette</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">categorical_palette(
+end
+</code>
+</pre>
+<p>Configure how to color some data. Supported combinations of configuration and data are:
+</p>
+<table>
+<tr>
+<th style="text-align: left">
+<code>fixed
+</code>
+</th>
+<th style="text-align: left">
+<code>palette
+</code>
+</th>
+<th style="text-align: left">colors data
+</th>
+<th style="text-align: left">
+<code>axis
+</code>
+</th>
+<th style="text-align: left">
+<code>show_legend
+</code>
+</th>
+<th style="text-align: left">Behavior
+</th>
+</tr>
+<tr>
+<td style="text-align: left">color name
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">
+<code>false
+</code>
+</td>
+<td style="text-align: left">Named fixed (1)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">
+<code>false
+</code>
+</td>
+<td style="text-align: left">Auto fixed (2)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">str[]
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">
+<code>false
+</code>
+</td>
+<td style="text-align: left">Named data (3)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">num[]
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Auto scale (4)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">palette name
+</td>
+<td style="text-align: left">num[]
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Named scale (5)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">(value::num, color::str)[]
+</td>
+<td style="text-align: left">num[]
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Manual scale (6)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Dict{value::str =&gt; color::str}
+</td>
+<td style="text-align: left">str[]
+</td>
+<td style="text-align: left">Restricted(A)
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Categorical (7)
+</td>
+</tr>
+</table>
+<p>Any other combination of configuration is not allowed.
+</p>
+<p>
+<strong>Restricted Axis:
+</strong> The 
+<code>axis
+</code> can&#39;t specify 
+<code>log_scale
+</code>, 
+<code>percent
+</code>, 
+<code>minimum
+</code>, 
+<code>maximum
+</code> as they make no sense in this case.
+</p>
+<p>
+<strong>Named fixed (1):
+</strong> All the data entities will be given the same 
+<code>fixed
+</code> color.
+</p>
+<p>
+<strong>Auto fixed (2):
+</strong> All the data entities will be given the same color, chosen automatically by Plotly.
+</p>
+<p>
+<strong>Named data (3):
+</strong> The colors data contains explicit color names. An empty color name will prevent the matching data from being plotted. If the 
+<code>fixed
+</code> color is specified, it is ignored.
+</p>
+<p>
+<strong>Auto scale (4):
+</strong> The colors data (transformed by the 
+<code>axis
+</code>) will be shown in a color scale chosen by Plotly.
+</p>
+<p>
+<strong>Named scale (5):
+</strong> The colors data (transformed by the 
+<code>axis
+</code>) will be shown using the named standard Plotly 
+<a href="https://plotly.com/python/builtin-colorscales/">color scale
+</a> (see 
+<a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES">
+<code>NAMED_COLOR_SCALES
+</code>
+</a>).
+</p>
+<p>
+<strong>Manual scale (6):
+</strong> The colors data (transformed by the 
+<code>axis
+</code>) will be shown using the specified palette (whose values will also be transformed by the 
+<code>axis
+</code>). The values must be in non-decreasing order, and the overall range of values must not be empty.
+</p>
+<p>
+<strong>Categorical (7):
+</strong> The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the data or the dictionary will prevent the matching data from being plotted.
+</p>
+<p>If 
+<code>show_legend
+</code> is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each other); see the 
+<code>colors_scale_offsets
+</code> vector of 
+<a href="common.html#SomeGraphs.Common.FigureConfiguration">
+<code>FigureConfiguration
+</code>
+</a> for details.
+</p>
+<p>If 
+<code>title
+</code> is specified, it will be used when showing the legend (whatever it is). However, in some cases the correct title depends on the data set, so you can override this in the data.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.ContinuousColors" href="#SomeGraphs.Common.ContinuousColors">
+<code>SomeGraphs.Common.ContinuousColors
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make it easy to invoke the API from other languages such as Python which do not have the concept of a 
+<code>Pair
+</code>. The 
+<code>legend_title
+</code> is only used if 
+<code>show_legend
+</code> is set in the configuration.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.CategoricalColors" href="#SomeGraphs.Common.CategoricalColors">
+<code>SomeGraphs.Common.CategoricalColors
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown (as if it was masked or never included in the data).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.categorical_palette" href="#SomeGraphs.Common.categorical_palette">
+<code>SomeGraphs.Common.categorical_palette
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">categorical_palette(
     values::Union{AbstractSet{&lt;:AbstractString}, AbstractVector{&lt;:AbstractString}},
     palette::Union{AbstractString, ContinuousColors} = &quot;HSV&quot;,
-)::CategoricalColors</code></pre><p>Given some string <code>values</code>, generate a categorical palette for them based on some continuous <code>palette</code>. This is done by giving each unique value an index from 1 to N and then mapping the range 0 to N into the continuous palette (adding 0 allows for safely using cyclical palettes). This palette should have as many distinct colors in it as possible, to maximize legibility of the result; <code>HSV</code> is a good default choice.</p><div class="admonition is-info" id="Note-5ca21df5b579d56c"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-5ca21df5b579d56c" title="Permalink"></a></header><div class="admonition-body"><p>This is <em>not</em> the best way to color categorical data. It is merely an adequate one for quick and dirty results. A manually created palette would be better for a low number of values, and for a high number of values, <code>HSV</code> uses only a 1D subset of the 3D color space. It would be nice to offer a robust &quot;generate N colors most different from each other&quot; function... PRs are welcome :-)</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.NAMED_COLOR_SCALES" href="#SomeGraphs.Common.NAMED_COLOR_SCALES"><code>SomeGraphs.Common.NAMED_COLOR_SCALES</code></a> — <span class="docstring-category">Constant</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Builtin color scales from <a href="https://plotly.com/python/builtin-colorscales/">Plotly</a>, both linear: <code>Blackbody</code>, <code>Bluered</code>, <code>Blues</code>, <code>Cividis</code>, <code>Earth</code>, <code>Electric</code>, <code>Greens</code>, <code>Greys</code>, <code>Hot</code>, <code>Jet</code>, <code>Picnic</code>, <code>Portland</code>, <code>Rainbow</code>, <code>RdBu</code>, <code>Reds</code>, <code>Viridis</code>, <code>YlGnBu</code>, <code>YlOrRd</code> and cyclical: <code>Twilight</code>, <code>IceFire</code>, <code>Edge</code>, <code>Phase</code>, <code>HSV</code>, <code>mrybm</code>, <code>mygbm</code>.</p><div class="admonition is-info" id="Note-3e63c9e7aa519b7d"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-3e63c9e7aa519b7d" title="Permalink"></a></header><div class="admonition-body"><p>You would think we could just give the builtin color scale names to plotly, but it turns out that &quot;builtin&quot; in Python plotly doesn&#39;t mean &quot;builtin&quot; in JavaScript plotly, because &quot;reasons&quot;. We therefore have to copy their definition here. An upside of having this dictionary is that you are free to insert additional named scale into and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).</p></div></div><p>A <code>_r</code> suffix specifies reversing the order of the scale.</p><p>You can also append a final <code>_z:&lt;value_fraction&gt;:&lt;color_fraction&gt;</code> suffix to the name. This will map values in the bottom 0..<code>value_fraction</code> of the range to white, and map the rest of the values to the top <code>color_fraction</code>..1 range of the scale. For example, <code>Blues_z:0.3:0.2</code> will color the bottom 30% of the values in white, and color the top 70% of the values to the top 80% of the <code>Blues</code> scale.</p><p>A <code>_c:&lt;value_fraction&gt;:&lt;color_fraction&gt;</code> works similarly to the <code>_z</code> suffix, except that the fractions are centered on 0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the scale has white in the middle. For example <code>RdBu_c:0.3:0.2</code> will color the 30% of the values near the 0 middle in white, and color the rest of the values using the top and bottom 40% of the <code>RdBu</code> scale.</p><p>An <code>_o:&lt;value_fraction&gt;:&lt;color&gt;</code> suffix maps the scale to the range 0..<code>1-value_fraction</code>, and all the values above this to the <code>color</code>, to denote overflow (too high) values. For example, <code>Blues_o:0.01:magenta</code> will color all the values in the bottom 99% of the values range to <code>Blues</code>, and the top 1% of the range to magenta. A <code>_u</code> suffix works similarly but applies to the bottom range of the values.</p><p>You can combine multiple suffixes together, for example <code>Reds_z:0.2:0.2_o:0.99:magenta</code> or <code>RdBu_r_c:0.2:0.2_o:0.01:magenta_u:0.01:darkgreen</code>.</p><p>Palettes with suffixes (including <code>_r</code>) are computed on the fly and cached for future use.</p><div class="admonition is-info" id="Note-601bf3d089c3a876"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-601bf3d089c3a876" title="Permalink"></a></header><div class="admonition-body"><p>The implementation of the suffixes uses <code>1e-6</code> as a color difference &quot;too small to matter&quot;. Don&#39;t use fractions this small in the prefixes or you will have a bad day.</p></div></div><div class="admonition is-info" id="Note-bfa67b16cbe9e696"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-bfa67b16cbe9e696" title="Permalink"></a></header><div class="admonition-body"><p>Always hold the <a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK"><code>COLOR_SCALES_LOCK</code></a> when manually accessing the <code>NAMED_COLOR_SCALES</code>, otherwise you <em>will</em> regret it at some point.</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.COLOR_SCALES_LOCK" href="#SomeGraphs.Common.COLOR_SCALES_LOCK"><code>SomeGraphs.Common.COLOR_SCALES_LOCK</code></a> — <span class="docstring-category">Constant</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A global lock to use when accessing the <code>NAMED_COLOR_SCALES</code>. Always hold the <a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK"><code>COLOR_SCALES_LOCK</code></a> when manually accessing the <code>NAMED_COLOR_SCALES</code>, otherwise you <em>will</em> regret it at some point.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.AnnotationData" href="#SomeGraphs.Common.AnnotationData"><code>SomeGraphs.Common.AnnotationData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct AnnotationData &lt;: Validated
+)::CategoricalColors
+</code>
+</pre>
+<p>Given some string 
+<code>values
+</code>, generate a categorical palette for them based on some continuous 
+<code>palette
+</code>. This is done by giving each unique value an index from 1 to N and then mapping the range 0 to N into the continuous palette (adding 0 allows for safely using cyclical palettes). This palette should have as many distinct colors in it as possible, to maximize legibility of the result; 
+<code>HSV
+</code> is a good default choice.
+</p>
+<div class="admonition is-info" id="Note-5ca21df5b579d56c">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-5ca21df5b579d56c" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>This is 
+<em>not
+</em> the best way to color categorical data. It is merely an adequate one for quick and dirty results. A manually created palette would be better for a low number of values, and for a high number of values, 
+<code>HSV
+</code> uses only a 1D subset of the 3D color space. It would be nice to offer a robust &quot;generate N colors most different from each other&quot; function... PRs are welcome :-)
+</p>
+</div>
+</div>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.NAMED_COLOR_SCALES" href="#SomeGraphs.Common.NAMED_COLOR_SCALES">
+<code>SomeGraphs.Common.NAMED_COLOR_SCALES
+</code>
+</a> — 
+<span class="docstring-category">Constant
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Builtin color scales from 
+<a href="https://plotly.com/python/builtin-colorscales/">Plotly
+</a>, both linear: 
+<code>Blackbody
+</code>, 
+<code>Bluered
+</code>, 
+<code>Blues
+</code>, 
+<code>Cividis
+</code>, 
+<code>Earth
+</code>, 
+<code>Electric
+</code>, 
+<code>Greens
+</code>, 
+<code>Greys
+</code>, 
+<code>Hot
+</code>, 
+<code>Jet
+</code>, 
+<code>Picnic
+</code>, 
+<code>Portland
+</code>, 
+<code>Rainbow
+</code>, 
+<code>RdBu
+</code>, 
+<code>Reds
+</code>, 
+<code>Viridis
+</code>, 
+<code>YlGnBu
+</code>, 
+<code>YlOrRd
+</code> and cyclical: 
+<code>Twilight
+</code>, 
+<code>IceFire
+</code>, 
+<code>Edge
+</code>, 
+<code>Phase
+</code>, 
+<code>HSV
+</code>, 
+<code>mrybm
+</code>, 
+<code>mygbm
+</code>.
+</p>
+<div class="admonition is-info" id="Note-3e63c9e7aa519b7d">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-3e63c9e7aa519b7d" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>You would think we could just give the builtin color scale names to plotly, but it turns out that &quot;builtin&quot; in Python plotly doesn&#39;t mean &quot;builtin&quot; in JavaScript plotly, because &quot;reasons&quot;. We therefore have to copy their definition here. An upside of having this dictionary is that you are free to insert additional named scale into and gain the convenience of refering to them by name (e.g., for coloring heatmap annotations).
+</p>
+</div>
+</div>
+<p>A 
+<code>_r
+</code> suffix specifies reversing the order of the scale.
+</p>
+<p>You can also append a final 
+<code>_z:&lt;value_fraction&gt;:&lt;color_fraction&gt;
+</code> suffix to the name. This will map values in the bottom 0..
+<code>value_fraction
+</code> of the range to white, and map the rest of the values to the top 
+<code>color_fraction
+</code>..1 range of the scale. For example, 
+<code>Blues_z:0.3:0.2
+</code> will color the bottom 30% of the values in white, and color the top 70% of the values to the top 80% of the 
+<code>Blues
+</code> scale.
+</p>
+<p>A 
+<code>_c:&lt;value_fraction&gt;:&lt;color_fraction&gt;
+</code> works similarly to the 
+<code>_z
+</code> suffix, except that the fractions are centered on 0.5 (the middle) of the values and color ranges. This is meant to be applied when the values range is +/-Diff, and the scale has white in the middle. For example 
+<code>RdBu_c:0.3:0.2
+</code> will color the 30% of the values near the 0 middle in white, and color the rest of the values using the top and bottom 40% of the 
+<code>RdBu
+</code> scale.
+</p>
+<p>An 
+<code>_o:&lt;value_fraction&gt;:&lt;color&gt;
+</code> suffix maps the scale to the range 0..
+<code>1-value_fraction
+</code>, and all the values above this to the 
+<code>color
+</code>, to denote overflow (too high) values. For example, 
+<code>Blues_o:0.01:magenta
+</code> will color all the values in the bottom 99% of the values range to 
+<code>Blues
+</code>, and the top 1% of the range to magenta. A 
+<code>_u
+</code> suffix works similarly but applies to the bottom range of the values.
+</p>
+<p>You can combine multiple suffixes together, for example 
+<code>Reds_z:0.2:0.2_o:0.99:magenta
+</code> or 
+<code>RdBu_r_c:0.2:0.2_o:0.01:magenta_u:0.01:darkgreen
+</code>.
+</p>
+<p>Palettes with suffixes (including 
+<code>_r
+</code>) are computed on the fly and cached for future use.
+</p>
+<div class="admonition is-info" id="Note-601bf3d089c3a876">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-601bf3d089c3a876" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>The implementation of the suffixes uses 
+<code>1e-6
+</code> as a color difference &quot;too small to matter&quot;. Don&#39;t use fractions this small in the prefixes or you will have a bad day.
+</p>
+</div>
+</div>
+<div class="admonition is-info" id="Note-77bc2c0ca999af70">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-77bc2c0ca999af70" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>Always hold the 
+<a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>COLOR_SCALES_LOCK
+</code>
+</a> when manually accessing the 
+<code>NAMED_COLOR_SCALES
+</code>, otherwise you 
+<em>will
+</em> regret it at some point.
+</p>
+</div>
+</div>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.COLOR_SCALES_LOCK" href="#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>SomeGraphs.Common.COLOR_SCALES_LOCK
+</code>
+</a> — 
+<span class="docstring-category">Constant
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A global lock to use when accessing the 
+<code>NAMED_COLOR_SCALES
+</code>. Always hold the 
+<a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>COLOR_SCALES_LOCK
+</code>
+</a> when manually accessing the 
+<code>NAMED_COLOR_SCALES
+</code>, otherwise you 
+<em>will
+</em> regret it at some point.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AnnotationData" href="#SomeGraphs.Common.AnnotationData">
+<code>SomeGraphs.Common.AnnotationData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct AnnotationData &lt;: Validated
     title::Maybe{AbstractString} = nothing
     values::Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}} = Float32[]
     hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     colors::ColorsConfiguration = ColorsConfiguration()
-end</code></pre><p>An annotation to attach to an axis. This applies to discrete axes (bars axis for a <a href="bars.html#SomeGraphs.Bars.BarsGraph"><code>BarsGraph</code></a> or the rows and/or columns of a <code>HeatmapGraph</code>). The number of the <code>values</code> and the optional <code>hovers</code> must be the same as the number of entries in the axis.</p><p>The <code>colors</code> configuration is part of the data, because the color of annotations (in particular, categorical ones) is tightly coupled with the data.</p><div class="admonition is-info" id="Note-ca3ff6a79bc78fcb"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-ca3ff6a79bc78fcb" title="Permalink"></a></header><div class="admonition-body"><p>If you want to show the color scale of some annotation(s) using <code>show_legend</code>, keep in mind Plotly places a limit of at most two color scales in a graph, because &quot;reasons&quot;.</p></div></div></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Common.AnnotationSize" href="#SomeGraphs.Common.AnnotationSize"><code>SomeGraphs.Common.AnnotationSize</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct AnnotationSize
+end
+</code>
+</pre>
+<p>An annotation to attach to an axis. This applies to discrete axes (bars axis for a 
+<a href="bars.html#SomeGraphs.Bars.BarsGraph">
+<code>BarsGraph
+</code>
+</a> or the rows and/or columns of a 
+<code>HeatmapGraph
+</code>). The number of the 
+<code>values
+</code> and the optional 
+<code>hovers
+</code> must be the same as the number of entries in the axis.
+</p>
+<p>The 
+<code>colors
+</code> configuration is part of the data, because the color of annotations (in particular, categorical ones) is tightly coupled with the data.
+</p>
+<div class="admonition is-info" id="Note-ca3ff6a79bc78fcb">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-ca3ff6a79bc78fcb" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>If you want to show the color scale of some annotation(s) using 
+<code>show_legend
+</code>, keep in mind Plotly places a limit of at most two color scales in a graph, because &quot;reasons&quot;.
+</p>
+</div>
+</div>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Common.AnnotationSize" href="#SomeGraphs.Common.AnnotationSize">
+<code>SomeGraphs.Common.AnnotationSize
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct AnnotationSize
     size::AbstractFloat = 0.05
     gap::AbstractFloat = 0.005
-end</code></pre><p>Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.</p></div></section></article><h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="common.html#SomeGraphs.Common"><code>SomeGraphs.Common</code></a></li><li><a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK"><code>SomeGraphs.Common.COLOR_SCALES_LOCK</code></a></li><li><a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES"><code>SomeGraphs.Common.NAMED_COLOR_SCALES</code></a></li><li><a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration"><code>SomeGraphs.Common.AbstractGraphConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.AbstractGraphData"><code>SomeGraphs.Common.AbstractGraphData</code></a></li><li><a href="common.html#SomeGraphs.Common.AnnotationData"><code>SomeGraphs.Common.AnnotationData</code></a></li><li><a href="common.html#SomeGraphs.Common.AnnotationSize"><code>SomeGraphs.Common.AnnotationSize</code></a></li><li><a href="common.html#SomeGraphs.Common.AxisConfiguration"><code>SomeGraphs.Common.AxisConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandConfiguration"><code>SomeGraphs.Common.BandConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandsConfiguration"><code>SomeGraphs.Common.BandsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.BandsData"><code>SomeGraphs.Common.BandsData</code></a></li><li><a href="common.html#SomeGraphs.Common.CategoricalColors"><code>SomeGraphs.Common.CategoricalColors</code></a></li><li><a href="common.html#SomeGraphs.Common.ColorsConfiguration"><code>SomeGraphs.Common.ColorsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.ContinuousColors"><code>SomeGraphs.Common.ContinuousColors</code></a></li><li><a href="common.html#SomeGraphs.Common.FigureConfiguration"><code>SomeGraphs.Common.FigureConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.Graph"><code>SomeGraphs.Common.Graph</code></a></li><li><a href="common.html#SomeGraphs.Common.LineConfiguration"><code>SomeGraphs.Common.LineConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.LineStyle"><code>SomeGraphs.Common.LineStyle</code></a></li><li><a href="common.html#SomeGraphs.Common.LogScale"><code>SomeGraphs.Common.LogScale</code></a></li><li><a href="common.html#SomeGraphs.Common.MarginsConfiguration"><code>SomeGraphs.Common.MarginsConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.PlotlyFigure"><code>SomeGraphs.Common.PlotlyFigure</code></a></li><li><a href="common.html#SomeGraphs.Common.SizesConfiguration"><code>SomeGraphs.Common.SizesConfiguration</code></a></li><li><a href="common.html#SomeGraphs.Common.Stacking"><code>SomeGraphs.Common.Stacking</code></a></li><li><a href="common.html#SomeGraphs.Common.ValuesOrientation"><code>SomeGraphs.Common.ValuesOrientation</code></a></li><li><a href="common.html#SomeGraphs.Common.categorical_palette"><code>SomeGraphs.Common.categorical_palette</code></a></li><li><a href="common.html#SomeGraphs.Common.save_graph"><code>SomeGraphs.Common.save_graph</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="validations.html">« Validations</a><a class="docs-footer-nextpage" href="distributions.html">Distributions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 15:05">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end
+</code>
+</pre>
+<p>Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.
+</p>
+</div>
+</section>
+</article>
+<h2 id="Index">
+<a class="docs-heading-anchor" href="#Index">Index
+</a>
+<a id="Index-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
+</a>
+</h2>
+<ul>
+<li>
+<a href="common.html#SomeGraphs.Common">
+<code>SomeGraphs.Common
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.COLOR_SCALES_LOCK">
+<code>SomeGraphs.Common.COLOR_SCALES_LOCK
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.NAMED_COLOR_SCALES">
+<code>SomeGraphs.Common.NAMED_COLOR_SCALES
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AbstractGraphConfiguration">
+<code>SomeGraphs.Common.AbstractGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AbstractGraphData">
+<code>SomeGraphs.Common.AbstractGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AnnotationData">
+<code>SomeGraphs.Common.AnnotationData
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AnnotationSize">
+<code>SomeGraphs.Common.AnnotationSize
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.AxisConfiguration">
+<code>SomeGraphs.Common.AxisConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.BandConfiguration">
+<code>SomeGraphs.Common.BandConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.BandsConfiguration">
+<code>SomeGraphs.Common.BandsConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.BandsData">
+<code>SomeGraphs.Common.BandsData
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.CategoricalColors">
+<code>SomeGraphs.Common.CategoricalColors
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.ColorsConfiguration">
+<code>SomeGraphs.Common.ColorsConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.ContinuousColors">
+<code>SomeGraphs.Common.ContinuousColors
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.FigureConfiguration">
+<code>SomeGraphs.Common.FigureConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.Graph">
+<code>SomeGraphs.Common.Graph
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.LineConfiguration">
+<code>SomeGraphs.Common.LineConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.LineStyle">
+<code>SomeGraphs.Common.LineStyle
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.LogScale">
+<code>SomeGraphs.Common.LogScale
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.MarginsConfiguration">
+<code>SomeGraphs.Common.MarginsConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.PlotlyFigure">
+<code>SomeGraphs.Common.PlotlyFigure
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.SizesConfiguration">
+<code>SomeGraphs.Common.SizesConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.Stacking">
+<code>SomeGraphs.Common.Stacking
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.ValuesOrientation">
+<code>SomeGraphs.Common.ValuesOrientation
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.categorical_palette">
+<code>SomeGraphs.Common.categorical_palette
+</code>
+</a>
+</li>
+<li>
+<a href="common.html#SomeGraphs.Common.save_graph">
+<code>SomeGraphs.Common.save_graph
+</code>
+</a>
+</li>
+</ul>
+</article>
+<nav class="docs-footer">
+<a class="docs-footer-prevpage" href="validations.html">« Validations
+</a>
+<a class="docs-footer-nextpage" href="distributions.html">Distributions »
+</a>
+<div class="flexbox-break">
+</div>
+<p class="footer-message">Powered by 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> and the 
+<a href="https://julialang.org/">Julia Programming Language
+</a>.
+</p>
+</nav>
+</div>
+<div class="modal" id="documenter-settings">
+<div class="modal-background">
+</div>
+<div class="modal-card">
+<header class="modal-card-head">
+<p class="modal-card-title">Settings
+</p>
+<button class="delete">
+</button>
+</header>
+<section class="modal-card-body">
+<p>
+<label class="label">Theme
+</label>
+<div class="select">
+<select id="documenter-themepicker">
+<option value="auto">Automatic (OS)
+</option>
+<option value="documenter-light">documenter-light
+</option>
+<option value="documenter-dark">documenter-dark
+</option>
+<option value="catppuccin-latte">catppuccin-latte
+</option>
+<option value="catppuccin-frappe">catppuccin-frappe
+</option>
+<option value="catppuccin-macchiato">catppuccin-macchiato
+</option>
+<option value="catppuccin-mocha">catppuccin-mocha
+</option>
+</select>
+</div>
+</p>
+<hr/>
+<p>This document was generated with 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> version 1.11.4. Using Julia version 1.11.5.
+</p>
+</section>
+<footer class="modal-card-foot">
+</footer>
+</div>
+</div>
+</div>
+</body>
+</html>

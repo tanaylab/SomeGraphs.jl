@@ -1427,12 +1427,21 @@ tightly coupled with the data.
     colors::ColorsConfiguration = ColorsConfiguration()
 end
 
-function Validations.validate(context::ValidationContext, annotation_data::AnnotationData)::Nothing
+function Validations.validate(
+    context::ValidationContext,
+    annotation_data::AnnotationData,
+    expected_base::AbstractString,
+    expected_length::Integer,
+)::Nothing
     validate_field(context, "colors", annotation_data.colors)
 
     if annotation_data.colors.fixed !== nothing
         throw(ArgumentError("can't specify $(location(context)).colors.fixed"))
     end
+
+    validate_vector_length(context, "values", annotation_data.values, expected_base, expected_length)
+
+    validate_vector_length(context, "hovers", annotation_data.hovers, expected_base, expected_length)
 
     return nothing
 end

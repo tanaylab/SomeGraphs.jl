@@ -1,5 +1,217 @@
+
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Heatmaps · SomeGraphs.jl v0.1.0</title><meta name="title" content="Heatmaps · SomeGraphs.jl v0.1.0"/><meta property="og:title" content="Heatmaps · SomeGraphs.jl v0.1.0"/><meta property="twitter:title" content="Heatmaps · SomeGraphs.jl v0.1.0"/><meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/><meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">SomeGraphs.jl v0.1.0</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="index.html">SomeGraphs</a></li><li><a class="tocitem" href="validations.html">Validations</a></li><li><a class="tocitem" href="common.html">Common</a></li><li><a class="tocitem" href="distributions.html">Distributions</a></li><li><a class="tocitem" href="scatters.html">Scatter Plots</a></li><li><a class="tocitem" href="bars.html">Bar Plots</a></li><li class="is-active"><a class="tocitem" href="heatmaps.html">Heatmaps</a><ul class="internal"><li><a class="tocitem" href="#Index"><span>Index</span></a></li></ul></li><li><a class="tocitem" href="utilities.html">Utilities</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="heatmaps.html">Heatmaps</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="heatmaps.html">Heatmaps</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Heatmaps"><a class="docs-heading-anchor" href="#Heatmaps">Heatmaps</a><a id="Heatmaps-1"></a><a class="docs-heading-anchor-permalink" href="#Heatmaps" title="Permalink"></a></h1><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps" href="#SomeGraphs.Heatmaps"><code>SomeGraphs.Heatmaps</code></a> — <span class="docstring-category">Module</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Graphs for showing a 2D matrix.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraph" href="#SomeGraphs.Heatmaps.HeatmapGraph"><code>SomeGraphs.Heatmaps.HeatmapGraph</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>A graph showing a heatmap. See <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>HeatmapGraphData</code></a> and <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>HeatmapGraphConfiguration</code></a>.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps.heatmap_graph" href="#SomeGraphs.Heatmaps.heatmap_graph"><code>SomeGraphs.Heatmaps.heatmap_graph</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">function heatmap_graph(;
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Heatmaps · SomeGraphs.jl v0.1.0
+</title>
+<meta name="title" content="Heatmaps · SomeGraphs.jl v0.1.0"/>
+<meta property="og:title" content="Heatmaps · SomeGraphs.jl v0.1.0"/>
+<meta property="twitter:title" content="Heatmaps · SomeGraphs.jl v0.1.0"/>
+<meta name="description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="og:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.1.0."/>
+<script data-outdated-warner src="assets/warner.js">
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
+<script>documenterBaseURL="."
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
+</script>
+<script src="search_index.js">
+</script>
+<script src="siteinfo.js">
+</script>
+<script src="../versions.js">
+</script>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
+<script src="assets/themeswap.js">
+</script>
+<link href="assets/table.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="documenter">
+<nav class="docs-sidebar">
+<div class="docs-package-name">
+<span class="docs-autofit">
+<a href="index.html">SomeGraphs.jl v0.1.0
+</a>
+</span>
+</div>
+<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
+</button>
+<ul class="docs-menu">
+<li>
+<a class="tocitem" href="index.html">SomeGraphs
+</a>
+</li>
+<li>
+<a class="tocitem" href="validations.html">Validations
+</a>
+</li>
+<li>
+<a class="tocitem" href="common.html">Common
+</a>
+</li>
+<li>
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+</li>
+<li>
+<a class="tocitem" href="scatters.html">Scatter Plots
+</a>
+</li>
+<li>
+<a class="tocitem" href="bars.html">Bar Plots
+</a>
+</li>
+<li class="is-active">
+<a class="tocitem" href="heatmaps.html">Heatmaps
+</a>
+<ul class="internal">
+<li>
+<a class="tocitem" href="#Index">
+<span>Index
+</span>
+</a>
+</li>
+</ul>
+</li>
+<li>
+<a class="tocitem" href="utilities.html">Utilities
+</a>
+</li>
+</ul>
+<div class="docs-version-selector field has-addons">
+<div class="control">
+<span class="docs-label button is-static is-size-7">Version
+</span>
+</div>
+<div class="docs-selector control is-expanded">
+<div class="select is-fullwidth is-size-7">
+<select id="documenter-version-selector">
+</select>
+</div>
+</div>
+</div>
+</nav>
+<div class="docs-main">
+<header class="docs-navbar">
+<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
+</a>
+<nav class="breadcrumb">
+<ul class="is-hidden-mobile">
+<li class="is-active">
+<a href="heatmaps.html">Heatmaps
+</a>
+</li>
+</ul>
+<ul class="is-hidden-tablet">
+<li class="is-active">
+<a href="heatmaps.html">Heatmaps
+</a>
+</li>
+</ul>
+</nav>
+<div class="docs-right">
+<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
+<span class="docs-icon fa-brands">
+</span>
+<span class="docs-label is-hidden-touch">GitHub
+</span>
+</a>
+<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
+</a>
+<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
+</a>
+</div>
+</header>
+<article class="content" id="documenter-page">
+<h1 id="Heatmaps">
+<a class="docs-heading-anchor" href="#Heatmaps">Heatmaps
+</a>
+<a id="Heatmaps-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Heatmaps" title="Permalink">
+</a>
+</h1>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps" href="#SomeGraphs.Heatmaps">
+<code>SomeGraphs.Heatmaps
+</code>
+</a> — 
+<span class="docstring-category">Module
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Graphs for showing a 2D matrix.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraph" href="#SomeGraphs.Heatmaps.HeatmapGraph">
+<code>SomeGraphs.Heatmaps.HeatmapGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>A graph showing a heatmap. See 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>HeatmapGraphData
+</code>
+</a> and 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>HeatmapGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.heatmap_graph" href="#SomeGraphs.Heatmaps.heatmap_graph">
+<code>SomeGraphs.Heatmaps.heatmap_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">function heatmap_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     x_axis_title::Maybe{AbstractString} = nothing,
     y_axis_title::Maybe{AbstractString} = nothing,
@@ -12,14 +224,50 @@
     columns_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-    entries_order_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
-    rows_order_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
-    columns_order_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
-    entries_order::Maybe{AbstractVector{&lt;:Integer}} = nothing,
-    rows_order::Maybe{AbstractVector{&lt;:Integer}} = nothing,
-    columns_order::Maybe{AbstractVector{&lt;:Integer}} = nothing,
+    entries_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
+    rows_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
+    columns_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
+    entries_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
+    rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
+    columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
-)::HeatmapGraph</code></pre><p>Create a <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph"><code>HeatmapGraph</code></a> by initializing only the <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>HeatmapGraphData</code></a> fields (with an optional <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>HeatmapGraphConfiguration</code></a>).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraphData" href="#SomeGraphs.Heatmaps.HeatmapGraphData"><code>SomeGraphs.Heatmaps.HeatmapGraphData</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct HeatmapGraphData &lt;: AbstractGraphData
+)::HeatmapGraph
+</code>
+</pre>
+<p>Create a 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph">
+<code>HeatmapGraph
+</code>
+</a> by initializing only the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>HeatmapGraphData
+</code>
+</a> fields (with an optional 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>HeatmapGraphConfiguration
+</code>
+</a>).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraphData" href="#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>SomeGraphs.Heatmaps.HeatmapGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct HeatmapGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     x_axis_title::Maybe{AbstractString} = nothing
     y_axis_title::Maybe{AbstractString} = nothing
@@ -32,80 +280,873 @@
     columns_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    entries_order_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
-    rows_order_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
-    columns_order_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
-    entries_order::Maybe{AbstractVector{&lt;:Integer}} = nothing
-    rows_order::Maybe{AbstractVector{&lt;:Integer}} = nothing
-    columns_order::Maybe{AbstractVector{&lt;:Integer}} = nothing
-end</code></pre><p>The data for a graph showing a heatmap (matrix) of entries.</p><p>This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation, colors must be continuous. The hover for each rectangle is a combination of the <code>entries_hovers</code>, <code>rows_hovers</code> and <code>columns_hovers</code> for the entry.</p><p>By default, if reordering the data, this is based on the <code>entries_values</code>. You can override this by specifying an <code>entries_order_by</code> matrix of the same size, or even separate <code>rows_order_by</code> and <code>columns_order_by</code> matrices. For efficiency the <code>rows_order_by</code> matrix should be in row-major layout.</p><p>Alternatively you can force the order of the data by specifying the <code>entries_order</code> permutation (for a square matrix) or separate <code>rows_order</code> and <code>columns_order</code> permutations.</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">@kwdef mutable struct HeatmapGraphConfiguration &lt;: AbstractGraphConfiguration
+    entries_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
+    rows_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
+    columns_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
+    entries_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
+    rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
+    columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
+end
+</code>
+</pre>
+<p>The data for a graph showing a heatmap (matrix) of entries.
+</p>
+<p>This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation, colors must be continuous. The hover for each rectangle is a combination of the 
+<code>entries_hovers
+</code>, 
+<code>rows_hovers
+</code> and 
+<code>columns_hovers
+</code> for the entry.
+</p>
+<p>By default, if reordering the data, this is based on the 
+<code>entries_values
+</code>. You can override this by specifying an 
+<code>entries_arrange_by
+</code> matrix of the same size, or even separate 
+<code>rows_arrange_by
+</code> and 
+<code>columns_arrange_by
+</code> matrices. For efficiency the 
+<code>rows_arrange_by
+</code> matrix should be in row-major layout.
+</p>
+<p>Alternatively you can force the order of the data by specifying the 
+<code>entries_order
+</code> permutation (for a square matrix) or separate 
+<code>rows_order
+</code> and 
+<code>columns_order
+</code> permutations. You can also specify an 
+<code>Hclust
+</code> object as the order, which would enable showing a dendogram tree (TODO: implement).
+</p>
+<p>Valid combinations of the fields controlling order and clustering are:
+</p>
+<table>
+<tr>
+<th style="text-align: left">data 
+<code>order
+</code>
+</th>
+<th style="text-align: left">data 
+<code>arrange_by
+</code>
+</th>
+<th style="text-align: left">config 
+<code>reorder
+</code>
+</th>
+<th style="text-align: left">config 
+<code>dendogram_size
+</code>
+</th>
+<th style="text-align: left">config 
+<code>linkage
+</code>
+</th>
+<th style="text-align: left">config 
+<code>metric
+</code>
+</th>
+<th style="text-align: left">result tree
+</th>
+<th style="text-align: left">result order
+</th>
+<th style="text-align: left">notes
+</th>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Not computed
+</td>
+<td style="text-align: left">Original data order
+</td>
+<td style="text-align: left">Do not cluster, use the original data order (default)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>WardLinkage
+</code>/ 
+<code>WardPreSeuaredLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>PreMetric
+</code>
+</td>
+<td style="text-align: left">
+<code>oclust
+</code> of original order with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">Original data order
+</td>
+<td style="text-align: left">Cluster, preserving the original order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>SameOrder
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Same as other axis
+</td>
+<td style="text-align: left">Same as other axis
+</td>
+<td style="text-align: left">Square matrices only
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>OptimalHclust
+</code>/ 
+<code>RCompatibleHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>PreMetric
+</code>
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>reorder
+</code>
+</td>
+<td style="text-align: left">Cluster using 
+<code>linkage
+</code> and branch 
+<code>reorder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>SlantedHclust
+</code>/ 
+<code>SlantedPreSquaredHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>PreMetric
+</code>
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>, then 
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Cluster, then slant preserving the tree
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>SlantedOrder
+</code>/ 
+<code>SlantedPreSquaredOrder
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>WardLinkage
+</code>/ 
+<code>WardPreSeuaredLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>PreMetric
+</code>
+</td>
+<td style="text-align: left">
+<code>oclust
+</code> of 
+<code>slanted_orders
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Slant, then cluster preserving the slanted order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>Hclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>Hclust
+</code> tree
+</td>
+<td style="text-align: left">
+<code>Hclust
+</code> order
+</td>
+<td style="text-align: left">Force a specific tree and order on the data
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>Hclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>SlantedHclust
+</code>/ 
+<code>SlantedPreSquaredHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Slant, preserving a given tree
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Not computed
+</td>
+<td style="text-align: left">
+<code>order
+</code> permutation
+</td>
+<td style="text-align: left">Do not cluster, use the specified order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>WardLinkage
+</code>/ 
+<code>WardPreSeuaredLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>PreMetric
+</code>
+</td>
+<td style="text-align: left">
+<code>oclust
+</code> of 
+<code>order
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>order
+</code> permutation
+</td>
+<td style="text-align: left">Cluster, preserving the specified order
+</td>
+</tr>
+</table>
+<p>All other combinations are invalid. Note:
+</p>
+<ul>
+<li>
+<p>Only 
+<code>WardLinkage
+</code> and 
+<code>WardPreSeuaredLinkage
+</code> are supported by 
+<code>oclust
+</code>.
+</p>
+</li>
+<li>
+<p>When calling 
+<code>hclust
+</code> and/or 
+<code>oclust
+</code> and/or 
+<code>slanted_orders
+</code>, then specifying 
+<code>arrange_by
+</code> will use it instead of the displayed data matrix.
+</p>
+</li>
+<li>
+<p>When calling 
+<code>hclust
+</code> and/or 
+<code>oclust
+</code>, then specifying a 
+<code>metric
+</code> will be used instead of 
+<code>Euclidean
+</code> to compute the distances matrix.
+</p>
+</li>
+</ul>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct HeatmapGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration()
     entries_colors::ColorsConfiguration = ColorsConfiguration()
     rows_annotations::AnnotationSize = AnnotationSize()
     columns_annotations::AnnotationSize = AnnotationSize()
-    entries_order::Maybe{HeatmapReorder} = nothing
-    rows_order::Maybe{HeatmapReorder} = nothing
-    columns_order::Maybe{HeatmapReorder} = nothing
+    entries_reorder::Maybe{HeatmapReorder} = nothing
+    rows_reorder::Maybe{HeatmapReorder} = nothing
+    columns_reorder::Maybe{HeatmapReorder} = nothing
+    entries_linkage::Maybe{HeatmapLinkage} = nothing
+    rows_linkage::Maybe{HeatmapLinkage} = nothing
+    columns_linkage::Maybe{HeatmapLinkage} = nothing
     entries_metric::Maybe{PreMetric} = nothing
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
     origin::HeatmapOrigin = HeatmapBottomLeft
-end</code></pre><p>Configure a graph showing a heatmap.</p><p>This displays a matrix of values using a rectangle at each position. Due to Plotly&#39;s limitations, you still to manually tweak the graph size for best results; there&#39;s no way to directly control the width and height of the rectangles. In addition, the only supported color configurations are using continuous color palettes.</p><p>You can use <code>columns_order</code> and/or <code>rows_order</code> to reorder the data. By default, this uses the <code>Euclidean</code> distance metric. You can override this by specifying the <code>columns_metric</code> and/or <code>rows_metric</code> distance measure.</p><p>Specifying <code>entries_order</code> is equivalent to specifying both <code>rows_order</code> and <code>columns_order</code>, and similarly for <code>entries_metric</code>.</p><p>There&#39;s no <code>x_axis</code> or <code>y_axis</code> configuration here, as none of the options apply, except for <code>show_ticks</code>, which is implied by setting the <code>rows_names</code> and/or <code>columns_names</code> of the data. You can however provide default axis titles here (which you can override in the data as usual).</p></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapReorder" href="#SomeGraphs.Heatmaps.HeatmapReorder"><code>SomeGraphs.Heatmaps.HeatmapReorder</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>Specify how to re-order the rows and/or columns of a matrix for display. Options are:</p><ul><li><p>The symbol <code>:same</code>. This can only be used for square matrices, and indicates the order of this axis should be copied from the computed order of the other axis. It is obviously invalid to specify this for both axes, or when the other axis has no order specified.</p></li><li><p>A symbol which is a valid value for the <code>linkage</code> parameter for <code>hclust</code> (that is, one of <code>:single</code>, <code>:average</code>, <code>:complete</code>, <code>:ward</code>, or <code>:ward_presquared</code>). TODO: Also allow <code>:slanter</code>.</p></li><li><p>A tuple with a symbol as above and another symbol which is a valid value for the <code>branchorder</code> parameter for <code>hclust</code> (that is, one of <code>:r</code>, <code>:barjoseph</code>/<code>:optimal</code>). TODO: Also allow <code>:slanter</code>.</p></li></ul></div></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapOrigin" href="#SomeGraphs.Heatmaps.HeatmapOrigin"><code>SomeGraphs.Heatmaps.HeatmapOrigin</code></a> — <span class="docstring-category">Type</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD Specify where the origin (row 1 column 1) should be displayed. The Plotly default is <code>BottomLeft</code>. ======= Specify where the origin (row 1 column 1) should be displayed. The Plotly default is <code>HeatmapBottomLeft</code>.</p><blockquote><blockquote><blockquote><blockquote><blockquote><blockquote><blockquote><p>0e6a412 (Control heatmap origin point.)</p></blockquote></blockquote></blockquote></blockquote></blockquote></blockquote></blockquote></div></section></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
-graph = heatmap_graph(; entries_values = [
-    0 1 2 3;
-    7 6 5 4;
-    8 9 10 11;
-])
-using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='jhw03LH9kH' class='' style=';'></div>
-<script type="module">
-    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("jhw03LH9kH")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[0.0,7.0,8.0],[1.0,6.0,9.0],[2.0,5.0,10.0],[3.0,4.0,11.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":-0.11,"cmax":11.11,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
-    Plotly.newPlot(PLOT, plot_obj)
-
-    // If width is not specified, set it to 100%
-    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
-    
-    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
-    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-</script>
-<p>Annotations:</p><pre><code class="language-julia hljs">using SomeGraphs
-graph = heatmap_graph(;
-    entries_values = [
-        0 1 2 3;
-        7 6 5 4;
-        8 9 10 11;
-    ],
-    rows_annotations = [
-        AnnotationData(;
-            title = &quot;is&quot;,
-            values = [&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;],
-            colors = ColorsConfiguration(;
-                palette = Dict(&quot;yes&quot; =&gt; &quot;black&quot;, &quot;maybe&quot; =&gt; &quot;darkgray&quot;, &quot;no&quot; =&gt; &quot;lightgray&quot;),
-                show_legend = true,
-            ),
-        ),
-    ],
-    columns_annotations = [AnnotationData(; title = &quot;score&quot;, values = [1, 0.5, 0, 1])],
-    entries_colors_title = &quot;values&quot;,
-    rows_names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;],
-    columns_names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;],
-)
-graph.configuration.entries_colors.show_legend = true
-using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='VuYXG4kNPC' class='' style=';'></div>
-<script type="module">
-    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("VuYXG4kNPC")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3],"type":"heatmap","name":"","yaxis":"y2","z":[[0.0,7.0,8.0],[1.0,6.0,9.0],[2.0,5.0,10.0],[3.0,4.0,11.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"xaxis":"x2","y":[1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4"]},{"showlegend":true,"xaxis":"x99","x0":0,"name":"yes","yaxis":"y99","legendgroup":"Annotation1","legendgrouptitle":{"text":"is"},"marker":{"color":"black"},"y":[0],"type":"bar","y0":0,"x":[0]},{"showlegend":true,"xaxis":"x99","x0":0,"name":"maybe","yaxis":"y99","legendgroup":"Annotation1","marker":{"color":"darkgray"},"y":[0],"type":"bar","y0":0,"x":[0]},{"showlegend":true,"xaxis":"x99","x0":0,"name":"no","yaxis":"y99","legendgroup":"Annotation1","marker":{"color":"lightgray"},"y":[0],"type":"bar","y0":0,"x":[0]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"y":["1","2","3"],"type":"bar","name":"is","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0]}], "layout": {"showlegend":true,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"coloraxis":{"colorbar":{"title":{"text":"values"},"x":1.2},"cmin":-0.11,"cmax":11.11,"showscale":true},"paper_bgcolor":"white","yaxis99":{"showgrid":false,"showticklabels":false,"domain":[0.0,0.001]},"template":"simple_white","bargap":0,"legend":{"tracegroupgap":0,"itemdoubleclick":false},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is"},"xaxis99":{"showgrid":false,"showticklabels":false,"domain":[0.0,0.001]},"xaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
-    Plotly.newPlot(PLOT, plot_obj)
-
-    // If width is not specified, set it to 100%
-    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
-    
-    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
-    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
-</script>
-<h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="heatmaps.html#SomeGraphs.Heatmaps"><code>SomeGraphs.Heatmaps</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph"><code>SomeGraphs.Heatmaps.HeatmapGraph</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>SomeGraphs.Heatmaps.HeatmapGraphData</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapOrigin"><code>SomeGraphs.Heatmaps.HeatmapOrigin</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapReorder"><code>SomeGraphs.Heatmaps.HeatmapReorder</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_graph"><code>SomeGraphs.Heatmaps.heatmap_graph</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="bars.html">« Bar Plots</a><a class="docs-footer-nextpage" href="utilities.html">Utilities »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.0 on <span class="colophon-date" title="Tuesday 13 May 2025 15:05">Tuesday 13 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+end
+</code>
+</pre>
+<p>Configure a graph showing a heatmap.
+</p>
+<p>This displays a matrix of values using a rectangle at each position. Due to Plotly&#39;s limitations, you still to manually tweak the graph size for best results; there&#39;s no way to directly control the width and height of the rectangles. In addition, the only supported color configurations are using continuous color palettes.
+</p>
+<p>You can use 
+<code>columns_reorder
+</code> and/or 
+<code>rows_reorder
+</code> to reorder the data. When specifying 
+<code>columns_linkage
+</code> and/or 
+<code>rows_linkage
+</code>, by default, the clustering uses the 
+<code>Euclidean
+</code> distance metric. You can override this by specifying the 
+<code>columns_metric
+</code> and/or 
+<code>rows_metric
+</code> distance measure.
+</p>
+<p>If you specify 
+<code>columns_dendogram_size
+</code> and/or 
+<code>rows_dendogram_size
+</code>, then you should either specify linkage (for computing a clustering) or must specify 
+<code>Hclust
+</code> order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
+</p>
+<p>If a dendogram tee is shown, the 
+<code>dendogram_line
+</code> can be used to control it. The 
+<code>is_filled
+</code> field shouldn&#39;t be set as it has no meaning here.
+</p>
+<p>TODO: Implement dendograms.
+</p>
+<p>Specifying 
+<code>entries_reorder
+</code> is equivalent to specifying both 
+<code>rows_reorder
+</code> and 
+<code>columns_reorder
+</code>, and similarly for 
+<code>entries_linkage
+</code>, 
+<code>entries_dendogram_size
+</code>, and 
+<code>entries_metric
+</code>.
+</p>
+<p>(which you can override in the data as usual).
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapReorder" href="#SomeGraphs.Heatmaps.HeatmapReorder">
+<code>SomeGraphs.Heatmaps.HeatmapReorder
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Specify how to reorder the rows and/or columns.
+</p>
+<ul>
+<li>
+<code>OptimalHclust
+</code> orders 
+<code>hclust
+</code> branches using the (better) Bar-Joseph method.
+</li>
+<li>
+<code>RCompatibleHclust
+</code> orders 
+<code>hclust
+</code> branches in the same (bad) way that 
+<code>R
+</code> does.
+</li>
+<li>
+<code>SlantedHclust
+</code> and 
+<code>SlantedPreSquaredHclust
+</code> orders 
+<code>hclust
+</code> branches using 
+<code>Slanter
+</code> (using 
+<code>slanted_orders
+</code> and 
+<code>reorder_hclust
+</code>).
+</li>
+<li>
+<code>SlantedOrder
+</code> and 
+<code>SlantedPreSquaredOrder
+</code> uses 
+<code>slanted_orders
+</code> (if a tree is needed, uses 
+<code>oclust
+</code> to create a tree preserving this order).
+</li>
+<li>
+<code>SameOrder
+</code> orders the rows/columns in the same way as the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
+</li>
+</ul>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapLinkage" href="#SomeGraphs.Heatmaps.HeatmapLinkage">
+<code>SomeGraphs.Heatmaps.HeatmapLinkage
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Specify the linkage to use when performing hierarchical clustering (
+<code>hclust
+</code>). The default is 
+<code>WardLinkage
+</code>. If using 
+<code>oclust
+</code> (from 
+<code>Slanter
+</code>), then only 
+<code>WardLinkage
+</code> and 
+<code>WardPreSeuaredLinkage
+</code> are supported.
+</p>
+</div>
+</section>
+</article>
+<article class="docstring">
+<header>
+<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
+</a>
+<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapOrigin" href="#SomeGraphs.Heatmaps.HeatmapOrigin">
+<code>SomeGraphs.Heatmaps.HeatmapOrigin
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
+</span>
+</header>
+<section>
+<div>
+<p>Specify where the origin (row 1 column 1) should be displayed. The Plotly default is 
+<code>HeatmapBottomLeft
+</code>.
+</p>
+</div>
+</section>
+</article>
+<h2 id="Index">
+<a class="docs-heading-anchor" href="#Index">Index
+</a>
+<a id="Index-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
+</a>
+</h2>
+<ul>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps">
+<code>SomeGraphs.Heatmaps
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph">
+<code>SomeGraphs.Heatmaps.HeatmapGraph
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>SomeGraphs.Heatmaps.HeatmapGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapLinkage">
+<code>SomeGraphs.Heatmaps.HeatmapLinkage
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapOrigin">
+<code>SomeGraphs.Heatmaps.HeatmapOrigin
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapReorder">
+<code>SomeGraphs.Heatmaps.HeatmapReorder
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_graph">
+<code>SomeGraphs.Heatmaps.heatmap_graph
+</code>
+</a>
+</li>
+</ul>
+</article>
+<nav class="docs-footer">
+<a class="docs-footer-prevpage" href="bars.html">« Bar Plots
+</a>
+<a class="docs-footer-nextpage" href="utilities.html">Utilities »
+</a>
+<div class="flexbox-break">
+</div>
+<p class="footer-message">Powered by 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> and the 
+<a href="https://julialang.org/">Julia Programming Language
+</a>.
+</p>
+</nav>
+</div>
+<div class="modal" id="documenter-settings">
+<div class="modal-background">
+</div>
+<div class="modal-card">
+<header class="modal-card-head">
+<p class="modal-card-title">Settings
+</p>
+<button class="delete">
+</button>
+</header>
+<section class="modal-card-body">
+<p>
+<label class="label">Theme
+</label>
+<div class="select">
+<select id="documenter-themepicker">
+<option value="auto">Automatic (OS)
+</option>
+<option value="documenter-light">documenter-light
+</option>
+<option value="documenter-dark">documenter-dark
+</option>
+<option value="catppuccin-latte">catppuccin-latte
+</option>
+<option value="catppuccin-frappe">catppuccin-frappe
+</option>
+<option value="catppuccin-macchiato">catppuccin-macchiato
+</option>
+<option value="catppuccin-mocha">catppuccin-mocha
+</option>
+</select>
+</div>
+</p>
+<hr/>
+<p>This document was generated with 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> version 1.11.4. Using Julia version 1.11.5.
+</p>
+</section>
+<footer class="modal-card-foot">
+</footer>
+</div>
+</div>
+</div>
+</body>
+</html>

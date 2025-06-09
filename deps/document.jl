@@ -45,6 +45,7 @@ makedocs(;
         repolink = "$(REPO)/blob/main{path}?plain=1#L{line}",
         prettyurls = false,
         size_threshold_warn = 200 * 2^10,
+        assets = ["assets/table.css"],
     ),
     pages = [
         "index.md",

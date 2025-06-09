@@ -1,0 +1,27 @@
+/* Override the main container width restrictions */
+.docs-main {
+    max-width: 100% !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+}
+
+/* Ensure content inside also uses full width */
+article.content {
+    max-width: 100% !important;
+}
+
+/* Adjust the article padding if needed */
+main article {
+    padding: 0 !important;
+}
+
+/* Make tables use full width too */
+.content table {
+    width: 100%;
+    max-width: none !important;
+}
+
+/* Optional: Adjust the sidebar width if desired */
+.docs-sidebar {
+    width: 250px; /* Adjust as needed */
+}

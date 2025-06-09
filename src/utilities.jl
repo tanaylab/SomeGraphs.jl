@@ -41,6 +41,7 @@ using Reexport
 using ..Validations
 using ..Common
 
+import .Common.CACHED_COLOR_SCALES
 import .Validations.Maybe
 
 @reexport import .Common.validate_graph
@@ -284,7 +285,7 @@ function validate_colors(
     else
         @assert colors_configuration.palette isa AbstractString
         lock(COLOR_SCALES_LOCK) do
-            @assert haskey(NAMED_COLOR_SCALES, colors_configuration.palette)
+            @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
 
@@ -319,8 +320,8 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                     # UNTESTED
-            @assert haskey(NAMED_COLOR_SCALES, colors_configuration.palette)
+        lock(COLOR_SCALES_LOCK) do                                                # UNTESTED
+            @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
 
@@ -491,7 +492,7 @@ function set_layout_colorscale!(;
     elseif colors_configuration.palette isa AbstractString
         @assert scaled_colors_palette === nothing
         colorscale = lock(COLOR_SCALES_LOCK) do
-            return NAMED_COLOR_SCALES[colors_configuration.palette]
+            return CACHED_COLOR_SCALES[colors_configuration.palette]
         end
 
     elseif colors_configuration.palette isa ContinuousColors

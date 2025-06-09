@@ -1,6 +1,8 @@
 using Documenter
 using Test
 
+using Clustering
+using Distances
 using SomeGraphs
 using NestedTests
 

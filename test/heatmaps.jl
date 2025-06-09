@@ -16,26 +16,26 @@ nested_test("heatmaps") do
 
         nested_test("same") do
             nested_test("entries") do
-                graph.configuration.entries_order = :same
-                @test_throws "ArgumentError: can't specify heatmap graph.configuration.entries_order: :same" validate(
+                graph.configuration.entries_reorder = SameOrder
+                @test_throws "ArgumentError: can't specify heatmap graph.configuration.entries_reorder: SameOrder" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
             end
 
             nested_test("both") do
-                graph.configuration.rows_order = :same
-                graph.configuration.columns_order = :same
+                graph.configuration.rows_reorder = SameOrder
+                graph.configuration.columns_reorder = SameOrder
                 @test_throws chomp("""
-                                   can't specify both heatmap graph.configuration.rows_order: :same
-                                   and heatmap graph.configuration.columns_order: :same
+                                   can't specify both heatmap graph.configuration.rows_reorder: SameOrder
+                                   and heatmap graph.configuration.columns_reorder: SameOrder
                                    """) validate(ValidationContext(["graph"]), graph)
             end
 
             nested_test("rectangle") do
-                graph.configuration.rows_order = :same
+                graph.configuration.rows_reorder = SameOrder
                 @test_throws chomp("""
-                                   can't specify graph.configuration.rows_order: :same
+                                   can't specify heatmap graph.configuration.rows_reorder: SameOrder
                                    for a non-square matrix: 3 rows x 4 columns
                                    """) validate(ValidationContext(["graph"]), graph)
             end
@@ -46,10 +46,10 @@ nested_test("heatmaps") do
                     7 6 5;
                     8 9 10;
                 ])
-                graph.configuration.rows_order = :same
+                graph.configuration.rows_reorder = SameOrder
                 @test_throws chomp("""
-                                   no columns order to copy into rows order
-                                   for graph.configuration.rows_order: same
+                                   specify heatmap graph.configuration.rows_reorder: SameOrder
+                                   without an order to copy from the columns
                                    """) validate(ValidationContext(["graph"]), graph)
             end
         end
@@ -63,12 +63,217 @@ nested_test("heatmaps") do
         end
 
         nested_test("conflict") do
-            graph.configuration.entries_order = :complete
-            graph.configuration.rows_order = :ward
+            graph.configuration.entries_linkage = CompleteLinkage
+            graph.configuration.rows_linkage = WardLinkage
             @test_throws chomp("""
-                               can't specify both graph.configuration.entries_order
-                               and graph.configuration.rows_order
+                               can't specify both heatmap graph.configuration.entries_linkage
+                               and graph.configuration.rows_linkage
                                """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("filled") do
+            graph.configuration.dendogram_line.is_filled = true
+            @test_throws chomp("""
+                               can't specify heatmap graph.configuration.dendogram_line.is_filled
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("width") do
+            graph.configuration.dendogram_line.width = 1
+            @test_throws chomp("""
+                               can't specify heatmap graph.configuration.dendogram_line.*
+                               without one of graph.configuration.*_dendogram_size
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("order") do
+            graph.data.columns_order = collect(1:4)
+            graph.data.columns_arrange_by = graph.data.entries_values
+            @test_throws chomp("""
+                               can't specify heatmap graph.data.columns_arrange_by
+                               for explicit vector graph.data.columns_order
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("arrange_by") do
+            graph.data.columns_arrange_by = graph.data.entries_values
+
+            nested_test("()") do
+                @test_throws chomp("""
+                                   can't specify heatmap graph.data.columns_arrange_by
+                                   without graph.configuration.columns_dendogram_size
+                                   or graph.configuration.columns_reorder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("hclust") do
+                distances = pairwise(Euclidean(), graph.data.entries_values; dims = 2)
+                graph.data.columns_order = hclust(distances)
+                @test_throws chomp("""
+                                   can't specify heatmap graph.data.columns_arrange_by
+                                   without graph.configuration.columns_reorder
+                                   for explicit hclust graph.data.columns_order
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
+
+        nested_test("linkage") do
+            graph.configuration.columns_linkage = CompleteLinkage
+            nested_test("()") do
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_linkage
+                                   without graph.configuration.columns_dendogram_size
+                                   or graph.configuration.columns_reorder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("dendogram") do
+                graph.configuration.columns_dendogram_size = 0.1
+                @test_throws chomp(
+                    """
+                    order preserving clustering does not support graph.configuration.columns_linkage: CompleteLinkage
+                    """,
+                ) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("slanted") do
+                graph.configuration.columns_reorder = SlantedOrder
+                @test_throws chomp(
+                    """
+                    slanted order preserving clustering does not support graph.configuration.columns_linkage: CompleteLinkage
+                    """,
+                ) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("hclust") do
+                distances = pairwise(Euclidean(), graph.data.entries_values; dims = 2)
+                graph.data.columns_order = hclust(distances)
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_linkage
+                                   for explicit hclust graph.data.columns_order
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("vector") do
+                graph.data.columns_order = collect(1:4)
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_linkage
+                                   for explicit vector graph.data.columns_order
+                                   without graph.configuration.columns_dendogram_size
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("dendogram") do
+                graph.configuration.columns_dendogram_size = 0.1
+                graph.configuration.columns_linkage = CompleteLinkage
+                graph.data.columns_order = collect(1:4)
+                @test_throws "ArgumentError: order preserving clustering does not support graph.configuration.columns_linkage: CompleteLinkage" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+        end
+
+        nested_test("metric") do
+            graph.configuration.columns_metric = Euclidean()
+
+            nested_test("()") do
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_metric
+                                   without graph.configuration.columns_dendogram_size
+                                   or graph.configuration.columns_reorder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("hclust") do
+                distances = pairwise(Euclidean(), graph.data.entries_values; dims = 2)
+                graph.data.columns_order = hclust(distances)
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_metric
+                                   for explicit hclust graph.data.columns_order
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("vector") do
+                graph.data.columns_order = collect(1:4)
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_metric
+                                   for explicit vector graph.data.columns_order
+                                   without graph.configuration.columns_dendogram_size
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
+
+        nested_test("reorder") do
+            nested_test("hclust") do
+                distances = pairwise(Euclidean(), graph.data.entries_values; dims = 2)
+                graph.data.columns_order = hclust(distances)
+                graph.configuration.columns_reorder = OptimalHclust
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_reorder: OptimalHclust
+                                   for explicit hclust graph.data.columns_order
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("vector") do
+                graph.data.columns_order = collect(1:4)
+                graph.configuration.columns_reorder = OptimalHclust
+                @test_throws chomp("""
+                                   can't specify both heatmap vector graph.data.columns_order
+                                   and graph.configuration.columns_reorder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
+
+        nested_test("same") do
+            graph.configuration.columns_reorder = SameOrder
+            graph.data.entries_values = [
+                0 1 2;
+                7 6 5;
+                8 9 10;
+            ]
+
+            nested_test("()") do
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_reorder: SameOrder
+                                   without an order to copy from the rows
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            graph.data.rows_order = collect(1:3)
+
+            nested_test("arrange_by") do
+                graph.data.columns_arrange_by = graph.data.entries_values
+                @test_throws chomp("""
+                                   can't specify heatmap graph.data.columns_arrange_by
+                                   for graph.configuration.columns_reorder: SameOrder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("linkage") do
+                graph.configuration.columns_linkage = WardLinkage
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_linkage
+                                   for graph.configuration.columns_reorder: SameOrder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("metric") do
+                graph.configuration.columns_metric = Euclidean()
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_metric
+                                   for graph.configuration.columns_reorder: SameOrder
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("dendogram_size") do
+                graph.configuration.columns_dendogram_size = 0.1
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_dendogram_size
+                                   with graph.configuration.columns_reorder: SameOrder
+                                   without a tree to copy from the rows
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
         end
     end
 
@@ -154,26 +359,102 @@ nested_test("heatmaps") do
         nested_test("reorder") do
             nested_test("rows") do
                 graph.data.rows_order = [1, 3, 2]
-                return test_html(graph, "heatmap.reorder.rows.html")
+                test_html(graph, "heatmap.reorder.rows.html")
+                return nothing
             end
 
             nested_test("columns") do
                 graph.data.columns_order = [1, 3, 2, 4]
-                return test_html(graph, "heatmap.reorder.columns.html")
+                test_html(graph, "heatmap.reorder.columns.html")
+                return nothing
             end
 
             nested_test("both") do
                 graph.data.rows_order = [1, 3, 2]
                 graph.data.columns_order = [1, 3, 2, 4]
-                return test_html(graph, "heatmap.reorder.both.html")
+                test_html(graph, "heatmap.reorder.both.html")
+                return nothing
             end
 
             nested_test("ward") do
                 graph.data.entries_values = graph.data.entries_values[[1, 3, 2], [1, 3, 2, 4]]
-                graph.configuration.rows_order = :ward
-                graph.configuration.columns_order = :ward
-                return test_html(graph, "heatmap.reorder.ward.html")
+                graph.configuration.rows_reorder = OptimalHclust
+                graph.configuration.columns_reorder = OptimalHclust
+                test_html(graph, "heatmap.reorder.ward.html")
+                return nothing
             end
+
+            nested_test("slant") do
+                nested_test("rows") do
+                    graph.configuration.rows_reorder = SlantedOrder
+
+                    nested_test("()") do
+                        test_html(graph, "heatmap.reorder.slanted.rows.html")
+                        return nothing
+                    end
+
+                    nested_test("same") do
+                        graph.data.entries_values = [
+                            0 1 2;
+                            7 6 5;
+                            8 9 10;
+                        ]
+                        pop!(graph.data.columns_annotations[1].values)
+                        graph.configuration.columns_reorder = SameOrder
+                        return test_html(graph, "heatmap.reorder.slanted.rows.same.html")
+                    end
+                end
+
+                nested_test("columns") do
+                    graph.configuration.columns_reorder = SlantedOrder
+
+                    nested_test("()") do
+                        test_html(graph, "heatmap.reorder.slanted.columns.html")
+                        return nothing
+                    end
+
+                    nested_test("same") do
+                        graph.data.entries_values = [
+                            0 1 2;
+                            7 6 5;
+                            8 9 10;
+                        ]
+                        pop!(graph.data.columns_annotations[1].values)
+                        graph.configuration.rows_reorder = SameOrder
+                        return test_html(graph, "heatmap.reorder.slanted.columns.same.html")
+                    end
+                end
+
+                nested_test("both") do
+                    graph.configuration.rows_reorder = SlantedOrder
+                    graph.configuration.columns_reorder = SlantedOrder
+                    test_html(graph, "heatmap.reorder.slanted.both.html")
+                    return nothing
+                end
+
+                nested_test("hclust") do
+                    graph.configuration.rows_reorder = SlantedHclust
+                    graph.configuration.columns_reorder = SlantedHclust
+                    test_html(graph, "heatmap.reorder.slanted.hclust.html")
+                    return nothing
+                end
+            end
+        end
+    end
+
+    nested_test("hclust") do
+        distances = pairwise(Euclidean(), graph.data.entries_values; dims = 2)
+        graph.data.columns_order = hclust(distances)
+
+        nested_test("()") do
+            test_html(graph, "heatmap.hclust.html")
+            return nothing
+        end
+
+        nested_test("slanted") do
+            graph.configuration.columns_reorder = SlantedHclust
+            test_html(graph, "heatmap.hclust.slanted.html")
+            return nothing
         end
     end
 
@@ -184,7 +465,7 @@ nested_test("heatmaps") do
             8 9 10;
         ])
         nested_test("rows") do
-            graph.configuration.rows_order = :same
+            graph.configuration.rows_reorder = SameOrder
             graph.data.columns_order = [1, 3, 2]
             test_html(graph, "heatmap.reorder.rows=columns.html")
             return nothing
@@ -192,8 +473,9 @@ nested_test("heatmaps") do
 
         nested_test("columns") do
             graph.data.rows_order = [1, 3, 2]
-            graph.configuration.columns_order = :same
-            return test_html(graph, "heatmap.reorder.columns=rows.html")
+            graph.configuration.columns_reorder = SameOrder
+            test_html(graph, "heatmap.reorder.columns=rows.html")
+            return nothing
         end
     end
 end
