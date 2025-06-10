@@ -686,6 +686,7 @@ function push_annotations_traces(;
     annotations_data::AbstractVector{AnnotationData},
     annotation_size::AnnotationSize,
     order::Maybe{AbstractVector{<:Integer}} = nothing,
+    expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}} = nothing,
 )::AbstractVector{ConfiguredColors}
     return ConfiguredColors[
         push_annotation_traces!(;
@@ -703,6 +704,7 @@ function push_annotations_traces(;
             next_colors_scale_index,
             has_legend_only_traces,
             order,
+            expanded_mask,
         ) for (annotation_index, annotation_data) in enumerate(annotations_data)
     ]
 end
@@ -722,6 +724,7 @@ function push_annotation_traces!(;
     next_colors_scale_index::AbstractVector{<:Integer},
     has_legend_only_traces::AbstractVector{Bool},
     order::Maybe{AbstractVector{<:Integer}},
+    expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::ConfiguredColors
     colors = configured_colors(;
         colors_configuration = annotation_data.colors,
@@ -746,16 +749,23 @@ function push_annotation_traces!(;
         end
     end
 
+    @assert colors.final_colors_values !== nothing
+    if eltype(colors.final_colors_values) <: AbstractString
+        gap_color = "white"
+    else
+        gap_color = NaN
+    end
+
     push_bar_trace!(;  # NOJET
         traces,
         sub_graph,
-        values = fill(1.0, length(annotation_data.values)),
+        values = expanded_mask !== nothing ? expanded_mask : fill(1.0, length(annotation_data.values)),
         value_axis,
         base_axis_index,
         values_orientation,
-        color = ordered_values(colors.final_colors_values, order),
-        hovers = ordered_values(annotation_data.hovers, order),
-        names = ordered_values(names, order),
+        color = expand_vector(colors.final_colors_values, order, expanded_mask, gap_color),
+        hovers = expand_vector(annotation_data.hovers, order, expanded_mask, ""),
+        names = expand_vector(names, order, expanded_mask, ""),
         name = annotation_data.title,
         show_in_legend = false,
         implicit_values_range = MaybeRange(),
@@ -765,12 +775,28 @@ function push_annotation_traces!(;
     return colors
 end
 
-function ordered_values(values::Maybe{AbstractVector}, order::Maybe{AbstractVector{<:Integer}})::Maybe{AbstractVector}
-    if values === nothing || order === nothing
+function expand_vector(
+    values::Maybe{AbstractVector},
+    order::Maybe{AbstractVector{<:Integer}},
+    expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    default_value::Any,
+)::Maybe{AbstractVector}
+    if values === nothing || (order === nothing && expanded_mask === nothing)
         return values
-    else
-        return values[order]
     end
+
+    if order !== nothing
+        @views values = values[order]
+    end
+
+    if expanded_mask === nothing
+        return values
+    end
+
+    expanded_values = fill(default_value, length(expanded_mask))
+    expanded_values[expanded_mask] .= values
+
+    return expanded_values
 end
 
 function push_annotation_legend_trace!(;

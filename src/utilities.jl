@@ -320,7 +320,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                           # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                         # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -1610,7 +1610,7 @@ function plotly_sub_graph_axes(
             index = n_graphs + sub_graph.n_annotations + 1
         end
 
-        if sub_graph.n_annotations > 0
+        if sub_graph.index != 0 && sub_graph.n_annotations > 0
             index = index % (sub_graph.n_annotations + n_graphs) + 1
         end
 

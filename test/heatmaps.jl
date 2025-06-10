@@ -345,6 +345,36 @@ nested_test("heatmaps") do
             return nothing
         end
 
+        nested_test("dendogram") do
+            graph.configuration.rows_reorder = OptimalHclust
+            graph.configuration.rows_dendogram_size = 0.2
+            graph.configuration.columns_reorder = OptimalHclust
+            graph.configuration.columns_dendogram_size = 0.2
+
+            nested_test("()") do
+                test_html(graph, "heatmap.annotations.dendogram.html")
+                return nothing
+            end
+
+            nested_test("gaps") do
+                graph.data.rows_gaps = [2, 1, 1]
+                graph.data.columns_gaps = [2, 2, 1]
+                graph.data.rows_names = ["X", "Y", "Z"]
+                graph.data.columns_names = ["A", "B", "C", "D"]
+                test_html(graph, "heatmap.annotations.dendogram.gaps.html")
+                return nothing
+            end
+        end
+
+        nested_test("gaps") do
+            graph.data.rows_gaps = [2, 1, 1]
+            graph.data.columns_gaps = [2, 2, 1]
+            graph.data.rows_names = ["X", "Y", "Z"]
+            graph.data.columns_names = ["A", "B", "C", "D"]
+            test_html(graph, "heatmap.annotations.gaps.html")
+            return nothing
+        end
+
         nested_test("legend") do
             graph.data.entries_colors_title = "values"
             graph.configuration.entries_colors.show_legend = true
@@ -455,8 +485,20 @@ nested_test("heatmaps") do
             graph.configuration.rows_reorder = OptimalHclust
             graph.configuration.rows_dendogram_size = 0.2
             graph.configuration.columns_dendogram_size = 0.2
-            test_html(graph, "heatmap.hclust.dendogram.html")
-            return nothing
+
+            nested_test("()") do
+                test_html(graph, "heatmap.hclust.dendogram.html")
+                return nothing
+            end
+
+            nested_test("gaps") do
+                graph.data.rows_gaps = [2, 1, 1]
+                graph.data.columns_gaps = [3, 3, 1]
+                graph.data.rows_names = ["X", "Y", "Z"]
+                graph.data.columns_names = ["A", "B", "C", "D"]
+                test_html(graph, "heatmap.dendogram.gaps.html")
+                return nothing
+            end
         end
 
         nested_test("slanted") do

@@ -37,6 +37,7 @@ using PlotlyJS
 using Slanter
 
 import ..Bars.push_annotations_traces
+import ..Bars.expand_vector
 import ..Validations.Maybe
 
 """
@@ -254,6 +255,9 @@ end
         entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
         rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
         columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+        entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing
+        rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing
+        columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
 The data for a graph showing a heatmap (matrix) of entries.
@@ -269,6 +273,12 @@ efficiency the `rows_arrange_by` matrix should be in row-major layout.
 Alternatively you can force the order of the data by specifying the `entries_order` permutation (for a square matrix) or
 separate `rows_order` and `columns_order` permutations. You can also specify an `Hclust` object as the order, which
 would enable showing a dendogram tree (TODO: implement).
+
+If `entries_gaps` (or separate `rows_gaps` and/or `columns_gaps`) are specified, then they contain indices of entries to
+add a gap (split the graph) at. The gap size is the same as a single entry (row and/or column). The same index may be
+given multiple times to create a wider gap. The order of the indices in these vectors does not matter. The gap is added
+between the entry and the following one; that is, the valid range of gap indices is 1 to (number of entries - 1). If the
+data is reordered, the gaps are reordered as well.
 
 Valid combinations of the fields controlling order and clustering are:
 
@@ -313,6 +323,9 @@ All other combinations are invalid. Note:
     entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing
+    rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing
+    columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
@@ -372,6 +385,22 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
 
     validate_exclusive_entries(context, "order", data.entries_order, data.rows_order, data.columns_order)
 
+    validate_exclusive_entries(context, "gaps", data.entries_gaps, data.rows_gaps, data.columns_gaps)
+
+    rows_gaps, columns_gaps = effective_field_values(data.entries_gaps, data.rows_gaps, data.columns_gaps)
+
+    validate_vector_entries(context, "columns_gaps", columns_gaps) do _, gap_column
+        validate_is_at_least(context, gap_column, 1)
+        validate_is_below(context, gap_column, n_columns)
+        return nothing
+    end
+
+    validate_vector_entries(context, "rows_gaps", rows_gaps) do _, gap_row
+        validate_is_at_least(context, gap_row, 1)
+        validate_is_below(context, gap_row, n_rows)
+        return nothing
+    end
+
     return nothing
 end
 
@@ -400,6 +429,9 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
         entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+        entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
+        rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
+        columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
         configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
     )::HeatmapGraph
 
@@ -425,6 +457,9 @@ function heatmap_graph(;
     entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+    entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
+    rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
+    columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
 )::HeatmapGraph
     return HeatmapGraph(
@@ -447,6 +482,9 @@ function heatmap_graph(;
             entries_order,
             rows_order,
             columns_order,
+            entries_gaps,
+            rows_gaps,
+            columns_gaps,
         ),
         configuration,
     )
@@ -745,13 +783,23 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     rows_axis_index = 1 + (n_rows_annotations > 0)
     columns_axis_index = 1 + (n_columns_annotations > 0)
 
+    rows_gaps, columns_gaps =
+        effective_field_values(graph.data.entries_gaps, graph.data.rows_gaps, graph.data.columns_gaps)
+
+    expanded_rows_mask = compute_expansion_mask(n_rows, rows_order, rows_gaps)
+    expanded_columns_mask = compute_expansion_mask(n_columns, columns_order, columns_gaps)
+
+    expanded_z = expand_z_matrix(z, rows_order, expanded_rows_mask, columns_order, expanded_columns_mask)
+
+    n_expanded_rows, n_expanded_columns = size(expanded_z)
+
     push!(
         traces,
         heatmap(;
             name = "",
-            x = collect(1:n_columns),
-            y = collect(1:n_rows),
-            z,
+            x = collect(1:n_expanded_columns),
+            y = collect(1:n_expanded_rows),
+            z = expanded_z,
             xaxis = plotly_axis("x", columns_axis_index; short = true),
             yaxis = plotly_axis("y", rows_axis_index; short = true),
             coloraxis = plotly_axis("color", 1),
@@ -771,6 +819,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotations_data = graph.data.columns_annotations,
         annotation_size = graph.configuration.columns_annotations,
         order = columns_order,
+        expanded_mask = expanded_columns_mask,
     )
 
     rows_annotations_colors = push_annotations_traces(;
@@ -784,6 +833,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotations_data = graph.data.rows_annotations,
         annotation_size = graph.configuration.rows_annotations,
         order = rows_order,
+        expanded_mask = expanded_rows_mask,
     )
 
     if graph.configuration.rows_dendogram_size !== nothing
@@ -793,6 +843,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             base_axis_index = rows_axis_index,
             heights_orientation = HorizontalValues,
             dendogram_line = graph.configuration.dendogram_line,
+            expanded_mask = expanded_rows_mask,
             sub_graph = SubGraph(;
                 index = 0,
                 n_graphs = 1,
@@ -813,6 +864,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             base_axis_index = columns_axis_index,
             heights_orientation = VerticalValues,
             dendogram_line = graph.configuration.dendogram_line,
+            expanded_mask = expanded_columns_mask,
             sub_graph = SubGraph(;
                 index = 0,
                 n_graphs = 1,
@@ -837,13 +889,14 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend)
 
+    expanded_rows_names = expand_vector(graph.data.rows_names, rows_order, expanded_rows_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("y", rows_axis_index),
         AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows_names !== nothing);
         title = prefer_data(graph.data.y_axis_title, graph.configuration.y_axis_title),
-        ticks_values = graph.data.rows_names === nothing ? nothing : collect(1:n_rows),
-        ticks_labels = graph.data.rows_names,
+        ticks_values = expanded_rows_names === nothing ? nothing : collect(1:n_expanded_rows),
+        ticks_labels = expanded_rows_names,
         domain = plotly_sub_graph_domain(
             SubGraph(;
                 index = 1,
@@ -857,13 +910,14 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         is_zeroable = false,
     )
 
+    expanded_columns_names = expand_vector(graph.data.columns_names, columns_order, expanded_columns_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("x", columns_axis_index),
         AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns_names !== nothing);
         title = prefer_data(graph.data.x_axis_title, graph.configuration.x_axis_title),
-        ticks_values = graph.data.columns_names === nothing ? nothing : collect(1:n_columns),
-        ticks_labels = graph.data.columns_names,
+        ticks_values = expanded_columns_names === nothing ? nothing : collect(1:n_expanded_columns),
+        ticks_labels = expanded_columns_names,
         domain = plotly_sub_graph_domain(
             SubGraph(;
                 index = 1,
@@ -911,6 +965,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             rows_max_height,
         ),
     )
+        n_annotations = 0
         if annotations_colors !== nothing
             n_annotations = length(annotations_colors)
             for (annotation_index, annotation_colors) in enumerate(annotations_colors)
@@ -1277,10 +1332,11 @@ function push_dendogram_trace!(;
     clusters::Hclust,
     base_axis_index::Integer,
     heights_orientation::ValuesOrientation,
-    sub_graph::SubGraph,
     dendogram_line::LineConfiguration,
+    expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    sub_graph::SubGraph,
 )::Real
-    values, heights = dendogram_coordinates(clusters)
+    values, heights = dendogram_coordinates(clusters, expanded_mask)
 
     if heights_orientation == HorizontalValues
         xs = heights
@@ -1317,6 +1373,7 @@ end
 
 function dendogram_coordinates(
     clusters::Hclust,
+    expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::Tuple{AbstractVector{<:AbstractFloat}, AbstractVector{<:AbstractFloat}}
     values = Float32[]
     heights = Float32[]
@@ -1327,7 +1384,17 @@ function dendogram_coordinates(
     height_per_node = Vector{Float32}(undef, n_values * 2 - 1)
     height_per_node[1:n_values] .= 0
 
+    if expanded_mask === nothing
+        expanded_positions = nothing
+    else
+        expanded_positions = findall(expanded_mask)
+        @assert length(expanded_positions) == n_values
+    end
+
     for (position, index) in enumerate(clusters.order)
+        if expanded_positions !== nothing
+            position = expanded_positions[position]
+        end
         value_per_node[index] = position
     end
 
@@ -1358,6 +1425,99 @@ function dendogram_coordinates(
     end
 
     return (values, heights)
+end
+
+function compute_expansion_mask(
+    n_entries::Integer,
+    order::Maybe{AbstractVector{<:Integer}},
+    gap_indices::Maybe{AbstractVector{<:Integer}},
+)::Maybe{Union{BitVector, AbstractVector{Bool}}}
+    if gap_indices === nothing
+        return nothing
+    end
+
+    if order === nothing
+        order = collect(1:n_entries)
+        sorted_reordered_gap_indices = sort(gap_indices)
+    else
+        sorted_reordered_gap_indices = sort!(invperm(order)[gap_indices])
+    end
+
+    n_gap_indices = length(gap_indices)
+    n_expanded_entries = n_entries + n_gap_indices
+
+    expanded_mask = Vector{Bool}(undef, n_expanded_entries)
+
+    order_index = 0
+    expanded_index = 0
+    gap_index = 1
+    while order_index < n_entries
+        order_index += 1
+        expanded_index += 1
+        expanded_mask[expanded_index] = true
+        while gap_index <= n_gap_indices && sorted_reordered_gap_indices[gap_index] == order_index
+            gap_index += 1
+            expanded_index += 1
+            expanded_mask[expanded_index] = false
+        end
+    end
+
+    @assert order_index == n_entries
+    @assert expanded_index == n_expanded_entries
+    @assert gap_index == n_gap_indices + 1
+
+    return expanded_mask
+end
+
+function expand_z_matrix(
+    z::AbstractMatrix{<:Real},
+    rows_order::Maybe{AbstractVector{<:Integer}},
+    expanded_rows_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    columns_order::Maybe{AbstractVector{<:Integer}},
+    expanded_columns_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+)::AbstractMatrix{<:Real}
+    if rows_order === nothing &&
+       expanded_rows_mask === nothing &&
+       columns_order === nothing &&
+       expanded_columns_mask === nothing
+        return z
+    end
+
+    n_rows, n_columns = size(z)
+
+    if rows_order === nothing
+        rows_order = 1:n_rows
+    end
+
+    if columns_order === nothing
+        columns_order = 1:n_columns
+    end
+
+    @views reordered_z = z[rows_order, columns_order]
+
+    if expanded_rows_mask === nothing && expanded_columns_mask === nothing
+        return reordered_z
+    end
+
+    if expanded_rows_mask === nothing
+        n_expanded_rows = n_rows  # UNTESTED
+        expanded_rows_mask = 1:n_rows  # UNTESTED
+    else
+        n_expanded_rows = length(expanded_rows_mask)
+    end
+
+    if expanded_columns_mask === nothing
+        n_expanded_columns = n_columns  # UNTESTED
+        expanded_columns_mask = 1:n_columns  # UNTESTED
+    else
+        n_expanded_columns = length(expanded_columns_mask)
+    end
+
+    expanded_z = Matrix{eltype(z)}(undef, n_expanded_rows, n_expanded_columns)
+    expanded_z .= NaN
+    expanded_z[expanded_rows_mask, expanded_columns_mask] .= reordered_z
+
+    return expanded_z
 end
 
 end
