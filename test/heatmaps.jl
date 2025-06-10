@@ -451,6 +451,14 @@ nested_test("heatmaps") do
             return nothing
         end
 
+        nested_test("dendogram") do
+            graph.configuration.rows_reorder = OptimalHclust
+            graph.configuration.rows_dendogram_size = 0.2
+            graph.configuration.columns_dendogram_size = 0.2
+            test_html(graph, "heatmap.hclust.dendogram.html")
+            return nothing
+        end
+
         nested_test("slanted") do
             graph.configuration.columns_reorder = SlantedHclust
             test_html(graph, "heatmap.hclust.slanted.html")

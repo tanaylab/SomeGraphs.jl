@@ -840,7 +840,6 @@ end
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct HeatmapGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    value_axis::AxisConfiguration = AxisConfiguration()
     entries_colors::ColorsConfiguration = ColorsConfiguration()
     rows_annotations::AnnotationSize = AnnotationSize()
     columns_annotations::AnnotationSize = AnnotationSize()
@@ -887,7 +886,7 @@ end
 </p>
 <p>If a dendogram tee is shown, the 
 <code>dendogram_line
-</code> can be used to control it. The 
+</code> can be used to control it. The default color is black. The 
 <code>is_filled
 </code> field shouldn&#39;t be set as it has no meaning here.
 </p>

@@ -511,6 +511,7 @@ end
     n_graphs::Integer = 1,
     annotation_size::AnnotationSize,
     n_annotations::Integer,
+    dendogram_size::Maybe{Real} = nothing,
 )::nothing
 </code>
 </pre>
@@ -872,6 +873,7 @@ scale_axis_values(
     gap::Maybe{AbstractFloat}
     n_annotations::Integer = 0
     annotation_size::Maybe{AnnotationSize} = nothing
+    dendogram_size::Maybe{Real} = nothing
 end
 </code>
 </pre>
@@ -890,6 +892,10 @@ end
 </code> with 
 <code>annotation_size
 </code>. If the index is negative, it is the (negated) index of an annotation.
+</p>
+<p>If the 
+<code>index
+</code> is 0, this is the dendogram graph.
 </p>
 </div>
 </section>

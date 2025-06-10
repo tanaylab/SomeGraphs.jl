@@ -320,7 +320,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                           # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -1434,6 +1434,7 @@ end
         gap::Maybe{AbstractFloat}
         n_annotations::Integer = 0
         annotation_size::Maybe{AnnotationSize} = nothing
+        dendogram_size::Maybe{Real} = nothing
     end
 
 Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
@@ -1443,6 +1444,8 @@ parameters.
 
 This also supports `n_annotations` with `annotation_size`. If the index is negative, it is the (negated) index of an
 annotation.
+
+If the `index` is 0, this is the dendogram graph.
 """
 @kwdef struct SubGraph
     index::Integer
@@ -1450,6 +1453,7 @@ annotation.
     graphs_gap::Maybe{AbstractFloat}
     n_annotations::Integer = 0
     annotation_size::Maybe{AnnotationSize} = nothing
+    dendogram_size::Maybe{Real} = nothing
 end
 
 """
@@ -1458,9 +1462,8 @@ end
 Return the Plotly "domain" for a sub-graph (or an annotation).
 """
 function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
-    @assert sub_graph.index != 0
-
     index = sub_graph.index
+
     n_graphs = sub_graph.n_graphs
     if sub_graph.graphs_gap === nothing
         n_graphs = 1
@@ -1469,7 +1472,7 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
         end
     end
 
-    if n_graphs == 1 && sub_graph.n_annotations == 0
+    if n_graphs == 1 && sub_graph.n_annotations == 0 && sub_graph.dendogram_size === nothing
         return nothing
     end
 
@@ -1485,16 +1488,23 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
         end
 
         graphs_total_size = 1 - start_graph_offset - (n_graphs - 1) * prefer_data(sub_graph.graphs_gap, 0)
+        if sub_graph.dendogram_size !== nothing
+            graphs_total_size -= sub_graph.dendogram_size
+        end
         graph_size = graphs_total_size / n_graphs
         start_graph_offset += (index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
         end_graph_offset = start_graph_offset + graph_size
 
-    else
+    elseif index < 0
         @assert sub_graph.n_annotations != 0
         @assert 1 <= -index <= sub_graph.n_annotations
         @assert sub_graph.annotation_size !== nothing
         start_graph_offset = (-index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
         end_graph_offset = start_graph_offset + sub_graph.annotation_size.size
+    else
+        @assert sub_graph.dendogram_size !== nothing
+        start_graph_offset = 1 - sub_graph.dendogram_size
+        end_graph_offset = 1
     end
 
     @assert 0 <= start_graph_offset < end_graph_offset <= 1
@@ -1508,6 +1518,7 @@ end
         n_graphs::Integer = 1,
         annotation_size::AnnotationSize,
         n_annotations::Integer,
+        dendogram_size::Maybe{Real} = nothing,
     )::nothing
 
 Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations.
@@ -1518,6 +1529,7 @@ function validate_axis_sizes(;
     n_graphs::Integer = 1,
     annotation_size::AnnotationSize,
     n_annotations::Integer,
+    dendogram_size::Maybe{Real} = nothing,
 )::Nothing
     if graphs_gap === nothing
         graph_gaps_overhead = 0
@@ -1527,7 +1539,15 @@ function validate_axis_sizes(;
 
     annotations_gaps_overhead = n_annotations * annotation_size.gap
     annotations_sizes_overhead = n_annotations * annotation_size.size
-    total_overhead_size = graph_gaps_overhead + annotations_gaps_overhead + annotations_sizes_overhead
+
+    if dendogram_size === nothing
+        dendogram_size_overhead = 0.0
+    else
+        dendogram_size_overhead = dendogram_size
+    end
+
+    total_overhead_size =
+        graph_gaps_overhead + annotations_gaps_overhead + annotations_sizes_overhead + dendogram_size_overhead
 
     if total_overhead_size >= 1
         text = "no space left in the $(axis_name) axis"
@@ -1541,6 +1561,9 @@ function validate_axis_sizes(;
                 "\nnumber of annotations: $(n_annotations)" *
                 "\nwith gap between annotations: $(annotation_size.gap) (total: $(annotations_gaps_overhead))" *
                 "\nwith size of each annotation: $(annotation_size.size) (total: $(annotations_sizes_overhead))"
+        end
+        if dendogram_size !== nothing
+            text *= "\ndendogram size: $(dendogram_size_overhead)"  # UNTESTED
         end
         text *= "\nthe total overhead: $(total_overhead_size)" * "\nis not less than: 1"
         throw(ArgumentError(text))  # NOJET
@@ -1583,6 +1606,8 @@ function plotly_sub_graph_axes(
 
         if index < 0
             index = n_graphs + sub_graph.n_annotations + 1 + index
+        elseif index == 0
+            index = n_graphs + sub_graph.n_annotations + 1
         end
 
         if sub_graph.n_annotations > 0
