@@ -364,20 +364,22 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows_gaps = [2, 1, 1]
-                graph.data.columns_gaps = [2, 2, 1]
+                graph.data.rows_groups = [1, 2, 2]
+                graph.data.columns_groups = [1, 1, 2, 3]
                 graph.data.rows_names = ["X", "Y", "Z"]
                 graph.data.columns_names = ["A", "B", "C", "D"]
+                graph.configuration.entries_groups_gap = 1
                 test_html(graph, "heatmap.annotations.dendogram.gaps.html")
                 return nothing
             end
         end
 
         nested_test("gaps") do
-            graph.data.rows_gaps = [2, 1, 1]
-            graph.data.columns_gaps = [2, 2, 1]
+            graph.data.rows_groups = [1, 2, 2]
+            graph.data.columns_groups = [1, 1, 2, 3]
             graph.data.rows_names = ["X", "Y", "Z"]
             graph.data.columns_names = ["A", "B", "C", "D"]
+            graph.configuration.entries_groups_gap = 1
             test_html(graph, "heatmap.annotations.gaps.html")
             return nothing
         end
@@ -508,10 +510,11 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows_gaps = [2, 1, 1]
-                graph.data.columns_gaps = [3, 3, 1]
+                graph.data.rows_groups = [1, 2, 2]
+                graph.data.columns_groups = [1, 1, 2, 3]
                 graph.data.rows_names = ["X", "Y", "Z"]
                 graph.data.columns_names = ["A", "B", "C", "D"]
+                graph.configuration.entries_groups_gap = 1
                 test_html(graph, "heatmap.dendogram.gaps.html")
                 return nothing
             end

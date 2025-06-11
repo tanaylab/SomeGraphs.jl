@@ -230,9 +230,8 @@
     entries_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
-    entries_gaps::Maybe{AbstractVector{&lt;:Integer}} = nothing,
-    rows_gaps::Maybe{AbstractVector{&lt;:Integer}} = nothing,
-    columns_gaps::Maybe{AbstractVector{&lt;:Integer}} = nothing,
+    rows_groups::Maybe{AbstractVector} = nothing,
+    columns_groups::Maybe{AbstractVector} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
 )::HeatmapGraph
 </code>
@@ -289,9 +288,8 @@
     entries_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
     rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
     columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
-    entries_gaps::Maybe{AbstractVector{&lt;:Integer}} = nothing
-    rows_gaps::Maybe{AbstractVector{&lt;:Integer}} = nothing
-    columns_gaps::Maybe{AbstractVector{&lt;:Integer}} = nothing
+    rows_groups::Maybe{AbstractVector} = nothing
+    columns_groups::Maybe{AbstractVector} = nothing
 end
 </code>
 </pre>
@@ -325,15 +323,13 @@ end
 <code>columns_order
 </code> permutations. You can also specify an 
 <code>Hclust
-</code> object as the order, which would enable showing a dendogram tree (TODO: implement).
+</code> object as the order, which would enable showing a dendogram tree.
 </p>
 <p>If 
-<code>entries_gaps
-</code> (or separate 
-<code>rows_gaps
+<code>rows_groups
 </code> and/or 
-<code>columns_gaps
-</code>) are specified, then they contain indices of entries to add a gap (split the graph) at. The gap size is the same as a single entry (row and/or column). The same index may be given multiple times to create a wider gap. The order of the indices in these vectors does not matter. The gap is added between the entry and the following one; that is, the valid range of gap indices is 1 to (number of entries - 1). If the data is reordered, the gaps are reordered as well.
+<code>columns_groups
+</code> are specified, then they serve to group the entries (rows and/or columns). A gap is added between groups (controlled by the configuration), that is, between two entries with different groups.
 </p>
 <p>Valid combinations of the fields controlling order and clustering are:
 </p>
@@ -912,6 +908,9 @@ end
     entries_metric::Maybe{PreMetric} = nothing
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
+    entries_groups_gap::Maybe{Integer} = nothing
+    rows_groups_gap::Maybe{Integer} = nothing
+    columns_groups_gap::Maybe{Integer} = nothing
     entries_dendogram_size::Maybe{Real} = nothing
     rows_dendogram_size::Maybe{Real} = nothing
     columns_dendogram_size::Maybe{Real} = nothing
@@ -940,6 +939,10 @@ end
 <code>rows_metric
 </code> distance measure.
 </p>
+<p>If groups are specified for the entries (rows and/or columns), then a gap can be added between entries of different groups. The size of the gaps is the number of fake entries to adde between the separated entries. That is, specifying 
+<code>entries_groups_gap
+</code> of 1 will add a gap of one entry between adjacent entries of different groups.
+</p>
 <p>If you specify 
 <code>columns_dendogram_size
 </code> and/or 
@@ -953,8 +956,6 @@ end
 </code> can be used to control it. The default color is black. The 
 <code>is_filled
 </code> field shouldn&#39;t be set as it has no meaning here.
-</p>
-<p>TODO: Implement dendograms.
 </p>
 <p>Specifying 
 <code>entries_reorder
@@ -1123,12 +1124,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='GTsA22D8Kv' class='' style=';'>
+<div id='EyrTo4t5KR' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("GTsA22D8Kv")
+    const PLOT = document.getElementById("EyrTo4t5KR")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1168,12 +1169,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='RFl5eSvubs' class='' style=';'>
+<div id='hQmowDJAyc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("RFl5eSvubs")
+    const PLOT = document.getElementById("hQmowDJAyc")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1217,12 +1218,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='LFJNQx95gN' class='' style=';'>
+<div id='7uuyWB31SJ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("LFJNQx95gN")
+    const PLOT = document.getElementById("7uuyWB31SJ")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1257,8 +1258,8 @@ graph = heatmap_graph(;
             ),
         ),
     ],
-    rows_gaps = [2],
-    columns_gaps = [1, 1],
+    rows_groups = [1, 1, 2, 2],
+    columns_groups = [&quot;L&quot;, &quot;M&quot;, &quot;M&quot;],
 )
 graph.configuration.rows_reorder = OptimalHclust
 graph.configuration.columns_reorder = OptimalHclust
@@ -1268,13 +1269,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='cKNiXu1zA2' class='' style=';'>
+<div id='X77pq6BcaX' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("cKNiXu1zA2")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[1.0,2.0,null,3.0,4.0],[5.0,4.0,null,3.0,2.0],[null,null,null,null,null],[null,null,null,null,null],[4.0,3.0,null,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5]},{"showlegend":false,"marker":{"color":["lightgray","black","white","white","darkgray"]},"xaxis":"x2","y":[1.0,1.0,0.0,0.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4","5"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,5.0,5.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","","","Y"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("X77pq6BcaX")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%

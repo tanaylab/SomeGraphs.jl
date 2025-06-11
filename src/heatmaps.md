@@ -121,8 +121,8 @@ graph = heatmap_graph(;
             ),
         ),
     ],
-    rows_gaps = [2],
-    columns_gaps = [1, 1],
+    rows_groups = [1, 1, 2, 2],
+    columns_groups = ["L", "M", "M"],
 )
 graph.configuration.rows_reorder = OptimalHclust
 graph.configuration.columns_reorder = OptimalHclust

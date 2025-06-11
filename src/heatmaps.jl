@@ -82,6 +82,9 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
         entries_metric::Maybe{PreMetric} = nothing
         rows_metric::Maybe{PreMetric} = nothing
         columns_metric::Maybe{PreMetric} = nothing
+        entries_groups_gap::Maybe{Integer} = nothing
+        rows_groups_gap::Maybe{Integer} = nothing
+        columns_groups_gap::Maybe{Integer} = nothing
         entries_dendogram_size::Maybe{Real} = nothing
         rows_dendogram_size::Maybe{Real} = nothing
         columns_dendogram_size::Maybe{Real} = nothing
@@ -99,14 +102,16 @@ You can use `columns_reorder` and/or `rows_reorder` to reorder the data. When sp
 `rows_linkage`, by default, the clustering uses the `Euclidean` distance metric. You can override this by specifying the
 `columns_metric` and/or `rows_metric` distance measure.
 
+If groups are specified for the entries (rows and/or columns), then a gap can be added between entries of different
+groups. The size of the gaps is the number of fake entries to adde between the separated entries. That is, specifying
+`entries_groups_gap` of 1 will add a gap of one entry between adjacent entries of different groups.
+
 If you specify `columns_dendogram_size` and/or `rows_dendogram_size`, then you should either specify linkage (for
 computing a clustering) or must specify `Hclust` order in the data. The dendogram tree will be shown to the side of the
 data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
 
 If a dendogram tee is shown, the `dendogram_line` can be used to control it. The default color is black. The `is_filled`
 field shouldn't be set as it has no meaning here.
-
-TODO: Implement dendograms.
 
 Specifying `entries_reorder` is equivalent to specifying both `rows_reorder` and `columns_reorder`, and similarly for
 `entries_linkage`, `entries_dendogram_size`, and `entries_metric`.
@@ -129,6 +134,9 @@ Specifying `entries_reorder` is equivalent to specifying both `rows_reorder` and
     entries_metric::Maybe{PreMetric} = nothing
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
+    entries_groups_gap::Maybe{Integer} = nothing
+    rows_groups_gap::Maybe{Integer} = nothing
+    columns_groups_gap::Maybe{Integer} = nothing
     entries_dendogram_size::Maybe{Real} = nothing
     rows_dendogram_size::Maybe{Real} = nothing
     columns_dendogram_size::Maybe{Real} = nothing
@@ -178,6 +186,16 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
         configuration.rows_metric,
         configuration.columns_metric,
     )
+
+    validate_in(context, "entries_groups_gap") do
+        return validate_is_above(context, configuration.entries_groups_gap, 0)
+    end
+    validate_in(context, "rows_groups_gap") do
+        return validate_is_above(context, configuration.rows_groups_gap, 0)
+    end
+    validate_in(context, "columns_groups_gap") do
+        return validate_is_above(context, configuration.columns_groups_gap, 0)
+    end
 
     validate_in(context, "entries_dendogram_size") do
         return validate_is_above(context, configuration.entries_dendogram_size, 0)
@@ -261,9 +279,8 @@ end
         entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
         rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
         columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-        entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing
-        rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing
-        columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing
+        rows_groups::Maybe{AbstractVector} = nothing
+        columns_groups::Maybe{AbstractVector} = nothing
     end
 
 The data for a graph showing a heatmap (matrix) of entries.
@@ -278,13 +295,10 @@ efficiency the `rows_arrange_by` matrix should be in row-major layout.
 
 Alternatively you can force the order of the data by specifying the `entries_order` permutation (for a square matrix) or
 separate `rows_order` and `columns_order` permutations. You can also specify an `Hclust` object as the order, which
-would enable showing a dendogram tree (TODO: implement).
+would enable showing a dendogram tree.
 
-If `entries_gaps` (or separate `rows_gaps` and/or `columns_gaps`) are specified, then they contain indices of entries to
-add a gap (split the graph) at. The gap size is the same as a single entry (row and/or column). The same index may be
-given multiple times to create a wider gap. The order of the indices in these vectors does not matter. The gap is added
-between the entry and the following one; that is, the valid range of gap indices is 1 to (number of entries - 1). If the
-data is reordered, the gaps are reordered as well.
+If `rows_groups` and/or `columns_groups` are specified, then they serve to group the entries (rows and/or columns). A
+gap is added between groups (controlled by the configuration), that is, between two entries with different groups.
 
 Valid combinations of the fields controlling order and clustering are:
 
@@ -330,9 +344,8 @@ All other combinations are invalid. Note:
     entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing
-    rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing
-    columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing
+    rows_groups::Maybe{AbstractVector} = nothing
+    columns_groups::Maybe{AbstractVector} = nothing
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
@@ -359,6 +372,9 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
 
     validate_vector_length(context, "columns_hovers", data.columns_hovers, "entries_values.columns", n_columns)
     validate_vector_length(context, "rows_hovers", data.rows_hovers, "entries_values.rows", n_rows)
+
+    validate_vector_length(context, "columns_groups", data.columns_hovers, "entries_values.columns", n_columns)
+    validate_vector_length(context, "rows_groups", data.rows_hovers, "entries_values.rows", n_rows)
 
     for (field_name, field_value, base_name, base_value) in (
         ("columns_order", data.columns_order, "entries_values.columns", n_columns),
@@ -392,22 +408,6 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
 
     validate_exclusive_entries(context, "order", data.entries_order, data.rows_order, data.columns_order)
 
-    validate_exclusive_entries(context, "gaps", data.entries_gaps, data.rows_gaps, data.columns_gaps)
-
-    rows_gaps, columns_gaps = effective_field_values(data.entries_gaps, data.rows_gaps, data.columns_gaps)
-
-    validate_vector_entries(context, "columns_gaps", columns_gaps) do _, gap_column
-        validate_is_at_least(context, gap_column, 1)
-        validate_is_below(context, gap_column, n_columns)
-        return nothing
-    end
-
-    validate_vector_entries(context, "rows_gaps", rows_gaps) do _, gap_row
-        validate_is_at_least(context, gap_row, 1)
-        validate_is_below(context, gap_row, n_rows)
-        return nothing
-    end
-
     return nothing
 end
 
@@ -436,9 +436,8 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
         entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-        entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
-        rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
-        columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
+        rows_groups::Maybe{AbstractVector} = nothing,
+        columns_groups::Maybe{AbstractVector} = nothing,
         configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
     )::HeatmapGraph
 
@@ -464,9 +463,8 @@ function heatmap_graph(;
     entries_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-    entries_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
-    rows_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
-    columns_gaps::Maybe{AbstractVector{<:Integer}} = nothing,
+    rows_groups::Maybe{AbstractVector} = nothing,
+    columns_groups::Maybe{AbstractVector} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
 )::HeatmapGraph
     return HeatmapGraph(
@@ -489,9 +487,8 @@ function heatmap_graph(;
             entries_order,
             rows_order,
             columns_order,
-            entries_gaps,
-            rows_gaps,
-            columns_gaps,
+            rows_groups,
+            columns_groups,
         ),
         configuration,
     )
@@ -798,19 +795,20 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     rows_order, rows_hclust, columns_order, columns_hclust, z = reorder_data(graph, colors)
 
-    n_rows, n_columns = size(graph.data.entries_values)
-
     n_rows_annotations = length(graph.data.rows_annotations)
     n_columns_annotations = length(graph.data.columns_annotations)
 
     rows_axis_index = 1 + (n_rows_annotations > 0)
     columns_axis_index = 1 + (n_columns_annotations > 0)
 
-    rows_gaps, columns_gaps =
-        effective_field_values(graph.data.entries_gaps, graph.data.rows_gaps, graph.data.columns_gaps)
+    rows_groups_gap, columns_groups_gap = effective_field_values(
+        graph.configuration.entries_groups_gap,
+        graph.configuration.rows_groups_gap,
+        graph.configuration.columns_groups_gap,
+    )
 
-    expanded_rows_mask = compute_expansion_mask(n_rows, rows_order, rows_gaps)
-    expanded_columns_mask = compute_expansion_mask(n_columns, columns_order, columns_gaps)
+    expanded_rows_mask = compute_expansion_mask(rows_order, graph.data.rows_groups, rows_groups_gap)
+    expanded_columns_mask = compute_expansion_mask(columns_order, graph.data.columns_groups, columns_groups_gap)
 
     expanded_z = expand_z_matrix(z, rows_order, expanded_rows_mask, columns_order, expanded_columns_mask)
 
@@ -1462,43 +1460,32 @@ function dendogram_coordinates(
 end
 
 function compute_expansion_mask(
-    n_entries::Integer,
     order::Maybe{AbstractVector{<:Integer}},
-    gap_indices::Maybe{AbstractVector{<:Integer}},
+    groups::Maybe{AbstractVector},
+    gap_size::Maybe{Integer},
 )::Maybe{Union{BitVector, AbstractVector{Bool}}}
-    if gap_indices === nothing
+    if groups === nothing || gap_size === nothing
         return nothing
     end
 
+    @assert gap_size > 0
+
     if order === nothing
-        order = collect(1:n_entries)
-        sorted_reordered_gap_indices = sort(gap_indices)
-    else
-        sorted_reordered_gap_indices = sort!(invperm(order)[gap_indices])
+        order = 1:length(groups)
     end
 
-    n_gap_indices = length(gap_indices)
-    n_expanded_entries = n_entries + n_gap_indices
+    expanded_mask = Bool[]
 
-    expanded_mask = Vector{Bool}(undef, n_expanded_entries)
-
-    order_index = 0
-    expanded_index = 0
-    gap_index = 1
-    while order_index < n_entries
-        order_index += 1
-        expanded_index += 1
-        expanded_mask[expanded_index] = true
-        while gap_index <= n_gap_indices && sorted_reordered_gap_indices[gap_index] == order_index
-            gap_index += 1
-            expanded_index += 1
-            expanded_mask[expanded_index] = false
+    prev_group = groups[order[1]]
+    for group in groups[order]
+        if group != prev_group
+            prev_group = group
+            for _ in 1:gap_size
+                push!(expanded_mask, false)
+            end
         end
+        push!(expanded_mask, true)
     end
-
-    @assert order_index == n_entries
-    @assert expanded_index == n_expanded_entries
-    @assert gap_index == n_gap_indices + 1
 
     return expanded_mask
 end
