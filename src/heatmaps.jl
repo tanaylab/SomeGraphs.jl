@@ -18,6 +18,7 @@ export HeatmapTopLeft
 export HeatmapTopRight
 export OptimalHclust
 export RCompatibleHclust
+export ReorderHclust
 export SameOrder
 export SingleLinkage
 export SlantedHclust
@@ -25,7 +26,7 @@ export SlantedOrder
 export SlantedPreSquaredHclust
 export SlantedPreSquaredOrder
 export WardLinkage
-export WardPreSeuaredLinkage
+export WardPreSquaredLinkage
 
 using ..Common
 using ..Utilities
@@ -45,6 +46,7 @@ Specify how to reorder the rows and/or columns.
 
   - `OptimalHclust` orders `hclust` branches using the (better) Bar-Joseph method.
   - `RCompatibleHclust` orders `hclust` branches in the same (bad) way that `R` does.
+  - `ReorderHclust` reorders `hclust` branches to be as close as possible to a given order (using `reorder_hclust`).
   - `SlantedHclust` and `SlantedPreSquaredHclust` orders `hclust` branches using `Slanter` (using `slanted_orders`
     and `reorder_hclust`).
   - `SlantedOrder` and `SlantedPreSquaredOrder` uses `slanted_orders` (if a tree is needed, uses `oclust` to create
@@ -52,13 +54,13 @@ Specify how to reorder the rows and/or columns.
   - `SameOrder` orders the rows/columns in the same way as the other axis. This can only be applied to square matrices
     and can't be specified for both axes.
 """
-@enum HeatmapReorder RCompatibleHclust OptimalHclust SlantedHclust SlantedPreSquaredHclust SlantedOrder SlantedPreSquaredOrder SameOrder
+@enum HeatmapReorder RCompatibleHclust OptimalHclust ReorderHclust SlantedHclust SlantedPreSquaredHclust SlantedOrder SlantedPreSquaredOrder SameOrder
 
 """
 Specify the linkage to use when performing hierarchical clustering (`hclust`). The default is `WardLinkage`. If using
-`oclust` (from `Slanter`), then only `WardLinkage` and `WardPreSeuaredLinkage` are supported.
+`oclust` (from `Slanter`), then only `WardLinkage` and `WardPreSquaredLinkage` are supported.
 """
-@enum HeatmapLinkage SingleLinkage AverageLinkage CompleteLinkage WardLinkage WardPreSeuaredLinkage
+@enum HeatmapLinkage SingleLinkage AverageLinkage CompleteLinkage WardLinkage WardPreSquaredLinkage
 
 """
 Specify where the origin (row 1 column 1) should be displayed. The Plotly default is `HeatmapBottomLeft`.
@@ -80,6 +82,10 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
         entries_metric::Maybe{PreMetric} = nothing
         rows_metric::Maybe{PreMetric} = nothing
         columns_metric::Maybe{PreMetric} = nothing
+        entries_dendogram_size::Maybe{Real} = nothing
+        rows_dendogram_size::Maybe{Real} = nothing
+        columns_dendogram_size::Maybe{Real} = nothing
+        dendogram_line::LineConfiguration = LineConfiguration()
         origin::HeatmapOrigin = HeatmapBottomLeft
     end
 
@@ -285,19 +291,20 @@ Valid combinations of the fields controlling order and clustering are:
 | data `order`                | data `arrange_by`                   | config `reorder`                           | config `dendogram_size` | config `linkage`                                  | config `metric`        | result tree                                                                         | result order                         | notes                                                 |
 |:--------------------------- |:----------------------------------- |:------------------------------------------ |:----------------------- |:------------------------------------------------- |:---------------------- |:----------------------------------------------------------------------------------- |:------------------------------------ |:----------------------------------------------------- |
 | `nothing`                   | `nothing`                           | `nothing`                                  | `nothing`               | `nothing`                                         | `nothing`              | Not computed                                                                        | Original data order                  | Do not cluster, use the original data order (default) |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `nothing`                                  | Any                     | `nothing`/ `WardLinkage`/ `WardPreSeuaredLinkage` | `nothing`/ `PreMetric` | `oclust` of original order with `linkage` or `WardLinkage`                          | Original data order                  | Cluster, preserving the original order                |
+| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `nothing`                                  | Any                     | `nothing`/ `WardLinkage`/ `WardPreSquaredLinkage` | `nothing`/ `PreMetric` | `oclust` of original order with `linkage` or `WardLinkage`                          | Original data order                  | Cluster, preserving the original order                |
 | `nothing`                   | `nothing`                           | `SameOrder`                                | `nothing`/ Any          | `nothing`                                         | `nothing`              | Same as other axis                                                                  | Same as other axis                   | Square matrices only                                  |
 | `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `OptimalHclust`/ `RCompatibleHclust`       | `nothing`/ Any          | `nothing`/ Any                                    | `nothing`/ `PreMetric` | `hclust` with `linkage` or `WardLinkage`                                            | `hclust` with `reorder`              | Cluster using `linkage` and branch `reorder`          |
 | `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`/ Any                                    | `nothing`/ `PreMetric` | `hclust` with `linkage` or `WardLinkage`, then `reorder_hclust` by `slanted_orders` | `reorder_hclust` by `slanted_orders` | Cluster, then slant preserving the tree               |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedOrder`/ `SlantedPreSquaredOrder`   | `nothing`/ Any          | `nothing`/ `WardLinkage`/ `WardPreSeuaredLinkage` | `nothing`/ `PreMetric` | `oclust` of `slanted_orders` with `linkage` or `WardLinkage`                        | `slanted_orders`                     | Slant, then cluster preserving the slanted order      |
+| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedOrder`/ `SlantedPreSquaredOrder`   | `nothing`/ Any          | `nothing`/ `WardLinkage`/ `WardPreSquaredLinkage` | `nothing`/ `PreMetric` | `oclust` of `slanted_orders` with `linkage` or `WardLinkage`                        | `slanted_orders`                     | Slant, then cluster preserving the slanted order      |
 | `Hclust`                    | `nothing`                           | `nothing`                                  | `nothing`/ Any          | `nothing`                                         | `nothing`              | `Hclust` tree                                                                       | `Hclust` order                       | Force a specific tree and order on the data           |
 | `Hclust`                    | `nothing`/ `AbstractMatrix{<:Real}` | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`                                         | `nothing`              | `reorder_hclust` by `slanted_orders`                                                | `reorder_hclust` by `slanted_orders` | Slant, preserving a given tree                        |
 | `AbstractVector{<:Integer}` | `nothing`                           | `nothing`                                  | `nothing`               | `nothing`                                         | `nothing`              | Not computed                                                                        | `order` permutation                  | Do not cluster, use the specified order               |
-| `AbstractVector{<:Integer}` | `nothing`                           | `nothing`                                  | Any                     | `nothing`/ `WardLinkage`/ `WardPreSeuaredLinkage` | `nothing`/ `PreMetric` | `oclust` of `order` with `linkage` or `WardLinkage`                                 | `order` permutation                  | Cluster, preserving the specified order               |
+| `AbstractVector{<:Integer}` | `nothing`                           | `nothing`                                  | Any                     | `nothing`/ `WardLinkage`/ `WardPreSquaredLinkage` | `nothing`/ `PreMetric` | `oclust` of `order` with `linkage` or `WardLinkage`                                 | `order` permutation                  | Cluster, preserving the specified order               |
+| `AbstractVector{<:Integer}` | `nothing`                           | `ReorderHclust`                            | `nothing`/ Any          | `nothing`/ Any                                    | `nothing`/ `PreMetric` | `hclust` with `linkage` or `WardLinkage`                                            | `reorder_hclust` by data `order`     | Cluster, then reorder branches to be close to `order` |
 
 All other combinations are invalid. Note:
 
-  - Only `WardLinkage` and `WardPreSeuaredLinkage` are supported by `oclust`.
+  - Only `WardLinkage` and `WardPreSquaredLinkage` are supported by `oclust`.
 
   - When calling `hclust` and/or `oclust` and/or `slanted_orders`, then specifying `arrange_by` will use it instead of
     the displayed data matrix.
@@ -621,7 +628,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                     end
 
                 else
-                    if !(configuration_linkage in (nothing, WardLinkage, WardPreSeuaredLinkage))
+                    if !(configuration_linkage in (nothing, WardLinkage, WardPreSquaredLinkage))
                         throw(
                             ArgumentError(
                                 "order preserving clustering does not support graph.configuration.$(name)_linkage: $(configuration_linkage)",
@@ -671,13 +678,25 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 end
 
             elseif configuration_reorder in (SlantedOrder, SlantedPreSquaredOrder)
-                if !(configuration_linkage in (nothing, WardLinkage, WardPreSeuaredLinkage))
+                if !(configuration_linkage in (nothing, WardLinkage, WardPreSquaredLinkage))
                     throw(
                         ArgumentError(
                             "slanted order preserving clustering does not support graph.configuration.$(name)_linkage: $(configuration_linkage)",
                         ),
                     )
                 end
+            elseif configuration_reorder == ReorderHclust
+                throw(
+                    ArgumentError(
+                        chomp("""
+                              can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
+                              without explicit vector graph.data.$(name)_order
+                              """),
+                    ),
+                )
+            else
+                @assert configuration_reorder in
+                        (RCompatibleHclust, OptimalHclust, SlantedHclust, SlantedPreSquaredHclust)
             end
 
         elseif data_order isa Hclust
@@ -719,11 +738,15 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                                           """)))
             end
 
-            if configuration_reorder !== nothing
-                throw(ArgumentError(chomp("""
-                                          can't specify both heatmap vector graph.data.$(name)_order
-                                          and graph.configuration.$(name)_reorder
-                                          """)))
+            if !(configuration_reorder in (nothing, ReorderHclust))
+                throw(
+                    ArgumentError(
+                        chomp("""
+                              can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
+                              for explicit vector graph.data.$(name)_order
+                              """),
+                    ),
+                )
             end
 
             if configuration_dendogram_size === nothing
@@ -743,7 +766,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 end
 
             else
-                if !(configuration_linkage in (nothing, WardLinkage, WardPreSeuaredLinkage))
+                if !(configuration_linkage in (nothing, WardLinkage, WardPreSquaredLinkage))
                     throw(
                         ArgumentError(
                             "order preserving clustering does not support graph.configuration.$(name)_linkage: $(configuration_linkage)",
@@ -1231,9 +1254,9 @@ function finalize_order(;
             if configuration_dendogram_size === nothing
                 return (nothing, nothing)
             else
-                distances = pairwise(configuration_metric, data_arrange_by; dims = 2)  # UNTESTED dendogram
-                clusters = oclust(distances; method = oclust_method(configuration_linkage))  # UNTESTED dendogram
-                return (clusters.order, clusters)  # UNTESTED dendogram
+                distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+                clusters = oclust(distances; method = oclust_method(configuration_linkage))
+                return (clusters.order, clusters)
             end
 
         elseif configuration_reorder === SameOrder
@@ -1278,12 +1301,23 @@ function finalize_order(;
         end
 
     elseif data_order isa AbstractVector
-        if configuration_dendogram_size === nothing
-            return (data_order, nothing)
+        if configuration_reorder === nothing
+            if configuration_dendogram_size === nothing
+                return (data_order, nothing)
+            else
+                distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+                clusters = oclust(distances; order = data_order, method = oclust_method(configuration_linkage))
+                return (clusters.order, clusters)
+            end
+
+        elseif configuration_reorder === ReorderHclust
+            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+            clusters = hclust(distances)
+            clusters = reorder_hclust(clusters, data_order)
+            return (clusters.order, clusters)
+
         else
-            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)  # UNTESTED
-            clusters = oclust(distances; order = data_order, method = oclust_method(configuration_linkage))  # UNTESTED
-            return (clusters.order, clusters)  # UNTESTED
+            @assert false
         end
 
     else
@@ -1300,7 +1334,7 @@ function hclust_linkage(linkage::HeatmapLinkage)::Symbol
         return :complete  # UNTESTED
     elseif linkage == WardLinkage
         return :ward
-    elseif linkage == WardPreSeuaredLinkage  # UNTESTED
+    elseif linkage == WardPreSquaredLinkage  # UNTESTED
         return :ward_presquared  # UNTESTED
     else
         @assert false
@@ -1310,7 +1344,7 @@ end
 function oclust_method(linkage::HeatmapLinkage)::Symbol
     if linkage == WardLinkage
         return :ward
-    elseif linkage == WardPreSeuaredLinkage  # UNTESTED
+    elseif linkage == WardPreSquaredLinkage  # UNTESTED
         return :ward_presquared  # UNTESTED
     else
         @assert false

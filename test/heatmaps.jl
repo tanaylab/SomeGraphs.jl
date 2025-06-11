@@ -54,6 +54,14 @@ nested_test("heatmaps") do
             end
         end
 
+        nested_test("reorder") do
+            graph.configuration.rows_reorder = ReorderHclust
+            @test_throws chomp("""
+                               can't specify heatmap graph.configuration.rows_reorder: ReorderHclust
+                               without explicit vector graph.data.rows_order
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
         nested_test("categorical") do
             graph.configuration.entries_colors.palette = Dict("Foo" => "red", "Bar" => "green")
             @test_throws "ArgumentError: can't specify heatmap categorical graph.configuration.entries_colors.palette" validate(
@@ -219,8 +227,8 @@ nested_test("heatmaps") do
                 graph.data.columns_order = collect(1:4)
                 graph.configuration.columns_reorder = OptimalHclust
                 @test_throws chomp("""
-                                   can't specify both heatmap vector graph.data.columns_order
-                                   and graph.configuration.columns_reorder
+                                   specify heatmap graph.configuration.columns_reorder: OptimalHclust
+                                   for explicit vector graph.data.columns_order
                                    """) validate(ValidationContext(["graph"]), graph)
             end
         end
@@ -348,7 +356,6 @@ nested_test("heatmaps") do
         nested_test("dendogram") do
             graph.configuration.rows_reorder = OptimalHclust
             graph.configuration.rows_dendogram_size = 0.2
-            graph.configuration.columns_reorder = OptimalHclust
             graph.configuration.columns_dendogram_size = 0.2
 
             nested_test("()") do
@@ -404,6 +411,15 @@ nested_test("heatmaps") do
                 graph.data.columns_order = [1, 3, 2, 4]
                 test_html(graph, "heatmap.reorder.both.html")
                 return nothing
+            end
+
+            nested_test("dendogram") do
+                graph.data.rows_order = [1, 3, 2]
+                graph.data.columns_order = [1, 3, 2, 4]
+                graph.configuration.rows_dendogram_size = 0.2
+                graph.configuration.columns_dendogram_size = 0.2
+                graph.configuration.columns_reorder = ReorderHclust
+                return test_html(graph, "heatmap.reorder.dendogram.html")
             end
 
             nested_test("ward") do
