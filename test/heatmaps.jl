@@ -16,8 +16,8 @@ nested_test("heatmaps") do
 
         nested_test("same") do
             nested_test("entries") do
-                graph.configuration.entries_reorder = SameOrder
-                @test_throws "ArgumentError: can't specify heatmap graph.configuration.entries_reorder: SameOrder" validate(
+                graph.configuration.columns_reorder = SameOrder
+                @test_throws "ArgumentError: can't specify heatmap graph.configuration.columns_reorder: SameOrder" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
@@ -54,6 +54,15 @@ nested_test("heatmaps") do
             end
         end
 
+        nested_test("groups") do
+            graph.data.rows_groups = [1, 2, 2]
+            graph.configuration.rows_groups_gap = nothing
+            @test_throws chomp("no effect for specified graph.data.rows_groups") validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
+
         nested_test("reorder") do
             graph.configuration.rows_reorder = ReorderHclust
             @test_throws chomp("""
@@ -70,27 +79,18 @@ nested_test("heatmaps") do
             )
         end
 
-        nested_test("conflict") do
-            graph.configuration.entries_linkage = CompleteLinkage
-            graph.configuration.rows_linkage = WardLinkage
-            @test_throws chomp("""
-                               can't specify both heatmap graph.configuration.entries_linkage
-                               and graph.configuration.rows_linkage
-                               """) validate(ValidationContext(["graph"]), graph)
-        end
-
         nested_test("filled") do
-            graph.configuration.dendogram_line.is_filled = true
+            graph.configuration.rows_dendogram_line.is_filled = true
             @test_throws chomp("""
-                               can't specify heatmap graph.configuration.dendogram_line.is_filled
+                               can't specify heatmap graph.configuration.rows_dendogram_line.is_filled
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("width") do
-            graph.configuration.dendogram_line.width = 1
+            graph.configuration.rows_dendogram_line.width = 1
             @test_throws chomp("""
-                               can't specify heatmap graph.configuration.dendogram_line.*
-                               without one of graph.configuration.*_dendogram_size
+                               can't specify heatmap graph.configuration.rows_dendogram_line.*
+                               without graph.configuration.rows_dendogram_size
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
@@ -135,24 +135,6 @@ nested_test("heatmaps") do
                                    """) validate(ValidationContext(["graph"]), graph)
             end
 
-            nested_test("dendogram") do
-                graph.configuration.columns_dendogram_size = 0.1
-                @test_throws chomp(
-                    """
-                    order preserving clustering does not support graph.configuration.columns_linkage: CompleteLinkage
-                    """,
-                ) validate(ValidationContext(["graph"]), graph)
-            end
-
-            nested_test("slanted") do
-                graph.configuration.columns_reorder = SlantedOrder
-                @test_throws chomp(
-                    """
-                    slanted order preserving clustering does not support graph.configuration.columns_linkage: CompleteLinkage
-                    """,
-                ) validate(ValidationContext(["graph"]), graph)
-            end
-
             nested_test("hclust") do
                 distances = pairwise(Euclidean(), graph.data.entries_values; dims = 2)
                 graph.data.columns_order = hclust(distances)
@@ -169,16 +151,6 @@ nested_test("heatmaps") do
                                    for explicit vector graph.data.columns_order
                                    without graph.configuration.columns_dendogram_size
                                    """) validate(ValidationContext(["graph"]), graph)
-            end
-
-            nested_test("dendogram") do
-                graph.configuration.columns_dendogram_size = 0.1
-                graph.configuration.columns_linkage = CompleteLinkage
-                graph.data.columns_order = collect(1:4)
-                @test_throws "ArgumentError: order preserving clustering does not support graph.configuration.columns_linkage: CompleteLinkage" validate(
-                    ValidationContext(["graph"]),
-                    graph,
-                )
             end
         end
 
@@ -368,7 +340,6 @@ nested_test("heatmaps") do
                 graph.data.columns_groups = [1, 1, 2, 3]
                 graph.data.rows_names = ["X", "Y", "Z"]
                 graph.data.columns_names = ["A", "B", "C", "D"]
-                graph.configuration.entries_groups_gap = 1
                 test_html(graph, "heatmap.annotations.dendogram.gaps.html")
                 return nothing
             end
@@ -379,7 +350,6 @@ nested_test("heatmaps") do
             graph.data.columns_groups = [1, 1, 2, 3]
             graph.data.rows_names = ["X", "Y", "Z"]
             graph.data.columns_names = ["A", "B", "C", "D"]
-            graph.configuration.entries_groups_gap = 1
             test_html(graph, "heatmap.annotations.gaps.html")
             return nothing
         end
@@ -514,7 +484,6 @@ nested_test("heatmaps") do
                 graph.data.columns_groups = [1, 1, 2, 3]
                 graph.data.rows_names = ["X", "Y", "Z"]
                 graph.data.columns_names = ["A", "B", "C", "D"]
-                graph.configuration.entries_groups_gap = 1
                 test_html(graph, "heatmap.dendogram.gaps.html")
                 return nothing
             end

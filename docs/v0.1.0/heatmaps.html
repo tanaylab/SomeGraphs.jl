@@ -216,18 +216,15 @@
     x_axis_title::Maybe{AbstractString} = nothing,
     y_axis_title::Maybe{AbstractString} = nothing,
     entries_colors_title::Maybe{AbstractString} = nothing,
+    entries_values::Maybe{AbstractMatrix{&lt;:Real}} = Float32[;;],
     rows_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
     columns_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
-    entries_values::Maybe{AbstractMatrix{&lt;:Real}} = Float32[;;],
-    entries_hovers::Maybe{AbstractMatrix{&lt;:AbstractString}} = nothing,
     rows_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
     columns_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-    entries_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
     rows_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
     columns_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing,
-    entries_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     rows_groups::Maybe{AbstractVector} = nothing,
@@ -274,18 +271,15 @@
     x_axis_title::Maybe{AbstractString} = nothing
     y_axis_title::Maybe{AbstractString} = nothing
     entries_colors_title::Maybe{AbstractString} = nothing
+    entries_values::Maybe{AbstractMatrix{&lt;:Real}} = Float32[;;]
     rows_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     columns_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
-    entries_values::Maybe{AbstractMatrix{&lt;:Real}} = Float32[;;]
-    entries_hovers::Maybe{AbstractMatrix{&lt;:AbstractString}} = nothing
     rows_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     columns_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    entries_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
     rows_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
     columns_arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
-    entries_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
     rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
     columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
     rows_groups::Maybe{AbstractVector} = nothing
@@ -305,31 +299,21 @@ end
 </p>
 <p>By default, if reordering the data, this is based on the 
 <code>entries_values
-</code>. You can override this by specifying an 
-<code>entries_arrange_by
-</code> matrix of the same size, or even separate 
+</code>. You can override this by specifying an an 
+<code>..._arrange_by
+</code> matrix of the same size. For efficiency the 
 <code>rows_arrange_by
-</code> and 
-<code>columns_arrange_by
-</code> matrices. For efficiency the 
-<code>rows_arrange_by
-</code> matrix should be in row-major layout.
+</code> matrix should be in row-major layout, but that&#39;s not critical.
 </p>
 <p>Alternatively you can force the order of the data by specifying the 
-<code>entries_order
-</code> permutation (for a square matrix) or separate 
-<code>rows_order
-</code> and 
-<code>columns_order
-</code> permutations. You can also specify an 
+<code>..._order
+</code> permutation. You can also specify an 
 <code>Hclust
-</code> object as the order, which would enable showing a dendogram tree.
+</code> object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
 </p>
 <p>If 
-<code>rows_groups
-</code> and/or 
-<code>columns_groups
-</code> are specified, then they serve to group the entries (rows and/or columns). A gap is added between groups (controlled by the configuration), that is, between two entries with different groups.
+<code>..._groups
+</code> are specified, then a gap can be added between entries of different groups. Groups can also be used to constrain the computed clustering.
 </p>
 <p>Valid combinations of the fields controlling order and clustering are:
 </p>
@@ -341,6 +325,10 @@ end
 </th>
 <th style="text-align: left">data 
 <code>arrange_by
+</code>
+</th>
+<th style="text-align: left">data 
+<code>groups
 </code>
 </th>
 <th style="text-align: left">config 
@@ -374,6 +362,8 @@ end
 <td style="text-align: left">
 <code>nothing
 </code>
+</td>
+<td style="text-align: left">ignored
 </td>
 <td style="text-align: left">
 <code>nothing
@@ -409,6 +399,8 @@ end
 <code>AbstractMatrix{&lt;:Real}
 </code>
 </td>
+<td style="text-align: left">ignored
+</td>
 <td style="text-align: left">
 <code>nothing
 </code>
@@ -417,20 +409,14 @@ end
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>WardLinkage
-</code>/ 
-<code>WardPreSquaredLinkage
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>PreMetric
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
-<code>oclust
+<code>ehclust
 </code> of original order with 
 <code>linkage
 </code> or 
@@ -450,6 +436,8 @@ end
 <td style="text-align: left">
 <code>nothing
 </code>
+</td>
+<td style="text-align: left">ignored
 </td>
 <td style="text-align: left">
 <code>SameOrder
@@ -486,6 +474,10 @@ end
 </code>
 </td>
 <td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
 <code>OptimalHclust
 </code>/ 
 <code>RCompatibleHclust
@@ -501,9 +493,7 @@ end
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>PreMetric
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
 <code>hclust
@@ -537,6 +527,68 @@ end
 <code>AbstractMatrix{&lt;:Real}
 </code>
 </td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>OptimalHclust
+</code>/ 
+<code>RCompatibleHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> with 
+<code>groups
+</code> and 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>groups
+</code> and 
+<code>reorder
+</code>
+</td>
+<td style="text-align: left">Cluster using 
+<code>groups
+</code>, 
+<code>linkage
+</code> and branch 
+<code>reorder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
 <td style="text-align: left">
 <code>SlantedHclust
 </code>/ 
@@ -553,9 +605,7 @@ end
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>PreMetric
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
 <code>hclust
@@ -589,6 +639,64 @@ end
 <code>AbstractMatrix{&lt;:Real}
 </code>
 </td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>SlantedHclust
+</code>/ 
+<code>SlantedPreSquaredHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>groups
+</code> and 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>, then 
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Cluster using 
+<code>groups
+</code>, then slant preserving the tree
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
 <td style="text-align: left">
 <code>SlantedOrder
 </code>/ 
@@ -601,20 +709,14 @@ end
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>WardLinkage
-</code>/ 
-<code>WardPreSquaredLinkage
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>PreMetric
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
-<code>oclust
+<code>ehclust
 </code> of 
 <code>slanted_orders
 </code> with 
@@ -638,6 +740,8 @@ end
 <td style="text-align: left">
 <code>nothing
 </code>
+</td>
+<td style="text-align: left">ignored
 </td>
 <td style="text-align: left">
 <code>nothing
@@ -676,6 +780,8 @@ end
 </code>/ 
 <code>AbstractMatrix{&lt;:Real}
 </code>
+</td>
+<td style="text-align: left">ignored
 </td>
 <td style="text-align: left">
 <code>SlantedHclust
@@ -719,6 +825,8 @@ end
 <code>nothing
 </code>
 </td>
+<td style="text-align: left">ignored
+</td>
 <td style="text-align: left">
 <code>nothing
 </code>
@@ -753,6 +861,8 @@ end
 <code>nothing
 </code>
 </td>
+<td style="text-align: left">ignored
+</td>
 <td style="text-align: left">
 <code>nothing
 </code>
@@ -761,20 +871,14 @@ end
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>WardLinkage
-</code>/ 
-<code>WardPreSquaredLinkage
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>PreMetric
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
-<code>oclust
+<code>ehclust
 </code> of 
 <code>order
 </code> with 
@@ -800,6 +904,10 @@ end
 </code>
 </td>
 <td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
 <code>ReorderHclust
 </code>
 </td>
@@ -813,13 +921,59 @@ end
 </td>
 <td style="text-align: left">
 <code>nothing
-</code>/ 
-<code>PreMetric
-</code>
+</code>/ Any
 </td>
 <td style="text-align: left">
 <code>hclust
 </code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by data 
+<code>order
+</code>
+</td>
+<td style="text-align: left">Cluster, then reorder branches to be close to 
+<code>order
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>ReorderHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> with 
+<code>groups
+</code> and 
 <code>linkage
 </code> or 
 <code>WardLinkage
@@ -841,20 +995,10 @@ end
 </p>
 <ul>
 <li>
-<p>Only 
-<code>WardLinkage
-</code> and 
-<code>WardPreSquaredLinkage
-</code> are supported by 
-<code>oclust
-</code>.
-</p>
-</li>
-<li>
 <p>When calling 
 <code>hclust
 </code> and/or 
-<code>oclust
+<code>ehclust
 </code> and/or 
 <code>slanted_orders
 </code>, then specifying 
@@ -866,12 +1010,18 @@ end
 <p>When calling 
 <code>hclust
 </code> and/or 
-<code>oclust
+<code>ehclust
 </code>, then specifying a 
 <code>metric
 </code> will be used instead of 
 <code>Euclidean
 </code> to compute the distances matrix.
+</p>
+</li>
+<li>
+<p>Specifying 
+<code>groups
+</code> only impacts the tree and order when computing a new clustering without other order constraints. They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.
 </p>
 </li>
 </ul>
@@ -899,22 +1049,18 @@ end
     entries_colors::ColorsConfiguration = ColorsConfiguration()
     rows_annotations::AnnotationSize = AnnotationSize()
     columns_annotations::AnnotationSize = AnnotationSize()
-    entries_reorder::Maybe{HeatmapReorder} = nothing
     rows_reorder::Maybe{HeatmapReorder} = nothing
     columns_reorder::Maybe{HeatmapReorder} = nothing
-    entries_linkage::Maybe{HeatmapLinkage} = nothing
     rows_linkage::Maybe{HeatmapLinkage} = nothing
     columns_linkage::Maybe{HeatmapLinkage} = nothing
-    entries_metric::Maybe{PreMetric} = nothing
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
-    entries_groups_gap::Maybe{Integer} = nothing
-    rows_groups_gap::Maybe{Integer} = nothing
-    columns_groups_gap::Maybe{Integer} = nothing
-    entries_dendogram_size::Maybe{Real} = nothing
-    rows_dendogram_size::Maybe{Real} = nothing
+    rows_groups_gap::Maybe{Integer} = 1
+    columns_groups_gap::Maybe{Integer} = 1
+    rows_dendogram_size::Real = nothing
     columns_dendogram_size::Maybe{Real} = nothing
-    dendogram_line::LineConfiguration = LineConfiguration()
+    rows_dendogram_line::LineConfiguration = LineConfiguration()
+    columns_dendogram_line::LineConfiguration = LineConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
 end
 </code>
@@ -924,54 +1070,30 @@ end
 <p>This displays a matrix of values using a rectangle at each position. Due to Plotly&#39;s limitations, you still to manually tweak the graph size for best results; there&#39;s no way to directly control the width and height of the rectangles. In addition, the only supported color configurations are using continuous color palettes.
 </p>
 <p>You can use 
-<code>columns_reorder
-</code> and/or 
-<code>rows_reorder
-</code> to reorder the data. When specifying 
-<code>columns_linkage
-</code> and/or 
-<code>rows_linkage
+<code>..._reorder
+</code> reorder the data. When specifying 
+<code>..._linkage
 </code>, by default, the clustering uses the 
 <code>Euclidean
 </code> distance metric. You can override this by specifying the 
-<code>columns_metric
-</code> and/or 
-<code>rows_metric
-</code> distance measure.
+<code>..._metric
+</code>.
 </p>
-<p>If groups are specified for the entries (rows and/or columns), then a gap can be added between entries of different groups. The size of the gaps is the number of fake entries to adde between the separated entries. That is, specifying 
-<code>entries_groups_gap
-</code> of 1 will add a gap of one entry between adjacent entries of different groups.
+<p>If groups are specified for some entries (rows and/or columns), they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). groups. The size of the gaps is the number of fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of 
+<code>nothing
+</code> will not be shown.
 </p>
 <p>If you specify 
-<code>columns_dendogram_size
-</code> and/or 
-<code>rows_dendogram_size
+<code>..._dendogram_size
 </code>, then you should either specify linkage (for computing a clustering) or must specify 
 <code>Hclust
 </code> order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
 </p>
-<p>If a dendogram tee is shown, the 
-<code>dendogram_line
+<p>If a dendogram tree is shown, the 
+<code>..._dendogram_line
 </code> can be used to control it. The default color is black. The 
 <code>is_filled
 </code> field shouldn&#39;t be set as it has no meaning here.
-</p>
-<p>Specifying 
-<code>entries_reorder
-</code> is equivalent to specifying both 
-<code>rows_reorder
-</code> and 
-<code>columns_reorder
-</code>, and similarly for 
-<code>entries_linkage
-</code>, 
-<code>entries_dendogram_size
-</code>, and 
-<code>entries_metric
-</code>.
-</p>
-<p>(which you can override in the data as usual).
 </p>
 </div>
 </section>
@@ -1037,7 +1159,7 @@ end
 </code> uses 
 <code>slanted_orders
 </code> (if a tree is needed, uses 
-<code>oclust
+<code>ehclust
 </code> to create a tree preserving this order).
 </li>
 <li>
@@ -1065,17 +1187,11 @@ end
 <div>
 <p>Specify the linkage to use when performing hierarchical clustering (
 <code>hclust
+</code> / 
+<code>ehclust
 </code>). The default is 
 <code>WardLinkage
-</code>. If using 
-<code>oclust
-</code> (from 
-<code>Slanter
-</code>), then only 
-<code>WardLinkage
-</code> and 
-<code>WardPreSquaredLinkage
-</code> are supported.
+</code>.
 </p>
 </div>
 </section>
@@ -1124,12 +1240,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='EyrTo4t5KR' class='' style=';'>
+<div id='wKwlOoJmZx' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("EyrTo4t5KR")
+    const PLOT = document.getElementById("wKwlOoJmZx")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1169,12 +1285,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='hQmowDJAyc' class='' style=';'>
+<div id='HSRKL4hQda' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("hQmowDJAyc")
+    const PLOT = document.getElementById("HSRKL4hQda")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1218,12 +1334,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='7uuyWB31SJ' class='' style=';'>
+<div id='aNGxZeJkQU' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("7uuyWB31SJ")
+    const PLOT = document.getElementById("aNGxZeJkQU")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1269,13 +1385,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='X77pq6BcaX' class='' style=';'>
+<div id='AuDZfkJY91' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("X77pq6BcaX")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("AuDZfkJY91")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[1.0,2.0,null,3.0,4.0],[5.0,4.0,null,3.0,2.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"is_special"},"coloraxis":{"cmin":0.96,"cmax":5.04,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05],"title":"score"},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
