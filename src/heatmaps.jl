@@ -194,6 +194,7 @@ end
         entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;]
         rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing
+        entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
         rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -259,6 +260,7 @@ All other combinations are invalid. Note:
     entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;]
     rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing
+    entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
     rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -286,6 +288,7 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     validate_vector_length(context, "rows_names", data.rows_names, "entries_values.rows", n_rows)
     validate_vector_length(context, "columns_names", data.columns_names, "entries_values.columns", n_columns)
 
+    validate_matrix_size(context, "entries_hovers", data.entries_hovers, "entries_values", size(data.entries_values))
     validate_vector_length(context, "rows_hovers", data.rows_hovers, "entries_values.rows", n_rows)
     validate_vector_length(context, "columns_hovers", data.columns_hovers, "entries_values.columns", n_columns)
 
@@ -333,6 +336,7 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
         entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;],
         rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
         columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing,
         rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
         columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
         rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
@@ -357,6 +361,7 @@ function heatmap_graph(;
     entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;],
     rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing,
     rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
@@ -378,6 +383,7 @@ function heatmap_graph(;
             entries_values,
             rows_names,
             columns_names,
+            entries_hovers,
             rows_hovers,
             columns_hovers,
             rows_annotations,
@@ -666,6 +672,19 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     n_expanded_rows, n_expanded_columns = size(expanded_z)
 
+    hovers = expand_hovers(;
+        n_expanded_rows,
+        n_expanded_columns,
+        expanded_rows_mask,
+        expanded_columns_mask,
+        graph.data.rows_hovers,
+        graph.data.columns_hovers,
+        graph.data.entries_hovers,
+    )
+    if hovers !== nothing
+        hovers = permutedims(hovers)
+    end
+
     push!(
         traces,
         heatmap(;
@@ -675,6 +694,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             z = expanded_z,
             xaxis = plotly_axis("x", columns_axis_index; short = true),
             yaxis = plotly_axis("y", rows_axis_index; short = true),
+            text = hovers,
             coloraxis = plotly_axis("color", 1),
         ),
     )
@@ -1349,6 +1369,70 @@ function expand_z_matrix(
     expanded_z[expanded_rows_mask, expanded_columns_mask] .= reordered_z
 
     return expanded_z
+end
+
+function expand_hovers(;
+    n_expanded_rows::Integer,
+    n_expanded_columns::Integer,
+    expanded_rows_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    expanded_columns_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    rows_hovers::Maybe{AbstractVector{<:AbstractString}},
+    columns_hovers::Maybe{AbstractVector{<:AbstractString}},
+    entries_hovers::Maybe{AbstractMatrix{<:AbstractString}},
+)::Maybe{AbstractMatrix{<:AbstractString}}
+    if columns_hovers === nothing &&
+       rows_hovers === nothing &&
+       (entries_hovers === nothing || (expanded_rows_mask === nothing && expanded_columns_mask === nothing))
+        return entries_hovers
+    end
+
+    expanded_hovers = Matrix{AbstractString}(undef, n_expanded_rows, n_expanded_columns)
+    expanded_hovers .= ""
+
+    if expanded_rows_mask === nothing
+        expanded_rows_indices = 1:n_expanded_rows
+    else
+        expanded_rows_indices = findall(expanded_rows_mask)
+    end
+
+    if expanded_columns_mask === nothing
+        expanded_columns_indices = 1:n_expanded_columns
+    else
+        expanded_columns_indices = findall(expanded_columns_mask)
+    end
+
+    for (column_index, column_position) in enumerate(expanded_columns_indices)
+        if columns_hovers !== nothing
+            column_hover = columns_hovers[column_index]
+        else
+            column_hover = ""
+        end
+
+        for (row_index, row_position) in enumerate(expanded_rows_indices)
+            text = AbstractString[]
+            if entries_hovers !== nothing
+                entry_hover = entries_hovers[row_index, column_index]
+                if entry_hover != ""
+                    push!(text, entry_hover)
+                end
+            end
+
+            if rows_hovers !== nothing
+                row_hover = rows_hovers[row_index]
+                if row_hover !== ""
+                    push!(text, row_hover)
+                end
+            end
+
+            if column_hover !== nothing
+                push!(text, column_hover)
+            end
+
+            expanded_hovers[row_position, column_position] = join(text, "<br>")
+        end
+    end
+
+    return expanded_hovers
 end
 
 end

@@ -516,4 +516,74 @@ nested_test("heatmaps") do
             return nothing
         end
     end
+
+    nested_test("hovers") do
+        graph.data.rows_names = ["X", "Y", "Z"]
+        graph.data.columns_names = ["A", "B", "C", "D"]
+
+        nested_test("entries") do
+            graph.data.entries_hovers = [
+                "XA" "XB" "XC" "XD";
+                "YA" "YB" "YC" "YD";
+                "ZA" "ZB" "ZC" "ZD";
+            ]
+
+            nested_test("()") do
+                test_html(graph, "heatmap.hovers.entries.html")
+                return nothing
+            end
+
+            nested_test("gaps") do
+                graph.data.rows_groups = [1, 2, 2]
+                graph.data.columns_groups = [1, 1, 2, 3]
+                graph.data.rows_names = ["X", "Y", "Z"]
+                graph.data.columns_names = ["A", "B", "C", "D"]
+                test_html(graph, "heatmap.hovers.entries.gaps.html")
+                return nothing
+            end
+        end
+
+        nested_test("axes") do
+            graph.data.rows_hovers = ["R:X", "R:Y", "R:Z"]
+            graph.data.columns_hovers = ["C:A", "C:B", "C:C", "C:D"]
+
+            nested_test("()") do
+                test_html(graph, "heatmap.hovers.axes.html")
+                return nothing
+            end
+
+            nested_test("gaps") do
+                graph.data.rows_groups = [1, 2, 2]
+                graph.data.columns_groups = [1, 1, 2, 3]
+                graph.data.rows_names = ["X", "Y", "Z"]
+                graph.data.columns_names = ["A", "B", "C", "D"]
+                test_html(graph, "heatmap.hovers.axes.gaps.html")
+                return nothing
+            end
+        end
+
+        nested_test("both") do
+            graph.data.entries_hovers = [
+                "XA" "XB" "XC" "XD";
+                "YA" "YB" "YC" "YD";
+                "ZA" "ZB" "ZC" "ZD";
+            ]
+            graph.data.rows_hovers = ["R:X", "R:Y", "R:Z"]
+            graph.data.columns_hovers = ["C:A", "C:B", "C:C", "C:D"]
+
+            nested_test("()") do
+                test_html(graph, "heatmap.hovers.both.html")
+                return nothing
+            end
+
+            nested_test("gaps") do
+                graph.data.rows_groups = [1, 2, 2]
+                graph.data.columns_groups = [1, 1, 2, 3]
+                graph.data.rows_names = ["X", "Y", "Z"]
+                graph.data.columns_names = ["A", "B", "C", "D"]
+                test_html(graph, "heatmap.hovers.both.gaps.html")
+                return nothing
+            end
+        end
+    end
 end
