@@ -619,7 +619,7 @@ function push_bar_trace!(;
     traces::Vector{GenericTrace},
     values::AbstractVector{<:Real},
     value_axis::AxisConfiguration,
-    base_axis_index::Maybe{Integer} = nothing,
+    basis_sub_graph::Maybe{SubGraph} = nothing,
     values_orientation::ValuesOrientation,
     color::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractString}} = nothing,
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
@@ -630,7 +630,8 @@ function push_bar_trace!(;
     implicit_values_range::MaybeRange,
     colors_scale_index::Maybe{Integer} = nothing,
 )::AbstractVector{<:AbstractFloat}
-    xaxis, x0, yaxis, y0 = plotly_sub_graph_axes(sub_graph, values_orientation; base_axis_index)
+    xaxis_index, x0, yaxis_index, y0 =
+        plotly_sub_graph_axes(; basis_sub_graph, values_sub_graph = sub_graph, values_orientation)
 
     scaled_values = scale_axis_values(value_axis, values; clamp = false)
     collect_range!(implicit_values_range, scaled_values)
@@ -658,8 +659,8 @@ function push_bar_trace!(;
             y = ys,
             x0,
             y0,
-            xaxis,
-            yaxis,
+            xaxis = plotly_axis("x", xaxis_index; short = true),
+            yaxis = plotly_axis("y", yaxis_index; short = true),
             name,
             orientation = orientation,
             marker_color = color,
@@ -677,7 +678,7 @@ function push_annotations_traces(;
     traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
-    base_axis_index::Maybe{Integer} = nothing,
+    basis_sub_graph::Maybe{SubGraph} = nothing,
     values_orientation::ValuesOrientation,
     n_graphs::Integer = 1,
     graphs_gap::Maybe{Real} = nothing,
@@ -693,7 +694,7 @@ function push_annotations_traces(;
             traces,
             names,
             value_axis,
-            base_axis_index,
+            basis_sub_graph,
             values_orientation,
             n_graphs,
             graphs_gap,
@@ -713,7 +714,7 @@ function push_annotation_traces!(;
     traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
-    base_axis_index::Maybe{Integer},
+    basis_sub_graph::Maybe{SubGraph},
     values_orientation::ValuesOrientation,
     n_graphs::Integer,
     graphs_gap::Maybe{Real},
@@ -761,7 +762,7 @@ function push_annotation_traces!(;
         sub_graph,
         values = expanded_mask !== nothing ? expanded_mask : fill(1.0, length(annotation_data.values)),
         value_axis,
-        base_axis_index,
+        basis_sub_graph,
         values_orientation,
         color = expand_vector(colors.final_colors_values, order, expanded_mask, gap_color),
         hovers = expand_vector(annotation_data.hovers, order, expanded_mask, ""),
@@ -911,7 +912,7 @@ function bars_layout(;
 
     if graph isa BarsGraph || graph.configuration.series_gap === nothing
         @assert specific_scaled_ranges === nothing
-        axis_index = 1 + (n_annotations > 0)
+        axis_index = 1 + n_annotations
         set_layout_axis!(
             layout,
             plotly_axis(value_axis_letter, axis_index),
@@ -926,10 +927,7 @@ function bars_layout(;
         @assert graph isa SeriesBarsGraph
         @assert specific_scaled_ranges !== nothing
         for series_index in 1:n_series
-            axis_index = series_index
-            if n_annotations > 0
-                axis_index = axis_index % (n_annotations + n_graphs) + 1
-            end
+            axis_index = series_index + n_annotations
             set_layout_axis!(  # NOJET
                 layout,
                 plotly_axis(value_axis_letter, axis_index),
@@ -968,10 +966,9 @@ function bars_layout(;
 
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
         annotation_data = graph.data.bars_annotations[annotation_index]
-        axis_index = (n_graphs + n_annotations + 1 - annotation_index) % (n_graphs + n_annotations) + 1
         set_layout_axis!(  # NOJET
             layout,
-            plotly_axis(value_axis_letter, axis_index),
+            plotly_axis(value_axis_letter, annotation_index),
             graph.configuration.value_axis;
             title = annotation_data.title,
             range = Range(; minimum = 0, maximum = 1),

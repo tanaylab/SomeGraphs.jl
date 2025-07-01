@@ -780,7 +780,8 @@ end
 Builtin color scales from [Plotly](https://plotly.com/python/builtin-colorscales/), both linear: `Blackbody`,
 `Bluered`, `Blues`, `Cividis`, `Earth`, `Electric`, `Greens`, `Greys`, `Hot`, `Jet`, `Picnic`, `Portland`, `Rainbow`,
 `RdBu`, `Reds`, `Viridis`, `YlGnBu`, `YlOrRd` and cyclical: `Twilight`, `IceFire`, `Edge`, `Phase`, `HSV`, `mrybm`,
-`mygbm`.
+`mygbm`. In addition, `BuWtRd` which is useful for showing +/- diff values and `WtOrRdGr` is useful for showing absolute
+values.
 
 !!! note
 
@@ -1048,6 +1049,8 @@ NAMED_COLOR_SCALES = Dict{String, ContinuousColors}([
         "rgb(230,145,90)",
         "rgb(178,10,28)",
     ]),
+    "BuWtRd" => continuous_colors_scale(["rgb(178,10,28)", "rgb(255,255,255)", "rgb(5,10,172)"]),
+    "WtOrRdGr" => continuous_colors_scale(["white", "orange", "darkred", "dimgray"]),
     "Reds" =>
         continuous_colors_scale(["rgb(220,220,220)", "rgb(245,195,157)", "rgb(245,160,105)", "rgb(178,10,28)"]),
     "Viridis" => continuous_colors_scale([

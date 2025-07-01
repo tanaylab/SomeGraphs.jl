@@ -879,7 +879,7 @@ end
 </pre>
 <p>Identify one sub-graph out of a set of 
 <code>n_graphs
-</code> adjacent graphs. If the 
+</code> adjacent graphs along some axis. If the 
 <code>index
 </code> is 1, this is the 1st sub-graph (used top initialize some values such as the legend group title). If 
 <code>gap
@@ -889,13 +889,15 @@ end
 </p>
 <p>This also supports 
 <code>n_annotations
-</code> with 
+</code> (of the other axis) with 
 <code>annotation_size
-</code>. If the index is negative, it is the (negated) index of an annotation.
+</code> (along this axis). If the index is negative, it is the (negated) index of an annotation (of the other axis).
 </p>
 <p>If the 
 <code>index
-</code> is 0, this is the dendogram graph.
+</code> is 0, this is the dendogram graph (of the other axis) with 
+<code>dendogram_size
+</code> (along this axis).
 </p>
 </div>
 </section>
@@ -916,15 +918,19 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">plotly_axes(sub_graph::SubGraph)::Tuple{
-    Maybe{AbstractString},
+<code class="language-julia hljs">plotly_sub_graph_axes(;
+    basis_sub_graph::Maybe{SubGraph} = nothing,
+    values_sub_graph::Maybe{SubGraph} = nothing,
+    values_orientation::ValuesOrientation,
+)::Tuple{
+    Maybe{Integer},
     Maybe{AbstractFloat},
-    Maybe{AbstractString},
+    Maybe{Integer},
     Maybe{AbstractFloat},
 }
 </code>
 </pre>
-<p>Return the X and Y axes and zero value for a sub-graph.
+<p>Return the X axis index and zero value, and the Y axis index and zero value, for a sub-graph.
 </p>
 </div>
 </section>
@@ -948,7 +954,9 @@ end
 <code class="language-julia hljs">plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{&lt;:AbstractFloat}}
 </code>
 </pre>
-<p>Return the Plotly &quot;domain&quot; for a sub-graph (or an annotation).
+<p>Return the plotly domain (region of the overall figure) for a specific 
+<code>sub_graph
+</code>.
 </p>
 </div>
 </section>

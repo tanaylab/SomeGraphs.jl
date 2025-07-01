@@ -556,7 +556,10 @@ function distribution_trace(;
     scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false, copy = true)
     collect_range!(implicit_values_range, scaled_values)
 
-    xaxis, x0, yaxis, y0 = plotly_sub_graph_axes(sub_graph, configuration.distribution.values_orientation; flip = true)
+    xaxis_index, x0, yaxis_index, y0 = plotly_sub_graph_axes(;
+        basis_sub_graph = sub_graph,
+        values_orientation = configuration.distribution.values_orientation,
+    )
 
     if configuration.distribution.style == CumulativeDistribution
         n_values = length(scaled_values)
@@ -605,8 +608,8 @@ function distribution_trace(;
         return scatter(;
             x = xs,
             y = ys,
-            xaxis,
-            yaxis,
+            xaxis = plotly_axis("x", xaxis_index; short = true),
+            yaxis = plotly_axis("y", yaxis_index; short = true),
             x0,
             y0,
             mode = "lines",
@@ -648,8 +651,8 @@ function distribution_trace(;
         return tracer(;
             x = xs,
             y = ys,
-            xaxis,
-            yaxis,
+            xaxis = plotly_axis("x", xaxis_index; short = true),
+            yaxis = plotly_axis("y", yaxis_index; short = true),
             x0,
             y0,
             side = if configuration.distribution.style in (CurveDistribution, CurveBoxDistribution)

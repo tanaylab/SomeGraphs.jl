@@ -661,8 +661,29 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     n_rows_annotations = length(graph.data.rows_annotations)
     n_columns_annotations = length(graph.data.columns_annotations)
 
-    rows_axis_index = 1 + (n_rows_annotations > 0)
-    columns_axis_index = 1 + (n_columns_annotations > 0)
+    columns_sub_graph = SubGraph(;
+        index = 1,
+        n_graphs = 1,
+        graphs_gap = nothing,
+        n_annotations = n_rows_annotations,
+        annotation_size = graph.configuration.rows_annotations,
+        dendogram_size = graph.configuration.rows_dendogram_size,
+    )
+
+    rows_sub_graph = SubGraph(;
+        index = 1,
+        n_graphs = 1,
+        graphs_gap = nothing,
+        n_annotations = n_columns_annotations,
+        annotation_size = graph.configuration.columns_annotations,
+        dendogram_size = graph.configuration.columns_dendogram_size,
+    )
+
+    xaxis_index, _, yaxis_index, _ = plotly_sub_graph_axes(;
+        basis_sub_graph = columns_sub_graph,
+        values_sub_graph = rows_sub_graph,
+        values_orientation = VerticalValues,
+    )
 
     expanded_rows_mask = compute_expansion_mask(rows_order, graph.data.rows_groups, graph.configuration.rows_groups_gap)
     expanded_columns_mask =
@@ -692,8 +713,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             x = collect(1:n_expanded_columns),
             y = collect(1:n_expanded_rows),
             z = expanded_z,
-            xaxis = plotly_axis("x", columns_axis_index; short = true),
-            yaxis = plotly_axis("y", rows_axis_index; short = true),
+            xaxis = plotly_axis("x", xaxis_index; short = true),
+            yaxis = plotly_axis("y", yaxis_index; short = true),
             text = hovers,
             coloraxis = plotly_axis("color", 1),
         ),
@@ -704,8 +725,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     columns_annotations_colors = push_annotations_traces(;
         traces,
         names = nothing,
+        basis_sub_graph = columns_sub_graph,
         value_axis = graph.configuration.entries_colors.axis,
-        base_axis_index = rows_axis_index,
         values_orientation = VerticalValues,
         next_colors_scale_index,
         has_legend_only_traces,
@@ -718,8 +739,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     rows_annotations_colors = push_annotations_traces(;
         traces,
         names = nothing,
+        basis_sub_graph = rows_sub_graph,
         value_axis = graph.configuration.entries_colors.axis,
-        base_axis_index = columns_axis_index,
         values_orientation = HorizontalValues,
         next_colors_scale_index,
         has_legend_only_traces,
@@ -733,17 +754,17 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         rows_max_height = push_dendogram_trace!(;
             traces,
             clusters = rows_hclust,
-            base_axis_index = rows_axis_index,
-            heights_orientation = HorizontalValues,
+            values_orientation = HorizontalValues,
             dendogram_line = graph.configuration.rows_dendogram_line,
             expanded_mask = expanded_rows_mask,
-            sub_graph = SubGraph(;
+            basis_sub_graph = rows_sub_graph,
+            values_sub_graph = SubGraph(;
                 index = 0,
                 n_graphs = 1,
                 graphs_gap = nothing,
                 n_annotations = n_rows_annotations,
                 annotation_size = graph.configuration.rows_annotations,
-                dendogram_size = graph.configuration.columns_dendogram_size,
+                dendogram_size = graph.configuration.rows_dendogram_size,
             ),
         )
     else
@@ -754,17 +775,17 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         columns_max_height = push_dendogram_trace!(;
             traces,
             clusters = columns_hclust,
-            base_axis_index = columns_axis_index,
-            heights_orientation = VerticalValues,
+            values_orientation = VerticalValues,
             dendogram_line = graph.configuration.columns_dendogram_line,
             expanded_mask = expanded_columns_mask,
-            sub_graph = SubGraph(;
+            basis_sub_graph = columns_sub_graph,
+            values_sub_graph = SubGraph(;
                 index = 0,
                 n_graphs = 1,
                 graphs_gap = nothing,
                 n_annotations = n_columns_annotations,
                 annotation_size = graph.configuration.columns_annotations,
-                dendogram_size = graph.configuration.rows_dendogram_size,
+                dendogram_size = graph.configuration.columns_dendogram_size,
             ),
         )
     else
@@ -785,18 +806,19 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     expanded_rows_names = expand_vector(graph.data.rows_names, rows_order, expanded_rows_mask, "")
     set_layout_axis!(
         layout,
-        plotly_axis("y", rows_axis_index),
+        plotly_axis("y", yaxis_index),
         AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows_names !== nothing);
         title = prefer_data(graph.data.y_axis_title, graph.configuration.y_axis_title),
         ticks_values = expanded_rows_names === nothing ? nothing : collect(1:n_expanded_rows),
         ticks_labels = expanded_rows_names,
+        range = Range(; minimum = 0.5, maximum = n_expanded_rows + 0.5),
         domain = plotly_sub_graph_domain(
             SubGraph(;
                 index = 1,
                 n_graphs = 1,
                 graphs_gap = nothing,
-                n_annotations = n_rows_annotations,
-                annotation_size = graph.configuration.rows_annotations,
+                n_annotations = n_columns_annotations,
+                annotation_size = graph.configuration.columns_annotations,
                 dendogram_size = graph.configuration.columns_dendogram_size,
             ),
         ),
@@ -806,18 +828,19 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     expanded_columns_names = expand_vector(graph.data.columns_names, columns_order, expanded_columns_mask, "")
     set_layout_axis!(
         layout,
-        plotly_axis("x", columns_axis_index),
+        plotly_axis("x", xaxis_index),
         AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns_names !== nothing);
         title = prefer_data(graph.data.x_axis_title, graph.configuration.x_axis_title),
         ticks_values = expanded_columns_names === nothing ? nothing : collect(1:n_expanded_columns),
         ticks_labels = expanded_columns_names,
+        range = Range(; minimum = 0.5, maximum = n_expanded_columns + 0.5),
         domain = plotly_sub_graph_domain(
             SubGraph(;
                 index = 1,
                 n_graphs = 1,
                 graphs_gap = nothing,
-                n_annotations = n_columns_annotations,
-                annotation_size = graph.configuration.columns_annotations,
+                n_annotations = n_rows_annotations,
+                annotation_size = graph.configuration.rows_annotations,
                 dendogram_size = graph.configuration.rows_dendogram_size,
             ),
         ),
@@ -843,17 +866,17 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     for (axis_letter, annotations_data, annotations_colors, annotation_size, dendogram_size, max_height) in (
         (
             "y",
-            graph.data.rows_annotations,
-            rows_annotations_colors,
-            graph.configuration.rows_annotations,
+            graph.data.columns_annotations,
+            columns_annotations_colors,
+            graph.configuration.columns_annotations,
             graph.configuration.columns_dendogram_size,
             columns_max_height,
         ),
         (
             "x",
-            graph.data.columns_annotations,
-            columns_annotations_colors,
-            graph.configuration.columns_annotations,
+            graph.data.rows_annotations,
+            rows_annotations_colors,
+            graph.configuration.rows_annotations,
             graph.configuration.rows_dendogram_size,
             rows_max_height,
         ),
@@ -863,10 +886,9 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             n_annotations = length(annotations_colors)
             for (annotation_index, annotation_colors) in enumerate(annotations_colors)
                 annotation_data = annotations_data[annotation_index]
-                axis_index = (1 + n_annotations + 1 - annotation_index) % (1 + n_annotations) + 1
                 set_layout_axis!(  # NOJET
                     layout,
-                    plotly_axis(axis_letter, axis_index),
+                    plotly_axis(axis_letter, annotation_index),
                     AxisConfiguration(; show_grid = false, show_ticks = false);
                     title = annotation_data.title,
                     range = Range(; minimum = 0, maximum = 1),
@@ -902,7 +924,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         if dendogram_size !== nothing
             set_layout_axis!(  # NOJET
                 layout,
-                plotly_axis(axis_letter, 1 + n_annotations + 1),
+                plotly_axis(axis_letter, n_annotations + 1 + 1),
                 AxisConfiguration(; show_grid = false, show_ticks = false);
                 title = nothing,
                 range = Range(0, max_height),
@@ -963,7 +985,7 @@ function reorder_data(
        slant_rows_is_pre_squared == slant_columns_is_pre_squared &&
        data_rows_arrange_by === data_columns_arrange_by
         slant_rows_order, slant_columns_order =
-            slanted_orders(data_rows_arrange_by; squared_order = slant_rows_is_pre_squared)
+            slanted_orders(data_rows_arrange_by; squared_order = !slant_rows_is_pre_squared)
     else
         slant_rows_order = nothing
         slant_columns_order = nothing
@@ -971,10 +993,10 @@ function reorder_data(
         if slant_rows
             if graph.configuration.columns_reorder == SameOrder
                 slant_rows_order, slant_columns_order =
-                    slanted_orders(data_rows_arrange_by; same_order = true, squared_order = slant_rows_is_pre_squared)
+                    slanted_orders(data_rows_arrange_by; same_order = true, squared_order = !slant_rows_is_pre_squared)
             else
                 slant_rows_order, _ =
-                    slanted_orders(data_rows_arrange_by; order_cols = false, squared_order = slant_rows_is_pre_squared)
+                    slanted_orders(data_rows_arrange_by; order_cols = false, squared_order = !slant_rows_is_pre_squared)
             end
         end
 
@@ -1192,25 +1214,25 @@ end
 function push_dendogram_trace!(;
     traces::Vector{GenericTrace},
     clusters::Hclust,
-    base_axis_index::Integer,
-    heights_orientation::ValuesOrientation,
+    values_orientation::ValuesOrientation,
     dendogram_line::LineConfiguration,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
-    sub_graph::SubGraph,
+    basis_sub_graph::SubGraph,
+    values_sub_graph::SubGraph,
 )::Real
     values, heights = dendogram_coordinates(clusters, expanded_mask)
 
-    if heights_orientation == HorizontalValues
-        xs = heights
-        ys = values
-    elseif heights_orientation == VerticalValues
+    if values_orientation == VerticalValues
         xs = values
         ys = heights
+    elseif values_orientation == HorizontalValues
+        ys = values
+        xs = heights
     else
         @assert false
     end
 
-    xaxis, _, yaxis, _ = plotly_sub_graph_axes(sub_graph, heights_orientation; base_axis_index)
+    xaxis_index, _, yaxis_index, _ = plotly_sub_graph_axes(; basis_sub_graph, values_sub_graph, values_orientation)
 
     push!(
         traces,
@@ -1219,8 +1241,8 @@ function push_dendogram_trace!(;
             y = ys,
             x0 = nothing,
             y0 = nothing,
-            xaxis,
-            yaxis,
+            xaxis = plotly_axis("x", xaxis_index; short = true),
+            yaxis = plotly_axis("y", yaxis_index; short = true),
             mode = "lines",
             name = "",
             line_width = dendogram_line.width,
@@ -1409,7 +1431,7 @@ function expand_hovers(;
         end
 
         for (row_index, row_position) in enumerate(expanded_rows_indices)
-            text = AbstractString[]
+            text = String[]
             if entries_hovers !== nothing
                 entry_hover = entries_hovers[row_index, column_index]
                 if entry_hover != ""

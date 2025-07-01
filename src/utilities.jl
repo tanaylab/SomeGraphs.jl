@@ -320,7 +320,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                        # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -456,7 +456,7 @@ function plotly_axis(prefix::AbstractString, index::Integer; short::Bool = false
     end
 end
 
-function plotly_axis(::AbstractString, ::Nothing)::Nothing
+function plotly_axis(::AbstractString, ::Nothing; short::Bool = false)::Nothing  # NOLINT
     return nothing
 end
 
@@ -1437,15 +1437,15 @@ end
         dendogram_size::Maybe{Real} = nothing
     end
 
-Identify one sub-graph out of a set of `n_graphs` adjacent graphs. If the `index` is 1, this is the 1st sub-graph (used
-top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs are plotted on top
-of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout
-parameters.
+Identify one sub-graph out of a set of `n_graphs` adjacent graphs along some axis. If the `index` is 1, this is the 1st
+sub-graph (used top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs
+are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap,
+which affects layout parameters.
 
-This also supports `n_annotations` with `annotation_size`. If the index is negative, it is the (negated) index of an
-annotation.
+This also supports `n_annotations` (of the other axis) with `annotation_size` (along this axis). If the index is
+negative, it is the (negated) index of an annotation (of the other axis).
 
-If the `index` is 0, this is the dendogram graph.
+If the `index` is 0, this is the dendogram graph (of the other axis) with `dendogram_size` (along this axis).
 """
 @kwdef struct SubGraph
     index::Integer
@@ -1459,16 +1459,16 @@ end
 """
     plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
 
-Return the Plotly "domain" for a sub-graph (or an annotation).
+Return the plotly domain (region of the overall figure) for a specific `sub_graph`.
 """
 function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
-    index = sub_graph.index
+    axis_index = sub_graph.index
 
     n_graphs = sub_graph.n_graphs
     if sub_graph.graphs_gap === nothing
         n_graphs = 1
-        if index > 0
-            index = 1
+        if axis_index > 0
+            axis_index = 1
         end
     end
 
@@ -1476,8 +1476,8 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
         return nothing
     end
 
-    if index > 0
-        @assert 1 <= index <= n_graphs
+    if axis_index > 0
+        @assert 1 <= axis_index <= n_graphs
 
         if sub_graph.n_annotations == 0
             start_graph_offset = 0
@@ -1492,15 +1492,16 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
             graphs_total_size -= sub_graph.dendogram_size
         end
         graph_size = graphs_total_size / n_graphs
-        start_graph_offset += (index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
+        start_graph_offset += (axis_index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
         end_graph_offset = start_graph_offset + graph_size
 
-    elseif index < 0
-        @assert sub_graph.n_annotations != 0
-        @assert 1 <= -index <= sub_graph.n_annotations
+    elseif axis_index < 0
+        axis_index = -axis_index
+        @assert 1 <= axis_index <= sub_graph.n_annotations
         @assert sub_graph.annotation_size !== nothing
-        start_graph_offset = (-index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
+        start_graph_offset = (axis_index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
         end_graph_offset = start_graph_offset + sub_graph.annotation_size.size
+
     else
         @assert sub_graph.dendogram_size !== nothing
         start_graph_offset = 1 - sub_graph.dendogram_size
@@ -1573,71 +1574,64 @@ function validate_axis_sizes(;
 end
 
 """
-    plotly_axes(sub_graph::SubGraph)::Tuple{
-        Maybe{AbstractString},
+    plotly_sub_graph_axes(;
+        basis_sub_graph::Maybe{SubGraph} = nothing,
+        values_sub_graph::Maybe{SubGraph} = nothing,
+        values_orientation::ValuesOrientation,
+    )::Tuple{
+        Maybe{Integer},
         Maybe{AbstractFloat},
-        Maybe{AbstractString},
+        Maybe{Integer},
         Maybe{AbstractFloat},
     }
 
-Return the X and Y axes and zero value for a sub-graph.
+Return the X axis index and zero value, and the Y axis index and zero value, for a sub-graph.
 """
-function plotly_sub_graph_axes(
-    sub_graph::Maybe{SubGraph},
-    values_orientation::ValuesOrientation;
-    flip::Bool = false,
-    base_axis_index::Maybe{Integer} = nothing,
-)::Tuple{Maybe{AbstractString}, Maybe{AbstractFloat}, Maybe{AbstractString}, Maybe{AbstractFloat}}
-    xaxis = nothing
-    x0 = nothing
-    yaxis = nothing
-    y0 = nothing
+function plotly_sub_graph_axes(;
+    basis_sub_graph::Maybe{SubGraph} = nothing,
+    values_sub_graph::Maybe{SubGraph} = nothing,
+    values_orientation::ValuesOrientation,
+)::Tuple{Maybe{Integer}, Maybe{AbstractFloat}, Maybe{Integer}, Maybe{AbstractFloat}}
+    basis_axis_index, basis_zero_value = plotly_sub_graph_axis(basis_sub_graph)
+    values_axis_index, values_zero_value = plotly_sub_graph_axis(values_sub_graph)
 
-    if sub_graph !== nothing
-        index = sub_graph.index
-        n_graphs = sub_graph.n_graphs
+    if values_orientation == VerticalValues
+        return (basis_axis_index, basis_zero_value, values_axis_index, values_zero_value)
+    elseif values_orientation == HorizontalValues
+        return (values_axis_index, values_zero_value, basis_axis_index, basis_zero_value)
+    else
+        @assert false
+    end
+end
 
-        if sub_graph.graphs_gap === nothing
-            n_graphs = 1
-            if index > 0
-                index = 1
-            end
-        end
+function plotly_sub_graph_axis(::Nothing)::Tuple{Nothing, Nothing}
+    return (nothing, nothing)
+end
 
-        if index < 0
-            index = n_graphs + sub_graph.n_annotations + 1 + index
-        elseif index == 0
-            index = n_graphs + sub_graph.n_annotations + 1
-        end
+function plotly_sub_graph_axis(sub_graph::SubGraph)::Tuple{Maybe{Integer}, Maybe{AbstractFloat}}
+    axis_index = sub_graph.index
+    n_graphs = sub_graph.n_graphs
 
-        if sub_graph.index != 0 && sub_graph.n_annotations > 0
-            index = index % (sub_graph.n_annotations + n_graphs) + 1
-        end
-
-        if (values_orientation == HorizontalValues) != flip
-            xaxis = plotly_axis("x", index; short = true)
-            x0 = sub_graph.index > 0 && n_graphs > 1 ? 0 : nothing
-
-        elseif (values_orientation == VerticalValues) != flip
-            yaxis = plotly_axis("y", index; short = true)
-            y0 = sub_graph.index > 0 && n_graphs > 1 ? 0 : nothing
-
-        else
-            @assert false
+    if sub_graph.graphs_gap === nothing
+        n_graphs = 1
+        if axis_index > 0
+            axis_index = 1
         end
     end
 
-    if base_axis_index !== nothing
-        if (values_orientation == HorizontalValues) != flip
-            yaxis = plotly_axis("y", base_axis_index; short = true)
-        elseif (values_orientation == VerticalValues) != flip
-            xaxis = plotly_axis("x", base_axis_index; short = true)
-        else
-            @assert false
-        end
+    if axis_index < 0
+        axis_index = -axis_index
+        @assert axis_index <= sub_graph.n_annotations
+    elseif axis_index == 0
+        axis_index = sub_graph.n_annotations + sub_graph.n_graphs + 1
+    else
+        @assert axis_index <= sub_graph.n_graphs
+        axis_index = sub_graph.n_annotations + axis_index
     end
 
-    return (xaxis, x0, yaxis, y0)
+    zero_value = sub_graph.index > 0 && n_graphs > 1 ? 0 : nothing
+
+    return (axis_index, zero_value)
 end
 
 """
