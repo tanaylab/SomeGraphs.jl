@@ -320,7 +320,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                          # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                               # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -730,16 +730,25 @@ end
 
 Compute the final range for some axis given the `implicit_scaled_range` computed from the values and the `axis_configuration`.
 """
-function final_scaled_range(implicit_scaled_range::MaybeRange, axis_configuration::AxisConfiguration)::Range
+function final_scaled_range(
+    implicit_scaled_range::MaybeRange,
+    axis_configuration::AxisConfiguration;
+    expand::Bool = true,
+)::Range
     @assert implicit_scaled_range.minimum !== nothing
     @assert implicit_scaled_range.maximum !== nothing
     return final_scaled_range(  # NOJET
         Range(; minimum = implicit_scaled_range.minimum, maximum = implicit_scaled_range.maximum),
-        axis_configuration,
+        axis_configuration;
+        expand,
     )
 end
 
-function final_scaled_range(implicit_scaled_range::Range, axis_configuration::AxisConfiguration)::Range
+function final_scaled_range(
+    implicit_scaled_range::Range,
+    axis_configuration::AxisConfiguration;
+    expand::Bool = true,
+)::Range
     explicit_scaled_minimum, explicit_scaled_maximum =
         scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum]; clamp = false)
     explicit_scaled_range = MaybeRange(; minimum = explicit_scaled_minimum, maximum = explicit_scaled_maximum)
@@ -749,9 +758,11 @@ function final_scaled_range(implicit_scaled_range::Range, axis_configuration::Ax
         maximum = prefer_data(explicit_scaled_range.maximum, implicit_scaled_range.maximum),
     )
 
-    margins = (range.maximum - range.minimum) / 100
-    range.minimum -= margins
-    range.maximum += margins
+    if expand
+        margins = (range.maximum - range.minimum) / 100
+        range.minimum -= margins
+        range.maximum += margins
+    end
 
     return range
 end
@@ -1736,7 +1747,8 @@ function configured_colors(;
             scaled_colors_palette_values = scale_axis_values(colors_configuration.axis, color_palette_values)
             implicit_scaled_colors_range =
                 Range(; minimum = scaled_colors_palette_values[1], maximum = scaled_colors_palette_values[end])
-            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
+            final_colors_range =
+                final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis; expand = false)
 
             scale = implicit_scaled_colors_range.maximum - implicit_scaled_colors_range.minimum
             @assert scale > 0
@@ -1750,7 +1762,8 @@ function configured_colors(;
         else
             implicit_scaled_colors_range =
                 Range(; minimum = minimum(final_colors_values), maximum = maximum(final_colors_values))
-            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
+            final_colors_range =
+                final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis; expand = false)
         end
     end
 

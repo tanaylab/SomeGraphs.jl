@@ -987,10 +987,14 @@ function reorder_data(
     @assert data_rows_arrange_by !== nothing
     @assert data_columns_arrange_by !== nothing
 
-    slant_rows = graph.configuration.rows_reorder in
-    (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
-    slant_columns = graph.configuration.columns_reorder in
-    (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
+    slant_rows = (
+        graph.configuration.rows_reorder in
+        (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
+    )
+    slant_columns = (
+        graph.configuration.columns_reorder in
+        (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
+    )
 
     slant_rows_is_pre_squared = graph.configuration.rows_reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
     slant_columns_is_pre_squared =
@@ -1372,21 +1376,11 @@ function expand_z_matrix(
         return z
     end
 
-    n_rows, n_columns = size(z)
-
-    if rows_order === nothing
-        rows_order = 1:n_rows
-    end
-
-    if columns_order === nothing
-        columns_order = 1:n_columns
-    end
-
-    @views reordered_z = z[rows_order, columns_order]
-
     if expanded_rows_mask === nothing && expanded_columns_mask === nothing
-        return reordered_z
+        return z
     end
+
+    n_rows, n_columns = size(z)
 
     if expanded_rows_mask === nothing
         n_expanded_rows = n_rows  # UNTESTED
@@ -1404,7 +1398,7 @@ function expand_z_matrix(
 
     expanded_z = Matrix{eltype(z)}(undef, n_expanded_rows, n_expanded_columns)
     expanded_z .= NaN
-    expanded_z[expanded_rows_mask, expanded_columns_mask] .= reordered_z
+    expanded_z[expanded_rows_mask, expanded_columns_mask] .= z
 
     return expanded_z
 end
