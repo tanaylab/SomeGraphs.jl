@@ -243,7 +243,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     )
 
     has_legend_only_traces = [false]
-    annotations_colors = push_annotations_traces(;
+    annotations_colors = push_annotations_traces!(;
         traces,
         names = graph.data.bars_names,
         value_axis = graph.configuration.value_axis,
@@ -589,7 +589,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     next_colors_scale_index = [1]
     has_legend_only_traces = [false]
-    annotations_colors = push_annotations_traces(;
+    annotations_colors = push_annotations_traces!(;
         traces,
         names = graph.data.bars_names,
         value_axis = graph.configuration.value_axis,
@@ -674,7 +674,7 @@ function push_bar_trace!(;
     return scaled_values
 end
 
-function push_annotations_traces(;
+function push_annotations_traces!(;
     traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
@@ -964,17 +964,22 @@ function bars_layout(;
         )
     end
 
+    layout["annotations"] = plotly_annotations = []
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
         annotation_data = graph.data.bars_annotations[annotation_index]
+        sub_graph = SubGraph(; index = -annotation_index, n_graphs, graphs_gap, n_annotations, annotation_size)
+        push_plotly_annotation!(;
+            plotly_annotations,
+            values_sub_graph = sub_graph,
+            values_orientation = graph.configuration.values_orientation,
+            title = annotation_data.title,
+        )
         set_layout_axis!(  # NOJET
             layout,
             plotly_axis(value_axis_letter, annotation_index),
             graph.configuration.value_axis;
-            title = annotation_data.title,
             range = Range(; minimum = 0, maximum = 1),
-            domain = plotly_sub_graph_domain(
-                SubGraph(; index = -annotation_index, n_graphs, graphs_gap, n_annotations, annotation_size),
-            ),
+            domain = plotly_sub_graph_domain(sub_graph),
             is_tick_axis = false,
             is_zeroable = false,
         )
@@ -999,6 +1004,46 @@ function bars_layout(;
     end
 
     return layout
+end
+
+function push_plotly_annotation!(;
+    plotly_annotations::AbstractVector,
+    basis_sub_graph::Maybe{SubGraph} = nothing,
+    values_sub_graph::Maybe{SubGraph} = nothing,
+    values_orientation::ValuesOrientation,
+    title::Maybe{AbstractString},
+)::Nothing
+    if title !== nothing
+        xaxis_index, _, yaxis_index, _ = plotly_sub_graph_axes(; values_sub_graph, basis_sub_graph, values_orientation)
+        if values_orientation == VerticalValues
+            x = 0
+            y = 0.5
+            xanchor = "right"
+            yanchor = "middle"
+            textangle = nothing
+        else
+            x = 0.5
+            y = 0
+            xanchor = "center"
+            yanchor = "top"
+            textangle = -90
+        end
+        push!(
+            plotly_annotations,
+            Dict(
+                :text => title,
+                :textangle => textangle,
+                :x => x,
+                :y => y,
+                :xanchor => xanchor,
+                :yanchor => yanchor,
+                :xref => "$(plotly_axis("x", xaxis_index; short = true, force = true)) domain",
+                :yref => "$(plotly_axis("y", yaxis_index; short = true, force = true)) domain",
+                :showarrow => false,
+            ),
+        )
+        return nothing
+    end
 end
 
 end

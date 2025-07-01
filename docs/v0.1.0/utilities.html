@@ -977,10 +977,18 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false)::Maybe{AbstractString}
+<code class="language-julia hljs">plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false, force::Bool = false)::Maybe{AbstractString}
 </code>
 </pre>
-<p>Return the Plotly axis name for a given index.
+<p>Return the Plotly axis name for a given index. If 
+<code>short
+</code> just use the 
+<code>prefix
+</code>, otherwise add 
+<code>axis
+</code>. If 
+<code>force
+</code> give a result even for the 1st (typically implicit, unnamed) axis.
 </p>
 </div>
 </section>

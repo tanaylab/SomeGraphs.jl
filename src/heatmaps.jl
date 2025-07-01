@@ -37,7 +37,8 @@ using Distances
 using PlotlyJS
 using Slanter
 
-import ..Bars.push_annotations_traces
+import ..Bars.push_annotations_traces!
+import ..Bars.push_plotly_annotation!
 import ..Bars.expand_vector
 import ..Validations.Maybe
 
@@ -722,7 +723,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     has_legend_only_traces = [false]
 
-    columns_annotations_colors = push_annotations_traces(;
+    columns_annotations_colors = push_annotations_traces!(;
         traces,
         names = nothing,
         basis_sub_graph = columns_sub_graph,
@@ -736,7 +737,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         expanded_mask = expanded_columns_mask,
     )
 
-    rows_annotations_colors = push_annotations_traces(;
+    rows_annotations_colors = push_annotations_traces!(;
         traces,
         names = nothing,
         basis_sub_graph = rows_sub_graph,
@@ -863,9 +864,19 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         )
     end
 
-    for (axis_letter, annotations_data, annotations_colors, annotation_size, dendogram_size, max_height) in (
+    layout["annotations"] = plotly_annotations = []
+    for (
+        axis_letter,
+        values_orientation,
+        annotations_data,
+        annotations_colors,
+        annotation_size,
+        dendogram_size,
+        max_height,
+    ) in (
         (
             "y",
+            VerticalValues,
             graph.data.columns_annotations,
             columns_annotations_colors,
             graph.configuration.columns_annotations,
@@ -874,6 +885,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         ),
         (
             "x",
+            HorizontalValues,
             graph.data.rows_annotations,
             rows_annotations_colors,
             graph.configuration.rows_annotations,
@@ -886,22 +898,26 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             n_annotations = length(annotations_colors)
             for (annotation_index, annotation_colors) in enumerate(annotations_colors)
                 annotation_data = annotations_data[annotation_index]
+                sub_graph = SubGraph(;
+                    index = -annotation_index,
+                    n_graphs = 1,
+                    graphs_gap = nothing,
+                    n_annotations,
+                    annotation_size,
+                    dendogram_size,
+                )
+                push_plotly_annotation!(;
+                    plotly_annotations,
+                    values_sub_graph = sub_graph,
+                    values_orientation,
+                    title = annotation_data.title,
+                )
                 set_layout_axis!(  # NOJET
                     layout,
                     plotly_axis(axis_letter, annotation_index),
                     AxisConfiguration(; show_grid = false, show_ticks = false);
-                    title = annotation_data.title,
                     range = Range(; minimum = 0, maximum = 1),
-                    domain = plotly_sub_graph_domain(
-                        SubGraph(;
-                            index = -annotation_index,
-                            n_graphs = 1,
-                            graphs_gap = nothing,
-                            n_annotations,
-                            annotation_size,
-                            dendogram_size,
-                        ),
-                    ),
+                    domain = plotly_sub_graph_domain(sub_graph),
                     is_tick_axis = false,
                     is_zeroable = false,
                 )

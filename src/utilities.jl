@@ -320,7 +320,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                        # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                          # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -410,7 +410,7 @@ function set_layout_axis!(
     layout::Layout,
     axis::AbstractString,
     axis_configuration::AxisConfiguration;
-    title::Maybe{AbstractString},
+    title::Maybe{AbstractString} = nothing,
     range::Maybe{Range} = nothing,
     ticks_labels::Maybe{AbstractVector{<:AbstractString}} = nothing,
     ticks_values::Maybe{AbstractVector{<:Real}} = nothing,
@@ -436,14 +436,24 @@ function set_layout_axis!(
 end
 
 """
-    plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false)::Maybe{AbstractString}
+    plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false, force::Bool = false)::Maybe{AbstractString}
 
-Return the Plotly axis name for a given index.
+Return the Plotly axis name for a given index. If `short` just use the `prefix`, otherwise add `axis`. If `force` give a
+result even for the 1st (typically implicit, unnamed) axis.
 """
-function plotly_axis(prefix::AbstractString, index::Integer; short::Bool = false)::Maybe{AbstractString}
+function plotly_axis(
+    prefix::AbstractString,
+    index::Integer;
+    short::Bool = false,
+    force::Bool = false,
+)::Maybe{AbstractString}
     if index == 1
         if short
-            return nothing
+            if force
+                return prefix
+            else
+                return nothing
+            end
         else
             return "$(prefix)axis"
         end
@@ -456,8 +466,12 @@ function plotly_axis(prefix::AbstractString, index::Integer; short::Bool = false
     end
 end
 
-function plotly_axis(::AbstractString, ::Nothing; short::Bool = false)::Nothing  # NOLINT
-    return nothing
+function plotly_axis(prefix::AbstractString, ::Nothing; short::Bool = false, force::Bool = false)::Maybe{AbstractString}
+    if force
+        return plotly_axis(prefix, 1; short, force)
+    else
+        return nothing
+    end
 end
 
 """
@@ -557,6 +571,13 @@ function purge_nulls!(dict::AbstractDict)::Nothing
     for (_, value) in dict
         if value isa AbstractDict
             purge_nulls!(value)
+        end
+        if value isa AbstractVector
+            for nested in value
+                if nested isa AbstractDict
+                    purge_nulls!(nested)
+                end
+            end
         end
     end
     filter!(dict) do pair
