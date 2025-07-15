@@ -16,6 +16,7 @@ using ..Common
 using ..Utilities
 using ..Validations
 
+using NamedArrays
 using PlotlyJS
 
 import ..Validations.Maybe
@@ -456,7 +457,7 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         if graph.configuration.stacking == StackFractions
             for (bar_index, bar_value) in enumerate(graph.data.series_bars_values[series_index])
                 scaled_value = scale_axis_value(graph.configuration.value_axis, bar_value)
-                if scaled_value < 0
+                if scaled_value === nothing || scaled_value < 0
                     throw(
                         ArgumentError(
                             "too low scaled graph.data.series_bars_values[$(series_index)][$(bar_index)]: $(scaled_value)\n" *
@@ -738,7 +739,11 @@ function push_annotation_traces!(;
 
     if colors.show_in_legend && colors.colors_configuration.palette isa CategoricalColors
         legend_group = "Annotation$(annotation_index)"
-        for (index, (value, color)) in enumerate(colors.colors_configuration.palette)
+        palette_dict = colors.colors_configuration.palette
+        if palette_dict isa NamedArray
+            palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
+        end
+        for (index, (value, color)) in enumerate(palette_dict)
             has_legend_only_traces[1] = true
             push_annotation_legend_trace!(;
                 traces,

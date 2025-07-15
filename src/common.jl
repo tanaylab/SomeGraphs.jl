@@ -40,6 +40,7 @@ export categorical_palette
 export save_graph
 
 using Base.Multimedia
+using NamedArrays
 using PlotlyJS
 
 using ..Validations
@@ -608,9 +609,10 @@ ContinuousColors =
 
 """
 A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown
-(as if it was masked or never included in the data).
+(as if it was masked or never included in the data). As a convenience, a named vector of strings can be specified
+instead of a dictionary.
 """
-CategoricalColors = Dict{<:AbstractString, <:AbstractString}
+CategoricalColors = Union{Dict{<:AbstractString, <:AbstractString}, NamedVector{<:AbstractString}}
 
 function continuous_colors_scale(  # ONLY SEEMS UNTESTED
     colors::AbstractVector{<:AbstractString},
@@ -1366,6 +1368,10 @@ function Validations.validate(
     end
 
     if palette isa CategoricalColors
+        if palette isa NamedVector
+            palette = Dict(zip(names(palette, 1), palette.array))  # UNTESTED
+        end
+
         validate_dict_is_not_empty(context, "palette", palette)  # NOJET
 
         validate_dict_entries(context, "palette", palette) do _, color  # NOJET

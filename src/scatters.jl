@@ -23,6 +23,7 @@ using ..Utilities
 using ..Validations
 
 using KernelDensity
+using NamedArrays
 using PlotlyJS
 
 import ..Utilities.Maybe
@@ -890,7 +891,11 @@ function push_points_traces!(;
             priorities = Float32[]
         end
 
-        for (name, color) in configured_points.colors.colors_configuration.palette
+        palette_dict = configured_points.colors.colors_configuration.palette
+        if palette_dict isa NamedArray
+            palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
+        end
+        for (name, color) in palette_dict
             push!(names, name)
             push!(colors, color)
             mask = configured_points.colors.original_color_values .== name
@@ -1459,7 +1464,7 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
             if graph.configuration.stacking == StackFractions
                 for (y_index, y_value) in enumerate(graph.data.lines_points_ys[line_index])
                     scaled_value = scale_axis_value(graph.configuration.y_axis, y_value)
-                    if scaled_value < 0
+                    if scaled_value !== nothing && scaled_value < 0
                         throw(
                             ArgumentError(
                                 "too low scaled $(location(ys_context))[$(y_index)]: $(scaled_value)\n" *

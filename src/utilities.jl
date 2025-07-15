@@ -35,6 +35,7 @@ export validate_graph_bands
 export validate_values
 
 using Colors
+using NamedArrays
 using PlotlyJS
 using Reexport
 
@@ -234,8 +235,13 @@ function validate_colors(
 
     elseif colors_configuration.palette isa CategoricalColors
         if colors_data isa AbstractVector{<:AbstractString}
+            palette_dict = colors_configuration.palette
+            if palette_dict isa NamedVector
+                palette_dict = palette_dict.dicts[1]  # UNTESTED
+            end
+
             validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
-                if !haskey(colors_configuration.palette, color)
+                if !haskey(palette_dict, color)
                     throw(
                         ArgumentError(
                             "invalid $(location(colors_data_context)): $(color)\n" *
@@ -320,7 +326,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                               # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                                   # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -626,7 +632,7 @@ end
 Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling. By
 default, `clamp` the values to a specified explicit range.
 """
-function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::AbstractFloat
+function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::Float64
     if clamp
         if axis_configuration.minimum !== nothing && value < axis_configuration.minimum
             value = axis_configuration.minimum  # UNTESTED
