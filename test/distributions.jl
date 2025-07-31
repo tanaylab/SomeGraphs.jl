@@ -281,14 +281,6 @@ nested_test("distribution") do
                                for non-cumulative graph.configuration.distribution.style: CurveDistribution
                                """) graph.figure
         end
-
-        nested_test("~cumulative_axis_title") do
-            graph.data.cumulative_axis_title = "Title"
-            @test_throws chomp("""
-                               ArgumentError: specified graph.data.cumulative_axis_title: Title
-                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
-                               """) graph.figure
-        end
     end
 
     for (name, style) in (
@@ -313,7 +305,7 @@ nested_test("distribution") do
                 graph.configuration.distribution.style = CumulativeDistribution
                 graph.configuration.cumulative_axis.units = units
                 if name == "counts"
-                    graph.data.cumulative_axis_title = "Counts"
+                    graph.data.density_axis_title = "Counts"
                 end
                 return nothing
             end
@@ -368,6 +360,14 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: invalid length of graph.data.distributions_names: 1
                                is different from length of graph.data.distributions_values: 2
+                               """) graph.figure
+        end
+
+        nested_test("~density_axis_title") do
+            graph.data.density_axis_title = "Title"
+            @test_throws chomp("""
+                               ArgumentError: can't specify both graph.data.density_axis_title: Title
+                               and also graph.configuration.distributions_gap: 0.05
                                """) graph.figure
         end
 

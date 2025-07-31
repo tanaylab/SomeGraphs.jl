@@ -326,7 +326,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                                   # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                                            # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -380,6 +380,7 @@ function plotly_layout(
     figure_configuration::FigureConfiguration;
     title::Maybe{AbstractString},
     has_legend::Bool,
+    has_hovers::Bool = false,
     shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
     return Layout(;  # NOJET
@@ -387,6 +388,7 @@ function plotly_layout(
         showlegend = has_legend,
         legend_itemdoubleclick = has_legend ? false : nothing,
         legend_tracegroupgap = 0,
+        hoverlabel_align = has_hovers ? "left" : nothing,
         shapes,
         margin_l = figure_configuration.margins.left,
         margin_r = figure_configuration.margins.right,

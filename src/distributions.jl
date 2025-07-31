@@ -264,7 +264,7 @@ end
     @kwdef mutable struct DistributionGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
-        cumulative_axis_title::Maybe{AbstractString} = nothing
+        density_axis_title::Maybe{AbstractString} = nothing
         distribution_values::AbstractVector{<:Real} = Float32[]
         distribution_name::Maybe{AbstractString} = nothing
         distribution_color::Maybe{AbstractString} = nothing
@@ -277,13 +277,12 @@ The data for a single distribution graph. By default, all the titles are empty. 
 axis. You can also specify the `distribution_color` and/or `value_bands` offsets here, if they are more of a data than a
 configuration parameter in the specific graph. This will override whatever is specified in the configuration.
 
-The `cumulative_axis_title` and/of `cumulative_bands` should only be specified if the `distribution.style` is
-`CumulativeDistribution`.
+The `cumulative_bands` should only be specified if the `distribution.style` is `CumulativeDistribution`.
 """
 @kwdef mutable struct DistributionGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
-    cumulative_axis_title::Maybe{AbstractString} = nothing
+    density_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{<:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
     distribution_color::Maybe{AbstractString} = nothing
@@ -313,10 +312,14 @@ The data for a multiple distributions graph. By default, all the titles are empt
 
 If `distributions_order` are specified, we reorder the distributions accordingly. This allows controlling which
 distributions will appear on top of the others.
+
+You can only specify the `density_axis_title` if the `distributions_gap` is `nothing` (that is, if there is a single
+density axis). Otherwise, the `distributions_names` are used for each graph's axis.
 """
 @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
+    density_axis_title::Maybe{AbstractString} = nothing
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -373,7 +376,7 @@ DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
     distribution_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         value_axis_title::Maybe{AbstractString} = nothing,
-        cumulative_axis_title::Maybe{AbstractString} = nothing,
+        density_axis_title::Maybe{AbstractString} = nothing,
         distribution_values::AbstractVector{<:Real} = Float32[],
         distribution_name::Maybe{AbstractString} = nothing,
         configuration::DistributionGraphConfiguration = DistributionGraphConfiguration()]
@@ -385,7 +388,7 @@ Create a [`DistributionGraph`](@ref) by initializing only the [`DistributionGrap
 function distribution_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
-    cumulative_axis_title::Maybe{AbstractString} = nothing,
+    density_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{<:Real} = Float32[],
     distribution_name::Maybe{AbstractString} = nothing,
     configuration::DistributionGraphConfiguration = DistributionGraphConfiguration(),
@@ -394,7 +397,7 @@ function distribution_graph(;
         DistributionGraphData(;
             figure_title,
             value_axis_title,
-            cumulative_axis_title,
+            density_axis_title,
             distribution_values,
             distribution_name,
         ),
@@ -424,6 +427,7 @@ Create a [`DistributionsGraph`](@ref) by initializing only the [`DistributionsGr
 function distributions_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
+    density_axis_title::Maybe{AbstractString} = nothing,
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
@@ -434,6 +438,7 @@ function distributions_graph(;
         DistributionsGraphData(;
             figure_title,
             value_axis_title,
+            density_axis_title,
             distributions_values,
             distributions_names,
             distributions_colors,
@@ -460,17 +465,6 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
 
     validate_graph_bands("cumulative_bands", graph.configuration.cumulative_bands, graph.data.cumulative_bands)
 
-    if graph isa DistributionGraph &&
-       graph.data.cumulative_axis_title !== nothing &&
-       graph.configuration.distribution.style !== CumulativeDistribution
-        throw(
-            ArgumentError(
-                "specified graph.data.cumulative_axis_title: $(graph.data.cumulative_axis_title)\n" *
-                "for non-cumulative graph.configuration.distribution.style: $(graph.configuration.distribution.style)",
-            ),
-        )
-    end
-
     return nothing
 end
 
@@ -481,6 +475,17 @@ function Common.validate_graph(graph::DistributionsGraph)::Nothing
             distribution_values,
             ValidationContext(["graph.configuration.value_axis"]),
             graph.configuration.value_axis,
+        )
+    end
+
+    if graph.data.density_axis_title !== nothing && graph.configuration.distributions_gap !== nothing
+        throw(
+            ArgumentError(
+                chomp("""
+                      can't specify both graph.data.density_axis_title: $(graph.data.density_axis_title)
+                      and also graph.configuration.distributions_gap: $(graph.configuration.distributions_gap)
+                      """),
+            ),
         )
     end
 
@@ -504,6 +509,7 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
             is_filled = graph.configuration.distribution.line.is_filled,
             configuration = graph.configuration,
             implicit_values_range,
+            is_one_of_many = false,
         ),
     )
 
@@ -534,6 +540,7 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
             ),
             implicit_values_range,
             scale_group = "Distributions",
+            is_one_of_many = graph.configuration.distributions_gap === nothing,
         ) for (position, index) in enumerate(distributions_indices)
     ]
 
@@ -552,6 +559,7 @@ function distribution_trace(;
     sub_graph::Maybe{SubGraph} = nothing,
     implicit_values_range::MaybeRange,
     scale_group::Maybe{AbstractString} = nothing,
+    is_one_of_many::Bool,
 )::GenericTrace
     scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false, copy = true)
     collect_range!(implicit_values_range, scaled_values)
@@ -608,8 +616,8 @@ function distribution_trace(;
         return scatter(;
             x = xs,
             y = ys,
-            xaxis = plotly_axis("x", xaxis_index; short = true),
-            yaxis = plotly_axis("y", yaxis_index; short = true),
+            xaxis = plotly_axis("x", xaxis_index; short = true, force = is_one_of_many),
+            yaxis = plotly_axis("y", yaxis_index; short = true, force = is_one_of_many),
             x0,
             y0,
             mode = "lines",
@@ -620,13 +628,26 @@ function distribution_trace(;
         )
 
     else # All other styles
+        orientation = nothing
         if configuration.distribution.values_orientation == VerticalValues
             ys = scaled_values
             xs = nothing
+            if configuration.distribution.style != HistogramDistribution
+                orientation = "v"
+                if is_one_of_many
+                    xs = fill("X", length(ys))
+                end
+            end
 
         elseif configuration.distribution.values_orientation == HorizontalValues
             xs = scaled_values
             ys = nothing
+            if configuration.distribution.style != HistogramDistribution
+                orientation = "h"
+                if is_one_of_many
+                    ys = fill("Y", length(xs))
+                end
+            end
 
         else
             @assert false
@@ -651,10 +672,11 @@ function distribution_trace(;
         return tracer(;
             x = xs,
             y = ys,
-            xaxis = plotly_axis("x", xaxis_index; short = true),
-            yaxis = plotly_axis("y", yaxis_index; short = true),
+            xaxis = plotly_axis("x", xaxis_index; short = true, force = is_one_of_many),
+            yaxis = plotly_axis("y", yaxis_index; short = true, force = is_one_of_many),
             x0,
             y0,
+            orientation,
             side = if configuration.distribution.style in (CurveDistribution, CurveBoxDistribution)
                 "positive"
             else
@@ -666,7 +688,7 @@ function distribution_trace(;
             name,
             line_color = color,
             line_width = width,
-            fillcolor = is_filled ? fill_color(color) : "transparent",
+            fillcolor = is_filled ? fill_color(color) : nothing,
             scalegroup = scale_group,
             spanmode = "hard",
         )
@@ -750,7 +772,7 @@ function distribution_layout(;
                 layout,
                 "$(density_axis_letter)axis",
                 cumulative_axis_configuration;
-                title = prefer_data(graph.data.cumulative_axis_title, graph.configuration.cumulative_axis.title),
+                title = prefer_data(graph.data.density_axis_title, graph.configuration.cumulative_axis.title),
                 range = cumulative_range,
             )
 
@@ -777,6 +799,9 @@ function distribution_layout(;
         elseif graph isa DistributionsGraph
             n_distributions = length(graph.data.distributions_values)  # NOJET
             distributions_gap = graph.configuration.distributions_gap  # NOJET
+            if distributions_gap === nothing
+                n_distributions = 1
+            end
 
             max_counts = maximum(length.(graph.data.distributions_values))  # NOJET
 
@@ -801,10 +826,10 @@ function distribution_layout(;
 
                 set_layout_axis!(
                     layout,
-                    plotly_axis(density_axis_letter, index),
+                    plotly_axis(density_axis_letter, index; force = true),
                     cumulative_axis_configuration;
                     title = if distributions_gap === nothing
-                        nothing
+                        graph.data.density_axis_title
                     else
                         prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
                     end,
@@ -828,17 +853,22 @@ function distribution_layout(;
             n_distributions = length(graph.data.distributions_values)  # NOJET
             distributions_gap = graph.configuration.distributions_gap  # NOJET
 
-            for index in 1:n_distributions
-                layout[plotly_axis(density_axis_letter, index)] = Dict(
-                    :title => if distributions_gap === nothing
-                        nothing  # NOJET
-                    else
-                        prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
-                    end,  # NOJET
-                    :domain => plotly_sub_graph_domain(
-                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
-                    ),
-                )
+            if distributions_gap === nothing
+                layout["$(density_axis_letter)axis"] =
+                    Dict(:showticklabels => false, :title => graph.data.density_axis_title)
+            else
+                for index in 1:n_distributions
+                    layout[plotly_axis(density_axis_letter, index; force = true)] = Dict(
+                        :title => if distributions_gap === nothing
+                            nothing  # NOJET # UNTESTED
+                        else
+                            prefer_data(graph.data.distributions_names, index, nothing)  # NOJET
+                        end,  # NOJET
+                        :domain => plotly_sub_graph_domain(
+                            SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
+                        ),
+                    )
+                end
             end
         else
             @assert false

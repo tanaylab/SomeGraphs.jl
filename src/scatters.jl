@@ -880,8 +880,8 @@ function push_points_traces!(;
        configured_points.colors.colors_configuration.palette isa CategoricalColors
         is_first = true
 
-        masks = Union{AbstractVector{Bool}, BitVector}[]
-        names = AbstractString[]
+        colors_masks = Union{AbstractVector{Bool}, BitVector}[]
+        colors_names = AbstractString[]
         colors = AbstractString[]
         if configured_points.order === nothing
             priorities = nothing
@@ -896,13 +896,13 @@ function push_points_traces!(;
             palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
         end
         for (name, color) in palette_dict
-            push!(names, name)
+            push!(colors_names, name)
             push!(colors, color)
             mask = configured_points.colors.original_color_values .== name
             if configured_points.mask !== nothing
                 mask .&= configured_points.mask
             end
-            push!(masks, mask)
+            push!(colors_masks, mask)
             if configured_points.order !== nothing
                 @assert priorities !== nothing
                 @assert positions !== nothing
@@ -916,13 +916,13 @@ function push_points_traces!(;
         end
 
         if priorities === nothing
-            color_indices = 1:length(names)
+            color_indices = 1:length(colors_names)
         else
             color_indices = sortperm(priorities)
         end
 
         for color_index in color_indices
-            mask = masks[color_index]
+            mask = colors_masks[color_index]
             if any(mask)
                 push_points_trace!(;
                     traces,
@@ -931,9 +931,9 @@ function push_points_traces!(;
                     points_hovers,
                     configured_points,
                     mask,
-                    name = names[color_index],
+                    name = colors_names[color_index],
                     color = colors[color_index],
-                    legend_group_suffix = names[color_index],
+                    legend_group_suffix = colors_names[color_index],
                     is_first,
                 )
                 is_first = false

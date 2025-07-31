@@ -694,14 +694,35 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     n_expanded_rows, n_expanded_columns = size(expanded_z)
 
+    rows_hovers = graph.data.rows_hovers
+    if rows_hovers !== nothing && rows_order !== nothing
+        rows_hovers = rows_hovers[rows_order]  # UNTESTED
+    end
+
+    columns_hovers = graph.data.columns_hovers
+    if columns_hovers !== nothing && columns_order !== nothing
+        columns_hovers = columns_hovers[columns_order]  # UNTESTED
+    end
+
+    entries_hovers = graph.data.entries_hovers
+    if entries_hovers !== nothing
+        if rows_order !== nothing && columns_order !== nothing
+            entries_hovers = entries_hovers[rows_order, columns_order]  # UNTESTED
+        elseif rows_order !== nothing
+            entries_hovers = entries_hovers[rows_order, :]  # UNTESTED
+        elseif columns_order !== nothing
+            entries_hovers = entries_hovers[:, columns_order]  # UNTESTED
+        end
+    end
+
     hovers = expand_hovers(;
         n_expanded_rows,
         n_expanded_columns,
         expanded_rows_mask,
         expanded_columns_mask,
-        graph.data.rows_hovers,
-        graph.data.columns_hovers,
-        graph.data.entries_hovers,
+        rows_hovers,
+        columns_hovers,
+        entries_hovers,
     )
     if hovers !== nothing
         hovers = permutedims(hovers)
@@ -801,8 +822,12 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             n_columns_annotations > 0 &&
             any([annotation_colors.show_in_legend for annotation_colors in columns_annotations_colors])
         )
+    has_hovers =
+        graph.data.entries_hovers !== nothing ||
+        graph.data.rows_hovers !== nothing ||
+        graph.data.columns_hovers !== nothing
 
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend)
+    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers)
 
     expanded_rows_names = expand_vector(graph.data.rows_names, rows_order, expanded_rows_mask, "")
     set_layout_axis!(
