@@ -150,6 +150,8 @@ end
         distribution::DistributionConfiguration = DistributionConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration()
         value_bands::BandsConfiguration = BandsConfiguration()
+        cumulative_axis::CumulativeAxisConfiguration = CumulativeAxisConfiguration()
+        cumulative_bands::BandsConfiguration = BandsConfiguration()
     end
 
 Configure a graph for showing a single distribution. The `cumulative_axis` and `cumulative_bands` are only used if the
@@ -208,6 +210,7 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         distribution::DistributionConfiguration = DistributionConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration()
+        cumulative_axis::CumulativeAxisConfiguration = CumulativeAxisConfiguration()
         distributions_gap::Maybe{Real} = 0.05
     end
 
@@ -264,7 +267,6 @@ end
     @kwdef mutable struct DistributionGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
-        density_axis_title::Maybe{AbstractString} = nothing
         distribution_values::AbstractVector{<:Real} = Float32[]
         distribution_name::Maybe{AbstractString} = nothing
         distribution_color::Maybe{AbstractString} = nothing
@@ -282,7 +284,6 @@ The `cumulative_bands` should only be specified if the `distribution.style` is `
 @kwdef mutable struct DistributionGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
-    density_axis_title::Maybe{AbstractString} = nothing
     distribution_values::AbstractVector{<:Real} = Float32[]
     distribution_name::Maybe{AbstractString} = nothing
     distribution_color::Maybe{AbstractString} = nothing
@@ -376,7 +377,6 @@ DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
     distribution_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         value_axis_title::Maybe{AbstractString} = nothing,
-        density_axis_title::Maybe{AbstractString} = nothing,
         distribution_values::AbstractVector{<:Real} = Float32[],
         distribution_name::Maybe{AbstractString} = nothing,
         configuration::DistributionGraphConfiguration = DistributionGraphConfiguration()]
@@ -388,19 +388,12 @@ Create a [`DistributionGraph`](@ref) by initializing only the [`DistributionGrap
 function distribution_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
-    density_axis_title::Maybe{AbstractString} = nothing,
     distribution_values::AbstractVector{<:Real} = Float32[],
     distribution_name::Maybe{AbstractString} = nothing,
     configuration::DistributionGraphConfiguration = DistributionGraphConfiguration(),
 )::DistributionGraph
     return DistributionGraph(
-        DistributionGraphData(;
-            figure_title,
-            value_axis_title,
-            density_axis_title,
-            distribution_values,
-            distribution_name,
-        ),
+        DistributionGraphData(; figure_title, value_axis_title, distribution_values, distribution_name),
         configuration,
     )
 end
@@ -772,7 +765,7 @@ function distribution_layout(;
                 layout,
                 "$(density_axis_letter)axis",
                 cumulative_axis_configuration;
-                title = prefer_data(graph.data.density_axis_title, graph.configuration.cumulative_axis.title),
+                title = prefer_data(graph.data.distribution_name, graph.configuration.cumulative_axis.title),
                 range = cumulative_range,
             )
 
@@ -846,16 +839,25 @@ function distribution_layout(;
 
     else  # All other styles
         if graph isa DistributionGraph
-            layout["$(density_axis_letter)axis"] =
-                Dict(:showticklabels => false, :title => graph.data.distribution_name)
+            layout["$(density_axis_letter)axis"] = Dict(
+                :showticklabels => false,
+                :title => graph.data.distribution_name,
+                :showticklabels =>
+                    graph.configuration.distribution.style == HistogramDistribution &&
+                    graph.configuration.value_axis.show_ticks,
+            )
 
         elseif graph isa DistributionsGraph
             n_distributions = length(graph.data.distributions_values)  # NOJET
             distributions_gap = graph.configuration.distributions_gap  # NOJET
 
             if distributions_gap === nothing
-                layout["$(density_axis_letter)axis"] =
-                    Dict(:showticklabels => false, :title => graph.data.density_axis_title)
+                layout["$(density_axis_letter)axis"] = Dict(
+                    :showticklabels =>
+                        graph.configuration.distribution.style == HistogramDistribution &&
+                        graph.configuration.value_axis.show_ticks,
+                    :title => graph.data.density_axis_title,
+                )
             else
                 for index in 1:n_distributions
                     layout[plotly_axis(density_axis_letter, index; force = true)] = Dict(
@@ -867,6 +869,9 @@ function distribution_layout(;
                         :domain => plotly_sub_graph_domain(
                             SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
                         ),
+                        :showticklabels =>
+                            graph.configuration.distribution.style == HistogramDistribution &&
+                            graph.configuration.value_axis.show_ticks,
                     )
                 end
             end

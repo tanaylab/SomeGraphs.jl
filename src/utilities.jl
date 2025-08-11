@@ -326,7 +326,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                                            # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                                                  # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end

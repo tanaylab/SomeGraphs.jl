@@ -305,7 +305,7 @@ nested_test("distribution") do
                 graph.configuration.distribution.style = CumulativeDistribution
                 graph.configuration.cumulative_axis.units = units
                 if name == "counts"
-                    graph.data.density_axis_title = "Counts"
+                    graph.data.distribution_name = "Counts"
                 end
                 return nothing
             end
