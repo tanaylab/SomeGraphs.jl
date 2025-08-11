@@ -1075,7 +1075,7 @@ function reorder_data(
 
     data_rows_order, data_rows_hclust = finalize_order(;
         data_order = graph.data.rows_order,
-        data_arrange_by = transpose(data_rows_arrange_by),
+        data_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1)),
         data_groups = graph.data.rows_groups,
         slant_order = slant_rows_order,
         configuration_reorder = graph.configuration.rows_reorder,
