@@ -68,6 +68,26 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
 @enum HeatmapOrigin HeatmapTopLeft HeatmapTopRight HeatmapBottomLeft HeatmapBottomRight
 
 """
+    struct HeatmapGraphOrder
+        rows_order::Maybe{AbstractVector{<:Integer}}
+        rows_hclust::Maybe{Hclust}
+        columns_order::Maybe{AbstractVector{<:Integer}}
+        columns_hclust::Maybe{Hclust}
+        reordered_values::AbstractMatrix{<:Real}
+    end
+
+Computed final order and clustering and reordered data of a graph. This is filled whenever the graph's figure is
+generated.
+"""
+struct HeatmapGraphOrder
+    rows_order::Maybe{AbstractVector{<:Integer}}
+    rows_hclust::Maybe{Hclust}  # NOLINT
+    columns_order::Maybe{AbstractVector{<:Integer}}
+    columns_hclust::Maybe{Hclust}  # NOLINT
+    reordered_values::AbstractMatrix{<:Real}
+end
+
+"""
     @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         entries_colors::ColorsConfiguration = ColorsConfiguration()
@@ -86,6 +106,7 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
         rows_dendogram_line::LineConfiguration = LineConfiguration()
         columns_dendogram_line::LineConfiguration = LineConfiguration()
         origin::HeatmapOrigin = HeatmapBottomLeft
+        final_order::Maybe{HeatmapGraphOrder} = None
     end
 
 Configure a graph showing a heatmap.
@@ -108,6 +129,9 @@ inconvenient units (fractions of the total graph size) because Plotly.
 
 If a dendogram tree is shown, the `..._dendogram_line` can be used to control it. The default color is black. The
 `is_filled` field shouldn't be set as it has no meaning here.
+
+The `final_order` is filled whenever the graph's figure is generated. This allows accessing the results (e.g., for
+generating other graphs in an identical order).
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -129,6 +153,7 @@ If a dendogram tree is shown, the `..._dendogram_line` can be used to control it
     rows_dendogram_line::LineConfiguration = LineConfiguration()
     columns_dendogram_line::LineConfiguration = LineConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
+    final_order::Maybe{HeatmapGraphOrder} = nothing
 end
 
 function Validations.validate(context::ValidationContext, configuration::HeatmapGraphConfiguration)::Nothing
@@ -268,8 +293,8 @@ All other combinations are invalid. Note:
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
     columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing  # NOLINT
+    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing  # NOLINT
     rows_groups::Maybe{AbstractVector} = nothing
     columns_groups::Maybe{AbstractVector} = nothing
 end
@@ -296,14 +321,14 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     validate_vector_length(context, "rows_groups", data.rows_groups, "entries_values.rows", n_rows)
     validate_vector_length(context, "columns_groups", data.columns_groups, "entries_values.columns", n_columns)
 
-    if data.rows_order isa Hclust
+    if data.rows_order isa Hclust  # NOLINT
         rows_order = data.rows_order.order  # UNTESTED
     else
         rows_order = data.rows_order
     end
     validate_vector_length(context, "rows_order", rows_order, "entries_values.rows", n_rows)
 
-    if data.columns_order isa Hclust
+    if data.columns_order isa Hclust  # NOLINT
         columns_order = data.columns_order.order
     else
         columns_order = data.columns_order
@@ -369,8 +394,8 @@ function heatmap_graph(;
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
     columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,  # NOLINT
+    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,  # NOLINT
     rows_groups::Maybe{AbstractVector} = nothing,
     columns_groups::Maybe{AbstractVector} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
@@ -538,7 +563,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                     )
                 end
                 if configuration_dendogram_size !== nothing &&
-                   !(other_data_order isa Hclust) &&
+                   !(other_data_order isa Hclust) &&  # NOLINT
                    other_configuration_reorder === nothing &&
                    other_configuration_dendogram_size === nothing
                     throw(ArgumentError(chomp("""
@@ -562,7 +587,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 )
             end
 
-        elseif data_order isa Hclust
+        elseif data_order isa Hclust  # NOLINT
             if configuration_linkage !== nothing
                 throw(ArgumentError(chomp("""
                                           can't specify heatmap graph.configuration.$(name)_linkage
@@ -647,7 +672,7 @@ end
 function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()
+    traces = Vector{GenericTrace}()  # NOLINT
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
@@ -657,7 +682,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         next_colors_scale_index,
     )
 
-    rows_order, rows_hclust, columns_order, columns_hclust, z = reorder_data(graph, colors)
+    graph.configuration.final_order = final_order = reorder_data(graph, colors)
 
     n_rows_annotations = length(graph.data.rows_annotations)
     n_columns_annotations = length(graph.data.columns_annotations)
@@ -686,32 +711,51 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = VerticalValues,
     )
 
-    expanded_rows_mask = compute_expansion_mask(rows_order, graph.data.rows_groups, graph.configuration.rows_groups_gap)
-    expanded_columns_mask =
-        compute_expansion_mask(columns_order, graph.data.columns_groups, graph.configuration.columns_groups_gap)
+    expanded_rows_mask =
+        compute_expansion_mask(final_order.rows_order, graph.data.rows_groups, graph.configuration.rows_groups_gap)
+    expanded_columns_mask = compute_expansion_mask(
+        final_order.columns_order,
+        graph.data.columns_groups,
+        graph.configuration.columns_groups_gap,
+    )
 
-    expanded_z = expand_z_matrix(z, rows_order, expanded_rows_mask, columns_order, expanded_columns_mask)
+    expanded_z = expand_z_matrix(
+        final_order.reordered_values,
+        final_order.rows_order,
+        expanded_rows_mask,
+        final_order.columns_order,
+        expanded_columns_mask,
+    )
 
     n_expanded_rows, n_expanded_columns = size(expanded_z)
 
     rows_hovers = graph.data.rows_hovers
-    if rows_hovers !== nothing && rows_order !== nothing
-        rows_hovers = rows_hovers[rows_order]  # UNTESTED
+    if rows_hovers !== nothing && final_order.rows_order !== nothing
+        rows_hovers = rows_hovers[final_order.rows_order]  # UNTESTED
     end
 
     columns_hovers = graph.data.columns_hovers
-    if columns_hovers !== nothing && columns_order !== nothing
-        columns_hovers = columns_hovers[columns_order]  # UNTESTED
+    if columns_hovers !== nothing && final_order.columns_order !== nothing
+        columns_hovers = columns_hovers[final_order.columns_order]  # UNTESTED
     end
 
     entries_hovers = graph.data.entries_hovers
+
+    if graph.configuration.entries_colors.axis.log_scale !== nothing
+        if entries_hovers === nothing
+            entries_hovers = "Z: " .* string.(graph.data.entries_values)
+        else
+            entries_hovers .*= "<br>Z: " .* string.(graph.data.entries_values)  # UNTESTED
+        end
+    end
+
     if entries_hovers !== nothing
-        if rows_order !== nothing && columns_order !== nothing
-            entries_hovers = entries_hovers[rows_order, columns_order]  # UNTESTED
-        elseif rows_order !== nothing
-            entries_hovers = entries_hovers[rows_order, :]  # UNTESTED
-        elseif columns_order !== nothing
-            entries_hovers = entries_hovers[:, columns_order]  # UNTESTED
+        if final_order.rows_order !== nothing && final_order.columns_order !== nothing
+            entries_hovers = entries_hovers[final_order.rows_order, final_order.columns_order]  # UNTESTED
+        elseif final_order.rows_order !== nothing
+            entries_hovers = entries_hovers[final_order.rows_order, :]  # UNTESTED
+        elseif final_order.columns_order !== nothing
+            entries_hovers = entries_hovers[:, final_order.columns_order]  # UNTESTED
         end
     end
 
@@ -730,7 +774,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     push!(
         traces,
-        heatmap(;
+        heatmap(;  # NOLINT
             name = "",
             x = collect(1:n_expanded_columns),
             y = collect(1:n_expanded_rows),
@@ -754,7 +798,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data = graph.data.columns_annotations,
         annotation_size = graph.configuration.columns_annotations,
-        order = columns_order,
+        entries_hovers = graph.data.columns_hovers,
+        order = final_order.columns_order,
         expanded_mask = expanded_columns_mask,
     )
 
@@ -768,14 +813,15 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data = graph.data.rows_annotations,
         annotation_size = graph.configuration.rows_annotations,
-        order = rows_order,
+        entries_hovers = graph.data.rows_hovers,
+        order = final_order.rows_order,
         expanded_mask = expanded_rows_mask,
     )
 
     if graph.configuration.rows_dendogram_size !== nothing
         rows_max_height = push_dendogram_trace!(;
             traces,
-            clusters = rows_hclust,
+            clusters = final_order.rows_hclust,
             values_orientation = HorizontalValues,
             dendogram_line = graph.configuration.rows_dendogram_line,
             expanded_mask = expanded_rows_mask,
@@ -796,7 +842,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if graph.configuration.columns_dendogram_size !== nothing
         columns_max_height = push_dendogram_trace!(;
             traces,
-            clusters = columns_hclust,
+            clusters = final_order.columns_hclust,
             values_orientation = VerticalValues,
             dendogram_line = graph.configuration.columns_dendogram_line,
             expanded_mask = expanded_columns_mask,
@@ -829,7 +875,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers)
 
-    expanded_rows_names = expand_vector(graph.data.rows_names, rows_order, expanded_rows_mask, "")
+    expanded_rows_names = expand_vector(graph.data.rows_names, final_order.rows_order, expanded_rows_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("y", yaxis_index),
@@ -851,7 +897,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         is_zeroable = false,
     )
 
-    expanded_columns_names = expand_vector(graph.data.columns_names, columns_order, expanded_columns_mask, "")
+    expanded_columns_names =
+        expand_vector(graph.data.columns_names, final_order.columns_order, expanded_columns_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("x", xaxis_index),
@@ -997,16 +1044,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     return plotly_figure(traces, layout)
 end
 
-function reorder_data(
-    graph::HeatmapGraph,
-    colors::ConfiguredColors,
-)::Tuple{
-    Maybe{AbstractVector{<:Integer}},
-    Maybe{Hclust},
-    Maybe{AbstractVector{<:Integer}},
-    Maybe{Hclust},
-    AbstractMatrix{<:Real},
-}
+function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGraphOrder
     data_rows_arrange_by = prefer_data(graph.data.rows_arrange_by, graph.data.entries_values)
     data_columns_arrange_by = prefer_data(graph.data.columns_arrange_by, graph.data.entries_values)
     @assert data_rows_arrange_by !== nothing
@@ -1128,11 +1166,11 @@ function reorder_data(
         end
     end
 
-    return (data_rows_order, data_rows_hclust, data_columns_order, data_columns_hclust, z)
+    return HeatmapGraphOrder(data_rows_order, data_rows_hclust, data_columns_order, data_columns_hclust, z)
 end
 
 function finalize_order(;
-    data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},
+    data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},  # NOLINT
     data_arrange_by::AbstractMatrix{<:Real},
     data_groups::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     slant_order::Maybe{AbstractVector{<:Integer}},
@@ -1140,7 +1178,7 @@ function finalize_order(;
     configuration_dendogram_size::Maybe{Real},
     configuration_linkage::Maybe{HeatmapLinkage},
     configuration_metric::Maybe{PreMetric},
-)::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{Hclust}}
+)::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{Hclust}}  # NOLINT
     if configuration_linkage === nothing
         configuration_linkage = WardLinkage
     end
@@ -1192,7 +1230,7 @@ function finalize_order(;
             @assert false
         end
 
-    elseif data_order isa Hclust
+    elseif data_order isa Hclust  # NOLINT
         if configuration_reorder === nothing
             return (data_order.order, data_order)
 
@@ -1257,8 +1295,8 @@ function hclust_branchorder(reorder::HeatmapReorder)::Symbol
 end
 
 function push_dendogram_trace!(;
-    traces::Vector{GenericTrace},
-    clusters::Hclust,
+    traces::Vector{GenericTrace},  # NOLINT
+    clusters::Hclust,  # NOLINT
     values_orientation::ValuesOrientation,
     dendogram_line::LineConfiguration,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
@@ -1281,7 +1319,7 @@ function push_dendogram_trace!(;
 
     push!(
         traces,
-        scatter(;
+        scatter(;  # NOLINT
             x = xs,
             y = ys,
             x0 = nothing,
@@ -1301,7 +1339,7 @@ function push_dendogram_trace!(;
 end
 
 function dendogram_coordinates(
-    clusters::Hclust,
+    clusters::Hclust,  # NOLINT
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::Tuple{AbstractVector{<:AbstractFloat}, AbstractVector{<:AbstractFloat}}
     values = Float32[]

@@ -47,7 +47,7 @@ using ..Validations
 using Colors
 using ColorVectorSpace
 
-import PlotlyJS.SyncPlot
+import PlotlyJS.SyncPlot  # NOLINT
 
 import ..Validations.Maybe
 
@@ -58,7 +58,7 @@ A plotly figure contains everything needed to display an interactive graph (or g
 converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the
 interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
 """
-PlotlyFigure = Union{Plot, SyncPlot}
+PlotlyFigure = Union{Plot, SyncPlot}  # NOLINT
 
 """
 A configuration of a [`Graph`](@ref) specifies how to display the data while being (as much as possible) independent of
@@ -129,7 +129,7 @@ Save the graph to a file. Unlike the Plotly `savefig` function, this function wi
 `height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name.
 """
 function save_graph(graph::Graph, output_file::AbstractString)::Nothing
-    savefig(  # NOJET
+    savefig(  # NOJET # NOLINT
         graph_to_figure(graph),
         output_file;
         width = graph.configuration.figure.width,
@@ -782,8 +782,8 @@ end
 Builtin color scales from [Plotly](https://plotly.com/python/builtin-colorscales/), both linear: `Blackbody`,
 `Bluered`, `Blues`, `Cividis`, `Earth`, `Electric`, `Greens`, `Greys`, `Hot`, `Jet`, `Picnic`, `Portland`, `Rainbow`,
 `RdBu`, `Reds`, `Viridis`, `YlGnBu`, `YlOrRd` and cyclical: `Twilight`, `IceFire`, `Edge`, `Phase`, `HSV`, `mrybm`,
-`mygbm`. In addition, `BuWtRd` which is useful for showing +/- diff values and `WtOrRdDm` is useful for showing absolute
-values.
+`mygbm`. In addition, `BuWtRd` which is useful for showing +/- diff values and `WtYlOrRdDm` is useful for showing
+absolute values.
 
 !!! note
 
@@ -1051,8 +1051,8 @@ NAMED_COLOR_SCALES = Dict{String, ContinuousColors}([
         "rgb(230,145,90)",
         "rgb(178,10,28)",
     ]),
-    "BuWtRd" => continuous_colors_scale(["rgb(178,10,28)", "rgb(255,255,255)", "rgb(5,10,172)"]),
-    "WtOrRdDm" => continuous_colors_scale(["white", "orange", "darkred", "dimgray"]),
+    "BuWtRd" => continuous_colors_scale(["rgb(5,10,172)", "rgb(255,255,255)", "rgb(178,10,28)"]),
+    "WtYlOrRdDm" => continuous_colors_scale(["white", "yellow", "orange", "darkred", "dimgray"]),
     "Reds" =>
         continuous_colors_scale(["rgb(220,220,220)", "rgb(245,195,157)", "rgb(245,160,105)", "rgb(178,10,28)"]),
     "Viridis" => continuous_colors_scale([

@@ -211,7 +211,7 @@ end
 function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()
+    traces = Vector{GenericTrace}()  # NOLINT
 
     implicit_values_range = MaybeRange()
 
@@ -253,6 +253,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data = graph.data.bars_annotations,
         annotation_size = graph.configuration.bars_annotations,
+        entries_hovers = graph.data.bars_hovers,
     )
 
     layout = bars_layout(;
@@ -495,7 +496,7 @@ end
 function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()
+    traces = Vector{GenericTrace}()  # NOLINT
 
     implicit_values_range = MaybeRange()
 
@@ -601,6 +602,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data = graph.data.bars_annotations,
         annotation_size = graph.configuration.bars_annotations,
+        entries_hovers = graph.data.bars_hovers,
     )
 
     layout = bars_layout(;
@@ -617,7 +619,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 end
 
 function push_bar_trace!(;
-    traces::Vector{GenericTrace},
+    traces::Vector{GenericTrace},  # NOLINT
     values::AbstractVector{<:Real},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph} = nothing,
@@ -655,7 +657,7 @@ function push_bar_trace!(;
 
     push!(
         traces,
-        bar(;
+        bar(;  # NOLINT
             x = xs,
             y = ys,
             x0,
@@ -676,7 +678,7 @@ function push_bar_trace!(;
 end
 
 function push_annotations_traces!(;
-    traces::Vector{GenericTrace},
+    traces::Vector{GenericTrace},  # NOLINT
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph} = nothing,
@@ -687,6 +689,7 @@ function push_annotations_traces!(;
     has_legend_only_traces::AbstractVector{Bool},
     annotations_data::AbstractVector{AnnotationData},
     annotation_size::AnnotationSize,
+    entries_hovers::Maybe{AbstractVector{<:AbstractString}},
     order::Maybe{AbstractVector{<:Integer}} = nothing,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}} = nothing,
 )::AbstractVector{ConfiguredColors}
@@ -701,8 +704,9 @@ function push_annotations_traces!(;
             graphs_gap,
             annotation_index,
             n_annotations = length(annotations_data),
-            annotation_data = annotation_data,
+            annotation_data,
             annotation_size,
+            entries_hovers,
             next_colors_scale_index,
             has_legend_only_traces,
             order,
@@ -712,7 +716,7 @@ function push_annotations_traces!(;
 end
 
 function push_annotation_traces!(;
-    traces::Vector{GenericTrace},
+    traces::Vector{GenericTrace},  # NOLINT
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph},
@@ -723,6 +727,7 @@ function push_annotation_traces!(;
     n_annotations::Integer,
     annotation_data::AnnotationData,
     annotation_size::AnnotationSize,
+    entries_hovers::Maybe{AbstractVector{<:AbstractString}},
     next_colors_scale_index::AbstractVector{<:Integer},
     has_legend_only_traces::AbstractVector{Bool},
     order::Maybe{AbstractVector{<:Integer}},
@@ -762,15 +767,27 @@ function push_annotation_traces!(;
         gap_color = NaN
     end
 
+    hovers = annotation_data.hovers
+    if hovers === nothing
+        hovers = entries_hovers
+    elseif entries_hovers !== nothing  # UNTESTED
+        hovers = hovers .* "<br>" .* entries_hovers  # UNTESTED
+    end
+
     push_bar_trace!(;  # NOJET
         traces,
         sub_graph,
         values = expanded_mask !== nothing ? expanded_mask : fill(1.0, length(annotation_data.values)),
-        value_axis,
+        value_axis = AxisConfiguration(;
+            minimum = 0,
+            maximum = 1,
+            show_ticks = false,
+            show_grid = value_axis.show_grid,
+        ),
         basis_sub_graph,
         values_orientation,
         color = expand_vector(colors.final_colors_values, order, expanded_mask, gap_color),
-        hovers = expand_vector(annotation_data.hovers, order, expanded_mask, ""),
+        hovers = expand_vector(hovers, order, expanded_mask, ""),
         names = expand_vector(names, order, expanded_mask, ""),
         name = annotation_data.title,
         show_in_legend = false,
@@ -806,7 +823,7 @@ function expand_vector(
 end
 
 function push_annotation_legend_trace!(;
-    traces::Vector{GenericTrace},
+    traces::Vector{GenericTrace},  # NOLINT
     color::AbstractString,
     value::AbstractString,
     legend_group::Maybe{AbstractString},
@@ -814,7 +831,7 @@ function push_annotation_legend_trace!(;
 )::Nothing
     push!(
         traces,
-        bar(;
+        bar(;  # NOLINT
             x = [0],
             y = [0],
             x0 = 0,
@@ -841,7 +858,7 @@ function bars_layout(;
     colors::Maybe{ConfiguredColors} = nothing,
     annotations_colors::AbstractVector{ConfiguredColors},
     has_legend_only_traces::AbstractVector{Bool},
-)::Layout
+)::Layout  # NOLINT
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
     if specific_scaled_ranges !== nothing
@@ -851,7 +868,7 @@ function bars_layout(;
         ]
     end
 
-    shapes = Shape[]
+    shapes = Shape[]  # NOLINT
 
     if graph isa BarsGraph
         if graph.configuration.values_orientation == VerticalValues

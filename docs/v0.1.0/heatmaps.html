@@ -147,39 +147,34 @@
 <a class="docs-heading-anchor-permalink" href="#Heatmaps" title="Permalink">
 </a>
 </h1>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps" href="#SomeGraphs.Heatmaps">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps">
 <code>SomeGraphs.Heatmaps
 </code>
 </a> — 
 <span class="docstring-category">Module
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <p>Graphs for showing a 2D matrix.
 </p>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraph" href="#SomeGraphs.Heatmaps.HeatmapGraph">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraph">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraph">
 <code>SomeGraphs.Heatmaps.HeatmapGraph
 </code>
 </a> — 
 <span class="docstring-category">Type
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <p>A graph showing a heatmap. See 
@@ -194,20 +189,18 @@
 </p>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.heatmap_graph" href="#SomeGraphs.Heatmaps.heatmap_graph">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.heatmap_graph">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_graph">
 <code>SomeGraphs.Heatmaps.heatmap_graph
 </code>
 </a> — 
 <span class="docstring-category">Function
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <pre>
@@ -250,20 +243,18 @@
 </p>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraphData" href="#SomeGraphs.Heatmaps.HeatmapGraphData">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphData">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphData">
 <code>SomeGraphs.Heatmaps.HeatmapGraphData
 </code>
 </a> — 
 <span class="docstring-category">Type
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <pre>
@@ -1029,20 +1020,18 @@ end
 </ul>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
 <code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration
 </code>
 </a> — 
 <span class="docstring-category">Type
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <pre>
@@ -1064,6 +1053,7 @@ end
     rows_dendogram_line::LineConfiguration = LineConfiguration()
     columns_dendogram_line::LineConfiguration = LineConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
+    final_order::Maybe{HeatmapGraphOrder} = None
 end
 </code>
 </pre>
@@ -1097,22 +1087,24 @@ end
 <code>is_filled
 </code> field shouldn&#39;t be set as it has no meaning here.
 </p>
+<p>The 
+<code>final_order
+</code> is filled whenever the graph&#39;s figure is generated. This allows accessing the results (e.g., for generating other graphs in an identical order).
+</p>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapReorder" href="#SomeGraphs.Heatmaps.HeatmapReorder">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapReorder">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapReorder">
 <code>SomeGraphs.Heatmaps.HeatmapReorder
 </code>
 </a> — 
 <span class="docstring-category">Type
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <p>Specify how to reorder the rows and/or columns.
@@ -1171,20 +1163,46 @@ end
 </ul>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapLinkage" href="#SomeGraphs.Heatmaps.HeatmapLinkage">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>SomeGraphs.Heatmaps.HeatmapGraphOrder
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct HeatmapGraphOrder
+    rows_order::Maybe{AbstractVector{&lt;:Integer}}
+    rows_hclust::Maybe{Hclust}
+    columns_order::Maybe{AbstractVector{&lt;:Integer}}
+    columns_hclust::Maybe{Hclust}
+    reordered_values::AbstractMatrix{&lt;:Real}
+end
+</code>
+</pre>
+<p>Computed final order and clustering and reordered data of a graph. This is filled whenever the graph&#39;s figure is generated.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapLinkage">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapLinkage">
 <code>SomeGraphs.Heatmaps.HeatmapLinkage
 </code>
 </a> — 
 <span class="docstring-category">Type
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <p>Specify the linkage to use when performing hierarchical clustering (
@@ -1197,20 +1215,18 @@ end
 </p>
 </div>
 </section>
+</details>
 </article>
-<article class="docstring">
-<header>
-<a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring">
-</a>
-<a class="docstring-binding" id="SomeGraphs.Heatmaps.HeatmapOrigin" href="#SomeGraphs.Heatmaps.HeatmapOrigin">
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapOrigin">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapOrigin">
 <code>SomeGraphs.Heatmaps.HeatmapOrigin
 </code>
 </a> — 
 <span class="docstring-category">Type
 </span>
-<span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring">
-</span>
-</header>
+</summary>
 <section>
 <div>
 <p>Specify where the origin (row 1 column 1) should be displayed. The Plotly default is 
@@ -1219,6 +1235,7 @@ end
 </p>
 </div>
 </section>
+</details>
 </article>
 <p>
 <strong>Examples:
@@ -1242,12 +1259,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='MVCLLIkHwf' class='' style=';'>
+<div id='36UhBoWdA5' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("MVCLLIkHwf")
+    const PLOT = document.getElementById("36UhBoWdA5")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1287,12 +1304,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FLMe3uz2wT' class='' style=';'>
+<div id='hoYfec7Yrg' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FLMe3uz2wT")
+    const PLOT = document.getElementById("hoYfec7Yrg")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1336,12 +1353,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='8YpJEiZsHK' class='' style=';'>
+<div id='zvEmUF2iFu' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8YpJEiZsHK")
+    const PLOT = document.getElementById("zvEmUF2iFu")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1387,12 +1404,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ltrLQXroQ3' class='' style=';'>
+<div id='y8LHHoguvI' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ltrLQXroQ3")
+    const PLOT = document.getElementById("y8LHHoguvI")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,null],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1434,6 +1451,12 @@ to_documenter(graph.figure)
 <li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
 <code>SomeGraphs.Heatmaps.HeatmapGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>SomeGraphs.Heatmaps.HeatmapGraphOrder
 </code>
 </a>
 </li>
@@ -1514,7 +1537,7 @@ to_documenter(graph.figure)
 <hr/>
 <p>This document was generated with 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.13.0. Using Julia version 1.11.6.
+</a> version 1.16.1. Using Julia version 1.11.8.
 </p>
 </section>
 <footer class="modal-card-foot">
