@@ -7,9 +7,13 @@ The goals of this are:
   - Provide a specific set of graphs (chosen for supporting a specific application, but covers the common types).
 
   - Generate static PNG and/or SVG files (for publishing).
+
   - Generate interactive graphs in Jupyter notebook, also from Python and from R (for exploration).
+
   - Be reasonably efficient when the data is large.
+
   - Minimize dependencies (except for Plotly).
+
   - Provide strongly types set of structures for specifying the graphs, where fields are as high-level ("what") as
     possible, and are orthogonal to each other (as much as humanly possible). This is very different from Plotly
     APIs where fields are low level ("how") and achieving "simple" effects requires changing many of them at

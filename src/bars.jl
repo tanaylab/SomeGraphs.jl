@@ -211,7 +211,7 @@ end
 function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     implicit_values_range = MaybeRange()
 
@@ -496,7 +496,7 @@ end
 function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     implicit_values_range = MaybeRange()
 
@@ -619,7 +619,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 end
 
 function push_bar_trace!(;
-    traces::Vector{GenericTrace},  # NOLINT
+    traces::Vector{GenericTrace},
     values::AbstractVector{<:Real},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph} = nothing,
@@ -657,7 +657,7 @@ function push_bar_trace!(;
 
     push!(
         traces,
-        bar(;  # NOLINT
+        bar(;
             x = xs,
             y = ys,
             x0,
@@ -678,7 +678,7 @@ function push_bar_trace!(;
 end
 
 function push_annotations_traces!(;
-    traces::Vector{GenericTrace},  # NOLINT
+    traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph} = nothing,
@@ -716,7 +716,7 @@ function push_annotations_traces!(;
 end
 
 function push_annotation_traces!(;
-    traces::Vector{GenericTrace},  # NOLINT
+    traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph},
@@ -823,7 +823,7 @@ function expand_vector(
 end
 
 function push_annotation_legend_trace!(;
-    traces::Vector{GenericTrace},  # NOLINT
+    traces::Vector{GenericTrace},
     color::AbstractString,
     value::AbstractString,
     legend_group::Maybe{AbstractString},
@@ -831,7 +831,7 @@ function push_annotation_legend_trace!(;
 )::Nothing
     push!(
         traces,
-        bar(;  # NOLINT
+        bar(;
             x = [0],
             y = [0],
             x0 = 0,
@@ -858,7 +858,7 @@ function bars_layout(;
     colors::Maybe{ConfiguredColors} = nothing,
     annotations_colors::AbstractVector{ConfiguredColors},
     has_legend_only_traces::AbstractVector{Bool},
-)::Layout  # NOLINT
+)::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
     if specific_scaled_ranges !== nothing
@@ -868,7 +868,7 @@ function bars_layout(;
         ]
     end
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     if graph isa BarsGraph
         if graph.configuration.values_orientation == VerticalValues

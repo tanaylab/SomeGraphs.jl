@@ -81,9 +81,9 @@ generated.
 """
 struct HeatmapGraphOrder
     rows_order::Maybe{AbstractVector{<:Integer}}
-    rows_hclust::Maybe{Hclust}  # NOLINT
+    rows_hclust::Maybe{Hclust}
     columns_order::Maybe{AbstractVector{<:Integer}}
-    columns_hclust::Maybe{Hclust}  # NOLINT
+    columns_hclust::Maybe{Hclust}
     reordered_values::AbstractMatrix{<:Real}
 end
 
@@ -275,6 +275,7 @@ All other combinations are invalid. Note:
 
   - When calling `hclust` and/or `ehclust`, then specifying a `metric` will be used instead of `Euclidean` to compute
     the distances matrix.
+
   - Specifying `groups` only impacts the tree and order when computing a new clustering without other order constraints.
     They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.
 """
@@ -293,8 +294,8 @@ All other combinations are invalid. Note:
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
     columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing  # NOLINT
-    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing  # NOLINT
+    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     rows_groups::Maybe{AbstractVector} = nothing
     columns_groups::Maybe{AbstractVector} = nothing
 end
@@ -321,14 +322,14 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     validate_vector_length(context, "rows_groups", data.rows_groups, "entries_values.rows", n_rows)
     validate_vector_length(context, "columns_groups", data.columns_groups, "entries_values.columns", n_columns)
 
-    if data.rows_order isa Hclust  # NOLINT
+    if data.rows_order isa Hclust
         rows_order = data.rows_order.order  # UNTESTED
     else
         rows_order = data.rows_order
     end
     validate_vector_length(context, "rows_order", rows_order, "entries_values.rows", n_rows)
 
-    if data.columns_order isa Hclust  # NOLINT
+    if data.columns_order isa Hclust
         columns_order = data.columns_order.order
     else
         columns_order = data.columns_order
@@ -394,8 +395,8 @@ function heatmap_graph(;
     columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
     columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,  # NOLINT
-    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,  # NOLINT
+    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
+    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     rows_groups::Maybe{AbstractVector} = nothing,
     columns_groups::Maybe{AbstractVector} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
@@ -563,7 +564,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                     )
                 end
                 if configuration_dendogram_size !== nothing &&
-                   !(other_data_order isa Hclust) &&  # NOLINT
+                   !(other_data_order isa Hclust) &&
                    other_configuration_reorder === nothing &&
                    other_configuration_dendogram_size === nothing
                     throw(ArgumentError(chomp("""
@@ -587,7 +588,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 )
             end
 
-        elseif data_order isa Hclust  # NOLINT
+        elseif data_order isa Hclust
             if configuration_linkage !== nothing
                 throw(ArgumentError(chomp("""
                                           can't specify heatmap graph.configuration.$(name)_linkage
@@ -672,7 +673,7 @@ end
 function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
@@ -774,7 +775,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     push!(
         traces,
-        heatmap(;  # NOLINT
+        heatmap(;
             name = "",
             x = collect(1:n_expanded_columns),
             y = collect(1:n_expanded_rows),
@@ -1170,7 +1171,7 @@ function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGra
 end
 
 function finalize_order(;
-    data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},  # NOLINT
+    data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},
     data_arrange_by::AbstractMatrix{<:Real},
     data_groups::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     slant_order::Maybe{AbstractVector{<:Integer}},
@@ -1178,7 +1179,7 @@ function finalize_order(;
     configuration_dendogram_size::Maybe{Real},
     configuration_linkage::Maybe{HeatmapLinkage},
     configuration_metric::Maybe{PreMetric},
-)::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{Hclust}}  # NOLINT
+)::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{Hclust}}
     if configuration_linkage === nothing
         configuration_linkage = WardLinkage
     end
@@ -1230,7 +1231,7 @@ function finalize_order(;
             @assert false
         end
 
-    elseif data_order isa Hclust  # NOLINT
+    elseif data_order isa Hclust
         if configuration_reorder === nothing
             return (data_order.order, data_order)
 
@@ -1295,8 +1296,8 @@ function hclust_branchorder(reorder::HeatmapReorder)::Symbol
 end
 
 function push_dendogram_trace!(;
-    traces::Vector{GenericTrace},  # NOLINT
-    clusters::Hclust,  # NOLINT
+    traces::Vector{GenericTrace},
+    clusters::Hclust,
     values_orientation::ValuesOrientation,
     dendogram_line::LineConfiguration,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
@@ -1319,7 +1320,7 @@ function push_dendogram_trace!(;
 
     push!(
         traces,
-        scatter(;  # NOLINT
+        scatter(;
             x = xs,
             y = ys,
             x0 = nothing,
@@ -1339,7 +1340,7 @@ function push_dendogram_trace!(;
 end
 
 function dendogram_coordinates(
-    clusters::Hclust,  # NOLINT
+    clusters::Hclust,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::Tuple{AbstractVector{<:AbstractFloat}, AbstractVector{<:AbstractFloat}}
     values = Float32[]

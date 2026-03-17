@@ -58,7 +58,7 @@ A plotly figure contains everything needed to display an interactive graph (or g
 converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the
 interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
 """
-PlotlyFigure = Union{Plot, SyncPlot}  # NOLINT
+PlotlyFigure = Union{Plot, SyncPlot}
 
 """
 A configuration of a [`Graph`](@ref) specifies how to display the data while being (as much as possible) independent of
@@ -129,7 +129,7 @@ Save the graph to a file. Unlike the Plotly `savefig` function, this function wi
 `height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name.
 """
 function save_graph(graph::Graph, output_file::AbstractString)::Nothing
-    savefig(  # NOJET # NOLINT
+    savefig(  # NOJET
         graph_to_figure(graph),
         output_file;
         width = graph.configuration.figure.width,
@@ -153,7 +153,7 @@ You can just write `graph.figure` instead of `graph_to_figure(graph)`.
     inside the figure, (except for saving HTML file). You should therefore use [`save_graph`](@ref) rather than call
     `savefig` on the result of `graph_to_figure`.
 """
-function graph_to_figure(graph::Graph)::PlotlyFigure end  # NOLINT
+function graph_to_figure(::Graph)::PlotlyFigure end
 
 """
     @kwdef mutable struct MarginsConfiguration <: Validated
@@ -452,7 +452,9 @@ Styles of drawing a line
   - `SolidLine` draws a solid line (the default).
 
   - `DashLine` draws a dashed line.
+
   - `DotLine` draws a dotted line.
+
   - `DashDotLine` draws a dash-dotted line.
 """
 @enum LineStyle SolidLine DashLine DotLine DashDotLine

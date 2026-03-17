@@ -539,7 +539,7 @@ end
 function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
     scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
@@ -618,7 +618,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         push_edge_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_edges)
     end
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     push_vertical_bands_shapes(
         shapes,
@@ -799,7 +799,7 @@ function add_pixel_sizes(configured_points::ConfiguredScatters, configured_borde
 end
 
 function push_edge_traces!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     graph::PointsGraph,
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
@@ -839,7 +839,7 @@ function push_edge_traces!(;
 
             push!(  # NOJET
                 traces,
-                scatter(;  # NOLINT
+                scatter(;
                     x = [scaled_points_xs.values[from_point], scaled_points_xs.values[to_point]],
                     y = [scaled_points_ys.values[from_point], scaled_points_ys.values[to_point]],
                     line_width = prefer_data(configured_edges.pixel_sizes, edge_index, configured_edges.pixel_size),
@@ -870,7 +870,7 @@ function push_edge_traces!(;
 end
 
 function push_points_traces!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     configured_points::ConfiguredScatters,
@@ -959,7 +959,7 @@ function push_points_traces!(;
 end
 
 function push_points_trace!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     points_hovers::Maybe{AbstractVector{<:AbstractString}},
@@ -987,7 +987,7 @@ function push_points_trace!(;
     show_in_legend = configured_points.colors.show_in_legend
     push!(  # NOJET
         traces,
-        scatter(;  # NOLINT
+        scatter(;
             x = masked_values(scaled_points_xs.values, mask, order),
             y = masked_values(scaled_points_ys.values, mask, order),
             text = hovers,
@@ -1138,7 +1138,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
     scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
     scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     push_line_trace!(;
         traces,
@@ -1153,7 +1153,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         fill = graph.configuration.line.is_filled ? "tozeroy" : nothing,
     )
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     push_vertical_bands_shapes(
         shapes,
@@ -1548,7 +1548,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     end
     scaled_ys_range = final_scaled_range(implicit_scaled_ys_range, graph.configuration.y_axis)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     if graph.configuration.stacking === nothing
         stack_group = nothing
@@ -1599,7 +1599,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         )
     end
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     push_vertical_bands_shapes(
         shapes,
@@ -1727,7 +1727,7 @@ function unify_lines_points(
 end
 
 function push_line_trace!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     line_color::Maybe{AbstractString},
@@ -1747,7 +1747,7 @@ function push_line_trace!(;
 )::Nothing
     push!(  # NOJET
         traces,
-        scatter(;  # NOLINT
+        scatter(;
             x = scaled_points_xs.values,
             y = scaled_points_ys.values,
             marker_size = points_size,
@@ -1801,9 +1801,9 @@ function scatters_layout(;
     graph::Union{PointsGraph, LineGraph, LinesGraph},
     scaled_xs_range::Range,
     scaled_ys_range::Range,
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     has_legend::Bool,
-)::Layout  # NOLINT
+)::Layout
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
 
     set_layout_axis!(
@@ -1838,7 +1838,7 @@ function points_density(
     points_xs::AbstractVector{<:Real},
     points_ys::AbstractVector{<:Real},
 )::AbstractVector{<:AbstractFloat}
-    itk = InterpKDE(kde((points_xs, points_ys)))  # NOJET # NOLINT
+    itk = InterpKDE(kde((points_xs, points_ys)))  # NOJET
     return [itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
 end
 

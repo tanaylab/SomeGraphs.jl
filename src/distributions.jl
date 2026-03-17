@@ -488,7 +488,7 @@ end
 function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     implicit_values_range = MaybeRange()
 
@@ -553,7 +553,7 @@ function distribution_trace(;
     implicit_values_range::MaybeRange,
     scale_group::Maybe{AbstractString} = nothing,
     is_one_of_many::Bool,
-)::GenericTrace  # NOLINT
+)::GenericTrace
     scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false, copy = true)
     collect_range!(implicit_values_range, scaled_values)
 
@@ -606,7 +606,7 @@ function distribution_trace(;
             @assert false
         end
 
-        return scatter(;  # NOLINT
+        return scatter(;
             x = xs,
             y = ys,
             xaxis = plotly_axis("x", xaxis_index; short = true, force = is_one_of_many),
@@ -655,11 +655,11 @@ function distribution_trace(;
         end
 
         if configuration.distribution.style in (BoxDistribution, BoxOutliersDistribution)
-            tracer = box  # NOLINT
+            tracer = box
         elseif configuration.distribution.style == HistogramDistribution
-            tracer = histogram  # NOLINT
+            tracer = histogram
         else
-            tracer = violin  # NOLINT
+            tracer = violin
         end
 
         return tracer(;
@@ -692,10 +692,10 @@ function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
     implicit_values_range::MaybeRange,
     has_legend::Bool,
-)::Layout  # NOLINT
+)::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     if graph.configuration.distribution.values_orientation == VerticalValues
         value_axis_letter = "y"
