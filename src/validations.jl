@@ -138,13 +138,13 @@ end
 
 Validate the `value` of a `field`.
 """
-function validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
+function validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing  # UNTESTED
     validate_in(context, field) do
         return validate(context, value)
     end
 end
 
-function validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
+function validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing  # UNTESTED
     validate_in(context, field) do
         return validate(context, value, extra)
     end
@@ -304,7 +304,7 @@ function validate_vector_is_not_empty(
     return nothing
 end
 
-function validate_vector_is_not_empty(context::ValidationContext, vector::AbstractVector)::Nothing
+function validate_vector_is_not_empty(context::ValidationContext, vector::AbstractVector)::Nothing  # UNTESTED
     if isempty(vector)
         throw(ArgumentError("empty vector $(location(context))"))
     end
@@ -338,7 +338,7 @@ function validate_vector_entries(
     return nothing
 end
 
-function validate_vector_entries(
+function validate_vector_entries(  # UNTESTED
     validation::Function,
     context::ValidationContext,
     vector::Maybe{AbstractVector},
@@ -454,7 +454,7 @@ function validate_dict_is_not_empty(context::ValidationContext, field::AbstractS
     return nothing
 end
 
-function validate_dict_is_not_empty(context::ValidationContext, dict::AbstractDict)::Nothing
+function validate_dict_is_not_empty(context::ValidationContext, dict::AbstractDict)::Nothing  # UNTESTED
     if isempty(dict)
         throw(ArgumentError("empty dict $(location(context))"))
     end

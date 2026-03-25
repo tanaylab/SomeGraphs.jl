@@ -673,7 +673,7 @@ end
 function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()
+    traces = Vector{GenericTrace}()  # NOLINT
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
@@ -775,7 +775,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     push!(
         traces,
-        heatmap(;
+        heatmap(;  # NOLINT
             name = "",
             x = collect(1:n_expanded_columns),
             y = collect(1:n_expanded_rows),
@@ -1269,25 +1269,25 @@ function finalize_order(;
     end
 end
 
-function hclust_linkage(linkage::HeatmapLinkage)::Symbol
+function hclust_linkage(linkage::HeatmapLinkage)::Symbol  # UNTESTED
     if linkage == SingleLinkage
-        return :single  # UNTESTED
+        return :single
     elseif linkage == AverageLinkage
-        return :average  # UNTESTED
+        return :average
     elseif linkage == CompleteLinkage
-        return :complete  # UNTESTED
+        return :complete
     elseif linkage == WardLinkage
         return :ward
-    elseif linkage == WardPreSquaredLinkage  # UNTESTED
-        return :ward_presquared  # UNTESTED
+    elseif linkage == WardPreSquaredLinkage
+        return :ward_presquared
     else
         @assert false
     end
 end
 
-function hclust_branchorder(reorder::HeatmapReorder)::Symbol
+function hclust_branchorder(reorder::HeatmapReorder)::Symbol  # UNTESTED
     if reorder == RCompatibleHclust
-        return :r  # UNTESTED
+        return :r
     elseif reorder == OptimalHclust
         return :optimal
     else
@@ -1296,7 +1296,7 @@ function hclust_branchorder(reorder::HeatmapReorder)::Symbol
 end
 
 function push_dendogram_trace!(;
-    traces::Vector{GenericTrace},
+    traces::Vector{GenericTrace},  # NOLINT
     clusters::Hclust,
     values_orientation::ValuesOrientation,
     dendogram_line::LineConfiguration,
@@ -1320,7 +1320,7 @@ function push_dendogram_trace!(;
 
     push!(
         traces,
-        scatter(;
+        scatter(;  # NOLINT
             x = xs,
             y = ys,
             x0 = nothing,

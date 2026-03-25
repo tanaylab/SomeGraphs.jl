@@ -58,7 +58,7 @@ A plotly figure contains everything needed to display an interactive graph (or g
 converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the
 interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
 """
-PlotlyFigure = Union{Plot, SyncPlot}
+PlotlyFigure = Union{Plot, SyncPlot}  # NOLINT
 
 """
 A configuration of a [`Graph`](@ref) specifies how to display the data while being (as much as possible) independent of
@@ -91,7 +91,7 @@ which can be displayed in interactive environments (Julia REPL and/or Jupyter no
     configuration::C = C()
 end
 
-function Base.show(io::IO, graph::Graph)::Nothing
+function Base.show(io::IO, graph::Graph)::Nothing  # UNTESTED
     print(io, "$(typeof(graph)) (use .figure to show the graph)")
     return nothing
 end
@@ -129,7 +129,7 @@ Save the graph to a file. Unlike the Plotly `savefig` function, this function wi
 `height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name.
 """
 function save_graph(graph::Graph, output_file::AbstractString)::Nothing
-    savefig(  # NOJET
+    savefig(  # NOLINT NOJET
         graph_to_figure(graph),
         output_file;
         width = graph.configuration.figure.width,
@@ -174,7 +174,7 @@ white space. In the 21st century. Sigh.
     top::Int = 50
 end
 
-function Validations.validate(context::ValidationContext, margins_configuration::MarginsConfiguration)::Nothing
+function Validations.validate(context::ValidationContext, margins_configuration::MarginsConfiguration)::Nothing  # UNTESTED
     for (field, value) in (
         ("left", margins_configuration.left),
         ("right", margins_configuration.right),
@@ -235,7 +235,7 @@ requires more offsets.
     colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
 end
 
-function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
+function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing  # UNTESTED
     validate_field(context, "margins", figure_configuration.margins)
     validate_in(context, "width") do
         validate_is_above(context, figure_configuration.width, 0)
@@ -482,7 +482,7 @@ By default, the `color` is chosen automatically.
     color::Maybe{AbstractString} = nothing
 end
 
-function Validations.validate(context::ValidationContext, line_configuration::LineConfiguration)::Nothing
+function Validations.validate(context::ValidationContext, line_configuration::LineConfiguration)::Nothing  # UNTESTED
     validate_in(context, "width") do
         validate_is_above(context, line_configuration.width, 0)
         return nothing
@@ -513,7 +513,7 @@ this offset is not specified.
     line::LineConfiguration = LineConfiguration()
 end
 
-function Validations.validate(
+function Validations.validate(  # UNTESTED
     context::ValidationContext,
     band_configuration::BandConfiguration,
     axis_configuration::Maybe{AxisConfiguration} = nothing,
@@ -1471,7 +1471,7 @@ sizes are in the usual inconvenient units (fraction of the overall graph size), 
     gap::AbstractFloat = 0.005
 end
 
-function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
+function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing  # UNTESTED
     validate_in(context, "annotation_size") do
         validate_is_above(context, annotation_size.size, 0)
         validate_is_below(context, annotation_size.size, 1)

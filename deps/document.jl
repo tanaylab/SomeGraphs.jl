@@ -18,7 +18,7 @@ end
 
 global_logger(detect_problems)
 
-push!(LOAD_PATH, ".")
+push!(LOAD_PATH, joinpath(@__DIR__, ".."))
 
 using SomeGraphs
 using Pkg

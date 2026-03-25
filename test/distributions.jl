@@ -1,4 +1,4 @@
-function test_distributions(
+function test_distributions(  # UNTESTED
     setup::Function,
     graph::Graph,
     plurality::AbstractString,
