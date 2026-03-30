@@ -234,13 +234,13 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     validate_vector_length(context, "points_ys", data.points_ys, "points_xs", n_points)
     validate_vector_length(context, "points_sizes", data.points_sizes, "points_xs", n_points)
     validate_vector_length(context, "points_colors", data.points_colors, "points_xs", n_points)
-    validate_vector_length(context, "points_hovers", data.points_sizes, "points_xs", n_points)
+    validate_vector_length(context, "points_hovers", data.points_hovers, "points_xs", n_points)
     validate_vector_length(context, "points_mask", data.points_mask, "points_xs", n_points)
     validate_vector_length(context, "points_order", data.points_order, "points_xs", n_points)
 
     validate_vector_length(context, "borders_colors", data.borders_colors, "points_xs", n_points)
     validate_vector_length(context, "borders_sizes", data.borders_sizes, "points_xs", n_points)
-    validate_vector_length(context, "borders_mask", data.borders_sizes, "points_xs", n_points)
+    validate_vector_length(context, "borders_mask", data.borders_mask, "points_xs", n_points)
 
     if data.edges_points === nothing
         n_edges = 0
@@ -722,29 +722,39 @@ function compute_points_hovers(;
                 eltype(configured_borders.colors.original_color_values) <: Real ||
                 configured_borders.colors.colors_configuration.palette !== nothing
             )
+        has_both_colors =
+            configured_points.colors.original_color_values !== nothing &&
+            configured_borders.colors.original_color_values !== nothing
 
         if show_points_colors || show_borders_colors
             push!(texts, "Color:")
             if show_points_colors
+                if has_both_colors
+                    push!(texts, " in")
+                end
                 push!(texts, " $(configured_points.colors.original_color_values[point_index])")
             end
             if show_borders_colors
-                if show_borders_colors
-                    push!(texts, " in")
+                if has_both_colors
+                    push!(texts, " out")
                 end
                 push!(texts, " $(configured_borders.colors.original_color_values[point_index])")
             end
             push!(texts, "<br>")
         end
 
+        has_both_sizes = configured_points.original_sizes !== nothing && configured_borders.original_sizes !== nothing
         if configured_points.original_sizes !== nothing || configured_borders.original_sizes !== nothing
             push!(texts, "Size:")
             if configured_points.original_sizes !== nothing
+                if has_both_sizes
+                    push!(texts, " in")
+                end
                 push!(texts, " $(configured_points.original_sizes[point_index])")
             end
             if configured_borders.original_sizes !== nothing
-                if configured_points.original_sizes !== nothing
-                    push!(texts, " in")
+                if has_both_sizes
+                    push!(texts, " out")
                 end
                 push!(texts, " $(configured_borders.original_sizes[point_index])")
             end
@@ -755,7 +765,7 @@ function compute_points_hovers(;
         if !has_same_xs
             push!(texts, " = $(scaled_x_prefix)$(scaled_points_xs.values[point_index])$(scaled_x_suffix)")
         end
-        push!(texts, "<br>Y: $(original_points_ys[point_index])$(scaled_x_suffix)")
+        push!(texts, "<br>Y: $(original_points_ys[point_index])$(scaled_y_suffix)")
         if !has_same_ys
             push!(texts, " = $(scaled_y_prefix)$(scaled_points_ys.values[point_index])$(scaled_y_suffix)")
         end

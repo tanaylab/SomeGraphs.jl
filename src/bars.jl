@@ -81,7 +81,7 @@ end
         bars_colors_title::Maybe{AbstractString} = nothing
         bars_values::AbstractVector{<:Real} = Float32[]
         bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        bars_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}} = nothing
+        bars_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
         bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         value_bands::BandsData = BandsData()
         bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -133,7 +133,7 @@ A graph showing a single series of bars. See [`BarsGraphData`](@ref) and [`BarsG
 BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
 
 """
-    function line_graph(;
+    function bars_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         bar_axis_title::Maybe{AbstractString} = nothing,
         value_axis_title::Maybe{AbstractString} = nothing,
@@ -309,8 +309,8 @@ function Validations.validate(context::ValidationContext, configuration::SeriesB
     end
 
     validate_in(context, "series_gap") do
-        validate_is_at_least(context, configuration.bars_gap, 0)
-        return validate_is_below(context, configuration.bars_gap, 1)
+        validate_is_at_least(context, configuration.series_gap, 0)
+        return validate_is_below(context, configuration.series_gap, 1)
     end
 
     if configuration.stacking !== nothing && configuration.series_gap !== nothing
@@ -385,7 +385,7 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
 
     validate_vector_length(context, "series_names", data.series_names, "series_bars_values", n_series)
     validate_vector_length(context, "series_colors", data.series_colors, "series_bars_values", n_series)
-    validate_vector_length(context, "series_hovers", data.series_colors, "series_bars_values", n_series)
+    validate_vector_length(context, "series_hovers", data.series_hovers, "series_bars_values", n_series)
 
     validate_vector_entries(context, "series_colors", data.series_colors) do _, series_color
         validate_is_color(context, series_color)

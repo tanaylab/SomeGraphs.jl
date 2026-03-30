@@ -194,7 +194,7 @@ end
         margins::MarginsConfiguration = MarginsConfiguration()
         width::Maybe{Int} = nothing
         height::Maybe{Int} = nothing
-        grid_color::AbstractString = "lightgrey"
+        template::Maybe{AbstractString} = nothing
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
         colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
@@ -532,9 +532,9 @@ end
 
 """
     @kwdef mutable struct BandsConfiguration <: Validated
-        low::BandConfiguration = BandConfiguration(is_dashed = true)
+        low::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DotLine))
         middle::BandConfiguration = BandConfiguration()
-        high::BandConfiguration = BandConfiguration(is_dashed = true)
+        high::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DashLine))
     end
 
 Configure the partition of the graph up to three band regions. The `low` and `high` bands are for the "outer" regions

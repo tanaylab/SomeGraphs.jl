@@ -101,12 +101,12 @@ end
         columns_metric::Maybe{PreMetric} = nothing
         rows_groups_gap::Maybe{Integer} = 1
         columns_groups_gap::Maybe{Integer} = 1
-        rows_dendogram_size::Real = nothing
+        rows_dendogram_size::Maybe{Real} = nothing
         columns_dendogram_size::Maybe{Real} = nothing
         rows_dendogram_line::LineConfiguration = LineConfiguration()
         columns_dendogram_line::LineConfiguration = LineConfiguration()
         origin::HeatmapOrigin = HeatmapBottomLeft
-        final_order::Maybe{HeatmapGraphOrder} = None
+        final_order::Maybe{HeatmapGraphOrder} = nothing
     end
 
 Configure a graph showing a heatmap.

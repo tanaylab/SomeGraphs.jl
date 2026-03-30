@@ -1,6 +1,6 @@
 """
 Utility functions for defining graph types. We do not re-export all symbols from this sub-module to the global
-`MCGraphs` namespace. You can safely ignore these unless you are implementing a new graph type.
+`SomeGraphs` namespace. You can safely ignore these unless you are implementing a new graph type.
 """
 module Utilities
 
@@ -326,7 +326,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                                                                      # UNTESTED
+        lock(COLOR_SCALES_LOCK) do                                                                                                                                                                        # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -542,8 +542,8 @@ function set_layout_colorscale!(;
                 else
                     colors_scale_offsets[next_colors_scale_offset_index[1]]
                 end,
-                :ticksprefix => axis_ticks_prefix(colors_configuration.axis),
-                :tickssuffix => axis_ticks_suffix(colors_configuration.axis),
+                :tickprefix => axis_ticks_prefix(colors_configuration.axis),
+                :ticksuffix => axis_ticks_suffix(colors_configuration.axis),
             )
         end,
     )
