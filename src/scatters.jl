@@ -1850,4 +1850,155 @@ function points_density(
     return [itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
 end
 
+function Common.flip_axes(graph::PointsGraph)::PointsGraph  # UNTESTED
+    return PointsGraph(
+        PointsGraphData(;
+            figure_title = graph.data.figure_title,
+            x_axis_title = graph.data.y_axis_title,
+            y_axis_title = graph.data.x_axis_title,
+            points_colors_title = graph.data.points_colors_title,
+            borders_colors_title = graph.data.borders_colors_title,
+            edges_colors_title = graph.data.edges_colors_title,
+            points_xs = graph.data.points_ys,
+            points_ys = graph.data.points_xs,
+            points_sizes = graph.data.points_sizes,
+            points_colors = graph.data.points_colors,
+            points_hovers = graph.data.points_hovers,
+            points_mask = graph.data.points_mask,
+            points_order = graph.data.points_order,
+            borders_colors = graph.data.borders_colors,
+            borders_sizes = graph.data.borders_sizes,
+            borders_mask = graph.data.borders_mask,
+            edges_points = graph.data.edges_points,
+            edges_colors = graph.data.edges_colors,
+            edges_sizes = graph.data.edges_sizes,
+            edges_styles = graph.data.edges_styles,
+            edges_mask = graph.data.edges_mask,
+            edges_order = graph.data.edges_order,
+            vertical_bands = graph.data.horizontal_bands,
+            horizontal_bands = graph.data.vertical_bands,
+            diagonal_bands = graph.data.diagonal_bands,
+        ),
+        PointsGraphConfiguration(;
+            figure = graph.configuration.figure,
+            x_axis = graph.configuration.y_axis,
+            y_axis = graph.configuration.x_axis,
+            points = graph.configuration.points,
+            borders = graph.configuration.borders,
+            edges = graph.configuration.edges,
+            edges_style = graph.configuration.edges_style,
+            edges_over_points = graph.configuration.edges_over_points,
+            vertical_bands = graph.configuration.horizontal_bands,
+            horizontal_bands = graph.configuration.vertical_bands,
+            diagonal_bands = graph.configuration.diagonal_bands,
+        ),
+    )
+end
+
+function Common.flip_axes(graph::LineGraph)::LineGraph  # UNTESTED
+    return LineGraph(
+        LineGraphData(;
+            figure_title = graph.data.figure_title,
+            x_axis_title = graph.data.y_axis_title,
+            y_axis_title = graph.data.x_axis_title,
+            points_xs = graph.data.points_ys,
+            points_ys = graph.data.points_xs,
+            points_hovers = graph.data.points_hovers,
+            vertical_bands = graph.data.horizontal_bands,
+            horizontal_bands = graph.data.vertical_bands,
+            diagonal_bands = graph.data.diagonal_bands,
+        ),
+        LineGraphConfiguration(;
+            figure = graph.configuration.figure,
+            x_axis = graph.configuration.y_axis,
+            y_axis = graph.configuration.x_axis,
+            line = graph.configuration.line,
+            show_points = graph.configuration.show_points,
+            points_size = graph.configuration.points_size,
+            points_color = graph.configuration.points_color,
+            vertical_bands = graph.configuration.horizontal_bands,
+            horizontal_bands = graph.configuration.vertical_bands,
+            diagonal_bands = graph.configuration.diagonal_bands,
+        ),
+    )
+end
+
+function Common.flip_axes(graph::LinesGraph)::LinesGraph  # UNTESTED
+    return LinesGraph(
+        LinesGraphData(;
+            figure_title = graph.data.figure_title,
+            x_axis_title = graph.data.y_axis_title,
+            y_axis_title = graph.data.x_axis_title,
+            lines_titles = graph.data.lines_titles,
+            lines_points_xs = graph.data.lines_points_ys,
+            lines_points_ys = graph.data.lines_points_xs,
+            lines_points_sizes = graph.data.lines_points_sizes,
+            lines_points_colors = graph.data.lines_points_colors,
+            lines_widths = graph.data.lines_widths,
+            lines_colors = graph.data.lines_colors,
+            lines_styles = graph.data.lines_styles,
+            lines_order = graph.data.lines_order,
+            vertical_bands = graph.data.horizontal_bands,
+            horizontal_bands = graph.data.vertical_bands,
+            diagonal_bands = graph.data.diagonal_bands,
+        ),
+        LinesGraphConfiguration(;
+            figure = graph.configuration.figure,
+            x_axis = graph.configuration.y_axis,
+            y_axis = graph.configuration.x_axis,
+            line = graph.configuration.line,
+            show_points = graph.configuration.show_points,
+            points_size = graph.configuration.points_size,
+            points_color = graph.configuration.points_color,
+            vertical_bands = graph.configuration.horizontal_bands,
+            horizontal_bands = graph.configuration.vertical_bands,
+            diagonal_bands = graph.configuration.diagonal_bands,
+            show_legend = graph.configuration.show_legend,
+            stacking = graph.configuration.stacking,
+        ),
+    )
+end
+
+function Common.flip_axes!(graph::PointsGraph)::PointsGraph  # UNTESTED
+    data = graph.data
+    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
+    data.points_xs, data.points_ys = data.points_ys, data.points_xs
+    data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
+
+    configuration = graph.configuration
+    configuration.x_axis, configuration.y_axis = configuration.y_axis, configuration.x_axis
+    configuration.vertical_bands, configuration.horizontal_bands =
+        configuration.horizontal_bands, configuration.vertical_bands
+
+    return graph
+end
+
+function Common.flip_axes!(graph::LineGraph)::LineGraph  # UNTESTED
+    data = graph.data
+    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
+    data.points_xs, data.points_ys = data.points_ys, data.points_xs
+    data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
+
+    configuration = graph.configuration
+    configuration.x_axis, configuration.y_axis = configuration.y_axis, configuration.x_axis
+    configuration.vertical_bands, configuration.horizontal_bands =
+        configuration.horizontal_bands, configuration.vertical_bands
+
+    return graph
+end
+
+function Common.flip_axes!(graph::LinesGraph)::LinesGraph  # UNTESTED
+    data = graph.data
+    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
+    data.lines_points_xs, data.lines_points_ys = data.lines_points_ys, data.lines_points_xs
+    data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
+
+    configuration = graph.configuration
+    configuration.x_axis, configuration.y_axis = configuration.y_axis, configuration.x_axis
+    configuration.vertical_bands, configuration.horizontal_bands =
+        configuration.horizontal_bands, configuration.vertical_bands
+
+    return graph
+end
+
 end  # module

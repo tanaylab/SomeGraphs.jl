@@ -1531,4 +1531,96 @@ function expand_hovers(;
     return expanded_hovers
 end
 
+function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph  # UNTESTED
+    return HeatmapGraph(
+        HeatmapGraphData(;
+            figure_title = graph.data.figure_title,
+            x_axis_title = graph.data.y_axis_title,
+            y_axis_title = graph.data.x_axis_title,
+            entries_colors_title = graph.data.entries_colors_title,
+            entries_values = graph.data.entries_values === nothing ? nothing : transpose(graph.data.entries_values),
+            rows_names = graph.data.columns_names,
+            columns_names = graph.data.rows_names,
+            entries_hovers = if graph.data.entries_hovers === nothing
+                nothing
+            else
+                PermutedDimsArray(graph.data.entries_hovers, (2, 1))  # NOJET
+            end,
+            rows_hovers = graph.data.columns_hovers,
+            columns_hovers = graph.data.rows_hovers,
+            rows_annotations = graph.data.columns_annotations,
+            columns_annotations = graph.data.rows_annotations,
+            rows_arrange_by = if graph.data.columns_arrange_by === nothing
+                nothing
+            else
+                transpose(graph.data.columns_arrange_by)
+            end,
+            columns_arrange_by = if graph.data.rows_arrange_by === nothing
+                nothing
+            else
+                transpose(graph.data.rows_arrange_by)
+            end,
+            rows_order = graph.data.columns_order,
+            columns_order = graph.data.rows_order,
+            rows_groups = graph.data.columns_groups,
+            columns_groups = graph.data.rows_groups,
+        ),
+        HeatmapGraphConfiguration(;
+            figure = graph.configuration.figure,
+            x_axis_title = graph.configuration.y_axis_title,
+            y_axis_title = graph.configuration.x_axis_title,
+            entries_colors = graph.configuration.entries_colors,
+            rows_annotations = graph.configuration.columns_annotations,
+            columns_annotations = graph.configuration.rows_annotations,
+            rows_reorder = graph.configuration.columns_reorder,
+            columns_reorder = graph.configuration.rows_reorder,
+            rows_linkage = graph.configuration.columns_linkage,
+            columns_linkage = graph.configuration.rows_linkage,
+            rows_metric = graph.configuration.columns_metric,
+            columns_metric = graph.configuration.rows_metric,
+            rows_groups_gap = graph.configuration.columns_groups_gap,
+            columns_groups_gap = graph.configuration.rows_groups_gap,
+            rows_dendogram_size = graph.configuration.columns_dendogram_size,
+            columns_dendogram_size = graph.configuration.rows_dendogram_size,
+            rows_dendogram_line = graph.configuration.columns_dendogram_line,
+            columns_dendogram_line = graph.configuration.rows_dendogram_line,
+            origin = graph.configuration.origin,
+        ),
+    )
+end
+
+function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph  # UNTESTED
+    data = graph.data
+    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
+    data.entries_values = data.entries_values === nothing ? nothing : transpose(data.entries_values)
+    data.entries_hovers = data.entries_hovers === nothing ? nothing : PermutedDimsArray(data.entries_hovers, (2, 1))  # NOJET
+    data.rows_names, data.columns_names = data.columns_names, data.rows_names
+    data.rows_hovers, data.columns_hovers = data.columns_hovers, data.rows_hovers
+    data.rows_annotations, data.columns_annotations = data.columns_annotations, data.rows_annotations
+    old_rows_arrange_by = data.rows_arrange_by
+    old_columns_arrange_by = data.columns_arrange_by
+    data.rows_arrange_by = old_columns_arrange_by === nothing ? nothing : transpose(old_columns_arrange_by)
+    data.columns_arrange_by = old_rows_arrange_by === nothing ? nothing : transpose(old_rows_arrange_by)
+    data.rows_order, data.columns_order = data.columns_order, data.rows_order
+    data.rows_groups, data.columns_groups = data.columns_groups, data.rows_groups
+
+    configuration = graph.configuration
+    configuration.x_axis_title, configuration.y_axis_title = configuration.y_axis_title, configuration.x_axis_title
+    configuration.rows_annotations, configuration.columns_annotations =
+        configuration.columns_annotations, configuration.rows_annotations
+    configuration.rows_reorder, configuration.columns_reorder =
+        configuration.columns_reorder, configuration.rows_reorder
+    configuration.rows_linkage, configuration.columns_linkage =
+        configuration.columns_linkage, configuration.rows_linkage
+    configuration.rows_metric, configuration.columns_metric = configuration.columns_metric, configuration.rows_metric
+    configuration.rows_groups_gap, configuration.columns_groups_gap =
+        configuration.columns_groups_gap, configuration.rows_groups_gap
+    configuration.rows_dendogram_size, configuration.columns_dendogram_size =
+        configuration.columns_dendogram_size, configuration.rows_dendogram_size
+    configuration.rows_dendogram_line, configuration.columns_dendogram_line =
+        configuration.columns_dendogram_line, configuration.rows_dendogram_line
+
+    return graph
+end
+
 end

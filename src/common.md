@@ -14,6 +14,11 @@ SomeGraphs.Common.AbstractGraphConfiguration
 SomeGraphs.Common.AbstractGraphData
 SomeGraphs.Common.PlotlyFigure
 SomeGraphs.Common.save_graph
+SomeGraphs.Common.flip_axes
+SomeGraphs.Common.flip_axes!
+```
+
+```@docs
 SomeGraphs.Common.FigureConfiguration
 SomeGraphs.Common.Stacking
 ```

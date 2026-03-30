@@ -27,6 +27,26 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+Flip axes (non-mutating):
+
+```@example
+using SomeGraphs
+graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+flipped = flip_axes(graph)
+using PlotlyDocumenter
+to_documenter(flipped.figure)
+```
+
+Flip axes (in-place):
+
+```@example
+using SomeGraphs
+graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+flip_axes!(graph)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 Borders:
 
 ```@example

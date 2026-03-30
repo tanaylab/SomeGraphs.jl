@@ -37,6 +37,8 @@ export Stacking
 export ValuesOrientation
 export VerticalValues
 export categorical_palette
+export flip_axes
+export flip_axes!
 export save_graph
 
 using Base.Multimedia
@@ -154,6 +156,23 @@ You can just write `graph.figure` instead of `graph_to_figure(graph)`.
     `savefig` on the result of `graph_to_figure`.
 """
 function graph_to_figure(::Graph)::PlotlyFigure end
+
+"""
+    flip_axes(graph::Graph)::Graph
+
+Return a new graph with the axes flipped (X <-> Y for scatter/line graphs, rows <-> columns for heatmap graphs). The
+returned graph shares storage of arrays and configuration objects from the original graph where possible. Matrices are
+transposed using zero-copy views (`transpose` for numeric, `PermutedDimsArray` for non-numeric).
+"""
+function flip_axes(::Graph)::Graph end  # NOJET
+
+"""
+    flip_axes!(graph::Graph)::Graph
+
+Flip the axes of the given graph in-place (X <-> Y for scatter/line graphs, rows <-> columns for heatmap graphs) and
+return it. Matrices are transposed using zero-copy views (`transpose` for numeric, `PermutedDimsArray` for non-numeric).
+"""
+function flip_axes!(::Graph)::Graph end  # NOJET
 
 """
     @kwdef mutable struct MarginsConfiguration <: Validated

@@ -39,6 +39,44 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+Flip axes (non-mutating):
+
+```@example
+using SomeGraphs
+graph = heatmap_graph(;
+    entries_values = [
+        4 1 5;
+        3 2 4;
+        2 3 3;
+        1 4 2;
+    ],
+    rows_names = ["A", "B", "C", "D"],
+    columns_names = ["X", "Y", "Z"],
+)
+flipped = flip_axes(graph)
+using PlotlyDocumenter
+to_documenter(flipped.figure)
+```
+
+Flip axes (in-place):
+
+```@example
+using SomeGraphs
+graph = heatmap_graph(;
+    entries_values = [
+        4 1 5;
+        3 2 4;
+        2 3 3;
+        1 4 2;
+    ],
+    rows_names = ["A", "B", "C", "D"],
+    columns_names = ["X", "Y", "Z"],
+)
+flip_axes!(graph)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 Annotations:
 
 ```@example
