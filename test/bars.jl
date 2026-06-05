@@ -11,6 +11,11 @@ nested_test("bars") do
                            """) validate(ValidationContext(["graph"]), graph)
     end
 
+    nested_test("svg") do
+        test_svg(graph, "bars.svg")
+        return nothing
+    end
+
     for (orientation_name, orientation_value) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
         nested_test(orientation_name) do
             graph.configuration.values_orientation = orientation_value

@@ -36,7 +36,7 @@ export validate_values
 
 using Colors
 using NamedArrays
-using PlotlyJS
+using PlotlyBase
 using Reexport
 
 using ..Validations
@@ -328,7 +328,7 @@ function validate_colors(
     end
 
     if colors_configuration.palette isa AbstractString
-        lock(COLOR_SCALES_LOCK) do                                                                                                                                                                              # UNTESTED
+        lock(COLOR_SCALES_LOCK) do   # UNTESTED
             @assert haskey(CACHED_COLOR_SCALES, colors_configuration.palette)
         end
     end
@@ -383,9 +383,9 @@ function plotly_layout(
     title::Maybe{AbstractString},
     has_legend::Bool,
     has_hovers::Bool = false,
-    shapes::Maybe{AbstractVector{Shape}} = nothing,  # NOLINT
-)::Layout  # NOLINT
-    return Layout(;  # NOLINT NOJET
+    shapes::Maybe{AbstractVector{Shape}} = nothing,
+)::Layout
+    return Layout(;  # NOJET
         title,
         showlegend = has_legend,
         legend_itemdoubleclick = has_legend ? false : nothing,
@@ -417,7 +417,7 @@ end
 Add a Plotly `axis` in a `layout` using the `axis_configuration`.
 """
 function set_layout_axis!(
-    layout::Layout,  # NOLINT
+    layout::Layout,
     axis::AbstractString,
     axis_configuration::AxisConfiguration;
     title::Maybe{AbstractString} = nothing,
@@ -500,7 +500,7 @@ Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration
 placement of color scales, the `offset` must be specified manually to avoid overlaps.
 """
 function set_layout_colorscale!(;
-    layout::Layout,  # NOLINT
+    layout::Layout,
     colors_scale_index::Integer,
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
@@ -563,18 +563,18 @@ end
 
 Wrap a `trace` or a set of `traces` with the accompanying `layout` in a `PlotlyFigure`.
 """
-function plotly_figure(trace::GenericTrace, layout::Layout)::PlotlyFigure  # NOLINT # UNTESTED
+function plotly_figure(trace::GenericTrace, layout::Layout)::PlotlyFigure
     purge_nulls!(trace.fields)
     purge_nulls!(layout.fields)
-    return plot(trace, layout)  # NOLINT NOJET
+    return Plot(trace, layout)  # NOJET
 end
 
-function plotly_figure(traces::AbstractVector{<:GenericTrace}, layout::Layout)::PlotlyFigure  # NOLINT
+function plotly_figure(traces::AbstractVector{<:GenericTrace}, layout::Layout)::PlotlyFigure
     for trace in traces
         purge_nulls!(trace.fields)
     end
     purge_nulls!(layout.fields)
-    return plot(traces, layout)  # NOLINT NOJET
+    return Plot(traces, layout)  # NOJET
 end
 
 function purge_nulls!(dict::AbstractDict)::Nothing
@@ -724,11 +724,11 @@ function scale_axis_values(
     end
 end
 
-function floatify(::Nothing)::Nothing  # UNTESTED
+function floatify(::Nothing)::Nothing
     return nothing
 end
 
-function floatify(value::Real)::Float64  # UNTESTED
+function floatify(value::Real)::Float64
     return Float64(value)
 end
 
@@ -855,7 +855,7 @@ end
 Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
 """
 function push_vertical_bands_shapes(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     scaled_values_range::Range,
     bands_data::BandsData,
@@ -877,7 +877,7 @@ function push_vertical_bands_shapes(
         if scaled_offset !== nothing && band_configuration.line.style !== nothing
             push!(  # NOJET
                 shapes,
-                Shape(  # NOLINT
+                Shape(
                     "line";
                     line_color = band_configuration.line.color,
                     line_dash = plotly_line_dash(band_configuration.line.style),
@@ -895,7 +895,7 @@ function push_vertical_bands_shapes(
     if scaled_low_offset !== nothing && bands_configuration.low.line.is_filled
         push!(
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "rect";
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
@@ -913,7 +913,7 @@ function push_vertical_bands_shapes(
     if scaled_low_offset !== nothing && scaled_high_offset !== nothing && bands_configuration.middle.line.is_filled
         push!(
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "rect";
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.middle.line.color),
@@ -931,7 +931,7 @@ function push_vertical_bands_shapes(
     if scaled_high_offset !== nothing && bands_configuration.high.line.is_filled
         push!(
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "rect";
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.high.line.color),
@@ -963,7 +963,7 @@ Push shapes for plotting horizontal bands. These shapes need to be placed in the
 Plotly.
 """
 function push_horizontal_bands_shapes(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     scaled_values_range::Range,
     bands_data::BandsData,
@@ -985,7 +985,7 @@ function push_horizontal_bands_shapes(
         if scaled_offset !== nothing && band_configuration.line.style !== nothing
             push!(  # NOJET
                 shapes,
-                Shape(  # NOLINT
+                Shape(
                     "line";
                     line_color = band_configuration.line.color,
                     line_dash = plotly_line_dash(band_configuration.line.style),
@@ -1003,7 +1003,7 @@ function push_horizontal_bands_shapes(
     if scaled_low_offset !== nothing && bands_configuration.low.line.is_filled
         push!(
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "rect";
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
@@ -1021,7 +1021,7 @@ function push_horizontal_bands_shapes(
     if scaled_low_offset !== nothing && scaled_high_offset !== nothing && bands_configuration.middle.line.is_filled
         push!(
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "rect";
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.middle.line.color),
@@ -1039,7 +1039,7 @@ function push_horizontal_bands_shapes(
     if scaled_high_offset !== nothing && bands_configuration.high.line.is_filled
         push!(
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "rect";
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.high.line.color),
@@ -1078,7 +1078,7 @@ end
 Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
 """
 function push_diagonal_bands_shapes(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
@@ -1143,7 +1143,7 @@ function push_diagonal_bands_shapes(
 end
 
 function push_diagonal_bands_line(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
@@ -1161,7 +1161,7 @@ function push_diagonal_bands_line(
     if band_configuration.line.style !== nothing
         push!(  # NOJET
             shapes,
-            Shape(  # NOLINT
+            Shape(
                 "line";
                 line_color = band_configuration.line.color,
                 line_dash = plotly_line_dash(band_configuration.line.style),
@@ -1178,7 +1178,7 @@ function push_diagonal_bands_line(
     return (start_point, end_point)
 end
 
-function start_diagonal_band_point(::AxisConfiguration, ::Range, ::Range, ::Nothing)::Nothing  # UNTESTED
+function start_diagonal_band_point(::AxisConfiguration, ::Range, ::Range, ::Nothing)::Nothing
     return nothing
 end
 
@@ -1236,7 +1236,7 @@ function end_diagonal_band_point(
     end
 end
 
-function scale_axis_offset(axis_configuration::AxisConfiguration, offset::Real)::Real  # UNTESTED
+function scale_axis_offset(axis_configuration::AxisConfiguration, offset::Real)::Real
     if axis_configuration.percent
         scale = 100.0
     else
@@ -1259,7 +1259,7 @@ function is_in_bounds(x_scaled_values_range::Range, y_scaled_values_range::Range
 end
 
 function push_diagonal_bands_low_fill(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     band_points::Tuple{BandPoint, BandPoint},
@@ -1282,7 +1282,7 @@ function push_diagonal_bands_low_fill(
 end
 
 function push_diagonal_bands_high_fill(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     band_points::Tuple{BandPoint, BandPoint},
@@ -1305,7 +1305,7 @@ function push_diagonal_bands_high_fill(
 end
 
 function push_diagonal_bands_middle_fill(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     low_band_points::Tuple{BandPoint, BandPoint},
@@ -1388,7 +1388,7 @@ function to_top_right(
 end
 
 function push_fill_path(
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     path_parts::AbstractVector{<:AbstractString},
     band_configuration::BandConfiguration,
 )::Nothing
@@ -1396,7 +1396,7 @@ function push_fill_path(
 
     push!(
         shapes,
-        Shape(  # NOLINT
+        Shape(
             "path";
             layer = "below",
             fillcolor = fill_color(band_configuration.line.color),
@@ -1415,7 +1415,7 @@ end
 
 Return a fill color based on a `line_color`. The fill color is twice as transparent as the line color.
 """
-function fill_color(::Nothing)::Nothing  # UNTESTED
+function fill_color(::Nothing)::Nothing
     return nothing
 end
 
@@ -1646,7 +1646,7 @@ function plotly_sub_graph_axes(;
     end
 end
 
-function plotly_sub_graph_axis(::Nothing)::Tuple{Nothing, Nothing}  # UNTESTED
+function plotly_sub_graph_axis(::Nothing)::Tuple{Nothing, Nothing}
     return (nothing, nothing)
 end
 

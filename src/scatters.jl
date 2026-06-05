@@ -24,7 +24,7 @@ using ..Validations
 
 using KernelDensity
 using NamedArrays
-using PlotlyJS
+using PlotlyBase
 
 import ..Utilities.Maybe
 
@@ -43,7 +43,7 @@ lines.
     sizes::SizesConfiguration = SizesConfiguration()
 end
 
-function Validations.validate(context::ValidationContext, scatters_configuration::ScattersConfiguration)::Nothing  # UNTESTED
+function Validations.validate(context::ValidationContext, scatters_configuration::ScattersConfiguration)::Nothing
     validate_field(context, "colors", scatters_configuration.colors)
     validate_field(context, "sizes", scatters_configuration.sizes)
     return nothing
@@ -539,7 +539,7 @@ end
 function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
     scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
@@ -618,7 +618,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         push_edge_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_edges)
     end
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     push_vertical_bands_shapes(
         shapes,
@@ -809,7 +809,7 @@ function add_pixel_sizes(configured_points::ConfiguredScatters, configured_borde
 end
 
 function push_edge_traces!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     graph::PointsGraph,
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
@@ -847,7 +847,7 @@ function push_edge_traces!(;
 
             push!(  # NOJET
                 traces,
-                scatter(;  # NOLINT
+                scatter(;
                     x = [scaled_points_xs.values[from_point], scaled_points_xs.values[to_point]],
                     y = [scaled_points_ys.values[from_point], scaled_points_ys.values[to_point]],
                     line_width = prefer_data(configured_edges.pixel_sizes, edge_index, configured_edges.pixel_size),
@@ -878,7 +878,7 @@ function push_edge_traces!(;
 end
 
 function push_points_traces!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     configured_points::ConfiguredScatters,
@@ -967,7 +967,7 @@ function push_points_traces!(;
 end
 
 function push_points_trace!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     points_hovers::Maybe{AbstractVector{<:AbstractString}},
@@ -995,7 +995,7 @@ function push_points_trace!(;
     show_in_legend = configured_points.colors.show_in_legend
     push!(  # NOJET
         traces,
-        scatter(;  # NOLINT
+        scatter(;
             x = masked_values(scaled_points_xs.values, mask, order),
             y = masked_values(scaled_points_ys.values, mask, order),
             text = hovers,
@@ -1146,7 +1146,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
     scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
     scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     push_line_trace!(;
         traces,
@@ -1161,7 +1161,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         fill = graph.configuration.line.is_filled ? "tozeroy" : nothing,
     )
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     push_vertical_bands_shapes(
         shapes,
@@ -1556,7 +1556,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     end
     scaled_ys_range = final_scaled_range(implicit_scaled_ys_range, graph.configuration.y_axis)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     if graph.configuration.stacking === nothing
         stack_group = nothing
@@ -1607,7 +1607,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         )
     end
 
-    shapes = Shape[]  # NOLINT
+    shapes = Shape[]
 
     push_vertical_bands_shapes(
         shapes,
@@ -1735,7 +1735,7 @@ function unify_lines_points(
 end
 
 function push_line_trace!(;
-    traces::AbstractVector{GenericTrace},  # NOLINT
+    traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
     line_color::Maybe{AbstractString},
@@ -1755,7 +1755,7 @@ function push_line_trace!(;
 )::Nothing
     push!(  # NOJET
         traces,
-        scatter(;  # NOLINT
+        scatter(;
             x = scaled_points_xs.values,
             y = scaled_points_ys.values,
             marker_size = points_size,
@@ -1809,9 +1809,9 @@ function scatters_layout(;
     graph::Union{PointsGraph, LineGraph, LinesGraph},
     scaled_xs_range::Range,
     scaled_ys_range::Range,
-    shapes::AbstractVector{Shape},  # NOLINT
+    shapes::AbstractVector{Shape},
     has_legend::Bool,
-)::Layout  # NOLINT
+)::Layout
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
 
     set_layout_axis!(
@@ -1850,7 +1850,7 @@ function points_density(
     return [itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
 end
 
-function Common.flip_axes(graph::PointsGraph)::PointsGraph  # UNTESTED
+function Common.flip_axes(graph::PointsGraph)::PointsGraph
     return PointsGraph(
         PointsGraphData(;
             figure_title = graph.data.figure_title,
@@ -1895,7 +1895,7 @@ function Common.flip_axes(graph::PointsGraph)::PointsGraph  # UNTESTED
     )
 end
 
-function Common.flip_axes(graph::LineGraph)::LineGraph  # UNTESTED
+function Common.flip_axes(graph::LineGraph)::LineGraph
     return LineGraph(
         LineGraphData(;
             figure_title = graph.data.figure_title,
@@ -1923,7 +1923,7 @@ function Common.flip_axes(graph::LineGraph)::LineGraph  # UNTESTED
     )
 end
 
-function Common.flip_axes(graph::LinesGraph)::LinesGraph  # UNTESTED
+function Common.flip_axes(graph::LinesGraph)::LinesGraph
     return LinesGraph(
         LinesGraphData(;
             figure_title = graph.data.figure_title,
@@ -1959,7 +1959,7 @@ function Common.flip_axes(graph::LinesGraph)::LinesGraph  # UNTESTED
     )
 end
 
-function Common.flip_axes!(graph::PointsGraph)::PointsGraph  # UNTESTED
+function Common.flip_axes!(graph::PointsGraph)::PointsGraph
     data = graph.data
     data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
     data.points_xs, data.points_ys = data.points_ys, data.points_xs
@@ -1973,7 +1973,7 @@ function Common.flip_axes!(graph::PointsGraph)::PointsGraph  # UNTESTED
     return graph
 end
 
-function Common.flip_axes!(graph::LineGraph)::LineGraph  # UNTESTED
+function Common.flip_axes!(graph::LineGraph)::LineGraph
     data = graph.data
     data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
     data.points_xs, data.points_ys = data.points_ys, data.points_xs
@@ -1987,7 +1987,7 @@ function Common.flip_axes!(graph::LineGraph)::LineGraph  # UNTESTED
     return graph
 end
 
-function Common.flip_axes!(graph::LinesGraph)::LinesGraph  # UNTESTED
+function Common.flip_axes!(graph::LinesGraph)::LinesGraph
     data = graph.data
     data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
     data.lines_points_xs, data.lines_points_ys = data.lines_points_ys, data.lines_points_xs

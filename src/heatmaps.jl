@@ -34,7 +34,7 @@ using ..Validations
 
 using Clustering
 using Distances
-using PlotlyJS
+using PlotlyBase
 using Slanter
 
 import ..Bars.push_annotations_traces!
@@ -673,7 +673,7 @@ end
 function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    traces = Vector{GenericTrace}()  # NOLINT
+    traces = Vector{GenericTrace}()
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
@@ -775,7 +775,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     push!(
         traces,
-        heatmap(;  # NOLINT
+        heatmap(;
             name = "",
             x = collect(1:n_expanded_columns),
             y = collect(1:n_expanded_rows),
@@ -1269,7 +1269,7 @@ function finalize_order(;
     end
 end
 
-function hclust_linkage(linkage::HeatmapLinkage)::Symbol  # UNTESTED
+function hclust_linkage(linkage::HeatmapLinkage)::Symbol
     if linkage == SingleLinkage
         return :single
     elseif linkage == AverageLinkage
@@ -1285,7 +1285,7 @@ function hclust_linkage(linkage::HeatmapLinkage)::Symbol  # UNTESTED
     end
 end
 
-function hclust_branchorder(reorder::HeatmapReorder)::Symbol  # UNTESTED
+function hclust_branchorder(reorder::HeatmapReorder)::Symbol
     if reorder == RCompatibleHclust
         return :r
     elseif reorder == OptimalHclust
@@ -1296,7 +1296,7 @@ function hclust_branchorder(reorder::HeatmapReorder)::Symbol  # UNTESTED
 end
 
 function push_dendogram_trace!(;
-    traces::Vector{GenericTrace},  # NOLINT
+    traces::Vector{GenericTrace},
     clusters::Hclust,
     values_orientation::ValuesOrientation,
     dendogram_line::LineConfiguration,
@@ -1320,7 +1320,7 @@ function push_dendogram_trace!(;
 
     push!(
         traces,
-        scatter(;  # NOLINT
+        scatter(;
             x = xs,
             y = ys,
             x0 = nothing,
@@ -1531,7 +1531,7 @@ function expand_hovers(;
     return expanded_hovers
 end
 
-function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph  # UNTESTED
+function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph
     return HeatmapGraph(
         HeatmapGraphData(;
             figure_title = graph.data.figure_title,
@@ -1589,7 +1589,7 @@ function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph  # UNTESTED
     )
 end
 
-function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph  # UNTESTED
+function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph
     data = graph.data
     data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
     data.entries_values = data.entries_values === nothing ? nothing : transpose(data.entries_values)

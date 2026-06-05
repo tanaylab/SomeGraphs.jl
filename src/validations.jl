@@ -107,13 +107,13 @@ abstract type Validated end
 Validate the `value` which was accessed via the `context`, possibly using some `extra` informative. Will throw
 `ArgumentError` if the value isn't valid.
 """
-function validate(context::ValidationContext, value::Validated)::Nothing  # NOLINT # UNTESTED
+function validate(context::ValidationContext, value::Validated)::Nothing  # NOLINT
     @assert false "not implemented"
 end
-function validate(context::ValidationContext, value::Validated, extra::Any)::Nothing  # NOLINT # UNTESTED
+function validate(context::ValidationContext, value::Validated, extra::Any)::Nothing  # NOLINT
     @assert false "not implemented"
 end
-function validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing  # NOLINT # UNTESTED
+function validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing  # NOLINT
     @assert false "not implemented"
 end
 
@@ -138,13 +138,13 @@ end
 
 Validate the `value` of a `field`.
 """
-function validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing  # UNTESTED
+function validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
     validate_in(context, field) do
         return validate(context, value)
     end
 end
 
-function validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing  # UNTESTED
+function validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
     validate_in(context, field) do
         return validate(context, value, extra)
     end
@@ -304,7 +304,7 @@ function validate_vector_is_not_empty(
     return nothing
 end
 
-function validate_vector_is_not_empty(context::ValidationContext, vector::AbstractVector)::Nothing  # UNTESTED
+function validate_vector_is_not_empty(context::ValidationContext, vector::AbstractVector)::Nothing
     if isempty(vector)
         throw(ArgumentError("empty vector $(location(context))"))
     end
@@ -454,7 +454,7 @@ function validate_dict_is_not_empty(context::ValidationContext, field::AbstractS
     return nothing
 end
 
-function validate_dict_is_not_empty(context::ValidationContext, dict::AbstractDict)::Nothing  # UNTESTED
+function validate_dict_is_not_empty(context::ValidationContext, dict::AbstractDict)::Nothing
     if isempty(dict)
         throw(ArgumentError("empty dict $(location(context))"))
     end

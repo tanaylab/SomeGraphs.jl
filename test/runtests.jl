@@ -32,24 +32,32 @@ function normalize_ids(
     end
     replacements = sort(
         ["$(match_prefix)$(id)" => "$(replace_prefix)$(index)" for (id, index) in seen];
-        by = (pair) -> length(pair.first),  # UNTESTED
+        by = (pair) -> length(pair.first),
         rev = true,
     )
     return replace(text, replacements...)
 end
 
-function normalize_svg(svg::AbstractString)::AbstractString  # UNTESTED
+# Drop indentation and collapse runs of spaces so that differences in how Plotly templates indent the markup do not
+# matter when comparing against the expected files.
+function normalize_spaces(text::AbstractString)::AbstractString
+    text = replace(text, r"^ +"m => "")
+    text = replace(text, r" +" => " ")
+    return text
+end
+
+function normalize_svg(svg::AbstractString)::AbstractString
     svg = normalize_ids(svg, "id-", CSS_ID_REGEX, "")
     svg = normalize_ids(svg, "class-", CLASS_REGEX, "")
     svg = normalize_ids(svg, "trace-", TRACE_REGEX, "trace")
     svg = replace(svg, " style=\"\"" => "", ">" => ">\n")
-    return svg
+    return normalize_spaces(svg)
 end
 
 function normalize_html(html::AbstractString)::AbstractString
     html = normalize_ids(html, "id-", HTML_ID_REGEX, "")
     html = replace(html, ",\"" => ",\n\"", ",{" => ",\n{", ",[" => ",\n[")
-    return html
+    return normalize_spaces(html)
 end
 
 struct ResultFile
@@ -57,7 +65,7 @@ struct ResultFile
     content::AbstractString
 end
 
-function Base.show(io::IO, result_file::ResultFile)::Nothing  # untested
+function Base.show(io::IO, result_file::ResultFile)::Nothing
     print(io, result_file.path)
     return nothing
 end
@@ -66,7 +74,7 @@ function Base.:(==)(left_file::ResultFile, right_file::ResultFile)::Bool
     return left_file.content == right_file.content
 end
 
-function test_svg(graph::Graph, path::AbstractString)::Nothing  # UNTESTED
+function test_svg(graph::Graph, path::AbstractString)::Nothing
     save_graph(graph, "actual.svg")
     actual_svg = open("actual.svg", "r") do file
         return read(file, String)
@@ -79,13 +87,14 @@ function test_svg(graph::Graph, path::AbstractString)::Nothing  # UNTESTED
         write(file, actual_svg)
         return nothing
     end
-    actual_result = chomp(ResultFile("test/" * actual_path, actual_svg))
+    actual_result = ResultFile("test/" * actual_path, chomp(actual_svg))
 
     expected_path = "expected/" * path
     expected_svg = open(expected_path, "r") do file
         return read(file, String)
     end
-    expected_result = chomp(ResultFile("test/" * expected_path, expected_svg))
+    expected_svg = normalize_spaces(expected_svg)
+    expected_result = ResultFile("test/" * expected_path, chomp(expected_svg))
 
     @test actual_result == expected_result
     return nothing
@@ -111,6 +120,7 @@ function test_html(graph::Graph, path::AbstractString)::Nothing
     expected_html = open(expected_path, "r") do file
         return read(file, String)
     end
+    expected_html = normalize_spaces(expected_html)
     expected_result = ResultFile("test/" * expected_path, expected_html)
 
     @test actual_result == expected_result

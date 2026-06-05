@@ -3,7 +3,7 @@
 ```@meta
 DocTestSetup = quote
   using SomeGraphs
-  using PlotlyJS
+  using PlotlyBase
 end
 ```
 

@@ -43,13 +43,13 @@ export save_graph
 
 using Base.Multimedia
 using NamedArrays
-using PlotlyJS
+using PlotlyBase
 
 using ..Validations
 using Colors
 using ColorVectorSpace
 
-import PlotlyJS.SyncPlot  # NOLINT
+import PlotlyKaleido
 
 import ..Validations.Maybe
 
@@ -60,7 +60,7 @@ A plotly figure contains everything needed to display an interactive graph (or g
 converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the
 interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
 """
-PlotlyFigure = Union{Plot, SyncPlot}  # NOLINT
+PlotlyFigure = Plot
 
 """
 A configuration of a [`Graph`](@ref) specifies how to display the data while being (as much as possible) independent of
@@ -81,7 +81,7 @@ abstract type AbstractGraphData <: Validated end
 """
 The type of a figure we can display. This is a combination of some [`AbstractGraphData`](@ref) and
 [`AbstractGraphConfiguration`](@ref). Accessing the `.figure` property of the graph will return it as a `PlotlyFigure`,
-which can be displayed in interactive environments (Julia REPL and/or Jupyter notebooks).
+which can be displayed in interactive environments (such as Jupyter notebooks or a Plotly-aware IDE).
 
 !!! note
 
@@ -93,7 +93,7 @@ which can be displayed in interactive environments (Julia REPL and/or Jupyter no
     configuration::C = C()
 end
 
-function Base.show(io::IO, graph::Graph)::Nothing  # UNTESTED
+function Base.show(io::IO, graph::Graph)::Nothing
     print(io, "$(typeof(graph)) (use .figure to show the graph)")
     return nothing
 end
@@ -120,7 +120,7 @@ Validate that the combination of data and configuration in a graph is valid, aft
 isn't invoked manually, instead it is called by the overall `validate` of the graph. It is provided (with a default
 empty implementation) to allow for type-specific validations.
 """
-function validate_graph(::Graph)::Maybe{AbstractString}  # UNTESTED
+function validate_graph(::Graph)::Maybe{AbstractString}
     return nothing
 end
 
@@ -131,12 +131,21 @@ Save the graph to a file. Unlike the Plotly `savefig` function, this function wi
 `height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name.
 """
 function save_graph(graph::Graph, output_file::AbstractString)::Nothing
-    savefig(  # NOLINT NOJET
-        graph_to_figure(graph),
-        output_file;
-        width = graph.configuration.figure.width,
-        height = graph.configuration.figure.height,
-    )
+    figure = graph_to_figure(graph)
+    if endswith(output_file, ".html")
+        open(output_file, "w") do file
+            PlotlyBase.to_html(file, figure)  # NOJET
+            return nothing
+        end
+    else
+        PlotlyKaleido.start()  # NOJET
+        PlotlyKaleido.savefig(  # NOJET
+            figure,
+            output_file;
+            width = graph.configuration.figure.width,
+            height = graph.configuration.figure.height,
+        )
+    end
     return nothing
 end
 
@@ -193,7 +202,7 @@ white space. In the 21st century. Sigh.
     top::Int = 50
 end
 
-function Validations.validate(context::ValidationContext, margins_configuration::MarginsConfiguration)::Nothing  # UNTESTED
+function Validations.validate(context::ValidationContext, margins_configuration::MarginsConfiguration)::Nothing
     for (field, value) in (
         ("left", margins_configuration.left),
         ("right", margins_configuration.right),
@@ -254,7 +263,7 @@ requires more offsets.
     colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
 end
 
-function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing  # UNTESTED
+function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
     validate_field(context, "margins", figure_configuration.margins)
     validate_in(context, "width") do
         validate_is_above(context, figure_configuration.width, 0)
@@ -501,7 +510,7 @@ By default, the `color` is chosen automatically.
     color::Maybe{AbstractString} = nothing
 end
 
-function Validations.validate(context::ValidationContext, line_configuration::LineConfiguration)::Nothing  # UNTESTED
+function Validations.validate(context::ValidationContext, line_configuration::LineConfiguration)::Nothing
     validate_in(context, "width") do
         validate_is_above(context, line_configuration.width, 0)
         return nothing
@@ -1490,7 +1499,7 @@ sizes are in the usual inconvenient units (fraction of the overall graph size), 
     gap::AbstractFloat = 0.005
 end
 
-function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing  # UNTESTED
+function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
     validate_in(context, "annotation_size") do
         validate_is_above(context, annotation_size.size, 0)
         validate_is_below(context, annotation_size.size, 1)
