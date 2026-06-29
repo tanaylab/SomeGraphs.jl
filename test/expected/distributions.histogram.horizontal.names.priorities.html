@@ -2,25 +2,25 @@
 <head><meta charset="utf-8" /></head>
 <body>
 <div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
-    <script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+<script type="text/javascript">
 window.PlotlyConfig = {MathJaxConfig: 'local'};
 </script>
 <script src="https://cdn.plot.ly/plotly-2.33.0.min.js"></script>
 
-    <div
-        id=id-1
-        class="plotly-graph-div"
-        style="height:100%; width:100%;">
-    </div>
-    <script type="text/javascript">
-        
-        window.PLOTLYENV = window.PLOTLYENV || {}
-        
-        if (document.getElementById('id-1')) {
-    Plotly.newPlot(
-        'id-1',
-        [{"scalegroup":"Distributions",
+<div
+id=id-1
+class="plotly-graph-div"
+style="height:100%; width:100%;">
+</div>
+<script type="text/javascript">
+
+window.PLOTLYENV = window.PLOTLYENV || {}
+
+if (document.getElementById('id-1')) {
+Plotly.newPlot(
+'id-1',
+[{"scalegroup":"Distributions",
 "type":"histogram",
 "y0":0.0,
 "name":"Bar",
@@ -35,7 +35,7 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "box":{"visible":false},
 "spanmode":"hard",
 "x":[0.75,5.25,5.5,6.0,6.2,6.6,6.8,7.0,7.2,7.5,7.5,7.75,8.15,8.15,8.65,8.93,9.2,9.5,10.0,10.25,11.5,12.0,16.0,20.9,22.3,23.25]}],
-        {"showlegend":false,
+{"showlegend":false,
 "xaxis":{"showgrid":true,
 "gridcolor":"lightgrey",
 "showticklabels":true,
@@ -43,27 +43,51 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "range":[0.525,23.475]},
 "paper_bgcolor":"white",
 "template":"simple_white",
-"legend":{"tracegroupgap":0},
+"annotations":[{"x":0,
+"yanchor":"middle",
+"xanchor":"right",
+"y":0.5,
+"yref":"y domain",
+"showarrow":false,
+"text":"Foo",
+"xref":"x domain",
+"automargin":true,
+"textangle":-90},
+{"x":0,
+"yanchor":"middle",
+"xanchor":"right",
+"y":0.5,
+"yref":"y2 domain",
+"showarrow":false,
+"text":"Bar",
+"xref":"x domain",
+"automargin":true,
+"textangle":-90}],
 "plot_bgcolor":"white",
-"yaxis":{"showticklabels":true,
-"title":"Foo",
+"yaxis":{"showgrid":true,
+"gridcolor":"lightgrey",
+"showticklabels":true,
+"zeroline":true,
 "domain":[0.0,0.475]},
-"yaxis2":{"showticklabels":true,
-"title":"Bar",
+"yaxis2":{"showgrid":true,
+"gridcolor":"lightgrey",
+"showticklabels":true,
+"zeroline":true,
 "domain":[0.525,1.0]},
+"legend":{"tracegroupgap":0},
 "margin":{"l":50,
 "b":50,
 "r":50,
 "t":50}},
-        {"editable":false,
+{"editable":false,
 "responsive":true,
 "staticPlot":false,
 "scrollZoom":true},
-    )
+)
 }
 
-        
-    </script>
+
+</script>
 </div>
 
 </body>

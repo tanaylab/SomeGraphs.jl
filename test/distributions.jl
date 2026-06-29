@@ -58,7 +58,7 @@ function test_distributions(  # UNTESTED
                 nested_test("!grid") do
                     graph.configuration.value_axis.show_grid = false
                     if startswith(kind, "cumulative")
-                        graph.configuration.cumulative_axis.show_grid = false
+                        graph.configuration.density_axis.show_grid = false
                     end
                     test_html(graph, "$(plurality).$(kind).$(name).!grid.html")
                     return nothing
@@ -67,7 +67,7 @@ function test_distributions(  # UNTESTED
                 nested_test("grid_color") do
                     graph.configuration.value_axis.grid_color = "red"
                     if startswith(kind, "cumulative")
-                        graph.configuration.cumulative_axis.grid_color = "red"
+                        graph.configuration.density_axis.grid_color = "red"
                     end
                     test_html(graph, "$(plurality).$(kind).$(name).grid_color.html")
                     return nothing
@@ -76,7 +76,7 @@ function test_distributions(  # UNTESTED
                 nested_test("ticks") do
                     graph.configuration.value_axis.show_ticks = false
                     if startswith(kind, "cumulative")
-                        graph.configuration.cumulative_axis.show_ticks = false
+                        graph.configuration.density_axis.show_ticks = false
                     end
                     test_html(graph, "$(plurality).$(kind).$(name).!ticks.html")
                     return nothing
@@ -98,7 +98,7 @@ function test_distributions(  # UNTESTED
 
                 if startswith(kind, "cumulative")
                     nested_test("descending") do
-                        graph.configuration.cumulative_axis.descending = true
+                        graph.configuration.distribution.cumulative_descending = true
                         test_html(graph, "$(plurality).$(kind).$(name).descending.html")
                         return nothing
                     end
@@ -266,11 +266,55 @@ nested_test("distribution") do
     end
 
     nested_test("invalid") do
-        nested_test("~cumulative_axis") do
-            graph.configuration.cumulative_axis.units = CumulativeCounts
+        nested_test("~density_axis") do
+            graph.configuration.density_axis.show_ticks = false
             @test_throws chomp("""
-                               ArgumentError: specified graph.configuration.cumulative_axis
-                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
+                               ArgumentError: specified graph.configuration.density_axis
+                               for graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
+        end
+
+        nested_test("~normalize") do
+            graph.configuration.distribution.normalize = true
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.distribution.normalize
+                               for graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
+        end
+
+        nested_test("~cumulative_descending") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.distribution.cumulative_descending = true
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.distribution.cumulative_descending
+                               for non-cumulative graph.configuration.distribution.style: HistogramDistribution
+                               """) graph.figure
+        end
+
+        nested_test("~percent") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.density_axis.percent = true
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.density_axis.percent
+                               without graph.configuration.distribution.normalize
+                               """) graph.figure
+        end
+
+        nested_test("~log") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.density_axis.log_scale = Log10Scale
+            @test_throws(
+                "ArgumentError: unsupported graph.configuration.density_axis.log_scale: Log10Scale",
+                graph.figure
+            )
+        end
+
+        nested_test("~ticks_angle") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.density_axis.ticks_angle = 91
+            @test_throws chomp("""
+                               ArgumentError: too high graph.configuration.density_axis.ticks_angle: 91
+                               is not at most: 90
                                """) graph.figure
         end
 
@@ -299,15 +343,55 @@ nested_test("distribution") do
     end
 
     nested_test("cumulative") do
-        for (name, units) in
-            (("fractions", CumulativeFractions), ("percents", CumulativePercents), ("counts", CumulativeCounts))
+        for name in ("fractions", "percents", "counts")
             test_distributions(graph, "distribution", "cumulative.$(name)", name) do
                 graph.configuration.distribution.style = CumulativeDistribution
-                graph.configuration.cumulative_axis.units = units
-                if name == "counts"
+                if name == "fractions"
+                    graph.configuration.distribution.normalize = true
+                elseif name == "percents"
+                    graph.configuration.distribution.normalize = true
+                    graph.configuration.density_axis.percent = true
+                else
+                    @assert name == "counts"
                     graph.data.distribution_name = "Counts"
                 end
                 return nothing
+            end
+        end
+    end
+
+    nested_test("histogram_density") do
+        graph.configuration.distribution.style = HistogramDistribution
+
+        for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
+            nested_test(name) do
+                graph.configuration.distribution.values_orientation = orientation
+
+                nested_test("normalize") do
+                    graph.configuration.distribution.normalize = true
+                    test_html(graph, "distribution.histogram_density.$(name).normalize.html")
+                    return nothing
+                end
+
+                nested_test("percent") do
+                    graph.configuration.distribution.normalize = true
+                    graph.configuration.density_axis.percent = true
+                    test_html(graph, "distribution.histogram_density.$(name).percent.html")
+                    return nothing
+                end
+
+                nested_test("ticks_angle") do
+                    graph.configuration.density_axis.ticks_angle = 45
+                    test_html(graph, "distribution.histogram_density.$(name).ticks_angle.html")
+                    return nothing
+                end
+
+                nested_test("range") do
+                    graph.configuration.density_axis.minimum = 0
+                    graph.configuration.density_axis.maximum = 50
+                    test_html(graph, "distribution.histogram_density.$(name).range.html")
+                    return nothing
+                end
             end
         end
     end
@@ -337,11 +421,20 @@ nested_test("distributions") do
         ],
     )
     nested_test("invalid") do
-        nested_test("~cumulative_axis") do
-            graph.configuration.cumulative_axis.units = CumulativeCounts
+        nested_test("~density_axis") do
+            graph.configuration.density_axis.show_ticks = false
             @test_throws chomp("""
-                               ArgumentError: specified graph.configuration.cumulative_axis
-                               for non-cumulative graph.configuration.distribution.style: CurveDistribution
+                               ArgumentError: specified graph.configuration.density_axis
+                               for graph.configuration.distribution.style: CurveDistribution
+                               """) graph.figure
+        end
+
+        nested_test("~percent") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.density_axis.percent = true
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.density_axis.percent
+                               without graph.configuration.distribution.normalize
                                """) graph.figure
         end
 
@@ -363,12 +456,66 @@ nested_test("distributions") do
                                """) graph.figure
         end
 
-        nested_test("~density_axis_title") do
-            graph.data.density_axis_title = "Title"
+        nested_test("~both_titles") do
+            graph.data.density_axis_title = "Density"
+            graph.data.series_axis_title = "Series"
             @test_throws chomp("""
-                               ArgumentError: can't specify both graph.data.density_axis_title: Title
-                               and also graph.configuration.distributions_gap: 0.05
+                               ArgumentError: can't specify both graph.data.density_axis_title: Density
+                               and graph.data.series_axis_title: Series
                                """) graph.figure
+        end
+
+        nested_test("~series_axis_title") do
+            graph.configuration.distributions_gap = nothing
+            graph.data.series_axis_title = "Series"
+            @test_throws chomp("""
+                               ArgumentError: can't specify graph.data.series_axis_title: Series
+                               for overlay (no graph.configuration.distributions_gap)
+                               """) graph.figure
+        end
+
+        nested_test("~series_axis_numeric") do
+            graph.configuration.series_axis.percent = true
+            @test_throws chomp("""
+                               ArgumentError: specified numeric or grid fields of graph.configuration.series_axis
+                               (only show_ticks, ticks_angle and title apply to the cross-series names)
+                               """) graph.figure
+        end
+
+        nested_test("~series_axis_grid") do
+            graph.configuration.series_axis.show_grid = false
+            @test_throws chomp("""
+                               ArgumentError: specified numeric or grid fields of graph.configuration.series_axis
+                               (only show_ticks, ticks_angle and title apply to the cross-series names)
+                               """) graph.figure
+        end
+
+        nested_test("~series_axis_overlay") do
+            graph.configuration.distributions_gap = nothing
+            graph.configuration.series_axis.ticks_angle = 45
+            @test_throws chomp("""
+                               ArgumentError: specified graph.configuration.series_axis
+                               for overlay (no graph.configuration.distributions_gap)
+                               """) graph.figure
+        end
+
+        nested_test("~both_axis_titles") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.density_axis.title = "Density"
+            graph.configuration.series_axis.title = "Series"
+            @test_throws chomp("""
+                               ArgumentError: can't specify both graph.configuration.density_axis.title
+                               and graph.configuration.series_axis.title
+                               """) graph.figure
+        end
+
+        nested_test("~log") do
+            graph.configuration.distribution.style = HistogramDistribution
+            graph.configuration.density_axis.log_scale = Log10Scale
+            @test_throws(
+                "ArgumentError: unsupported graph.configuration.density_axis.log_scale: Log10Scale",
+                graph.figure
+            )
         end
 
         nested_test("!colors") do
@@ -400,11 +547,69 @@ nested_test("distributions") do
     end
 
     nested_test("cumulative") do
-        for (name, units) in
-            (("fractions", CumulativeFractions), ("percents", CumulativePercents), ("counts", CumulativeCounts))
+        for name in ("fractions", "percents", "counts")
             test_distributions(graph, "distributions", "cumulative.$(name)", name) do
                 graph.configuration.distribution.style = CumulativeDistribution
-                graph.configuration.cumulative_axis.units = units
+                if name == "fractions"
+                    graph.configuration.distribution.normalize = true
+                elseif name == "percents"
+                    graph.configuration.distribution.normalize = true
+                    graph.configuration.density_axis.percent = true
+                else
+                    @assert name == "counts"
+                end
+                return nothing
+            end
+        end
+    end
+
+    nested_test("series_axis") do
+        graph.configuration.distribution.style = BoxDistribution
+        graph.data.distributions_names = ["Foo", "Bar"]
+
+        for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
+            nested_test(name) do
+                graph.configuration.distribution.values_orientation = orientation
+
+                nested_test("ticks_angle") do
+                    graph.configuration.series_axis.ticks_angle = 45
+                    test_html(graph, "distributions.series_axis.$(name).ticks_angle.html")
+                    return nothing
+                end
+
+                nested_test("title") do
+                    graph.data.series_axis_title = "Series"
+                    test_html(graph, "distributions.series_axis.$(name).title.html")
+                    return nothing
+                end
+
+                nested_test("!ticks") do
+                    graph.configuration.series_axis.show_ticks = false
+
+                    nested_test("()") do
+                        test_html(graph, "distributions.series_axis.$(name).!ticks.html")
+                        return nothing
+                    end
+
+                    nested_test("title") do
+                        graph.data.series_axis_title = "Series"
+                        test_html(graph, "distributions.series_axis.$(name).!ticks.title.html")
+                        return nothing
+                    end
+                end
+            end
+        end
+    end
+
+    nested_test("histogram_density") do
+        graph.configuration.distribution.style = HistogramDistribution
+        graph.configuration.density_axis.minimum = 0
+        graph.configuration.density_axis.maximum = 50
+
+        for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
+            nested_test(name) do
+                graph.configuration.distribution.values_orientation = orientation
+                test_html(graph, "distributions.histogram_density.$(name).range.html")
                 return nothing
             end
         end

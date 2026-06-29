@@ -402,6 +402,7 @@ end
         log_regularization::Real = 0
         percent::Bool = false
         show_ticks::Bool = true
+        ticks_angle::Maybe{Real} = nothing
         show_grid::Bool = true
         grid_color::AbstractString = "lightgrey"
         title::Maybe{AbstractString} = nothing
@@ -416,7 +417,10 @@ is shown according to the [`LogScale`](@ref). Otherwise, `log_regularization` mu
 If `percent` is set, then the values are multiplied by 100 and a `%` suffix is added to the tick labels.
 
 The `show_ticks` and/or `show_grid` can be disabled for a cleaner (though less informative) graph appearance. By default
-the grid lines are shown in `lightgrey`.
+the grid lines are shown in `lightgrey`. The `ticks_angle` rotates the tick labels and is measured relative to the axis
+(between -90 and 90): 0 keeps the text parallel to the axis and ±90 stands it perpendicular, positive being clockwise. By
+default (`nothing`) the labels are horizontal, which is the readable orientation for numbers regardless of the axis
+direction.
 
 The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able
 to control log scale and/or percent scaling without changing anything else.
@@ -431,6 +435,7 @@ set, so you can override this in the data.
     log_regularization::Real = 0
     percent::Bool = false
     show_ticks::Bool = true
+    ticks_angle::Maybe{Real} = nothing
     show_grid::Bool = true
     grid_color::AbstractString = "lightgrey"
     title::Maybe{AbstractString} = nothing
@@ -438,6 +443,14 @@ end
 
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
     validate_is_range(context, "minimum", axis_configuration.minimum, "maximum", axis_configuration.maximum)
+
+    if axis_configuration.ticks_angle !== nothing
+        validate_in(context, "ticks_angle") do
+            validate_is_at_least(context, axis_configuration.ticks_angle, -90)
+            validate_is_at_most(context, axis_configuration.ticks_angle, 90)
+            return nothing
+        end
+    end
 
     validate_in(context, "grid_color") do
         validate_is_color(context, axis_configuration.grid_color)
@@ -1320,6 +1333,14 @@ function Validations.validate(
     colors_configuration::ColorsConfiguration,
 )::Maybe{AbstractString}
     validate_field(context, "axis", colors_configuration.axis)
+
+    if colors_configuration.axis.ticks_angle !== nothing
+        throw(
+            ArgumentError(
+                "unsupported $(location(context)).axis.ticks_angle: $(colors_configuration.axis.ticks_angle)",
+            ),
+        )
+    end
 
     palette = colors_configuration.palette
 

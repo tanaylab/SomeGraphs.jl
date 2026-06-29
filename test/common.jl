@@ -247,6 +247,20 @@ nested_test("common") do
             axis.maximum = 2
             return validate(context, axis)
         end
+
+        nested_test("ticks_angle") do
+            axis.ticks_angle = 91
+            @test_throws chomp("""
+                               ArgumentError: too high axis.ticks_angle: 91
+                               is not at most: 90
+                               """) validate(context, axis)
+
+            axis.ticks_angle = -91
+            @test_throws chomp("""
+                               ArgumentError: too low axis.ticks_angle: -91
+                               is not at least: -90
+                               """) validate(context, axis)
+        end
     end
 
     nested_test("line") do
@@ -427,6 +441,11 @@ nested_test("common") do
         colors = ColorsConfiguration()
         context = ValidationContext(["colors"])
         validate(context, colors)
+
+        nested_test("~ticks_angle") do
+            colors.axis.ticks_angle = 45
+            @test_throws "ArgumentError: unsupported colors.axis.ticks_angle: 45" validate(context, colors)
+        end
 
         nested_test("fixed") do
             nested_test("()") do

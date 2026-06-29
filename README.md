@@ -23,7 +23,7 @@ Non-goals are:
 
   - Provide "every" graph type and/or feature.
 
-See the [documentation](https://tanaylab.github.io/SomeGraphs.jl/v0.1.0) for details.
+See the [documentation](https://tanaylab.github.io/SomeGraphs.jl/v0.2.0) for details.
 
 ## Architecture
 

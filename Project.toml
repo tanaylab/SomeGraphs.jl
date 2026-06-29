@@ -1,7 +1,7 @@
 name = "SomeGraphs"
 uuid = "eb091223-14cb-4747-ac22-0b59a9f2afeb"
 authors = ["Oren Ben-Kiki <oren@ben-kiki.org>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"

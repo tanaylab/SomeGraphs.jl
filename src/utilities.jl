@@ -12,6 +12,7 @@ export ConfiguredColors
 export fill_color
 export final_scaled_range
 export MaybeRange
+export axis_screen_ticks_angle
 export plotly_axis
 export plotly_figure
 export plotly_layout
@@ -404,6 +405,21 @@ function plotly_layout(
     )
 end
 
+# Convert the axis-relative `ticks_angle` (0 = parallel to the axis, ±90 = perpendicular) to the screen angle used by
+# Plotly's `tickangle` (0 = horizontal). A vertical axis is parallel when standing the text up (bottom-to-top, -90).
+# A `nothing` angle keeps the labels horizontal, the readable orientation for numbers regardless of the axis direction.
+function axis_screen_ticks_angle(::Nothing, ::Bool)::Real
+    return 0
+end
+
+function axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
+    if is_vertical_axis
+        return ticks_angle - 90
+    else
+        return ticks_angle
+    end
+end
+
 """
     set_layout_axis!(
         layout::Layout,
@@ -429,6 +445,7 @@ function set_layout_axis!(
     is_zeroable::Bool = true,
 )::Nothing
     show_ticks = is_tick_axis && axis_configuration.show_ticks
+    screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, startswith(axis, "y"))
     layout[axis] = Dict(
         :title => title,
         :range => range === nothing ? nothing : [range.minimum, range.maximum],
@@ -439,6 +456,7 @@ function set_layout_axis!(
         :ticksuffix => show_ticks ? axis_ticks_suffix(axis_configuration) : nothing,
         :tickvals => show_ticks ? ticks_values : nothing,
         :ticktext => show_ticks ? ticks_labels : nothing,
+        :tickangle => (show_ticks && screen_ticks_angle != 0) ? screen_ticks_angle : nothing,
         :zeroline => is_zeroable ? axis_configuration.log_scale === nothing : nothing,
         :domain => domain,
     )
