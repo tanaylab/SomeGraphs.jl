@@ -171,6 +171,7 @@ SomeGraphs.Common.BandsData
 SomeGraphs.Common.ColorsConfiguration
 SomeGraphs.Common.ContinuousColors
 SomeGraphs.Common.CategoricalColors
+SomeGraphs.Common.AutomaticColors
 SomeGraphs.Common.categorical_palette
 SomeGraphs.Common.NAMED_COLOR_SCALES
 SomeGraphs.Common.COLOR_SCALES_LOCK

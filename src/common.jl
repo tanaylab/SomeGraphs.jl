@@ -7,6 +7,7 @@ export AbstractGraphConfiguration
 export AbstractGraphData
 export AnnotationData
 export AnnotationSize
+export AutomaticColors
 export AxisConfiguration
 export BandConfiguration
 export BandsConfiguration
@@ -657,6 +658,16 @@ instead of a dictionary.
 """
 CategoricalColors = Union{Dict{<:AbstractString, <:AbstractString}, NamedVector{<:AbstractString}}
 
+"""
+    struct AutomaticColors end
+
+A marker for the `palette` of a [`ColorsConfiguration`](@ref) specifying that string color values are categorical keys
+(rather than explicit color names), to be shown as separate series whose colors are picked automatically (the same way
+colors are picked for any other series). This is the only way to have separate auto-colored series without specifying
+the colors at all.
+"""
+struct AutomaticColors end
+
 function continuous_colors_scale(  # ONLY SEEMS UNTESTED
     colors::AbstractVector{<:AbstractString},
 )::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
@@ -1272,7 +1283,7 @@ end
 """
     @kwdef mutable struct ColorsConfiguration <: Validated
         fixed::Maybe{AbstractString} = nothing
-        palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+        palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
         axis::AxisConfiguration = AxisConfiguration()
         show_legend::Bool = false
         title::Maybe{AbstractString} = nothing
@@ -1321,7 +1332,7 @@ If `title` is specified, it will be used when showing the legend (whatever it is
 title depends on the data set, so you can override this in the data.
 """
 @kwdef mutable struct ColorsConfiguration <: Validated
-    palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors}} = nothing
+    palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
     fixed::Maybe{AbstractString} = nothing
     axis::AxisConfiguration = AxisConfiguration()
     show_legend::Bool = false
@@ -1444,6 +1455,10 @@ function Validations.validate(
             )
         end
 
+        return nothing
+    end
+
+    if palette isa AutomaticColors
         return nothing
     end
 

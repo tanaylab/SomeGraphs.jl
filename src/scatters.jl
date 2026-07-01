@@ -153,6 +153,7 @@ end
         edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
         edges_sizes::Maybe{AbstractVector{<:Real}} = nothing
         edges_styles::Maybe{AbstractVector{LineStyle}} = nothing
+        edges_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
         edges_order::Maybe{AbstractVector{<:Integer}} = nothing
         vertical_bands::BandsData = BandsData()
@@ -176,7 +177,7 @@ The border size is in addition to the point size.
 
 It is possible to draw straight `edges_points` between specific point pairs. In this case the `edges` of the
 [`PointsGraphConfiguration`](@ref) will be used, and the `edges_colors`, `edges_sizes` (widths) and `edges_styles` will
-override it per edge.
+override it per edge. The `edges_hovers` provide the hover text shown for each edge.
 
 The `points_mask`, `borders_mask` and `edges_mask` allow disabling an arbitrary subset of the points, borders and/or
 edges. This is often more convenient than excluding the data from the arrays. This is also useful for defining points
@@ -220,6 +221,7 @@ palette.
     edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
     edges_sizes::Maybe{AbstractVector{<:Real}} = nothing
     edges_styles::Maybe{AbstractVector{LineStyle}} = nothing
+    edges_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
     edges_order::Maybe{AbstractVector{<:Integer}} = nothing
     vertical_bands::BandsData = BandsData()
@@ -250,6 +252,7 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     validate_vector_length(context, "edges_colors", data.edges_colors, "edges_points", n_edges)
     validate_vector_length(context, "edges_sizes", data.edges_sizes, "edges_points", n_edges)
     validate_vector_length(context, "edges_styles", data.edges_styles, "edges_points", n_edges)
+    validate_vector_length(context, "edges_hovers", data.edges_hovers, "edges_points", n_edges)
     validate_vector_length(context, "edges_mask", data.edges_mask, "edges_points", n_edges)
     validate_vector_length(context, "edges_order", data.edges_order, "edges_points", n_edges)
 
@@ -330,6 +333,7 @@ function points_graph(;
     edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
     edges_sizes::Maybe{AbstractVector{<:Real}} = nothing,
     edges_styles::Maybe{AbstractVector{LineStyle}} = nothing,
+    edges_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
     edges_order::Maybe{AbstractVector{<:Integer}} = nothing,
     vertical_bands::BandsData = BandsData(),
@@ -359,6 +363,7 @@ function points_graph(;
             edges_colors,
             edges_sizes,
             edges_styles,
+            edges_hovers,
             edges_mask,
             edges_order,
             vertical_bands,
@@ -522,7 +527,10 @@ function configured_scatters(;
     end
 
     show_in_legend =
-        scatters_configuration.colors.show_legend && scatters_configuration.colors.palette isa CategoricalColors
+        scatters_configuration.colors.show_legend && (
+            scatters_configuration.colors.palette isa CategoricalColors ||
+            scatters_configuration.colors.palette isa AutomaticColors
+        )
 
     return ConfiguredScatters(;
         colors,
@@ -845,31 +853,34 @@ function push_edge_traces!(;
                 end
             end
 
-            push!(  # NOJET
-                traces,
-                scatter(;
-                    x = [scaled_points_xs.values[from_point], scaled_points_xs.values[to_point]],
-                    y = [scaled_points_ys.values[from_point], scaled_points_ys.values[to_point]],
-                    line_width = prefer_data(configured_edges.pixel_sizes, edge_index, configured_edges.pixel_size),
-                    line_color = prefer_data(
-                        prefer_data(
-                            configured_edges.colors.final_colors_values,
-                            edge_index,
-                            configured_edges.colors.colors_configuration.fixed,
-                        ),
-                        "darkgrey",
+            edge_trace = scatter(;  # NOJET
+                x = [scaled_points_xs.values[from_point], scaled_points_xs.values[to_point]],
+                y = [scaled_points_ys.values[from_point], scaled_points_ys.values[to_point]],
+                line_width = prefer_data(configured_edges.pixel_sizes, edge_index, configured_edges.pixel_size),
+                line_color = prefer_data(
+                    prefer_data(
+                        configured_edges.colors.final_colors_values,
+                        edge_index,
+                        configured_edges.colors.colors_configuration.fixed,
                     ),
-                    line_dash = plotly_line_dash(
-                        prefer_data(graph.data.edges_styles, edge_index, graph.configuration.edges_style),
-                    ),
-                    name = prefer_data(edges_names, edge_index, nothing),
-                    mode = "lines",
-                    legendgroup = show_in_legend ? legend_group : nothing,
-                    legendgrouptitle_text = show_in_legend ? legend_group_title : nothing,
-                    showlegend = show_in_legend,
-                    coloraxis = plotly_axis("color", configured_edges.colors.colors_scale_index),
+                    "darkgrey",
                 ),
+                line_dash = plotly_line_dash(
+                    prefer_data(graph.data.edges_styles, edge_index, graph.configuration.edges_style),
+                ),
+                name = prefer_data(edges_names, edge_index, nothing),
+                mode = "lines",
+                legendgroup = show_in_legend ? legend_group : nothing,
+                legendgrouptitle_text = show_in_legend ? legend_group_title : nothing,
+                showlegend = show_in_legend,
+                coloraxis = plotly_axis("color", configured_edges.colors.colors_scale_index),
             )
+            edge_hover = prefer_data(graph.data.edges_hovers, edge_index, nothing)
+            if edge_hover !== nothing
+                edge_trace[:text] = edge_hover
+                edge_trace[:hovertemplate] = "%{text}<extra></extra>"
+            end
+            push!(traces, edge_trace)  # NOJET
             legend_group_title = nothing
         end
     end
@@ -884,13 +895,15 @@ function push_points_traces!(;
     configured_points::ConfiguredScatters,
     points_hovers::Maybe{AbstractVector{<:AbstractString}},
 )::Nothing
-    if configured_points.colors.final_colors_values !== nothing &&
-       configured_points.colors.colors_configuration.palette isa CategoricalColors
+    if configured_points.colors.final_colors_values !== nothing && (
+        configured_points.colors.colors_configuration.palette isa CategoricalColors ||
+        configured_points.colors.colors_configuration.palette isa AutomaticColors
+    )
         is_first = true
 
         colors_masks = Union{AbstractVector{Bool}, BitVector}[]
         colors_names = AbstractString[]
-        colors = AbstractString[]
+        colors = Maybe{AbstractString}[]
         if configured_points.order === nothing
             priorities = nothing
             positions = nothing
@@ -899,11 +912,18 @@ function push_points_traces!(;
             priorities = Float32[]
         end
 
-        palette_dict = configured_points.colors.colors_configuration.palette
-        if palette_dict isa NamedArray
-            palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
+        palette = configured_points.colors.colors_configuration.palette
+        if palette isa AutomaticColors
+            # The categories are the (unique) keys, in order of appearance, and the colors are picked automatically.
+            name_color_pairs = [(name, nothing) for name in unique(configured_points.colors.original_color_values)]
+        else
+            palette_dict = palette
+            if palette_dict isa NamedArray
+                palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
+            end
+            name_color_pairs = collect(palette_dict)
         end
-        for (name, color) in palette_dict
+        for (name, color) in name_color_pairs
             push!(colors_names, name)
             push!(colors, color)
             mask = configured_points.colors.original_color_values .== name

@@ -271,6 +271,25 @@ function validate_colors(
             )
         end
 
+    elseif colors_configuration.palette isa AutomaticColors
+        if colors_data isa AbstractVector{<:Real}
+            throw(
+                ArgumentError(
+                    "numeric $(location(colors_data_context))\n" *
+                    "specified for automatic $(location(colors_configuration_context)).palette",
+                ),
+            )
+        elseif colors_data === nothing
+            throw(
+                ArgumentError(
+                    "must specify (categorical) $(location(colors_data_context))\n" *
+                    "for automatic $(location(colors_configuration_context)).palette",
+                ),
+            )
+        else
+            @assert colors_data isa AbstractVector{<:AbstractString}
+        end
+
     elseif colors_configuration.palette isa ContinuousColors
         if colors_data isa AbstractVector{<:AbstractString}
             throw(
@@ -1760,7 +1779,7 @@ function configured_colors(;
                 for (index, color) in enumerate(colors_values)
             ]
         else
-            @assert colors_configuration.palette === nothing
+            @assert colors_configuration.palette === nothing || colors_configuration.palette isa AutomaticColors
             final_colors_values = colors_values
         end
 

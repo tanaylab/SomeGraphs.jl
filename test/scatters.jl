@@ -267,6 +267,12 @@ nested_test("points") do
             return nothing
         end
 
+        nested_test("hovers") do
+            graph.data.edges_hovers = ["E: $(index)" for index in 1:5]
+            test_html(graph, "points.edges.hovers.html")
+            return nothing
+        end
+
         nested_test("named") do
             graph.data.edges_colors = ["red", "yellow", "green", "cyan", "blue"]
             test_html(graph, "points.edges.named.html")
@@ -375,6 +381,38 @@ nested_test("points") do
             graph.data.points_order = reverse(collect(1:11))
             test_html(graph, "points.points.categorical.priorities.html")
             return nothing
+        end
+    end
+
+    nested_test("automatic") do
+        graph.configuration.points.colors.palette = AutomaticColors()
+        graph.data.points_colors = ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
+
+        nested_test("()") do
+            test_html(graph, "points.automatic.html")
+            return nothing
+        end
+
+        nested_test("legend") do
+            graph.configuration.points.colors.show_legend = true
+            test_html(graph, "points.automatic.legend.html")
+            return nothing
+        end
+
+        nested_test("~numeric") do
+            graph.data.points_colors = collect(0:10)
+            @test_throws chomp("""
+                               ArgumentError: numeric graph.data.points_colors
+                               specified for automatic graph.configuration.points.colors.palette
+                               """) graph.figure
+        end
+
+        nested_test("~missing") do
+            graph.data.points_colors = nothing
+            @test_throws chomp("""
+                               ArgumentError: must specify (categorical) graph.data.points_colors
+                               for automatic graph.configuration.points.colors.palette
+                               """) graph.figure
         end
     end
 
