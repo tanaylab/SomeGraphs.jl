@@ -135,7 +135,7 @@ end
     @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         distribution::DistributionConfiguration = DistributionConfiguration()
-        value_axis::AxisConfiguration = AxisConfiguration()
+        value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         value_bands::BandsConfiguration = BandsConfiguration()
         density_axis::AxisConfiguration = AxisConfiguration()
         cumulative_bands::BandsConfiguration = BandsConfiguration()
@@ -150,7 +150,7 @@ the `distribution.normalize` and `density_axis.percent` settings.
 @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
-    value_axis::AxisConfiguration = AxisConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     value_bands::BandsConfiguration = BandsConfiguration()
     density_axis::AxisConfiguration = AxisConfiguration()
     cumulative_bands::BandsConfiguration = BandsConfiguration()
@@ -241,7 +241,7 @@ end
     @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         distribution::DistributionConfiguration = DistributionConfiguration()
-        value_axis::AxisConfiguration = AxisConfiguration()
+        value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         density_axis::AxisConfiguration = AxisConfiguration()
         series_axis::AxisConfiguration = AxisConfiguration()
         distributions_gap::Maybe{Real} = 0.05
@@ -263,7 +263,7 @@ to the axis, as if they were its title) and `title` are used; the numeric and gr
 @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
-    value_axis::AxisConfiguration = AxisConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     density_axis::AxisConfiguration = AxisConfiguration()
     series_axis::AxisConfiguration = AxisConfiguration()
     distributions_gap::Maybe{Real} = 0.05

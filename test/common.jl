@@ -206,6 +206,14 @@ nested_test("common") do
                                """) validate(context, axis)
         end
 
+        nested_test("expand_fraction") do
+            axis.expand_fraction = -1
+            @test_throws chomp("""
+                               ArgumentError: too low axis.expand_fraction: -1
+                               is not at least: 0
+                               """) validate(context, axis)
+        end
+
         nested_test("~log_regularization") do
             axis.log_regularization = 1
             @test_throws "ArgumentError: non-zero non-log axis.log_regularization: 1" validate(context, axis)

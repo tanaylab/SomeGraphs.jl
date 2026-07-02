@@ -399,6 +399,7 @@ end
     @kwdef mutable struct AxisConfiguration <: Validated
         minimum::Maybe{Real} = nothing
         maximum::Maybe{Real} = nothing
+        expand_fraction::Real = 0
         log_scale::Maybe{LogScale} = nothing
         log_regularization::Real = 0
         percent::Bool = false
@@ -411,6 +412,10 @@ end
 
 Generic configuration for a graph axis. Everything is optional; by default, the `minimum` and `maximum` are computed
 automatically from the data.
+
+The `expand_fraction` grows the visible range by this fraction of its size on each side (e.g. `0.01` adds 1% at both
+ends). This keeps round markers at the extreme values from being clipped by the plot border. It is applied in the scaled
+(e.g. log) space, after the `minimum` and `maximum` are determined.
 
 If `log_scale` is specified, then the `log_regularization` is added to the coordinate to avoid zero values, and the axis
 is shown according to the [`LogScale`](@ref). Otherwise, `log_regularization` must be 0.
@@ -432,6 +437,7 @@ set, so you can override this in the data.
 @kwdef mutable struct AxisConfiguration <: Validated
     minimum::Maybe{Real} = nothing
     maximum::Maybe{Real} = nothing
+    expand_fraction::Real = 0
     log_scale::Maybe{LogScale} = nothing
     log_regularization::Real = 0
     percent::Bool = false
@@ -444,6 +450,11 @@ end
 
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
     validate_is_range(context, "minimum", axis_configuration.minimum, "maximum", axis_configuration.maximum)
+
+    validate_in(context, "expand_fraction") do
+        validate_is_at_least(context, axis_configuration.expand_fraction, 0)
+        return nothing
+    end
 
     if axis_configuration.ticks_angle !== nothing
         validate_in(context, "ticks_angle") do

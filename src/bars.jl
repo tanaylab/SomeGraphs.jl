@@ -24,7 +24,7 @@ import ..Validations.Maybe
 """
     @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        value_axis::AxisConfiguration = AxisConfiguration()
+        value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         value_bands::BandsConfiguration = BandsConfiguration()
         values_orientation::ValuesOrientation = VerticalValues
         bars_colors::ColorsConfiguration = ColorsConfiguration()
@@ -41,7 +41,7 @@ not specified, chosen automatically by Plotly), in combination with the data bar
 """
 @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    value_axis::AxisConfiguration = AxisConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     value_bands::BandsConfiguration = BandsConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
     bars_colors::ColorsConfiguration = ColorsConfiguration()
@@ -272,7 +272,7 @@ end
 """
     @kwdef mutable struct SeriesBarsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        value_axis::AxisConfiguration = AxisConfiguration()
+        value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         values_orientation::ValuesOrientation = VerticalValues
         bars_gap::Maybe{Real} = nothing
         bars_annotations::AnnotationSize = AnnotationSize(),
@@ -290,7 +290,7 @@ then the gaps will be the same size as the graphs. If neither is specified, then
 """
 @kwdef mutable struct SeriesBarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    value_axis::AxisConfiguration = AxisConfiguration()
+    value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     values_orientation::ValuesOrientation = VerticalValues
     bars_gap::Real = 0.02
     bars_annotations::AnnotationSize = AnnotationSize()

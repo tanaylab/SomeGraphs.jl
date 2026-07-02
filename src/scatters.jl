@@ -52,8 +52,8 @@ end
 """
     @kwdef mutable struct PointsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        x_axis::AxisConfiguration = AxisConfiguration()
-        y_axis::AxisConfiguration = AxisConfiguration()
+        x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         points::ScattersConfiguration = ScattersConfiguration()
         borders::ScattersConfiguration = ScattersConfiguration()
         edges::ScattersConfiguration = ScattersConfiguration(sizes = SizesConfiguration(smallest = 2))
@@ -90,8 +90,8 @@ match.
 """
 @kwdef mutable struct PointsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    x_axis::AxisConfiguration = AxisConfiguration()
-    y_axis::AxisConfiguration = AxisConfiguration()
+    x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     points::ScattersConfiguration = ScattersConfiguration()
     borders::ScattersConfiguration = ScattersConfiguration()
     edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2))
@@ -1041,8 +1041,8 @@ end
 """
     @kwdef mutable struct LineGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        x_axis::AxisConfiguration = AxisConfiguration()
-        y_axis::AxisConfiguration = AxisConfiguration()
+        x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         line::LineConfiguration = LineConfiguration()
         show_points::Bool = false
         points_size::Maybe{Real} = nothing
@@ -1059,8 +1059,8 @@ similar to [`PointsGraphConfiguration`](@ref).
 """
 @kwdef mutable struct LineGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    x_axis::AxisConfiguration = AxisConfiguration()
-    y_axis::AxisConfiguration = AxisConfiguration()
+    x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     line::LineConfiguration = LineConfiguration()
     show_points::Bool = false
     points_size::Maybe{Real} = nothing
@@ -1222,8 +1222,8 @@ end
 """
     @kwdef mutable struct LinesGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        x_axis::AxisConfiguration = AxisConfiguration()
-        y_axis::AxisConfiguration = AxisConfiguration()
+        x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         line::LineConfiguration = LineConfiguration()
         show_points::Bool = false
         points_size::Maybe{Real} = nothing
@@ -1243,8 +1243,8 @@ If `stacking` is specified, we stack the values on top of each other.
 """
 @kwdef mutable struct LinesGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    x_axis::AxisConfiguration = AxisConfiguration()
-    y_axis::AxisConfiguration = AxisConfiguration()
+    x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     line::LineConfiguration = LineConfiguration()
     show_points::Bool = false
     points_size::Maybe{Real} = nothing
