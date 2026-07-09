@@ -1366,9 +1366,20 @@ function Validations.validate(context::ValidationContext, data::LinesGraphData):
     validate_vector_length(context, "lines_points_ys", data.lines_points_ys, "lines_points_xs", n_lines)
     validate_vector_length(context, "lines_points_sizes", data.lines_points_sizes, "lines_points_xs", n_lines)
     validate_vector_length(context, "lines_points_colors", data.lines_points_colors, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_widths", data.lines_colors, "lines_points_xs", n_lines)
+    validate_vector_length(context, "lines_widths", data.lines_widths, "lines_points_xs", n_lines)
     validate_vector_length(context, "lines_colors", data.lines_colors, "lines_points_xs", n_lines)
     validate_vector_length(context, "lines_styles", data.lines_styles, "lines_points_xs", n_lines)
+
+    # These color-name vectors are used directly as Plotly colors; validate them (an invalid color name would otherwise
+    # be silently rendered black by Plotly).
+    validate_vector_entries(context, "lines_colors", data.lines_colors) do _, color
+        validate_is_color(context, color)
+        return nothing
+    end
+    validate_vector_entries(context, "lines_points_colors", data.lines_points_colors) do _, color
+        validate_is_color(context, color)
+        return nothing
+    end
     validate_vector_length(context, "lines_order", data.lines_order, "lines_points_xs", n_lines)
 
     for line_index in 1:n_lines

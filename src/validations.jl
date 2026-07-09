@@ -26,6 +26,7 @@ export validate_is_at_most
 export validate_is_below
 export validate_is_color
 export validate_is_range
+export validate_matrix_dimension
 export validate_matrix_entries
 export validate_matrix_is_not_empty
 export validate_matrix_size
@@ -398,6 +399,39 @@ function validate_matrix_size(
             ArgumentError(
                 "invalid size of $(location(context)).$(field): $(size(matrix))\n" *
                 "is different from size of $(location(context)).$(base_field): $(expected_size)",
+            ),
+        )
+    end
+    return nothing
+end
+
+"""
+    validate_matrix_dimension(
+        context::ValidationContext,
+        field::AbstractString,
+        matrix::Maybe{AbstractMatrix},
+        dimension::Integer,
+        base_field::AbstractString,
+        expected_length::Integer
+    )::Nothing
+
+Validate that a `field` containing `matrix` has (if it is specified) the `expected_length` of a `base_field` along the
+given `dimension` (`1` for rows, `2` for columns). The other dimension is unconstrained.
+"""
+function validate_matrix_dimension(
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::Maybe{AbstractMatrix},
+    dimension::Integer,
+    base_field::AbstractString,
+    expected_length::Integer,
+)::Nothing
+    if matrix !== nothing && size(matrix, dimension) != expected_length
+        dimension_name = dimension == 1 ? "rows" : "columns"
+        throw(
+            ArgumentError(
+                "invalid $(dimension_name) count of $(location(context)).$(field): $(size(matrix, dimension))\n" *
+                "is different from length of $(location(context)).$(base_field): $(expected_length)",
             ),
         )
     end

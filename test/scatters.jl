@@ -776,6 +776,16 @@ nested_test("lines") do
                 graph,
             )
         end
+
+        nested_test("~colors") do
+            graph.data.lines_colors = ["red", "Oobleck"]
+            @test_throws "ArgumentError: invalid graph.data.lines_colors[2]: Oobleck" validate(context, graph)
+        end
+
+        nested_test("~points_colors") do
+            graph.data.lines_points_colors = ["red", "Oobleck"]
+            @test_throws "ArgumentError: invalid graph.data.lines_points_colors[2]: Oobleck" validate(context, graph)
+        end
     end
 
     nested_test("()") do

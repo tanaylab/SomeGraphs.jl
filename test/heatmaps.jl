@@ -79,6 +79,14 @@ nested_test("heatmaps") do
             )
         end
 
+        nested_test("annotation") do
+            push!(graph.data.rows_annotations, AnnotationData(; values = ["red", "green", "Oobleck"]))
+            @test_throws "ArgumentError: invalid graph.data.rows_annotations[1].values[3]: Oobleck" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
+
         nested_test("filled") do
             graph.configuration.rows_dendogram_line.is_filled = true
             @test_throws chomp("""
@@ -257,6 +265,48 @@ nested_test("heatmaps") do
         end
     end
 
+    nested_test("arrange") do
+        nested_test("columns") do
+            graph.configuration.columns_reorder = OptimalHclust
+
+            nested_test("features") do
+                # A different number of feature rows is allowed; only the reordered (columns) count must match.
+                graph.data.columns_arrange_by = Float32[1 2 3 4; 5 6 7 8]
+                validate(ValidationContext(["graph"]), graph)
+                return nothing
+            end
+
+            nested_test("mismatch") do
+                graph.data.columns_arrange_by = Float32[1 2 3; 4 5 6]
+                @test_throws chomp("""
+                                   ArgumentError: invalid columns count of graph.data.columns_arrange_by: 3
+                                   is different from length of graph.data.entries_values.columns: 4
+                                   """) validate(ValidationContext(["graph"]), graph)
+                return nothing
+            end
+        end
+
+        nested_test("rows") do
+            graph.configuration.rows_reorder = OptimalHclust
+
+            nested_test("features") do
+                # A different number of feature columns is allowed; only the reordered (rows) count must match.
+                graph.data.rows_arrange_by = Float32[1 2; 3 4; 5 6]
+                validate(ValidationContext(["graph"]), graph)
+                return nothing
+            end
+
+            nested_test("mismatch") do
+                graph.data.rows_arrange_by = Float32[1 2 3 4; 5 6 7 8]
+                @test_throws chomp("""
+                                   ArgumentError: invalid rows count of graph.data.rows_arrange_by: 2
+                                   is different from length of graph.data.entries_values.rows: 3
+                                   """) validate(ValidationContext(["graph"]), graph)
+                return nothing
+            end
+        end
+    end
+
     nested_test("()") do
         test_html(graph, "heatmap.html")
         return nothing
@@ -322,6 +372,13 @@ nested_test("heatmaps") do
 
         nested_test("()") do
             test_html(graph, "heatmap.annotations.html")
+            return nothing
+        end
+
+        nested_test("automatic") do
+            graph.data.rows_annotations[1].colors.palette = AutomaticColors()
+            graph.data.rows_annotations[1].colors.show_legend = true
+            test_html(graph, "heatmap.annotations.automatic.html")
             return nothing
         end
 

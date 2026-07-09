@@ -239,9 +239,11 @@ This is shown as a 2D image where each matrix entry is a small rectangle with so
 colors must be continuous. The hover for each rectangle is a combination of the `entries_hovers`, `rows_hovers`
 and `columns_hovers` for the entry.
 
-By default, if reordering the data, this is based on the `entries_values`. You can override this by specifying an an
-`..._arrange_by` matrix of the same size. For efficiency the `rows_arrange_by` matrix should be in row-major layout, but
-that's not critical.
+By default, if reordering the data, this is based on the `entries_values`. You can override this by specifying an
+`..._arrange_by` matrix. Only the reordered dimension needs to match the `entries_values` (the `rows_arrange_by` must
+have the same number of rows, and the `columns_arrange_by` the same number of columns); the other dimension holds
+whatever features you want to cluster by, and need not match. For efficiency the `rows_arrange_by` matrix should be in
+row-major layout, but that's not critical.
 
 Alternatively you can force the order of the data by specifying the `..._order` permutation. You can also specify an
 `Hclust` object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
@@ -303,13 +305,14 @@ end
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
     n_rows, n_columns = size(data.entries_values)
 
-    validate_matrix_size(context, "rows_arrange_by", data.rows_arrange_by, "entries_values", size(data.entries_values))
-    validate_matrix_size(
+    validate_matrix_dimension(context, "rows_arrange_by", data.rows_arrange_by, 1, "entries_values.rows", n_rows)
+    validate_matrix_dimension(
         context,
         "columns_arrange_by",
         data.columns_arrange_by,
-        "entries_values",
-        size(data.entries_values),
+        2,
+        "entries_values.columns",
+        n_columns,
     )
 
     validate_vector_length(context, "rows_names", data.rows_names, "entries_values.rows", n_rows)
@@ -1336,15 +1339,17 @@ function push_dendogram_trace!(;
         ),
     )
 
-    return maximum(heights)
+    return maximum(skipmissing(heights))
 end
 
 function dendogram_coordinates(
     clusters::Hclust,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
-)::Tuple{AbstractVector{<:AbstractFloat}, AbstractVector{<:AbstractFloat}}
-    values = Float32[]
-    heights = Float32[]
+)::Tuple{AbstractVector{<:Union{AbstractFloat, Missing}}, AbstractVector{<:Union{AbstractFloat, Missing}}}
+    # The separators between the line segments are `missing` (serialized as JSON `null`, which breaks the line) rather
+    # than `NaN`, which the JSON writer used by `to_html` rejects.
+    values = Union{Float32, Missing}[]
+    heights = Union{Float32, Missing}[]
 
     n_values = length(clusters.order)
     @assert size(clusters.merges, 1) == n_values - 1
@@ -1385,8 +1390,8 @@ function dendogram_coordinates(
 
         middle_value = (left_value + right_value) / 2
 
-        push!(values, left_value, left_value, right_value, right_value, NaN)
-        push!(heights, left_height, height, height, right_height, NaN)
+        push!(values, left_value, left_value, right_value, right_value, missing)
+        push!(heights, left_height, height, height, right_height, missing)
 
         value_per_node[merge_index + n_values] = middle_value
         height_per_node[merge_index + n_values] = height
@@ -1432,7 +1437,7 @@ function expand_z_matrix(
     expanded_rows_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
     columns_order::Maybe{AbstractVector{<:Integer}},
     expanded_columns_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
-)::AbstractMatrix{<:Real}
+)::AbstractMatrix{<:Union{Real, Missing}}
     if rows_order === nothing &&
        expanded_rows_mask === nothing &&
        columns_order === nothing &&
@@ -1460,8 +1465,10 @@ function expand_z_matrix(
         n_expanded_columns = length(expanded_columns_mask)
     end
 
-    expanded_z = Matrix{eltype(z)}(undef, n_expanded_rows, n_expanded_columns)
-    expanded_z .= NaN
+    # The gap entries are `missing` (serialized as JSON `null`) rather than `NaN`: Plotly renders both as blank gaps, but
+    # the JSON writer used by `to_html` rejects `NaN`.
+    expanded_z = Matrix{Union{eltype(z), Missing}}(undef, n_expanded_rows, n_expanded_columns)
+    expanded_z .= missing
     expanded_z[expanded_rows_mask, expanded_columns_mask] .= z
 
     return expanded_z

@@ -1763,14 +1763,21 @@ function configured_colors(;
     if colors_values isa AbstractVector{<:AbstractString}
         show_in_legend = colors_configuration.show_legend
 
-        if colors_configuration.palette isa CategoricalColors
-            @assert colors_values isa AbstractVector{<:AbstractString}
+        palette = colors_configuration.palette
+        if palette isa AutomaticColors
+            # Automatic colors are resolved here to an explicit categorical palette, so consumers that render the final
+            # color values directly (unlike scatters, which draw one trace per category and let Plotly pick) get valid
+            # color names.
+            palette = categorical_palette([color for color in colors_values if color != ""])
+        end
+
+        if palette isa CategoricalColors
             final_colors_values = [
-                color != "" && prefer_data(mask, index, true) ? colors_configuration.palette[color] : ""  #
+                color != "" && prefer_data(mask, index, true) ? palette[color] : ""  #
                 for (index, color) in enumerate(colors_values)
             ]
         else
-            @assert colors_configuration.palette === nothing || colors_configuration.palette isa AutomaticColors
+            @assert palette === nothing
             final_colors_values = colors_values
         end
 

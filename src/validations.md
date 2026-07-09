@@ -19,6 +19,7 @@ SomeGraphs.Validations.validate_vector_length
 SomeGraphs.Validations.validate_vector_entries
 SomeGraphs.Validations.validate_matrix_is_not_empty
 SomeGraphs.Validations.validate_matrix_size
+SomeGraphs.Validations.validate_matrix_dimension
 SomeGraphs.Validations.validate_matrix_entries
 SomeGraphs.Validations.validate_dict_is_not_empty
 SomeGraphs.Validations.validate_dict_entries

@@ -274,6 +274,11 @@ nested_test("distribution") do
                                """) graph.figure
         end
 
+        nested_test("~distribution_color") do
+            graph.data.distribution_color = "Oobleck"
+            @test_throws "ArgumentError: invalid graph.data.distribution_color: Oobleck" graph.figure
+        end
+
         nested_test("~normalize") do
             graph.configuration.distribution.normalize = true
             @test_throws chomp("""

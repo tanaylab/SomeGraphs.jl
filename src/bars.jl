@@ -624,7 +624,7 @@ function push_bar_trace!(;
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph} = nothing,
     values_orientation::ValuesOrientation,
-    color::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractString}} = nothing,
+    color::Maybe{Union{AbstractVector{<:Union{Real, Missing}}, AbstractVector{<:AbstractString}, AbstractString}} = nothing,
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     name::Maybe{AbstractString} = nothing,
@@ -764,7 +764,8 @@ function push_annotation_traces!(;
     if eltype(colors.final_colors_values) <: AbstractString
         gap_color = "white"
     else
-        gap_color = NaN
+        # `missing` (serialized as JSON `null`) rather than `NaN`, which the JSON writer used by `to_html` rejects.
+        gap_color = missing
     end
 
     hovers = annotation_data.hovers
@@ -816,7 +817,9 @@ function expand_vector(
         return values
     end
 
-    expanded_values = fill(default_value, length(expanded_mask))
+    # The element type must hold both the values and the (possibly `missing`) gap default.
+    expanded_values = Vector{Union{eltype(values), typeof(default_value)}}(undef, length(expanded_mask))
+    fill!(expanded_values, default_value)
     expanded_values[expanded_mask] .= values
 
     return expanded_values

@@ -374,6 +374,9 @@ end
 
 function Validations.validate(context::ValidationContext, data::DistributionGraphData)::Maybe{AbstractString}
     validate_vector_is_not_empty(context, "distribution_values", data.distribution_values)
+    validate_in(context, "distribution_color") do
+        return validate_is_color(context, data.distribution_color)
+    end
     return nothing
 end
 

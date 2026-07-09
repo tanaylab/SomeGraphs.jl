@@ -1527,6 +1527,15 @@ function Validations.validate(
 
     validate_vector_length(context, "values", annotation_data.values, expected_base, expected_length)
 
+    # With no palette, the annotation's string values are used as explicit color names; validate them (an invalid color
+    # name would otherwise be silently rendered black by Plotly).
+    if annotation_data.colors.palette === nothing && annotation_data.values isa AbstractVector{<:AbstractString}
+        validate_vector_entries(context, "values", annotation_data.values) do _, color
+            validate_is_color(context, color)
+            return nothing
+        end
+    end
+
     validate_vector_length(context, "hovers", annotation_data.hovers, expected_base, expected_length)
 
     return nothing

@@ -146,6 +146,19 @@ nested_test("validations") do
                                """) validate_matrix_size(context, "bar", matrix, "baz", (3, 2))
         end
 
+        nested_test("dimension") do
+            validate_matrix_dimension(context, "bar", matrix, 1, "baz.rows", 2)
+            validate_matrix_dimension(context, "bar", matrix, 2, "baz.columns", 3)
+            @test_throws chomp("""
+                               ArgumentError: invalid rows count of foo.bar: 2
+                               is different from length of foo.baz.rows: 3
+                               """) validate_matrix_dimension(context, "bar", matrix, 1, "baz.rows", 3)
+            @test_throws chomp("""
+                               ArgumentError: invalid columns count of foo.bar: 3
+                               is different from length of foo.baz.columns: 2
+                               """) validate_matrix_dimension(context, "bar", matrix, 2, "baz.columns", 2)
+        end
+
         nested_test("empty") do
             validate_matrix_is_not_empty(context, "bar", matrix)
             matrix = Matrix{Float32}(undef, 0, 3)

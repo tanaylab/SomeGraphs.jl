@@ -654,6 +654,49 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Validations.validate_matrix_dimension">
+<a class="docstring-binding" href="#SomeGraphs.Validations.validate_matrix_dimension">
+<code>SomeGraphs.Validations.validate_matrix_dimension
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_matrix_dimension(
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::Maybe{AbstractMatrix},
+    dimension::Integer,
+    base_field::AbstractString,
+    expected_length::Integer
+)::Nothing
+</code>
+</pre>
+<p>Validate that a 
+<code>field
+</code> containing 
+<code>matrix
+</code> has (if it is specified) the 
+<code>expected_length
+</code> of a 
+<code>base_field
+</code> along the given 
+<code>dimension
+</code> (
+<code>1
+</code> for rows, 
+<code>2
+</code> for columns). The other dimension is unconstrained.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Validations.validate_matrix_entries">
 <a class="docstring-binding" href="#SomeGraphs.Validations.validate_matrix_entries">
 <code>SomeGraphs.Validations.validate_matrix_entries
@@ -844,6 +887,12 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 <li>
 <a href="validations.html#SomeGraphs.Validations.validate_is_range">
 <code>SomeGraphs.Validations.validate_is_range
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_matrix_dimension">
+<code>SomeGraphs.Validations.validate_matrix_dimension
 </code>
 </a>
 </li>
