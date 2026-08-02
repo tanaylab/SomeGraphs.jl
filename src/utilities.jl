@@ -48,6 +48,7 @@ import .Validations.Maybe
 
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
+@reexport import .Common.graph_to_json
 @reexport import .Common.flip_axes
 @reexport import .Common.flip_axes!
 
@@ -877,10 +878,14 @@ end
         scaled_values_range::Range,
         bands_data::BandsData,
         bands_configuration::BandsConfiguration,
-        bands_scale::Real = 1,
+        bands_scale::Real = 1;
+        cross_ref::AbstractString = "y domain",
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
+
+The bands stretch across the whole of the `cross_ref` axis. When the graph is split into sub-graphs, push the bands
+once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them.
 """
 function push_vertical_bands_shapes(
     shapes::AbstractVector{Shape},
@@ -888,7 +893,8 @@ function push_vertical_bands_shapes(
     scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
-    bands_scale::Real = 1,
+    bands_scale::Real = 1;
+    cross_ref::AbstractString = "y domain",
 )::Nothing
     scaled_low_offset =
         scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
@@ -914,7 +920,7 @@ function push_vertical_bands_shapes(
                     xref = "x",
                     y0 = 0,
                     y1 = 1,
-                    yref = "y domain",
+                    yref = cross_ref,
                 ),
             )
         end
@@ -933,7 +939,7 @@ function push_vertical_bands_shapes(
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
-                yref = "y domain",
+                yref = cross_ref,
             ),
         )
     end
@@ -951,7 +957,7 @@ function push_vertical_bands_shapes(
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
-                yref = "y domain",
+                yref = cross_ref,
             ),
         )
     end
@@ -969,7 +975,7 @@ function push_vertical_bands_shapes(
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
-                yref = "y domain",
+                yref = cross_ref,
             ),
         )
     end
@@ -984,11 +990,15 @@ end
         scaled_values_range::Range,
         bands_data::BandsData,
         bands_configuration::BandsConfiguration,
-        bands_scale::Real = 1,
+        bands_scale::Real = 1;
+        cross_ref::AbstractString = "x domain",
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because
 Plotly.
+
+The bands stretch across the whole of the `cross_ref` axis. When the graph is split into sub-graphs, push the bands
+once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them.
 """
 function push_horizontal_bands_shapes(
     shapes::AbstractVector{Shape},
@@ -996,7 +1006,8 @@ function push_horizontal_bands_shapes(
     scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
-    bands_scale::Real = 1,
+    bands_scale::Real = 1;
+    cross_ref::AbstractString = "x domain",
 )::Nothing
     scaled_low_offset =
         scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
@@ -1022,7 +1033,7 @@ function push_horizontal_bands_shapes(
                     yref = "y",
                     x0 = 0,
                     x1 = 1,
-                    xref = "x domain",
+                    xref = cross_ref,
                 ),
             )
         end
@@ -1041,7 +1052,7 @@ function push_horizontal_bands_shapes(
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
-                xref = "x domain",
+                xref = cross_ref,
             ),
         )
     end
@@ -1059,7 +1070,7 @@ function push_horizontal_bands_shapes(
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
-                xref = "x domain",
+                xref = cross_ref,
             ),
         )
     end
@@ -1077,7 +1088,7 @@ function push_horizontal_bands_shapes(
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
-                xref = "x domain",
+                xref = cross_ref,
             ),
         )
     end

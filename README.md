@@ -69,8 +69,8 @@ too many already).
 Just `Pkg.add("SomeGraphs")`, like installing any other Julia package. However, if being used in Jupyter notebook,
 you will probably want to install the language specific package instead:
 
-To install the Python `Daf` [package](https://github.com/tanaylab/some_graphs.py), just `pip install some_graphs`, like
-installing any other Python package.
+To install the Python `SomeGraphs` [package](https://github.com/tanaylab/somegraphspy), just `pip install somegraphspy`,
+like installing any other Python package.
 
 TODO: To install the R wrappers...
 

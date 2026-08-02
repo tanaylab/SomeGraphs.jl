@@ -127,40 +127,45 @@ function test_distributions(  # UNTESTED
                     end
                 end
 
+                # The value axis is shared by all the distributions, so the value bands apply to both pluralities. The
+                # offsets have to lie in the range of the values, which is ten times smaller for the multiple
+                # distributions.
+                low_offset, middle_offset, high_offset = plurality == "distribution" ? (50, 80, 120) : (5, 8, 12)
+
+                nested_test("value_lines") do
+                    graph.configuration.value_bands.low.offset = low_offset
+                    graph.data.value_bands.middle_offset = middle_offset
+                    graph.configuration.value_bands.high.offset = high_offset
+
+                    @assert !graph.configuration.value_bands.low.line.is_filled
+                    @assert !graph.configuration.value_bands.middle.line.is_filled
+                    @assert !graph.configuration.value_bands.high.line.is_filled
+
+                    test_html(graph, "$(plurality).$(kind).$(name).value_lines.html")
+                    return nothing
+                end
+
+                nested_test("value_fills") do
+                    graph.configuration.value_bands.low.line.is_filled = true
+                    graph.configuration.value_bands.middle.line.is_filled = true
+                    graph.configuration.value_bands.high.line.is_filled = true
+
+                    graph.configuration.value_bands.low.line.style = DashDotLine
+                    graph.configuration.value_bands.middle.line.style = nothing
+                    graph.configuration.value_bands.high.line.style = DashDotLine
+
+                    graph.configuration.value_bands.low.line.color = "green"
+                    graph.configuration.value_bands.middle.line.color = "red"
+                    graph.configuration.value_bands.high.line.color = "blue"
+
+                    graph.configuration.value_bands.low.offset = low_offset
+                    graph.data.value_bands.high_offset = high_offset
+
+                    test_html(graph, "$(plurality).$(kind).$(name).value_fills.html")
+                    return nothing
+                end
+
                 if plurality == "distribution"
-                    nested_test("value_lines") do
-                        graph.configuration.value_bands.low.offset = 50
-                        graph.data.value_bands.middle_offset = 80
-                        graph.configuration.value_bands.high.offset = 120
-
-                        @assert !graph.configuration.value_bands.low.line.is_filled
-                        @assert !graph.configuration.value_bands.middle.line.is_filled
-                        @assert !graph.configuration.value_bands.high.line.is_filled
-
-                        test_html(graph, "$(plurality).$(kind).$(name).value_lines.html")
-                        return nothing
-                    end
-
-                    nested_test("value_fills") do
-                        graph.configuration.value_bands.low.line.is_filled = true
-                        graph.configuration.value_bands.middle.line.is_filled = true
-                        graph.configuration.value_bands.high.line.is_filled = true
-
-                        graph.configuration.value_bands.low.line.style = DashDotLine
-                        graph.configuration.value_bands.middle.line.style = nothing
-                        graph.configuration.value_bands.high.line.style = DashDotLine
-
-                        graph.configuration.value_bands.low.line.color = "green"
-                        graph.configuration.value_bands.middle.line.color = "red"
-                        graph.configuration.value_bands.high.line.color = "blue"
-
-                        graph.configuration.value_bands.low.offset = 50
-                        graph.data.value_bands.high_offset = 120
-
-                        test_html(graph, "$(plurality).$(kind).$(name).value_fills.html")
-                        return nothing
-                    end
-
                     if startswith(kind, "cumulative")
                         nested_test("cumulative_lines") do
                             graph.configuration.cumulative_bands.low.offset = 0.25

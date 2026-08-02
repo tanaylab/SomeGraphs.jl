@@ -45,6 +45,16 @@ nested_test("common") do
         end
     end
 
+    nested_test("json") do
+        graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3], figure_title = "json title")
+        json = graph.json
+        @test json isa AbstractString
+        @test occursin("\"data\"", json)
+        @test occursin("\"layout\"", json)
+        @test occursin("json title", json)
+        return nothing
+    end
+
     nested_test("figure") do
         figure = FigureConfiguration()
         context = ValidationContext(["figure"])

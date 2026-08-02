@@ -285,6 +285,50 @@
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Common.graph_to_json">
+<a class="docstring-binding" href="#SomeGraphs.Common.graph_to_json">
+<code>SomeGraphs.Common.graph_to_json
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">graph_to_json(graph::Graph)::AbstractString
+</code>
+</pre>
+<p>Render a graph given its data and configuration, as a JSON string describing the Plotly figure. Since this is plain text, it can be handed to any other programming language that has a Plotly binding (e.g., to display the interactive graph in a Python or R Jupyter notebook).
+</p>
+<p>You can just write 
+<code>graph.json
+</code> instead of 
+<code>graph_to_json(graph)
+</code>.
+</p>
+<div class="admonition is-info" id="Note-3683e12c3c613be5">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-3683e12c3c613be5" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>Plotly ignores the graph 
+<code>width
+</code> and 
+<code>height
+</code> when rendering the figure, so whoever displays this JSON is responsible for applying them (they are also included in the JSON 
+<code>layout
+</code>).
+</p>
+</div>
+</div>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.plotly_figure">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_figure">
 <code>SomeGraphs.Utilities.plotly_figure
@@ -991,11 +1035,16 @@ end
     scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
-    bands_scale::Real = 1,
+    bands_scale::Real = 1;
+    cross_ref::AbstractString = &quot;x domain&quot;,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
 <p>Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+</p>
+<p>The bands stretch across the whole of the 
+<code>cross_ref
+</code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them.
 </p>
 </div>
 </section>
@@ -1020,11 +1069,16 @@ end
     scaled_values_range::Range,
     bands_data::BandsData,
     bands_configuration::BandsConfiguration,
-    bands_scale::Real = 1,
+    bands_scale::Real = 1;
+    cross_ref::AbstractString = &quot;y domain&quot;,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
 <p>Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
+</p>
+<p>The bands stretch across the whole of the 
+<code>cross_ref
+</code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them.
 </p>
 </div>
 </section>
@@ -1243,6 +1297,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Common.graph_to_figure">
 <code>SomeGraphs.Common.graph_to_figure
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Common.graph_to_json">
+<code>SomeGraphs.Common.graph_to_json
 </code>
 </a>
 </li>

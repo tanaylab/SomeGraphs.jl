@@ -50,6 +50,7 @@ using ..Validations
 using Colors
 using ColorVectorSpace
 
+import JSON
 import PlotlyKaleido
 
 import ..Validations.Maybe
@@ -82,7 +83,9 @@ abstract type AbstractGraphData <: Validated end
 """
 The type of a figure we can display. This is a combination of some [`AbstractGraphData`](@ref) and
 [`AbstractGraphConfiguration`](@ref). Accessing the `.figure` property of the graph will return it as a `PlotlyFigure`,
-which can be displayed in interactive environments (such as Jupyter notebooks or a Plotly-aware IDE).
+which can be displayed in interactive environments (such as Jupyter notebooks or a Plotly-aware IDE). Accessing the
+`.json` property will return the same figure as a JSON string, for handing the graph over to another programming
+language (e.g., to display it in a Python or R Jupyter notebook).
 
 !!! note
 
@@ -102,6 +105,8 @@ end
 function Base.getproperty(graph::Graph, property::Symbol)::Any
     if property == :figure
         return graph_to_figure(graph)
+    elseif property == :json
+        return graph_to_json(graph)
     else
         return getfield(graph, property)
     end
@@ -166,6 +171,24 @@ You can just write `graph.figure` instead of `graph_to_figure(graph)`.
     `savefig` on the result of `graph_to_figure`.
 """
 function graph_to_figure(::Graph)::PlotlyFigure end
+
+"""
+    graph_to_json(graph::Graph)::AbstractString
+
+Render a graph given its data and configuration, as a JSON string describing the Plotly figure. Since this is plain
+text, it can be handed to any other programming language that has a Plotly binding (e.g., to display the interactive
+graph in a Python or R Jupyter notebook).
+
+You can just write `graph.json` instead of `graph_to_json(graph)`.
+
+!!! note
+
+    Plotly ignores the graph `width` and `height` when rendering the figure, so whoever displays this JSON is
+    responsible for applying them (they are also included in the JSON `layout`).
+"""
+function graph_to_json(graph::Graph)::AbstractString
+    return JSON.json(graph_to_figure(graph))
+end
 
 """
     flip_axes(graph::Graph)::Graph

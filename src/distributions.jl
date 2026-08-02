@@ -9,9 +9,11 @@ export CumulativeDistribution
 export CurveBoxDistribution
 export CurveDistribution
 export DistributionConfiguration
+export DistributionGraph
 export DistributionGraphConfiguration
 export DistributionGraphData
 export DistributionStyle
+export DistributionsGraph
 export DistributionsGraphConfiguration
 export DistributionsGraphData
 export HistogramDistribution
@@ -242,6 +244,7 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         distribution::DistributionConfiguration = DistributionConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        value_bands::BandsConfiguration = BandsConfiguration()
         density_axis::AxisConfiguration = AxisConfiguration()
         series_axis::AxisConfiguration = AxisConfiguration()
         distributions_gap::Maybe{Real} = 0.05
@@ -264,6 +267,7 @@ to the axis, as if they were its title) and `title` are used; the numeric and gr
     figure::FigureConfiguration = FigureConfiguration()
     distribution::DistributionConfiguration = DistributionConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    value_bands::BandsConfiguration = BandsConfiguration()
     density_axis::AxisConfiguration = AxisConfiguration()
     series_axis::AxisConfiguration = AxisConfiguration()
     distributions_gap::Maybe{Real} = 0.05
@@ -276,6 +280,7 @@ function Validations.validate(
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "distribution", configuration.distribution)
     validate_field(context, "value_axis", configuration.value_axis)
+    validate_field(context, "value_bands", configuration.value_bands, configuration.value_axis)
     validate_field(context, "density_axis", configuration.density_axis)
 
     validate_is_at_least(context, configuration.distributions_gap, 0)
@@ -390,6 +395,7 @@ end
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
         distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
+        value_bands::BandsData = BandsData()
     end
 
 The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall
@@ -413,6 +419,7 @@ specified; when there is a gap, whichever is given is used to title the series a
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
     distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
+    value_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionsGraphData)::Maybe{AbstractString}
@@ -501,6 +508,8 @@ DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfigurati
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
         distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
         distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
+        value_bands::BandsData = BandsData(),
         configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration()]
     )::DistributionsGraph
 
@@ -516,6 +525,7 @@ function distributions_graph(;
     distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
     distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
+    value_bands::BandsData = BandsData(),
     configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration(),
 )::DistributionsGraph
     return DistributionsGraph(
@@ -528,6 +538,7 @@ function distributions_graph(;
             distributions_names,
             distributions_colors,
             distributions_order,
+            value_bands,
         ),
         configuration,
     )
@@ -562,6 +573,13 @@ function Common.validate_graph(graph::DistributionsGraph)::Nothing
             graph.configuration.value_axis,
         )
     end
+
+    validate_graph_bands(
+        "value_bands",
+        graph.configuration.value_bands,
+        graph.data.value_bands,
+        graph.configuration.value_axis,
+    )
 
     if graph.data.density_axis_title !== nothing && graph.data.series_axis_title !== nothing
         throw(ArgumentError(chomp("""
@@ -830,14 +848,25 @@ function distribution_layout(;
         @assert false
     end
 
-    if graph isa DistributionGraph
+    # Only the density axis is split per distribution; the value axis is shared by all of them, so the value bands
+    # apply to a graph of multiple distributions just as they do to a graph of a single one. They are pushed once per
+    # sub-graph, using its own density axis, so they do not stretch across the gaps between the distributions.
+    if graph isa DistributionsGraph && graph.configuration.distributions_gap !== nothing
+        n_sub_graphs = length(graph.data.distributions_values)
+    else
+        n_sub_graphs = 1
+    end
+
+    for sub_graph_index in 1:n_sub_graphs
+        cross_ref = "$(plotly_axis(density_axis_letter, sub_graph_index; short = true, force = true)) domain"
         if graph.configuration.distribution.values_orientation == VerticalValues
             push_horizontal_bands_shapes(
                 shapes,
                 graph.configuration.value_axis,
                 scaled_values_range,
                 graph.data.value_bands,
-                graph.configuration.value_bands,
+                graph.configuration.value_bands;
+                cross_ref,
             )
         elseif graph.configuration.distribution.values_orientation == HorizontalValues
             push_vertical_bands_shapes(
@@ -845,7 +874,8 @@ function distribution_layout(;
                 graph.configuration.value_axis,
                 scaled_values_range,
                 graph.data.value_bands,
-                graph.configuration.value_bands,
+                graph.configuration.value_bands;
+                cross_ref,
             )
         end
     end
