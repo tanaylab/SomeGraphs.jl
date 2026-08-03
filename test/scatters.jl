@@ -856,7 +856,11 @@ nested_test("lines") do
     nested_test("unify") do
         lines_points_xs = [[0.0, 1.0, 2.0], [0.25, 0.5, 1.5, 2.5]]
         lines_points_ys = [[-0.2, 1.2, 1.8], [0.1, 1.0, 0.5, 2.0]]
-        unified_points_xs, unified_points_ys = SomeGraphs.Scatters.unify_lines_points(lines_points_xs, lines_points_ys)
+        unified_points_xs, unified_points_ys, stacked_range =
+            SomeGraphs.Scatters.unify_lines_points(lines_points_xs, lines_points_ys)
+
+        @test isapprox(stacked_range.minimum, -0.2)
+        @test isapprox(stacked_range.maximum, 3.05)
 
         @test isapprox(
             unified_points_xs,

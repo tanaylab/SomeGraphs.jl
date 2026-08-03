@@ -1179,7 +1179,7 @@ end
 <pre>
 <code class="language-julia hljs">collect_range!(
     range::MaybeRange,
-    values::AbstractVector{&lt;:Maybe{Real}},
+    values::Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{&lt;:Maybe{Real}}},
 )::Nothing
 </code>
 </pre>

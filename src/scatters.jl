@@ -1570,8 +1570,9 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     scaled_lines_points_ys =
         [scale_axis_values(graph.configuration.y_axis, line_points_ys) for line_points_ys in graph.data.lines_points_ys]
 
+    stacked_scaled_ys_range = MaybeRange()
     if graph.configuration.stacking !== nothing
-        scaled_lines_points_xs, scaled_lines_points_ys =
+        scaled_lines_points_xs, scaled_lines_points_ys, stacked_scaled_ys_range =
             unify_lines_points(scaled_lines_points_xs, scaled_lines_points_ys)
     end
 
@@ -1582,8 +1583,12 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     scaled_xs_range = final_scaled_range(implicit_scaled_xs_range, graph.configuration.x_axis)
 
     implicit_scaled_ys_range = MaybeRange()
-    for scaled_points_ys in scaled_lines_points_ys
-        collect_range!(implicit_scaled_ys_range, scaled_points_ys)
+    if graph.configuration.stacking == StackValues
+        implicit_scaled_ys_range = stacked_scaled_ys_range
+    else
+        for scaled_points_ys in scaled_lines_points_ys
+            collect_range!(implicit_scaled_ys_range, scaled_points_ys)
+        end
     end
     scaled_ys_range = final_scaled_range(implicit_scaled_ys_range, graph.configuration.y_axis)
 
@@ -1674,8 +1679,12 @@ end
 function unify_lines_points(
     lines_points_xs::AbstractVector{<:AbstractVector{<:Real}},
     lines_points_ys::AbstractVector{<:AbstractVector{<:Real}},
-)::Tuple{Vector{Vector{Float32}}, Vector{Vector{Float32}}}
+)::Tuple{Vector{Vector{Float32}}, Vector{Vector{Float32}}, MaybeRange}
     n_lines = length(lines_points_xs)
+
+    # The lines are stacked on top of each other, so this covers their accumulated values, not the values of any one of
+    # them. The stack is built up from zero, so zero is always in the range.
+    stacked_range = MaybeRange(; minimum = 0, maximum = 0)
 
     unified_xs = Vector{Vector{Float32}}()
     unified_ys = Vector{Vector{Float32}}()
@@ -1708,7 +1717,7 @@ function unify_lines_points(
         end
 
         if unified_x === nothing
-            return (unified_xs, unified_ys)
+            return (unified_xs, unified_ys, stacked_range)
         end
 
         if unified_x != last_x
@@ -1762,6 +1771,8 @@ function unify_lines_points(
                 end
             end
         end
+
+        collect_range!(stacked_range, (last_y,))
     end
 end
 

@@ -1488,12 +1488,15 @@ end
 """
     collect_range!(
         range::MaybeRange,
-        values::AbstractVector{<:Maybe{Real}},
+        values::Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{<:Maybe{Real}}},
     )::Nothing
 
 Expand the `range` to cover the `values.
 """
-function collect_range!(range::MaybeRange, values::Maybe{AbstractVector{<:Maybe{Real}}})::Nothing
+function collect_range!(
+    range::MaybeRange,
+    values::Maybe{Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{<:Maybe{Real}}}},
+)::Nothing
     if values !== nothing
         for value in values
             if range.minimum === nothing || (value !== nothing && value < range.minimum)
@@ -1537,6 +1540,32 @@ If the `index` is 0, this is the dendogram graph (of the other axis) with `dendo
     dendogram_size::Maybe{Real} = nothing
 end
 
+# At most this fraction of an axis is spent on the annotations and on the gaps between the sub-graphs; most of the graph
+# should be the graph itself.
+MAX_OVERHEAD_FRACTION = 1 / 3
+
+# The size of each annotation, the gap following it, and the gap between the sub-graphs; if together they would take
+# more than `MAX_OVERHEAD_FRACTION` of the axis, they are all scaled down to fit.
+function sub_graph_overhead_sizes(sub_graph::SubGraph)::NTuple{3, Float64}
+    if sub_graph.annotation_size === nothing
+        annotation_size = annotation_gap = 0.0
+    else
+        annotation_size = Float64(sub_graph.annotation_size.size)
+        annotation_gap = Float64(sub_graph.annotation_size.gap)
+    end
+    graphs_gap = Float64(prefer_data(sub_graph.graphs_gap, 0))
+
+    overhead = sub_graph.n_annotations * (annotation_size + annotation_gap) + (sub_graph.n_graphs - 1) * graphs_gap
+    if overhead > MAX_OVERHEAD_FRACTION
+        scale = MAX_OVERHEAD_FRACTION / overhead  # UNTESTED
+        annotation_size *= scale  # UNTESTED
+        annotation_gap *= scale  # UNTESTED
+        graphs_gap *= scale  # UNTESTED
+    end
+
+    return (annotation_size, annotation_gap, graphs_gap)
+end
+
 """
     plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:AbstractFloat}}
 
@@ -1557,37 +1586,42 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
         return nothing
     end
 
+    annotation_size, annotation_gap, graphs_gap = sub_graph_overhead_sizes(sub_graph)
+
     if axis_index > 0
         @assert 1 <= axis_index <= n_graphs
 
         if sub_graph.n_annotations == 0
-            start_graph_offset = 0
+            start_graph_offset = 0.0
         else
             @assert sub_graph.annotation_size !== nothing
-            start_graph_offset =
-                (sub_graph.annotation_size.gap + sub_graph.annotation_size.size) * sub_graph.n_annotations
+            start_graph_offset = (annotation_gap + annotation_size) * sub_graph.n_annotations
         end
 
-        graphs_total_size = 1 - start_graph_offset - (n_graphs - 1) * prefer_data(sub_graph.graphs_gap, 0)
+        graphs_total_size = 1 - start_graph_offset - (n_graphs - 1) * graphs_gap
         if sub_graph.dendogram_size !== nothing
             graphs_total_size -= sub_graph.dendogram_size
         end
         graph_size = graphs_total_size / n_graphs
-        start_graph_offset += (axis_index - 1) * (graph_size + prefer_data(sub_graph.graphs_gap, 0))
+        start_graph_offset += (axis_index - 1) * (graph_size + graphs_gap)
         end_graph_offset = start_graph_offset + graph_size
 
     elseif axis_index < 0
         axis_index = -axis_index
         @assert 1 <= axis_index <= sub_graph.n_annotations
         @assert sub_graph.annotation_size !== nothing
-        start_graph_offset = (axis_index - 1) * (sub_graph.annotation_size.gap + sub_graph.annotation_size.size)
-        end_graph_offset = start_graph_offset + sub_graph.annotation_size.size
+        start_graph_offset = (axis_index - 1) * (annotation_gap + annotation_size)
+        end_graph_offset = start_graph_offset + annotation_size
 
     else
         @assert sub_graph.dendogram_size !== nothing
         start_graph_offset = 1 - sub_graph.dendogram_size
         end_graph_offset = 1
     end
+
+    # Accumulating the offsets of many sub-graphs can drift past the edges of the figure by an epsilon.
+    start_graph_offset = max(start_graph_offset, 0)
+    end_graph_offset = min(end_graph_offset, 1)
 
     @assert 0 <= start_graph_offset < end_graph_offset <= 1
     return [start_graph_offset, end_graph_offset]

@@ -1092,13 +1092,13 @@ function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGra
                 slant_rows_order, slant_columns_order = slanted_orders(
                     data_columns_arrange_by;
                     same_order = true,
-                    squared_order = slant_columns_is_pre_squared,
+                    squared_order = !slant_columns_is_pre_squared,
                 )
             else
                 _, slant_columns_order = slanted_orders(
                     data_columns_arrange_by;
                     order_rows = false,
-                    squared_order = slant_columns_is_pre_squared,
+                    squared_order = !slant_columns_is_pre_squared,
                 )
             end
         end
