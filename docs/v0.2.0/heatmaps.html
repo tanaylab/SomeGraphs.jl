@@ -222,7 +222,9 @@
     rows_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     columns_order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing,
     rows_groups::Maybe{AbstractVector} = nothing,
+    rows_subgroups::Maybe{AbstractVector} = nothing,
     columns_groups::Maybe{AbstractVector} = nothing,
+    columns_subgroups::Maybe{AbstractVector} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
 )::HeatmapGraph
 </code>
@@ -1053,7 +1055,9 @@ end
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
     rows_groups_gap::Maybe{Integer} = 1
+    rows_subgroups_gap::Maybe{Integer} = nothing
     columns_groups_gap::Maybe{Integer} = 1
+    columns_subgroups_gap::Maybe{Integer} = nothing
     rows_dendogram_size::Maybe{Real} = nothing
     columns_dendogram_size::Maybe{Real} = nothing
     rows_dendogram_line::LineConfiguration = LineConfiguration()
@@ -1077,9 +1081,17 @@ end
 <code>..._metric
 </code>.
 </p>
-<p>If groups are specified for some entries (rows and/or columns), they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). groups. The size of the gaps is the number of fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of 
+<p>If groups are specified for some entries (rows and/or columns), they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). The size of the gaps is the number of fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of 
 <code>nothing
 </code> will not be shown.
+</p>
+<p>If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is contiguous, and within it each subgroup is contiguous. Their 
+<code>..._subgroups_gap
+</code> works the same way, and defaults to 
+<code>nothing
+</code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+</p>
+<p>Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the subgroups inside each of them.
 </p>
 <p>If you specify 
 <code>..._dendogram_size
@@ -1095,8 +1107,40 @@ end
 </p>
 <p>The 
 <code>final_order
-</code> is filled whenever the graph&#39;s figure is generated. This allows accessing the results (e.g., for generating other graphs in an identical order).
+</code> caches the computed order of the rows and the columns; access it through the graph&#39;s 
+<code>order
+</code> (e.g., for generating other graphs in an identical order). It is computed once, whether the graph&#39;s figure is generated or its order is asked for first.
 </p>
+<div class="admonition is-info" id="Note-b40f8b2430f2f1bd">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-b40f8b2430f2f1bd" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>Nothing detects that the cache went stale. Call 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!">
+<code>reset_order!
+</code>
+</a> if anything it was computed from is changed after it was computed - that is, the 
+<code>..._reorder
+</code>, 
+<code>..._linkage
+</code> and 
+<code>..._metric
+</code> configuration, and the 
+<code>entries_values
+</code>, 
+<code>..._order
+</code>, 
+<code>..._arrange_by
+</code>, 
+<code>..._groups
+</code> and 
+<code>..._subgroups
+</code> data. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order of the first grouping unless the cache is reset in between.
+</p>
+</div>
+</div>
 </div>
 </section>
 </details>
@@ -1185,15 +1229,130 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">struct HeatmapGraphOrder
-    rows_order::Maybe{AbstractVector{&lt;:Integer}}
+    rows_order::AbstractVector{&lt;:Integer}
     rows_hclust::Maybe{Hclust}
-    columns_order::Maybe{AbstractVector{&lt;:Integer}}
+    columns_order::AbstractVector{&lt;:Integer}
     columns_hclust::Maybe{Hclust}
-    reordered_values::AbstractMatrix{&lt;:Real}
 end
 </code>
 </pre>
-<p>Computed final order and clustering and reordered data of a graph. This is filled whenever the graph&#39;s figure is generated.
+<p>The computed final order and clustering of the rows and the columns of a heatmap graph, as returned by 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>heatmap_order
+</code>
+</a>.
+</p>
+<ul>
+<li>
+<code>rows_order
+</code> is the order of the rows of the data, that is, the index of the original row shown at each position. This is always a permutation of 
+<code>1:n_rows
+</code>, which for an axis that isn&#39;t reordered at all is the identity.
+</li>
+<li>
+<code>rows_hclust
+</code> is the tree the rows were clustered by, or 
+<code>nothing
+</code> if they weren&#39;t clustered (they were left alone, given an explicit order, or slanted without a tree).
+</li>
+<li>
+<code>columns_order
+</code> and 
+<code>columns_hclust
+</code> are the same for the columns.
+</li>
+</ul>
+<p>These describe the order of the data, not the order it is displayed in; applying the 
+<code>origin
+</code> is up to whoever shows the graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.heatmap_order">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_order">
+<code>SomeGraphs.Heatmaps.heatmap_order
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+</code>
+</pre>
+<p>Return the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>HeatmapGraphOrder
+</code>
+</a> of a heatmap 
+<code>graph
+</code>, that is, the final order of its rows and columns and the trees they were clustered by, without rendering it.
+</p>
+<p>You can just write 
+<code>graph.order
+</code> instead of 
+<code>heatmap_order(graph)
+</code>. Either way the order is only computed once; showing the graph will reuse it, and vice versa.
+</p>
+<p>Use this to list the entries in the order they are shown:
+</p>
+<pre>
+<code class="language-julia hljs">ordered_rows_names = graph.data.rows_names[graph.order.rows_order]
+</code>
+</pre>
+<p>Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its order (and, if they use the same groups, they will also have the same gaps):
+</p>
+<pre>
+<code class="language-julia hljs">graph.configuration.columns_reorder = OptimalHclust
+other_graph.data.columns_order = graph.order.columns_order
+</code>
+</pre>
+<p>If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order 
+<em>and
+</em> draws the same tree above each of them (this only makes sense if the graphs share the same columns, as the tree refers to the original column indices):
+</p>
+<pre>
+<code class="language-julia hljs">graph.configuration.columns_reorder = OptimalHclust
+graph.configuration.columns_dendogram_size = 0.1
+other_graph.data.columns_order = graph.order.columns_hclust
+other_graph.configuration.columns_dendogram_size = 0.1
+</code>
+</pre>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.reset_order!">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.reset_order!">
+<code>SomeGraphs.Heatmaps.reset_order!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">reset_order!(graph::HeatmapGraph)::Nothing
+</code>
+</pre>
+<p>Forget the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>HeatmapGraphOrder
+</code>
+</a> cached in the graph&#39;s 
+<code>final_order
+</code>, so that asking for the graph&#39;s 
+<code>order
+</code> (or showing it) will compute it again. Call this after changing anything the order was computed from.
 </p>
 </div>
 </section>
@@ -1265,12 +1424,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='NS94BfBXbh' class='' style=';'>
+<div id='HyFKkPugLf' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("NS94BfBXbh")
+    const PLOT = document.getElementById("HyFKkPugLf")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1301,12 +1460,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='QEu1jRlzwP' class='' style=';'>
+<div id='zgGVfufXPD' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QEu1jRlzwP")
+    const PLOT = document.getElementById("zgGVfufXPD")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1337,12 +1496,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='eE9tlQP3EK' class='' style=';'>
+<div id='qXuYsMEAIC' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("eE9tlQP3EK")
+    const PLOT = document.getElementById("qXuYsMEAIC")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1382,12 +1541,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='9c3R1HLOBE' class='' style=';'>
+<div id='xoo3INhVYw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("9c3R1HLOBE")
+    const PLOT = document.getElementById("xoo3INhVYw")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1431,12 +1590,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XRp4aX1n0U' class='' style=';'>
+<div id='P24eQYVKRu' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XRp4aX1n0U")
+    const PLOT = document.getElementById("P24eQYVKRu")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,5.2915025],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1482,13 +1641,52 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='QLoH9yUaHa' class='' style=';'>
+<div id='BW3Wu1tPN5' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QLoH9yUaHa")
+    const PLOT = document.getElementById("BW3Wu1tPN5")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
+</script>
+
+<p>Subgroups (a 2nd level of grouping nested in the groups). The groups are numbered, so they are shown in the order of their numbers; the subgroups are named, so they are placed by the clustering, but each of them is still contiguous inside its group:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
+graph = heatmap_graph(;
+    entries_values = [
+        4 1 5 2 4 1;
+        3 2 4 3 3 2;
+        2 3 3 4 2 3;
+        1 4 2 5 1 4;
+    ],
+    rows_names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;],
+    columns_names = [&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;],
+    columns_groups = [1, 1, 1, 2, 2, 2],
+    columns_subgroups = [&quot;P&quot;, &quot;Q&quot;, &quot;P&quot;, &quot;R&quot;, &quot;R&quot;, &quot;S&quot;],
+)
+graph.configuration.columns_reorder = OptimalHclust
+graph.configuration.columns_subgroups_gap = 1
+using PlotlyDocumenter
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='fEOWOe3kLj' class='' style=';'>
+</div>
+
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("fEOWOe3kLj")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[2.0,3.0,4.0,5.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5,6,7,8,9]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5,6,7,8,9],"range":[0.5,9.5],"ticktext":["W","U","","V","","Z","","X","Y"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1559,6 +1757,18 @@ to_documenter(graph.figure)
 <li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_graph">
 <code>SomeGraphs.Heatmaps.heatmap_graph
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>SomeGraphs.Heatmaps.heatmap_order
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!">
+<code>SomeGraphs.Heatmaps.reset_order!
 </code>
 </a>
 </li>

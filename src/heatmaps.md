@@ -15,6 +15,8 @@ SomeGraphs.Heatmaps.HeatmapGraphData
 SomeGraphs.Heatmaps.HeatmapGraphConfiguration
 SomeGraphs.Heatmaps.HeatmapReorder
 SomeGraphs.Heatmaps.HeatmapGraphOrder
+SomeGraphs.Heatmaps.heatmap_order
+SomeGraphs.Heatmaps.reset_order!
 SomeGraphs.Heatmaps.HeatmapLinkage
 SomeGraphs.Heatmaps.HeatmapOrigin
 ```
@@ -167,6 +169,30 @@ graph.configuration.rows_reorder = OptimalHclust
 graph.configuration.columns_reorder = OptimalHclust
 graph.configuration.rows_dendogram_size = 0.2
 graph.configuration.columns_dendogram_size = 0.2
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Subgroups (a 2nd level of grouping nested in the groups). The groups are numbered, so they are shown in the order of
+their numbers; the subgroups are named, so they are placed by the clustering, but each of them is still contiguous
+inside its group:
+
+```@example
+using SomeGraphs
+graph = heatmap_graph(;
+    entries_values = [
+        4 1 5 2 4 1;
+        3 2 4 3 3 2;
+        2 3 3 4 2 3;
+        1 4 2 5 1 4;
+    ],
+    rows_names = ["A", "B", "C", "D"],
+    columns_names = ["U", "V", "W", "X", "Y", "Z"],
+    columns_groups = [1, 1, 1, 2, 2, 2],
+    columns_subgroups = ["P", "Q", "P", "R", "R", "S"],
+)
+graph.configuration.columns_reorder = OptimalHclust
+graph.configuration.columns_subgroups_gap = 1
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

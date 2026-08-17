@@ -113,8 +113,8 @@ function Base.getproperty(graph::Graph, property::Symbol)::Any
 end
 
 function Validations.validate(context::ValidationContext, graph::Graph)::Nothing
-    validate_field(context, "data", graph.data)
-    validate_field(context, "configuration", graph.configuration)
+    validate_field(context, "data", graph.data)  # NOJET
+    validate_field(context, "configuration", graph.configuration)  # NOJET
     validate_graph(graph)  # NOJET
     return nothing
 end
@@ -187,7 +187,7 @@ You can just write `graph.json` instead of `graph_to_json(graph)`.
     responsible for applying them (they are also included in the JSON `layout`).
 """
 function graph_to_json(graph::Graph)::AbstractString
-    return JSON.json(graph_to_figure(graph))
+    return JSON.json(graph_to_figure(graph))  # NOJET
 end
 
 """

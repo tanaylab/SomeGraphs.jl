@@ -6,11 +6,13 @@ module Heatmaps
 export AverageLinkage
 export CompleteLinkage
 export heatmap_graph
+export heatmap_order
 export HeatmapBottomLeft
 export HeatmapBottomRight
 export HeatmapGraph
 export HeatmapGraphConfiguration
 export HeatmapGraphData
+export HeatmapGraphOrder
 export HeatmapLinkage
 export HeatmapOrigin
 export HeatmapReorder
@@ -18,6 +20,7 @@ export HeatmapTopLeft
 export HeatmapTopRight
 export OptimalHclust
 export RCompatibleHclust
+export reset_order!
 export ReorderHclust
 export SameOrder
 export SingleLinkage
@@ -69,22 +72,29 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
 
 """
     struct HeatmapGraphOrder
-        rows_order::Maybe{AbstractVector{<:Integer}}
+        rows_order::AbstractVector{<:Integer}
         rows_hclust::Maybe{Hclust}
-        columns_order::Maybe{AbstractVector{<:Integer}}
+        columns_order::AbstractVector{<:Integer}
         columns_hclust::Maybe{Hclust}
-        reordered_values::AbstractMatrix{<:Real}
     end
 
-Computed final order and clustering and reordered data of a graph. This is filled whenever the graph's figure is
-generated.
+The computed final order and clustering of the rows and the columns of a heatmap graph, as returned by
+[`heatmap_order`](@ref).
+
+  - `rows_order` is the order of the rows of the data, that is, the index of the original row shown at each position.
+    This is always a permutation of `1:n_rows`, which for an axis that isn't reordered at all is the identity.
+  - `rows_hclust` is the tree the rows were clustered by, or `nothing` if they weren't clustered (they were left alone,
+    given an explicit order, or slanted without a tree).
+  - `columns_order` and `columns_hclust` are the same for the columns.
+
+These describe the order of the data, not the order it is displayed in; applying the `origin` is up to whoever shows
+the graph.
 """
 struct HeatmapGraphOrder
-    rows_order::Maybe{AbstractVector{<:Integer}}
+    rows_order::AbstractVector{<:Integer}
     rows_hclust::Maybe{Hclust}
-    columns_order::Maybe{AbstractVector{<:Integer}}
+    columns_order::AbstractVector{<:Integer}
     columns_hclust::Maybe{Hclust}
-    reordered_values::AbstractMatrix{<:Real}
 end
 
 """
@@ -100,7 +110,9 @@ end
         rows_metric::Maybe{PreMetric} = nothing
         columns_metric::Maybe{PreMetric} = nothing
         rows_groups_gap::Maybe{Integer} = 1
+        rows_subgroups_gap::Maybe{Integer} = nothing
         columns_groups_gap::Maybe{Integer} = 1
+        columns_subgroups_gap::Maybe{Integer} = nothing
         rows_dendogram_size::Maybe{Real} = nothing
         columns_dendogram_size::Maybe{Real} = nothing
         rows_dendogram_line::LineConfiguration = LineConfiguration()
@@ -119,9 +131,18 @@ You can use `..._reorder` reorder the data. When specifying `..._linkage`, by de
 `Euclidean` distance metric. You can override this by specifying the `..._metric`.
 
 If groups are specified for some entries (rows and/or columns), they can be used to constrain the clustering, and/or to
-create visible gaps in the heatmap (between entries of different groups). groups. The size of the gaps is the number of
-fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry
-between adjacent entries of different groups. A gap of `nothing` will not be shown.
+create visible gaps in the heatmap (between entries of different groups). The size of the gaps is the number of fake
+entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between
+adjacent entries of different groups. A gap of `nothing` will not be shown.
+
+If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is
+contiguous, and within it each subgroup is contiguous. Their `..._subgroups_gap` works the same way, and defaults to
+`nothing` because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+
+Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level
+specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of
+their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the
+subgroups inside each of them.
 
 If you specify `..._dendogram_size`, then you should either specify linkage (for computing a clustering) or must specify
 `Hclust` order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual
@@ -130,8 +151,17 @@ inconvenient units (fractions of the total graph size) because Plotly.
 If a dendogram tree is shown, the `..._dendogram_line` can be used to control it. The default color is black. The
 `is_filled` field shouldn't be set as it has no meaning here.
 
-The `final_order` is filled whenever the graph's figure is generated. This allows accessing the results (e.g., for
-generating other graphs in an identical order).
+The `final_order` caches the computed order of the rows and the columns; access it through the graph's `order` (e.g.,
+for generating other graphs in an identical order). It is computed once, whether the graph's figure is generated or its
+order is asked for first.
+
+!!! note
+
+    Nothing detects that the cache went stale. Call [`reset_order!`](@ref) if anything it was computed from is changed
+    after it was computed - that is, the `..._reorder`, `..._linkage` and `..._metric` configuration, and the
+    `entries_values`, `..._order`, `..._arrange_by`, `..._groups` and `..._subgroups` data. The groups are easy to forget: they
+    constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order
+    of the first grouping unless the cache is reset in between.
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -147,7 +177,9 @@ generating other graphs in an identical order).
     rows_metric::Maybe{PreMetric} = nothing
     columns_metric::Maybe{PreMetric} = nothing
     rows_groups_gap::Maybe{Integer} = 1
+    rows_subgroups_gap::Maybe{Integer} = nothing
     columns_groups_gap::Maybe{Integer} = 1
+    columns_subgroups_gap::Maybe{Integer} = nothing
     rows_dendogram_size::Maybe{Real} = nothing
     columns_dendogram_size::Maybe{Real} = nothing
     rows_dendogram_line::LineConfiguration = LineConfiguration()
@@ -175,6 +207,12 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
     end
     validate_in(context, "columns_groups_gap") do
         return validate_is_above(context, configuration.columns_groups_gap, 0)
+    end
+    validate_in(context, "rows_subgroups_gap") do
+        return validate_is_above(context, configuration.rows_subgroups_gap, 0)
+    end
+    validate_in(context, "columns_subgroups_gap") do
+        return validate_is_above(context, configuration.columns_subgroups_gap, 0)
     end
 
     validate_in(context, "rows_dendogram_size") do
@@ -299,7 +337,24 @@ All other combinations are invalid. Note:
     rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     rows_groups::Maybe{AbstractVector} = nothing
+    rows_subgroups::Maybe{AbstractVector} = nothing
     columns_groups::Maybe{AbstractVector} = nothing
+    columns_subgroups::Maybe{AbstractVector} = nothing
+end
+
+# The subgroups of an axis are a second, finer level of grouping, so they only make sense together with the groups. A
+# subgroup is nested in its group, so the same subgroup in two different groups is two different subgroups; there's no
+# need for the subgroups to be unique.
+function validate_subgroups(
+    context::ValidationContext,
+    name::AbstractString,
+    groups::Maybe{AbstractVector},
+    subgroups::Maybe{AbstractVector},
+)::Nothing
+    if subgroups !== nothing && groups === nothing
+        throw(ArgumentError("can't specify heatmap $(location(context)).$(name)_subgroups without $(name)_groups"))
+    end
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
@@ -324,6 +379,11 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
 
     validate_vector_length(context, "rows_groups", data.rows_groups, "entries_values.rows", n_rows)
     validate_vector_length(context, "columns_groups", data.columns_groups, "entries_values.columns", n_columns)
+    validate_vector_length(context, "rows_subgroups", data.rows_subgroups, "entries_values.rows", n_rows)
+    validate_vector_length(context, "columns_subgroups", data.columns_subgroups, "entries_values.columns", n_columns)
+
+    validate_subgroups(context, "rows", data.rows_groups, data.rows_subgroups)
+    validate_subgroups(context, "columns", data.columns_groups, data.columns_subgroups)
 
     if data.rows_order isa Hclust
         rows_order = data.rows_order.order  # UNTESTED
@@ -376,7 +436,9 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
         rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
         rows_groups::Maybe{AbstractVector} = nothing,
+        rows_subgroups::Maybe{AbstractVector} = nothing,
         columns_groups::Maybe{AbstractVector} = nothing,
+        columns_subgroups::Maybe{AbstractVector} = nothing,
         configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
     )::HeatmapGraph
 
@@ -401,7 +463,9 @@ function heatmap_graph(;
     rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
     rows_groups::Maybe{AbstractVector} = nothing,
+    rows_subgroups::Maybe{AbstractVector} = nothing,
     columns_groups::Maybe{AbstractVector} = nothing,
+    columns_subgroups::Maybe{AbstractVector} = nothing,
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
 )::HeatmapGraph
     return HeatmapGraph(
@@ -423,7 +487,9 @@ function heatmap_graph(;
             rows_order,
             columns_order,
             rows_groups,
+            rows_subgroups,
             columns_groups,
+            columns_subgroups,
         ),
         configuration,
     )
@@ -469,10 +535,12 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
         data_order,
         data_arrange_by,
         data_groups,
+        data_subgroups,
         configuration_reorder,
         configuration_linkage,
         configuration_metric,
         configuration_groups_gap,
+        configuration_subgroups_gap,
         configuration_dendogram_size,
         other_name,
         other_data_order,
@@ -484,10 +552,12 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             graph.data.columns_order,
             graph.data.columns_arrange_by,
             graph.data.columns_groups,
+            graph.data.columns_subgroups,
             graph.configuration.columns_reorder,
             graph.configuration.columns_linkage,
             graph.configuration.columns_metric,
             graph.configuration.columns_groups_gap,
+            graph.configuration.columns_subgroups_gap,
             graph.configuration.columns_dendogram_size,
             "rows",
             graph.data.rows_order,
@@ -499,10 +569,12 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             graph.data.rows_order,
             graph.data.rows_arrange_by,
             graph.data.rows_groups,
+            graph.data.rows_subgroups,
             graph.configuration.rows_reorder,
             graph.configuration.rows_linkage,
             graph.configuration.rows_metric,
             graph.configuration.rows_groups_gap,
+            graph.configuration.rows_subgroups_gap,
             graph.configuration.rows_dendogram_size,
             "columns",
             graph.data.columns_order,
@@ -510,6 +582,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             graph.configuration.columns_dendogram_size,
         ),
     )
+        is_clustered = false
         is_using_groups = configuration_groups_gap !== nothing
         if data_order === nothing
             if configuration_reorder === nothing
@@ -578,7 +651,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 end
 
             elseif configuration_reorder in (OptimalHclust, RCompatibleHclust, SlantedHclust, SlantedPreSquaredHclust)
-                is_using_groups = true
+                is_using_groups = is_clustered = true
 
             elseif !(configuration_reorder in (SlantedOrder, SlantedPreSquaredOrder))
                 throw(
@@ -631,7 +704,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             end
 
             if configuration_reorder == ReorderHclust
-                is_using_groups = true
+                is_using_groups = is_clustered = true
 
             elseif configuration_reorder !== nothing
                 throw(
@@ -668,6 +741,19 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
         if !is_using_groups && data_groups !== nothing
             throw(ArgumentError("no effect for specified graph.data.$(name)_groups"))
         end
+
+        ## Unlike the groups, the subgroups have their own gap, so they are of use if either the axis is clustered (they
+        ## constrain the clustering) or they are gapped.
+        if !is_clustered && configuration_subgroups_gap === nothing && data_subgroups !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name)_subgroups"))
+        end
+
+        if configuration_subgroups_gap !== nothing && data_subgroups === nothing
+            throw(ArgumentError(chomp("""
+                                      can't specify heatmap graph.configuration.$(name)_subgroups_gap
+                                      without graph.data.$(name)_subgroups
+                                      """)))
+        end
     end
 
     return nothing
@@ -686,7 +772,14 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         next_colors_scale_index,
     )
 
-    graph.configuration.final_order = final_order = reorder_data(graph, colors)
+    final_order = heatmap_order(graph)
+
+    # The order is that of the data; the `origin` decides which end of each axis the first entry is shown at.
+    rows_order =
+        displayed_order(final_order.rows_order, graph.configuration.origin in (HeatmapTopLeft, HeatmapTopRight))
+    columns_order =
+        displayed_order(final_order.columns_order, graph.configuration.origin in (HeatmapBottomRight, HeatmapTopRight))
+    reordered_values = colors.final_colors_values[rows_order, columns_order]
 
     n_rows_annotations = length(graph.data.rows_annotations)
     n_columns_annotations = length(graph.data.columns_annotations)
@@ -715,32 +808,33 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = VerticalValues,
     )
 
-    expanded_rows_mask =
-        compute_expansion_mask(final_order.rows_order, graph.data.rows_groups, graph.configuration.rows_groups_gap)
+    expanded_rows_mask = compute_expansion_mask(
+        rows_order,
+        graph.data.rows_groups,
+        graph.configuration.rows_groups_gap,
+        graph.data.rows_subgroups,
+        graph.configuration.rows_subgroups_gap,
+    )
     expanded_columns_mask = compute_expansion_mask(
-        final_order.columns_order,
+        columns_order,
         graph.data.columns_groups,
         graph.configuration.columns_groups_gap,
+        graph.data.columns_subgroups,
+        graph.configuration.columns_subgroups_gap,
     )
 
-    expanded_z = expand_z_matrix(
-        final_order.reordered_values,
-        final_order.rows_order,
-        expanded_rows_mask,
-        final_order.columns_order,
-        expanded_columns_mask,
-    )
+    expanded_z = expand_z_matrix(reordered_values, rows_order, expanded_rows_mask, columns_order, expanded_columns_mask)
 
     n_expanded_rows, n_expanded_columns = size(expanded_z)
 
     rows_hovers = graph.data.rows_hovers
-    if rows_hovers !== nothing && final_order.rows_order !== nothing
-        rows_hovers = rows_hovers[final_order.rows_order]  # UNTESTED
+    if rows_hovers !== nothing
+        rows_hovers = rows_hovers[rows_order]
     end
 
     columns_hovers = graph.data.columns_hovers
-    if columns_hovers !== nothing && final_order.columns_order !== nothing
-        columns_hovers = columns_hovers[final_order.columns_order]  # UNTESTED
+    if columns_hovers !== nothing
+        columns_hovers = columns_hovers[columns_order]
     end
 
     entries_hovers = graph.data.entries_hovers
@@ -754,13 +848,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     end
 
     if entries_hovers !== nothing
-        if final_order.rows_order !== nothing && final_order.columns_order !== nothing
-            entries_hovers = entries_hovers[final_order.rows_order, final_order.columns_order]  # UNTESTED
-        elseif final_order.rows_order !== nothing
-            entries_hovers = entries_hovers[final_order.rows_order, :]  # UNTESTED
-        elseif final_order.columns_order !== nothing
-            entries_hovers = entries_hovers[:, final_order.columns_order]  # UNTESTED
-        end
+        entries_hovers = entries_hovers[rows_order, columns_order]
     end
 
     hovers = expand_hovers(;
@@ -803,7 +891,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotations_data = graph.data.columns_annotations,
         annotation_size = graph.configuration.columns_annotations,
         entries_hovers = graph.data.columns_hovers,
-        order = final_order.columns_order,
+        order = columns_order,
         expanded_mask = expanded_columns_mask,
     )
 
@@ -818,7 +906,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotations_data = graph.data.rows_annotations,
         annotation_size = graph.configuration.rows_annotations,
         entries_hovers = graph.data.rows_hovers,
-        order = final_order.rows_order,
+        order = rows_order,
         expanded_mask = expanded_rows_mask,
     )
 
@@ -879,7 +967,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers)
 
-    expanded_rows_names = expand_vector(graph.data.rows_names, final_order.rows_order, expanded_rows_mask, "")
+    expanded_rows_names = expand_vector(graph.data.rows_names, rows_order, expanded_rows_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("y", yaxis_index),
@@ -901,8 +989,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         is_zeroable = false,
     )
 
-    expanded_columns_names =
-        expand_vector(graph.data.columns_names, final_order.columns_order, expanded_columns_mask, "")
+    expanded_columns_names = expand_vector(graph.data.columns_names, columns_order, expanded_columns_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("x", xaxis_index),
@@ -1048,7 +1135,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     return plotly_figure(traces, layout)
 end
 
-function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGraphOrder
+function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
     data_rows_arrange_by = prefer_data(graph.data.rows_arrange_by, graph.data.entries_values)
     data_columns_arrange_by = prefer_data(graph.data.columns_arrange_by, graph.data.entries_values)
     @assert data_rows_arrange_by !== nothing
@@ -1108,6 +1195,7 @@ function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGra
         data_order = graph.data.columns_order,
         data_arrange_by = data_columns_arrange_by,
         data_groups = graph.data.columns_groups,
+        data_subgroups = graph.data.columns_subgroups,
         slant_order = slant_columns_order,
         configuration_reorder = graph.configuration.columns_reorder,
         configuration_dendogram_size = graph.configuration.columns_dendogram_size,
@@ -1119,6 +1207,7 @@ function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGra
         data_order = graph.data.rows_order,
         data_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1)),
         data_groups = graph.data.rows_groups,
+        data_subgroups = graph.data.rows_subgroups,
         slant_order = slant_rows_order,
         configuration_reorder = graph.configuration.rows_reorder,
         configuration_dendogram_size = graph.configuration.rows_dendogram_size,
@@ -1140,43 +1229,93 @@ function reorder_data(graph::HeatmapGraph, colors::ConfiguredColors)::HeatmapGra
         data_columns_hclust = data_rows_hclust
     end
 
-    n_rows, n_columns = size(graph.data.entries_values)
+    n_rows, n_columns = size(graph.data.entries_values)  # NOJET
 
-    if graph.configuration.origin in (HeatmapTopLeft, HeatmapTopRight)
-        if data_rows_order === nothing
-            data_rows_order = collect(1:n_rows)
-        end
-        data_rows_order = reverse(data_rows_order)
-    end
-
-    if graph.configuration.origin in (HeatmapBottomRight, HeatmapTopRight)
-        if data_columns_order === nothing
-            data_columns_order = collect(1:n_columns)
-        end
-        data_columns_order = reverse(data_columns_order)
-    end
-
+    # An axis that wasn't reordered is still reported as an explicit permutation, so the order can be used as-is.
     if data_rows_order === nothing
-        if data_columns_order === nothing
-            z = colors.final_colors_values
-        else
-            z = colors.final_colors_values[:, data_columns_order]
-        end
-    else
-        if data_columns_order === nothing
-            z = colors.final_colors_values[data_rows_order, :]
-        else
-            z = colors.final_colors_values[data_rows_order, data_columns_order]
-        end
+        data_rows_order = collect(1:n_rows)
+    end
+    if data_columns_order === nothing
+        data_columns_order = collect(1:n_columns)
     end
 
-    return HeatmapGraphOrder(data_rows_order, data_rows_hclust, data_columns_order, data_columns_hclust, z)
+    return HeatmapGraphOrder(data_rows_order, data_rows_hclust, data_columns_order, data_columns_hclust)
+end
+
+"""
+    heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+
+Return the [`HeatmapGraphOrder`](@ref) of a heatmap `graph`, that is, the final order of its rows and columns and the
+trees they were clustered by, without rendering it.
+
+You can just write `graph.order` instead of `heatmap_order(graph)`. Either way the order is only computed once; showing
+the graph will reuse it, and vice versa.
+
+Use this to list the entries in the order they are shown:
+
+```julia
+ordered_rows_names = graph.data.rows_names[graph.order.rows_order]
+```
+
+Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its
+order (and, if they use the same groups, they will also have the same gaps):
+
+```julia
+graph.configuration.columns_reorder = OptimalHclust
+other_graph.data.columns_order = graph.order.columns_order
+```
+
+If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order
+*and* draws the same tree above each of them (this only makes sense if the graphs share the same columns, as the tree
+refers to the original column indices):
+
+```julia
+graph.configuration.columns_reorder = OptimalHclust
+graph.configuration.columns_dendogram_size = 0.1
+other_graph.data.columns_order = graph.order.columns_hclust
+other_graph.configuration.columns_dendogram_size = 0.1
+```
+"""
+function heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+    final_order = graph.configuration.final_order  # NOJET
+    if final_order === nothing
+        graph.configuration.final_order = final_order = compute_heatmap_order(graph)  # NOJET
+    end
+    return final_order
+end
+
+"""
+    reset_order!(graph::HeatmapGraph)::Nothing
+
+Forget the [`HeatmapGraphOrder`](@ref) cached in the graph's `final_order`, so that asking for the graph's `order` (or
+showing it) will compute it again. Call this after changing anything the order was computed from.
+"""
+function reset_order!(graph::HeatmapGraph)::Nothing
+    graph.configuration.final_order = nothing
+    return nothing
+end
+
+# Only a heatmap has a computed order, so only a heatmap has this property; any other graph will complain there's no
+# such field.
+function Base.getproperty(graph::HeatmapGraph, property::Symbol)::Any
+    if property == :order
+        return heatmap_order(graph)
+    else
+        return invoke(Base.getproperty, Tuple{Graph, Symbol}, graph, property)
+    end
+end
+
+# The order the entries of an axis are shown in, which is the order of the data, reversed if the `origin` places the
+# first entry at the far end of the axis.
+function displayed_order(order::AbstractVector{<:Integer}, is_reversed::Bool)::AbstractVector{<:Integer}
+    return is_reversed ? reverse(order) : order
 end
 
 function finalize_order(;
     data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},
     data_arrange_by::AbstractMatrix{<:Real},
     data_groups::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
+    data_subgroups::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     slant_order::Maybe{AbstractVector{<:Integer}},
     configuration_reorder::Maybe{HeatmapReorder},
     configuration_dendogram_size::Maybe{Real},
@@ -1214,6 +1353,7 @@ function finalize_order(;
                 distances;
                 linkage = hclust_linkage(configuration_linkage),
                 groups = data_groups,
+                subgroups = data_subgroups,
                 branchorder = hclust_branchorder(configuration_reorder),
             )
             return (clusters.order, clusters)
@@ -1221,7 +1361,12 @@ function finalize_order(;
         elseif configuration_reorder in (SlantedHclust, SlantedPreSquaredHclust)
             @assert slant_order !== nothing
             distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-            clusters = ehclust(distances; linkage = hclust_linkage(configuration_linkage), groups = data_groups)
+            clusters = ehclust(
+                distances;
+                linkage = hclust_linkage(configuration_linkage),
+                groups = data_groups,
+                subgroups = data_subgroups,
+            )
             clusters = reorder_hclust(clusters, slant_order)
             return (clusters.order, clusters)
 
@@ -1259,7 +1404,7 @@ function finalize_order(;
 
         elseif configuration_reorder === ReorderHclust
             distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-            clusters = ehclust(distances; groups = data_groups)
+            clusters = ehclust(distances; groups = data_groups, subgroups = data_subgroups)
             clusters = reorder_hclust(clusters, data_order)
             return (clusters.order, clusters)
 
@@ -1404,26 +1549,39 @@ function compute_expansion_mask(
     order::Maybe{AbstractVector{<:Integer}},
     groups::Maybe{AbstractVector},
     groups_gap::Maybe{Integer},
+    subgroups::Maybe{AbstractVector} = nothing,
+    subgroups_gap::Maybe{Integer} = nothing,
 )::Maybe{Union{BitVector, AbstractVector{Bool}}}
-    if groups === nothing || groups_gap === nothing
+    has_groups_gap = groups !== nothing && groups_gap !== nothing
+    has_subgroups_gap = subgroups !== nothing && subgroups_gap !== nothing
+    if !has_groups_gap && !has_subgroups_gap
         return nothing
     end
 
-    @assert groups_gap > 0
+    @assert groups_gap === nothing || groups_gap > 0
+    @assert subgroups_gap === nothing || subgroups_gap > 0
 
     if order === nothing
-        order = 1:length(groups)
+        order = 1:length(groups === nothing ? subgroups : groups)  # UNTESTED
     end
 
     expanded_mask = Bool[]
 
-    prev_group = groups[order[1]]
-    for group in groups[order]
-        if group != prev_group
-            prev_group = group
-            for _ in 1:groups_gap
-                push!(expanded_mask, false)
-            end
+    ## A boundary between the groups is also a boundary between the subgroups, and is gapped as the wider of the two.
+    prev_group = has_groups_gap ? groups[order[1]] : nothing
+    prev_subgroup = has_subgroups_gap ? subgroups[order[1]] : nothing
+    for entry_index in order
+        gap = 0
+        if has_groups_gap && groups[entry_index] != prev_group
+            gap = groups_gap
+        elseif has_subgroups_gap && subgroups[entry_index] != prev_subgroup
+            gap = subgroups_gap
+        end
+        has_groups_gap && (prev_group = groups[entry_index])
+        has_subgroups_gap && (prev_subgroup = subgroups[entry_index])
+
+        for _ in 1:gap
+            push!(expanded_mask, false)
         end
         push!(expanded_mask, true)
     end
@@ -1442,7 +1600,7 @@ function expand_z_matrix(
        expanded_rows_mask === nothing &&
        columns_order === nothing &&
        expanded_columns_mask === nothing
-        return z
+        return z  # UNTESTED
     end
 
     if expanded_rows_mask === nothing && expanded_columns_mask === nothing
@@ -1452,8 +1610,8 @@ function expand_z_matrix(
     n_rows, n_columns = size(z)
 
     if expanded_rows_mask === nothing
-        n_expanded_rows = n_rows  # UNTESTED
-        expanded_rows_mask = 1:n_rows  # UNTESTED
+        n_expanded_rows = n_rows
+        expanded_rows_mask = 1:n_rows
     else
         n_expanded_rows = length(expanded_rows_mask)
     end

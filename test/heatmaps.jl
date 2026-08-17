@@ -643,4 +643,180 @@ nested_test("heatmaps") do
             end
         end
     end
+
+    nested_test("order") do
+        nested_test("()") do
+            @test graph.order.rows_order == 1:3
+            @test graph.order.columns_order == 1:4
+            @test graph.order.rows_hclust === nothing
+            @test graph.order.columns_hclust === nothing
+            return nothing
+        end
+
+        nested_test("only") do
+            graph.order
+            @test graph.configuration.final_order === graph.order
+            graph.figure
+            @test graph.configuration.final_order === graph.order
+            return nothing
+        end
+
+        # The groups constrain the clustering, so they change the order - but only once the cache is reset.
+        nested_test("reset") do
+            graph.configuration.columns_reorder = OptimalHclust
+            graph.data.columns_groups = [1, 1, 2, 2]
+            grouped_order = graph.order.columns_order
+
+            graph.data.columns_groups = [1, 2, 2, 1]
+            @test graph.order.columns_order == grouped_order
+
+            reset_order!(graph)
+            @test graph.configuration.final_order === nothing
+            @test graph.order.columns_order != grouped_order
+            return nothing
+        end
+
+        nested_test("reorder") do
+            graph.configuration.columns_reorder = OptimalHclust
+            @test sort(graph.order.columns_order) == 1:4
+            @test graph.order.columns_hclust !== nothing
+
+            nested_test("vector") do
+                other_graph = heatmap_graph(; entries_values = graph.data.entries_values)
+                other_graph.data.columns_order = graph.order.columns_order
+                @test other_graph.order.columns_order == graph.order.columns_order
+                @test other_graph.json == graph.json
+                return nothing
+            end
+
+            nested_test("hclust") do
+                other_graph = heatmap_graph(; entries_values = reverse(graph.data.entries_values; dims = 1))
+                other_graph.data.columns_order = graph.order.columns_hclust
+                @test other_graph.order.columns_order == graph.order.columns_order
+                return nothing
+            end
+
+            # The order is that of the data, so it is unaffected by which corner the origin is displayed at, and can be
+            # fed back into a graph with the same origin without being flipped a second time.
+            nested_test("origin") do
+                columns_order = graph.order.columns_order
+                graph.configuration.origin = HeatmapTopLeft
+                graph.configuration.final_order = nothing
+                @test graph.order.columns_order == columns_order
+                @test graph.order.rows_order == 1:3
+
+                other_graph = heatmap_graph(; entries_values = graph.data.entries_values)
+                other_graph.data.columns_order = columns_order
+                other_graph.configuration.origin = HeatmapTopLeft
+                @test other_graph.json == graph.json
+                return nothing
+            end
+        end
+
+        nested_test("same") do
+            graph.data.entries_values = [
+                0 1 2;
+                7 6 5;
+                8 9 10;
+            ]
+            graph.configuration.rows_reorder = OptimalHclust
+            graph.configuration.columns_reorder = SameOrder
+            @test graph.order.columns_order == graph.order.rows_order
+            return nothing
+        end
+    end
+
+    # The distinct labels of the entries, in the order they appear in, which has one entry per label if (and only if)
+    # each label covers a contiguous range of the order.
+    function labels_in_order(order::AbstractVector{<:Integer}, label_per_entry::AbstractVector)::Vector
+        labels = label_per_entry[order]
+        return labels[[true; labels[2:end] .!= labels[1:(end - 1)]]]
+    end
+
+    nested_test("subgroups") do
+        # Two columns in each of six subgroups, three subgroups in each of two groups, numbered in the opposite order
+        # of their groups. The columns of the different subgroups are almost identical, so clustering them without the
+        # groups interleaves the subgroups completely.
+        values = reshape([Float64(1 + (index - 1) % 2) + 0.01 * ((index - 1) ÷ 2) for index in 1:12], 1, :)
+        subgroups = repeat(1:6; inner = 2)
+        groups = [subgroup <= 3 ? 2 : 1 for subgroup in subgroups]
+
+        graph = heatmap_graph(; entries_values = vcat(values, values .* 2))
+        graph.data.columns_groups = groups
+        graph.data.columns_subgroups = ["S$(subgroup)" for subgroup in subgroups]
+        graph.configuration.columns_reorder = OptimalHclust
+
+        nested_test("()") do
+            columns_order = graph.order.columns_order
+
+            # Each group, and each subgroup, is contiguous; the numbered groups are in the order of their numbers, and
+            # the named subgroups are wherever the clustering placed them.
+            @test labels_in_order(columns_order, groups) == [1, 2]
+            @test length(labels_in_order(columns_order, subgroups)) == 6
+            return nothing
+        end
+
+        nested_test("numbered") do
+            graph.data.columns_subgroups = subgroups
+            columns_order = graph.order.columns_order
+
+            # Numbering both levels lays the columns out in the order of their (group, subgroup) pair, which is not the
+            # order of the subgroups alone.
+            @test labels_in_order(columns_order, groups) == [1, 2]
+            @test labels_in_order(columns_order, subgroups) == [4, 5, 6, 1, 2, 3]
+            return nothing
+        end
+
+        # A subgroup is nested in its group, so each group may number its own subgroups the same way.
+        nested_test("reused") do
+            graph.data.columns_subgroups = repeat(1:3; inner = 2, outer = 2)
+            columns_order = graph.order.columns_order
+            @test labels_in_order(columns_order, groups) == [1, 2]
+            @test length(labels_in_order(columns_order, subgroups)) == 6
+            @test labels_in_order(columns_order, graph.data.columns_subgroups) == [1, 2, 3, 1, 2, 3]
+            return nothing
+        end
+
+        nested_test("gaps") do
+            graph.configuration.columns_subgroups_gap = 1
+            columns_order = graph.order.columns_order
+
+            # A gap between the groups, and a gap between the subgroups of each group; the boundary between the groups
+            # is gapped once, as a group boundary.
+            test_html(graph, "heatmap.subgroups.gaps.html")
+
+            # The gaps are drawn, but do not change the order.
+            graph.configuration.columns_subgroups_gap = nothing
+            reset_order!(graph)
+            @test graph.order.columns_order == columns_order
+            return nothing
+        end
+
+        nested_test("invalid") do
+            nested_test("groups") do
+                graph.data.columns_groups = nothing
+                @test_throws "ArgumentError: can't specify heatmap graph.data.columns_subgroups without columns_groups" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("effect") do
+                graph.configuration.columns_reorder = nothing
+                @test_throws "ArgumentError: no effect for specified graph.data.columns_subgroups" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("gap") do
+                graph.data.columns_subgroups = nothing
+                graph.configuration.columns_subgroups_gap = 1
+                @test_throws chomp("""
+                                   can't specify heatmap graph.configuration.columns_subgroups_gap
+                                   without graph.data.columns_subgroups
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
+    end
 end
