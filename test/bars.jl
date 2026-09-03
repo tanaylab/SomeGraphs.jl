@@ -222,6 +222,15 @@ nested_test("series_bars") do
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
+        nested_test("mirrored") do
+            graph.data.series_bars_values = [foos, bars, reverse(foos)]
+            graph.configuration.mirrored = true
+            @test_throws chomp("""
+                               ArgumentError: odd number of graph.data.series_bars_values: 3
+                               when using graph.configuration.mirrored
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
         nested_test("title") do
             graph.data.value_axis_title = "Values"
             graph.data.series_names = ["Foo", "Bar"]
@@ -242,6 +251,71 @@ nested_test("series_bars") do
             nested_test("()") do
                 test_html(graph, "series_bars.$(orientation_name).html")
                 return nothing
+            end
+
+            nested_test("mirrored") do
+                graph.configuration.mirrored = true
+                graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+
+                nested_test("()") do
+                    test_html(graph, "series_bars.$(orientation_name).mirrored.html")
+                    return nothing
+                end
+
+                # The two sides are the only two sub-graphs, so the annotations are the spine between them.
+                nested_test("annotations") do
+                    graph.data.bars_annotations =
+                        [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                    test_html(graph, "series_bars.$(orientation_name).mirrored.annotations.html")
+                    return nothing
+                end
+
+                nested_test("pairs") do
+                    graph.data.series_bars_values = [foos, bars, reverse(foos), reverse(bars)]
+
+                    nested_test("()") do
+                        test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.html")
+                        return nothing
+                    end
+
+                    # Both pairs still share the two sides, so there is still a single spine to annotate.
+                    nested_test("annotations") do
+                        graph.data.bars_annotations =
+                            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                        test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.annotations.html")
+                        return nothing
+                    end
+
+                    nested_test("gap") do
+                        graph.configuration.series_gap = 0.05
+
+                        nested_test("()") do
+                            test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.html")
+                            return nothing
+                        end
+
+                        # Each pair has a middle of its own and the graph has none, so the annotations stay outside.
+                        nested_test("annotations") do
+                            graph.data.bars_annotations = [
+                                AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                            ]
+                            test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.annotations.html")
+                            return nothing
+                        end
+                    end
+
+                    nested_test("stacked") do
+                        graph.configuration.stacking = StackValues
+                        test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.stacked.html")
+                        return nothing
+                    end
+
+                    nested_test("fractions") do
+                        graph.configuration.stacking = StackFractions
+                        test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.fractions.html")
+                        return nothing
+                    end
+                end
             end
 
             nested_test("gap") do

@@ -773,6 +773,7 @@ scale_axis_values(
     title::Maybe{AbstractString},
     range::Range,
     domain::Maybe{AbstractVector{&lt;:Real}} = nothing,
+    is_reversed::Bool = false,
 )::Nothing
 </code>
 </pre>
@@ -782,7 +783,9 @@ scale_axis_values(
 <code>layout
 </code> using the 
 <code>axis_configuration
-</code>.
+</code>. If 
+<code>is_reversed
+</code>, the axis runs backwards (right to left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it shares with the other side.
 </p>
 </div>
 </section>
@@ -870,6 +873,7 @@ scale_axis_values(
     index::Integer
     n_graphs::Integer
     gap::Maybe{AbstractFloat}
+    mirrored::Bool = false
     n_annotations::Integer = 0
     annotation_size::Maybe{AnnotationSize} = nothing
     dendogram_size::Maybe{Real} = nothing
@@ -885,6 +889,14 @@ end
 </code> is 
 <code>nothing
 </code> then the sub-graphs are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout parameters.
+</p>
+<p>If 
+<code>mirrored
+</code>, the sub-graphs are paired - an odd one and the even one following it - and the 
+<code>gap
+</code> is only placed between the pairs; the two sub-graphs of a pair are adjacent, meeting at the axis they share. The 
+<code>n_graphs
+</code> must then be even.
 </p>
 <p>This also supports 
 <code>n_annotations

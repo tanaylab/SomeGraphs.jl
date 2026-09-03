@@ -38,6 +38,10 @@ By default the values are the `y` axis (`VerticalValues`). You can flip the axes
 specify bands for this axis using `value_bands`. The `bars_gap` is added between the graps, and is in the usual
 inconvenient units of fractions of the total graph size. The `bars_colors` is used to control the color of the bars (if
 not specified, chosen automatically by Plotly), in combination with the data bar colors (if any).
+
+The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
+bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
+this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
 """
 @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -243,6 +247,8 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         colors_scale_index = colors.colors_scale_index,
     )
 
+    collect_zero_range!(implicit_values_range, graph.configuration.value_axis)
+
     has_legend_only_traces = [false]
     annotations_colors = push_annotations_traces!(;
         traces,
@@ -278,6 +284,7 @@ end
         bars_annotations::AnnotationSize = AnnotationSize(),
         series_gap::Maybe{Real} = nothing
         stacking::Maybe{Stacking} = nothing
+        mirrored::Bool = false
     end
 
 Configure a graph for showing multiple series of bars.
@@ -287,6 +294,16 @@ series on top of each other. Alternatively, specifying a `series_gap` will plot 
 sub-graph. The `series_gap` is specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1
 then the gaps will be the same size as the graphs. If neither is specified, then the bars will be shown in groups
 (adjacent to each other) with the `bars_gap` between the groups.
+
+The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
+bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
+this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
+
+If `mirrored`, the series are read in pairs, so their number must be even. The 1st series of each pair grows to the left
+(or down) and the 2nd to the right (or up), away from the bar axis they share - a butterfly graph. Each pair therefore
+needs a value axis per side, and both of them show the same range, so the two sides are drawn to the same scale.
+Without a `series_gap` all the pairs share the same two value axes and are shown as groups (or stacked, given
+`stacking`); with one, each pair is given two value axes of its own and the `series_gap` separates the pairs.
 """
 @kwdef mutable struct SeriesBarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -296,6 +313,7 @@ then the gaps will be the same size as the graphs. If neither is specified, then
     bars_annotations::AnnotationSize = AnnotationSize()
     series_gap::Maybe{Real} = nothing
     stacking::Maybe{Stacking} = nothing
+    mirrored::Bool = false
 end
 
 function Validations.validate(context::ValidationContext, configuration::SeriesBarsGraphConfiguration)::Nothing
@@ -482,6 +500,15 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         )
     end
 
+    if graph.configuration.mirrored && n_series % 2 != 0
+        throw(
+            ArgumentError(
+                "odd number of graph.data.series_bars_values: $(n_series)\n" *
+                "when using graph.configuration.mirrored",
+            ),
+        )
+    end
+
     validate_axis_sizes(;
         axis_name = "value",
         graphs_gap = graph.configuration.series_gap,
@@ -491,6 +518,56 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
     )
 
     return nothing
+end
+
+# Widen a range to include zero, which is where a bar is measured from - so a bar graph whose values are all far from
+# zero still shows their sizes rather than their differences. A log scale never reaches zero, so there a bar is measured
+# from the smallest value shown.
+function collect_zero_range!(scaled_range::MaybeRange, value_axis::AxisConfiguration)::Nothing
+    if value_axis.log_scale === nothing
+        collect_range!(scaled_range, (0.0,))  # NOJET
+    end
+    return nothing
+end
+
+# The number of value axes. Mirrored, each pair of series needs one axis per side; without a `series_gap` all the pairs
+# share the same two, and with one each pair is given two of its own. Otherwise there is an axis per series, or one for
+# all of them when there is no `series_gap` to separate them.
+function n_value_axes(configuration::SeriesBarsGraphConfiguration, n_series::Integer)::Int
+    if configuration.mirrored
+        return configuration.series_gap === nothing ? 2 : n_series
+    else
+        return configuration.series_gap === nothing ? 1 : n_series
+    end
+end
+
+# The value axis a series is drawn on. Mirrored, the 1st series of each pair is drawn on the axis growing one way and
+# the 2nd on the axis growing the other way.
+function value_axis_index(configuration::SeriesBarsGraphConfiguration, series_index::Integer)::Int
+    if !configuration.mirrored
+        return configuration.series_gap === nothing ? 1 : series_index
+    elseif configuration.series_gap === nothing
+        return 2 - series_index % 2
+    else
+        return series_index
+    end
+end
+
+# The value axis of the other side of the same pair, which shows the same range so that both sides are drawn to the
+# same scale.
+function mirror_value_axis_index(value_axis_index::Integer)::Int
+    return value_axis_index + (value_axis_index % 2 == 1 ? 1 : -1)
+end
+
+# The gap between the value axes. Mirrored, the two axes of a pair are adjacent whether or not there is a `series_gap`
+# between the pairs, so they are laid out with an explicit zero gap rather than with no gap at all - which would place
+# them on top of each other.
+function value_axes_gap(configuration::SeriesBarsGraphConfiguration)::Maybe{Real}
+    if configuration.mirrored
+        return configuration.series_gap === nothing ? 0.0 : configuration.series_gap
+    else
+        return configuration.series_gap
+    end
 end
 
 function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
@@ -503,13 +580,15 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     n_series = length(graph.data.series_bars_values)
     n_bars = length(graph.data.series_bars_values[1])
 
+    n_axes = n_value_axes(graph.configuration, n_series)
+
     common_implicit_values_range = MaybeRange()
-    total_scaled_values = nothing
+    total_scaled_values_per_axis = Maybe{AbstractVector{<:AbstractFloat}}[nothing for _ in 1:n_axes]
     specific_scaled_values = Vector{AbstractVector{<:Real}}(undef, n_series)
-    if graph.configuration.series_gap === nothing
+    if n_axes == 1
         specific_scaled_ranges = nothing
     else
-        specific_scaled_ranges = Vector{MaybeRange}(undef, n_series)
+        specific_scaled_ranges = MaybeRange[MaybeRange() for _ in 1:n_axes]
     end
 
     show_in_legend = graph.data.series_names !== nothing && graph.configuration.series_gap === nothing
@@ -533,9 +612,10 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         scaled_values = push_bar_trace!(;
             traces,
             sub_graph = SubGraph(;
-                index = series_index,
-                n_graphs = n_series,
-                graphs_gap = graph.configuration.series_gap,
+                index = value_axis_index(graph.configuration, series_index),
+                n_graphs = n_axes,
+                graphs_gap = value_axes_gap(graph.configuration),
+                mirrored = graph.configuration.mirrored,
                 n_annotations = length(graph.data.bars_annotations),
                 annotation_size = graph.configuration.bars_annotations,
             ),
@@ -551,14 +631,20 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         )
 
         specific_scaled_values[series_index] = scaled_values
-        if graph.configuration.series_gap !== nothing
-            specific_scaled_ranges[series_index] = MaybeRange()
-            collect_range!(specific_scaled_ranges[series_index], scaled_values)
+        axis_index = value_axis_index(graph.configuration, series_index)
+
+        # Stacked, it is the totals below which say how far each axis has to reach, so they are collected instead.
+        if specific_scaled_ranges !== nothing && graph.configuration.stacking === nothing
+            collect_range!(specific_scaled_ranges[axis_index], scaled_values)
+            if graph.configuration.mirrored
+                collect_range!(specific_scaled_ranges[mirror_value_axis_index(axis_index)], scaled_values)
+            end
         end
 
         if graph.configuration.stacking !== nothing
+            total_scaled_values = total_scaled_values_per_axis[axis_index]
             if total_scaled_values === nothing
-                total_scaled_values = copy(scaled_values)
+                total_scaled_values_per_axis[axis_index] = copy(scaled_values)
             else
                 total_scaled_values .+= scaled_values
             end
@@ -566,14 +652,25 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     end
 
     if graph.configuration.stacking == StackValues
-        collect_range!(implicit_values_range, total_scaled_values)
+        for (axis_index, total_scaled_values) in enumerate(total_scaled_values_per_axis)
+            @assert total_scaled_values !== nothing
+            if specific_scaled_ranges === nothing
+                collect_range!(implicit_values_range, total_scaled_values)
+            else
+                collect_range!(specific_scaled_ranges[axis_index], total_scaled_values)
+                collect_range!(specific_scaled_ranges[mirror_value_axis_index(axis_index)], total_scaled_values)
+            end
+        end
 
     elseif graph.configuration.stacking == StackFractions
-        @assert total_scaled_values !== nothing
-        total_scaled_values[total_scaled_values .== 0] .= 1
+        for total_scaled_values in total_scaled_values_per_axis
+            @assert total_scaled_values !== nothing
+            total_scaled_values[total_scaled_values .== 0] .= 1
+        end
 
         for series_index in 1:n_series
-            specific_scaled_values[series_index] ./= total_scaled_values
+            specific_scaled_values[series_index] ./=
+                total_scaled_values_per_axis[value_axis_index(graph.configuration, series_index)]
             if graph.configuration.value_axis.percent
                 specific_scaled_values[series_index] .*= 100
             end
@@ -583,10 +680,24 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         else
             implicit_values_range = MaybeRange(; minimum = 0, maximum = 1)
         end
+        # A range of its own for each axis, rather than one shared between them, since they are mutated below.
+        if specific_scaled_ranges !== nothing
+            for axis_index in 1:n_axes
+                specific_scaled_ranges[axis_index] =
+                    MaybeRange(; minimum = implicit_values_range.minimum, maximum = implicit_values_range.maximum)
+            end
+        end
 
     else
         @assert graph.configuration.stacking === nothing
         implicit_values_range = common_implicit_values_range
+    end
+
+    collect_zero_range!(implicit_values_range, graph.configuration.value_axis)
+    if specific_scaled_ranges !== nothing
+        for specific_scaled_range in specific_scaled_ranges
+            collect_zero_range!(specific_scaled_range, graph.configuration.value_axis)
+        end
     end
 
     next_colors_scale_index = [1]
@@ -596,8 +707,9 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         names = graph.data.bars_names,
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
-        n_graphs = n_series,
-        graphs_gap = graph.configuration.series_gap,
+        n_graphs = n_axes,
+        graphs_gap = value_axes_gap(graph.configuration),
+        mirrored = graph.configuration.mirrored,
         next_colors_scale_index,
         has_legend_only_traces,
         annotations_data = graph.data.bars_annotations,
@@ -685,6 +797,7 @@ function push_annotations_traces!(;
     values_orientation::ValuesOrientation,
     n_graphs::Integer = 1,
     graphs_gap::Maybe{Real} = nothing,
+    mirrored::Bool = false,
     next_colors_scale_index::AbstractVector{<:Integer},
     has_legend_only_traces::AbstractVector{Bool},
     annotations_data::AbstractVector{AnnotationData},
@@ -702,6 +815,7 @@ function push_annotations_traces!(;
             values_orientation,
             n_graphs,
             graphs_gap,
+            mirrored,
             annotation_index,
             n_annotations = length(annotations_data),
             annotation_data,
@@ -723,6 +837,7 @@ function push_annotation_traces!(;
     values_orientation::ValuesOrientation,
     n_graphs::Integer,
     graphs_gap::Maybe{Real},
+    mirrored::Bool,
     annotation_index::Integer,
     n_annotations::Integer,
     annotation_data::AnnotationData,
@@ -740,7 +855,7 @@ function push_annotation_traces!(;
         next_colors_scale_index,
     )
 
-    sub_graph = SubGraph(; index = -annotation_index, n_graphs, graphs_gap, n_annotations, annotation_size)
+    sub_graph = SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
 
     if colors.show_in_legend && colors.colors_configuration.palette isa CategoricalColors
         legend_group = "Annotation$(annotation_index)"
@@ -909,16 +1024,14 @@ function bars_layout(;
             @assert graph.configuration.stacking === nothing
         end
         n_series = length(graph.data.series_bars_values)
-        graphs_gap = graph.configuration.series_gap
-        if graphs_gap === nothing
-            n_graphs = 1
-        else
-            n_graphs = n_series
-        end
+        graphs_gap = value_axes_gap(graph.configuration)  # NOJET
+        n_graphs = n_value_axes(graph.configuration, n_series)  # NOJET
+        mirrored = graph.configuration.mirrored
     else
         n_series = 1
         graphs_gap = nothing
         n_graphs = 1
+        mirrored = false
     end
 
     if graph.configuration.values_orientation == VerticalValues
@@ -935,8 +1048,7 @@ function bars_layout(;
 
     annotation_size = graph.configuration.bars_annotations
 
-    if graph isa BarsGraph || graph.configuration.series_gap === nothing
-        @assert specific_scaled_ranges === nothing
+    if specific_scaled_ranges === nothing
         axis_index = 1 + n_annotations
         set_layout_axis!(
             layout,
@@ -945,35 +1057,63 @@ function bars_layout(;
             title = prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
             range = scaled_values_range,
             domain = plotly_sub_graph_domain(
-                SubGraph(; index = 1, n_graphs, graphs_gap, n_annotations, annotation_size),
+                SubGraph(; index = 1, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size),
             ),
         )
     else
         @assert graph isa SeriesBarsGraph
-        @assert specific_scaled_ranges !== nothing
-        for series_index in 1:n_series
-            axis_index = series_index + n_annotations
+        for value_axis_index in 1:n_graphs
+            axis_index = value_axis_index + n_annotations
+            # Only an axis of its own can be titled by a series; when the pairs share their axes, the series are named
+            # in the legend instead.
+            if graph.configuration.series_gap === nothing
+                title = prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title)
+            else
+                title = prefer_data(
+                    graph.data.series_names,
+                    value_axis_index,
+                    prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
+                )
+            end
             set_layout_axis!(  # NOJET
                 layout,
                 plotly_axis(value_axis_letter, axis_index),
                 graph.configuration.value_axis;
-                title = prefer_data(
-                    graph.data.series_names,
-                    series_index,
-                    prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
-                ),
-                range = specific_scaled_ranges[series_index],
+                title,
+                range = specific_scaled_ranges[value_axis_index],
                 domain = plotly_sub_graph_domain(
-                    SubGraph(; index = series_index, n_graphs, graphs_gap, n_annotations, annotation_size),
+                    SubGraph(;
+                        index = value_axis_index,
+                        n_graphs,
+                        graphs_gap,
+                        mirrored,
+                        n_annotations,
+                        annotation_size,
+                    ),
                 ),
+                # Mirrored, the 1st axis of each pair grows away from the shared bar axis, which is to its right.
+                is_reversed = mirrored && value_axis_index % 2 == 1,
             )
         end
     end
 
     next_colors_scale_offset_index = [Int(has_legend)]
 
-    layout["$(bar_axis_letter)axis"] =
-        Dict(:showgrid => false, :showticklabels => has_tick_names, :title => graph.data.bar_axis_title)
+    # The bar axis is drawn against the 1st axis of the other direction, which is the 1st annotation when there is one.
+    # That is where the names belong for any other graph - outside everything - but a mirrored pair puts its
+    # annotations in the spine, so there the names are anchored to the 1st of the two sides instead.
+    if mirrored && n_graphs == 2 && n_annotations > 0
+        bar_axis_anchor = plotly_axis(value_axis_letter, 1 + n_annotations; short = true, force = true)
+    else
+        bar_axis_anchor = nothing
+    end
+
+    layout["$(bar_axis_letter)axis"] = Dict(
+        :showgrid => false,
+        :showticklabels => has_tick_names,
+        :title => graph.data.bar_axis_title,
+        :anchor => bar_axis_anchor,
+    )
 
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
@@ -992,7 +1132,8 @@ function bars_layout(;
     layout["annotations"] = plotly_annotations = []
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
         annotation_data = graph.data.bars_annotations[annotation_index]
-        sub_graph = SubGraph(; index = -annotation_index, n_graphs, graphs_gap, n_annotations, annotation_size)
+        sub_graph =
+            SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
         push_plotly_annotation!(;
             plotly_annotations,
             values_sub_graph = sub_graph,

@@ -448,9 +448,12 @@ end
         title::Maybe{AbstractString},
         range::Range,
         domain::Maybe{AbstractVector{<:Real}} = nothing,
+        is_reversed::Bool = false,
     )::Nothing
 
-Add a Plotly `axis` in a `layout` using the `axis_configuration`.
+Add a Plotly `axis` in a `layout` using the `axis_configuration`. If `is_reversed`, the axis runs backwards (right to
+left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it
+shares with the other side.
 """
 function set_layout_axis!(
     layout::Layout,
@@ -463,12 +466,20 @@ function set_layout_axis!(
     domain::Maybe{AbstractVector{<:Real}} = nothing,
     is_tick_axis::Bool = true,
     is_zeroable::Bool = true,
+    is_reversed::Bool = false,
 )::Nothing
     show_ticks = is_tick_axis && axis_configuration.show_ticks
     screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, startswith(axis, "y"))
+    # Plotly runs an axis backwards when its range is given in descending order.
     layout[axis] = Dict(
         :title => title,
-        :range => range === nothing ? nothing : [range.minimum, range.maximum],
+        :range => if range === nothing
+            nothing
+        elseif is_reversed
+            [range.maximum, range.minimum]
+        else
+            [range.minimum, range.maximum]
+        end,
         :showgrid => axis_configuration.show_grid,
         :gridcolor => axis_configuration.show_grid ? axis_configuration.grid_color : nothing,
         :showticklabels => show_ticks,
@@ -1516,6 +1527,7 @@ end
         index::Integer
         n_graphs::Integer
         gap::Maybe{AbstractFloat}
+        mirrored::Bool = false
         n_annotations::Integer = 0
         annotation_size::Maybe{AnnotationSize} = nothing
         dendogram_size::Maybe{Real} = nothing
@@ -1526,6 +1538,10 @@ sub-graph (used top initialize some values such as the legend group title). If `
 are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap,
 which affects layout parameters.
 
+If `mirrored`, the sub-graphs are paired - an odd one and the even one following it - and the `gap` is only placed
+between the pairs; the two sub-graphs of a pair are adjacent, meeting at the axis they share. The `n_graphs` must then
+be even.
+
 This also supports `n_annotations` (of the other axis) with `annotation_size` (along this axis). If the index is
 negative, it is the (negated) index of an annotation (of the other axis).
 
@@ -1535,9 +1551,21 @@ If the `index` is 0, this is the dendogram graph (of the other axis) with `dendo
     index::Integer
     n_graphs::Integer
     graphs_gap::Maybe{AbstractFloat}
+    mirrored::Bool = false
     n_annotations::Integer = 0
     annotation_size::Maybe{AnnotationSize} = nothing
     dendogram_size::Maybe{Real} = nothing
+end
+
+# The number of gaps between the sub-graphs. Mirrored, the gap is only between the pairs, so there is one less gap than
+# there are pairs; otherwise there is one between each two sub-graphs.
+function n_sub_graph_gaps(n_graphs::Integer, mirrored::Bool)::Int
+    if mirrored
+        @assert n_graphs % 2 == 0
+        return div(n_graphs, 2) - 1
+    else
+        return n_graphs - 1
+    end
 end
 
 # At most this fraction of an axis is spent on the annotations and on the gaps between the sub-graphs; most of the graph
@@ -1555,7 +1583,9 @@ function sub_graph_overhead_sizes(sub_graph::SubGraph)::NTuple{3, Float64}
     end
     graphs_gap = Float64(prefer_data(sub_graph.graphs_gap, 0))
 
-    overhead = sub_graph.n_annotations * (annotation_size + annotation_gap) + (sub_graph.n_graphs - 1) * graphs_gap
+    overhead =
+        sub_graph.n_annotations * (annotation_size + annotation_gap) +
+        n_sub_graph_gaps(sub_graph.n_graphs, sub_graph.mirrored) * graphs_gap
     if overhead > MAX_OVERHEAD_FRACTION
         scale = MAX_OVERHEAD_FRACTION / overhead  # UNTESTED
         annotation_size *= scale  # UNTESTED
@@ -1588,29 +1618,55 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
 
     annotation_size, annotation_gap, graphs_gap = sub_graph_overhead_sizes(sub_graph)
 
+    annotations_size = (annotation_gap + annotation_size) * sub_graph.n_annotations
+
+    # A mirrored pair of sub-graphs meets in the middle, so when they are the only two, the annotations belong in that
+    # middle - the spine of the butterfly - rather than outside the whole of it. More than one pair has more than one
+    # such middle and no single spine, so there the annotations stay where they are for any other graph.
+    is_spine = sub_graph.mirrored && n_graphs == 2 && sub_graph.n_annotations > 0
+
     if axis_index > 0
         @assert 1 <= axis_index <= n_graphs
 
-        if sub_graph.n_annotations == 0
+        if sub_graph.n_annotations == 0 || is_spine
             start_graph_offset = 0.0
         else
             @assert sub_graph.annotation_size !== nothing
-            start_graph_offset = (annotation_gap + annotation_size) * sub_graph.n_annotations
+            start_graph_offset = annotations_size
         end
 
-        graphs_total_size = 1 - start_graph_offset - (n_graphs - 1) * graphs_gap
+        graphs_total_size = 1 - start_graph_offset - n_sub_graph_gaps(n_graphs, sub_graph.mirrored) * graphs_gap
+        if is_spine
+            graphs_total_size -= annotations_size
+        end
         if sub_graph.dendogram_size !== nothing
             graphs_total_size -= sub_graph.dendogram_size
         end
         graph_size = graphs_total_size / n_graphs
-        start_graph_offset += (axis_index - 1) * (graph_size + graphs_gap)
+
+        # Mirrored, only the pairs before this sub-graph contribute a gap; otherwise every sub-graph before it does.
+        if sub_graph.mirrored
+            n_gaps_before = div(axis_index - 1, 2)
+        else
+            n_gaps_before = axis_index - 1
+        end
+        start_graph_offset += (axis_index - 1) * graph_size + n_gaps_before * graphs_gap
+        if is_spine && axis_index == 2
+            start_graph_offset += annotations_size
+        end
         end_graph_offset = start_graph_offset + graph_size
 
     elseif axis_index < 0
         axis_index = -axis_index
         @assert 1 <= axis_index <= sub_graph.n_annotations
         @assert sub_graph.annotation_size !== nothing
-        start_graph_offset = (axis_index - 1) * (annotation_gap + annotation_size)
+        if is_spine
+            # Half a gap on each side of the band of annotations, so that it sits evenly between the two sides.
+            start_graph_offset = (1 - annotations_size) / 2 + annotation_gap / 2
+        else
+            start_graph_offset = 0.0
+        end
+        start_graph_offset += (axis_index - 1) * (annotation_gap + annotation_size)
         end_graph_offset = start_graph_offset + annotation_size
 
     else
