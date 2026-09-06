@@ -231,6 +231,15 @@ nested_test("series_bars") do
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
+        nested_test("hovers") do
+            graph.data.bars_hovers = "B-" .* string.(collect(0:10))
+            graph.data.series_bars_hovers = ["F-" .* string.(collect(0:10)), "B-" .* string.(collect(0:10))]
+            @test_throws "ArgumentError: can't specify both graph.data.bars_hovers and graph.data.series_bars_hovers" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
+
         nested_test("title") do
             graph.data.value_axis_title = "Values"
             graph.data.series_names = ["Foo", "Bar"]
@@ -432,6 +441,21 @@ nested_test("series_bars") do
                     graph.data.series_hovers = ["Foo", "Bar"]
                     test_html(graph, "series_bars.$(orientation_name).hovers.series.html")
                     return nothing
+                end
+
+                nested_test("series_bars") do
+                    graph.data.series_bars_hovers = ["F-" .* string.(collect(0:10)), "B-" .* string.(collect(0:10))]
+
+                    nested_test("()") do
+                        test_html(graph, "series_bars.$(orientation_name).hovers.series_bars.html")
+                        return nothing
+                    end
+
+                    nested_test("series") do
+                        graph.data.series_hovers = ["Foo", "Bar"]
+                        test_html(graph, "series_bars.$(orientation_name).hovers.series_bars.series.html")
+                        return nothing
+                    end
                 end
             end
 

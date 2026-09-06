@@ -347,6 +347,7 @@ end
         bar_axis_title::Maybe{AbstractString} = nothing
         value_axis_title::Maybe{AbstractString} = nothing
         series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}()
+        series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing
         bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
         bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -361,6 +362,10 @@ All the vectors in the `series_bars_values` must have the same length (the numbe
 `bars_names` and/or `bars_hovers` must be the same. The number of entries in `series_names`, `series_colors` and/or
 `series_hovers` must be the number of series (the number of vectors in `series_bars_values`).
 
+The `bars_hovers` give each bar the same hover in every series. Use `series_bars_hovers` instead when a bar's hover
+depends on which series it is in; it must have the same shape as `series_bars_values`, and only one of the two may be
+specified. Either way, the `series_hovers` are prefixed to whichever is given.
+
 All the bars of each series have the same color. If the `series_names` are specified, then they are used in a legend
 (or, if using `series_gap`, as the separate axes titles).
 """
@@ -369,6 +374,7 @@ All the bars of each series have the same color. If the `series_names` are speci
     bar_axis_title::Maybe{AbstractString} = nothing
     value_axis_title::Maybe{AbstractString} = nothing
     series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}()
+    series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing
     bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
     bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -391,6 +397,20 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
             "series_bars_values[1]",
             n_bars,
         )
+    end
+
+    series_bars_hovers = data.series_bars_hovers
+    if series_bars_hovers !== nothing
+        validate_vector_length(context, "series_bars_hovers", series_bars_hovers, "series_bars_values", n_series)
+        for series_index in 1:n_series
+            validate_vector_length(
+                context,
+                "series_bars_hovers[$(series_index)]",
+                series_bars_hovers[series_index],
+                "series_bars_values[*]",
+                n_bars,
+            )
+        end
     end
 
     validate_vector_length(context, "bars_names", data.bars_names, "series_bars_values[*]", n_bars)
@@ -424,6 +444,7 @@ SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
         bar_axis_title::Maybe{AbstractString} = nothing,
         value_axis_title::Maybe{AbstractString} = nothing,
         series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}(),
+        series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing,
         bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
         bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
         series_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
@@ -440,6 +461,7 @@ function series_bars_graph(;
     bar_axis_title::Maybe{AbstractString} = nothing,
     value_axis_title::Maybe{AbstractString} = nothing,
     series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}(),
+    series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing,
     bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     series_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
@@ -453,6 +475,7 @@ function series_bars_graph(;
             bar_axis_title,
             value_axis_title,
             series_bars_values,
+            series_bars_hovers,
             bars_names,
             bars_hovers,
             series_names,
@@ -487,6 +510,10 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
                 end
             end
         end
+    end
+
+    if graph.data.bars_hovers !== nothing && graph.data.series_bars_hovers !== nothing
+        throw(ArgumentError("can't specify both graph.data.bars_hovers and graph.data.series_bars_hovers"))
     end
 
     if graph.data.value_axis_title !== nothing &&
@@ -594,13 +621,18 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     show_in_legend = graph.data.series_names !== nothing && graph.configuration.series_gap === nothing
 
     for series_index in 1:n_series
+        if graph.data.series_bars_hovers === nothing
+            bars_hovers = graph.data.bars_hovers
+        else
+            bars_hovers = graph.data.series_bars_hovers[series_index]
+        end
+
         if graph.data.series_hovers === nothing
-            hovers = graph.data.bars_hovers
-        elseif graph.data.bars_hovers === nothing
+            hovers = bars_hovers
+        elseif bars_hovers === nothing
             hovers = fill(graph.data.series_hovers[series_index], n_bars)
         else
-            hovers =
-                ["$(graph.data.series_hovers[series_index])<br>$(bar_hover)" for bar_hover in graph.data.bars_hovers]
+            hovers = ["$(graph.data.series_hovers[series_index])<br>$(bar_hover)" for bar_hover in bars_hovers]
         end
 
         if graph.configuration.stacking === nothing
