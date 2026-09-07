@@ -31,11 +31,13 @@ export scale_axis_values
 export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
+export string_values
 export SubGraph
 export validate_axis_sizes
 export validate_colors
 export validate_graph_bands
 export validate_numeric_values
+export validate_string_values
 export validate_values
 
 using Colors
@@ -854,6 +856,33 @@ The values of a [`ValuesData`](@ref) which was validated to be numeric.
 function numeric_values(values_data::ValuesData)::Maybe{AbstractVector{<:Real}}
     values = values_data.values
     @assert values === nothing || values isa AbstractVector{<:Real}
+    return values
+end
+
+"""
+    validate_string_values(context::ValidationContext, field::AbstractString, values::Maybe{AbstractVector})::Nothing
+
+Validate that the `values` of a [`ValuesData`](@ref) `field` are strings (if specified).
+"""
+function validate_string_values(
+    context::ValidationContext,
+    field::AbstractString,
+    values::Maybe{AbstractVector},
+)::Nothing
+    if values !== nothing && !(eltype(values) <: AbstractString)
+        throw(ArgumentError("non-string $(location(context)).$(field)"))
+    end
+    return nothing
+end
+
+"""
+    string_values(values_data::ValuesData)::Maybe{AbstractVector{<:AbstractString}}
+
+The values of a [`ValuesData`](@ref) which was validated to be strings.
+"""
+function string_values(values_data::ValuesData)::Maybe{AbstractVector{<:AbstractString}}
+    values = values_data.values
+    @assert values === nothing || values isa AbstractVector{<:AbstractString}
     return values
 end
 

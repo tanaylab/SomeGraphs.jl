@@ -21,7 +21,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = bars_graph(; bars_values = collect(0:10) .* 10)
+graph = bars_graph(; values = ValuesData(collect(0:10) .* 10))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -30,8 +30,8 @@ Annotations:
 
 ```@example
 using SomeGraphs
-graph = bars_graph(; bars_values = collect(0:10) .* 10)
-graph.data.bars_annotations = [AnnotationData(; title = "score", values = collect(0:10) .% 3)]
+graph = bars_graph(; values = ValuesData(collect(0:10) .* 10))
+graph.data.annotations = [AnnotationData(; title = "score", values = collect(0:10) .% 3)]
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

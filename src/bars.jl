@@ -80,51 +80,47 @@ end
 """
     @kwdef mutable struct BarsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        bar_axis_title::Maybe{AbstractString} = nothing
-        value_axis_title::Maybe{AbstractString} = nothing
-        bars_colors_title::Maybe{AbstractString} = nothing
-        bars_values::AbstractVector{<:Real} = Float32[]
-        bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        bars_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-        bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        values::ValuesData = ValuesData()
+        names::ValuesData = ValuesData()
+        bars::EntitiesData = EntitiesData()
+        colors::ValuesData = ValuesData()
+        annotations::AbstractVector{AnnotationData} = AnnotationData[]
         value_bands::BandsData = BandsData()
-        bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
     end
 
 The data for a graph of a single series of bars.
 
-By default, all the titles are empty. You can specify the overall `figure_title` as well as the `bars_axis_title` and
-`value_axis_title` for the axes, , and a name for each bar in `bars_names`. The `bars_colors` are optional; typically
-all bars have the same color.
-
-You can even add annotations to the bars.
+The `values` are required and numeric, one per bar; their title is the value axis title. The `names` values (if any)
+are strings, one per bar, shown as the bar axis ticks; their title is the bar axis title. The `bars` hold the hovers and
+mask of the bars; masked bars are left out of the graph. The `colors` are optional (typically all bars have the same
+color); their title is the legend title. You can even add annotations to the bars.
 """
 @kwdef mutable struct BarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    bar_axis_title::Maybe{AbstractString} = nothing
-    value_axis_title::Maybe{AbstractString} = nothing
-    bars_colors_title::Maybe{AbstractString} = nothing
-    bars_values::AbstractVector{<:Real} = Float32[]
-    bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-    bars_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-    bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+    values::ValuesData = ValuesData()
+    names::ValuesData = ValuesData()
+    bars::EntitiesData = EntitiesData()
+    colors::ValuesData = ValuesData()
+    annotations::AbstractVector{AnnotationData} = AnnotationData[]
     value_bands::BandsData = BandsData()
-    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
 
 function Validations.validate(context::ValidationContext, data::BarsGraphData)::Nothing
-    validate_vector_is_not_empty(context, "bars_values", data.bars_values)
+    validate_numeric_values(context, "values.values", data.values.values; is_required = true)
+    validate_string_values(context, "names.values", data.names.values)
 
-    n_bars = length(data.bars_values)
+    values = data.values.values
+    @assert values !== nothing
+    validate_vector_is_not_empty(context, "values.values", values)
+    n_bars = length(values)
 
-    validate_vector_length(context, "bars_names", data.bars_names, "bars_values", n_bars)
+    validate_vector_length(context, "names.values", data.names.values, "values.values", n_bars)
+    validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.values", n_bars)
+    validate_vector_length(context, "bars.mask", data.bars.mask, "values.values", n_bars)
+    validate_vector_length(context, "colors.values", data.colors.values, "values.values", n_bars)
 
-    validate_vector_length(context, "bars_colors", data.bars_colors, "bars_values", n_bars)
-
-    validate_vector_length(context, "bars_hovers", data.bars_hovers, "bars_values", n_bars)
-
-    validate_vector_entries(context, "bars_annotations", data.bars_annotations) do _, bars_annotation
-        validate(context, bars_annotation, "bars_values", n_bars)
+    validate_vector_entries(context, "annotations", data.annotations) do _, annotation
+        validate(context, annotation, "values.values", n_bars)
         return nothing
     end
 
@@ -139,14 +135,12 @@ BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
 """
     function bars_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        bar_axis_title::Maybe{AbstractString} = nothing,
-        value_axis_title::Maybe{AbstractString} = nothing,
-        bars_values::AbstractVector{<:Real} = Float32[],
-        bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        bars_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        values::ValuesData = ValuesData(),
+        names::ValuesData = ValuesData(),
+        bars::EntitiesData = EntitiesData(),
+        colors::ValuesData = ValuesData(),
+        annotations::AbstractVector{AnnotationData} = AnnotationData[],
         value_bands::BandsData = BandsData(),
-        bars_annotations::AbstractVector{AnnotationData} = AnnotationData[],
         configuration::BarsGraphConfiguration = BarsGraphConfiguration()]
     )::BarsGraph
 
@@ -155,45 +149,34 @@ Create a [`BarsGraph`](@ref) by initializing only the [`BarsGraphData`](@ref) fi
 """
 function bars_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    bar_axis_title::Maybe{AbstractString} = nothing,
-    value_axis_title::Maybe{AbstractString} = nothing,
-    bars_values::AbstractVector{<:Real} = Float32[],
-    bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    bars_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    values::ValuesData = ValuesData(),
+    names::ValuesData = ValuesData(),
+    bars::EntitiesData = EntitiesData(),
+    colors::ValuesData = ValuesData(),
+    annotations::AbstractVector{AnnotationData} = AnnotationData[],
     value_bands::BandsData = BandsData(),
-    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[],
     configuration::BarsGraphConfiguration = BarsGraphConfiguration(),
 )::BarsGraph
     return BarsGraph(
-        BarsGraphData(;
-            figure_title,
-            bar_axis_title,
-            value_axis_title,
-            bars_values,
-            bars_names,
-            bars_colors,
-            bars_hovers,
-            value_bands,
-            bars_annotations,
-        ),
+        BarsGraphData(; figure_title, values, names, bars, colors, annotations, value_bands),
         configuration,
     )
 end
 
 function Common.validate_graph(graph::BarsGraph)::Nothing
     validate_values(
-        ValidationContext(["graph.data.bars_values"]),
-        graph.data.bars_values,
+        ValidationContext(["graph.data.values.values"]),
+        numeric_values(graph.data.values),
         ValidationContext(["graph.configuration.value_axis"]),
         graph.configuration.value_axis,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.bars_colors"]),
-        graph.data.bars_colors,
+        ValidationContext(["graph.data.colors.values"]),
+        graph.data.colors.values,
         ValidationContext(["graph.configuration.bars_colors"]),
         graph.configuration.bars_colors,
+        graph.data.bars.mask,
     )
 
     validate_graph_bands(
@@ -206,10 +189,23 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
     validate_axis_sizes(;
         axis_name = "value",
         annotation_size = graph.configuration.bars_annotations,
-        n_annotations = length(graph.data.bars_annotations),
+        n_annotations = length(graph.data.annotations),
     )
 
     return nothing
+end
+
+# An annotation restricted to the unmasked entries.
+function masked_annotation(
+    annotation::AnnotationData,
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::AnnotationData
+    return AnnotationData(;
+        title = annotation.title,
+        values = masked_values(annotation.values, mask, nothing),
+        hovers = masked_values(annotation.hovers, mask, nothing),
+        colors = annotation.colors,
+    )
 end
 
 function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
@@ -219,11 +215,22 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     implicit_values_range = MaybeRange()
 
+    values = numeric_values(graph.data.values)
+    @assert values !== nothing
+    n_bars = length(values)
+    mask = graph.data.bars.mask
+
+    # Default names are given before masking so masked out bars do not shift the names of the rest.
+    names = masked_values(prefer_data(string_values(graph.data.names), string.(1:n_bars)), mask, nothing)
+    values = masked_values(values, mask, nothing)
+    hovers = masked_values(graph.data.bars.hovers, mask, nothing)
+    annotations = [masked_annotation(annotation, mask) for annotation in graph.data.annotations]
+
     next_colors_scale_index = [1]
     colors = configured_colors(;
         colors_configuration = graph.configuration.bars_colors,
-        colors_title = prefer_data(graph.data.bars_colors_title, graph.configuration.bars_colors.title),
-        colors_values = graph.data.bars_colors,
+        colors_title = prefer_data(graph.data.colors.title, graph.configuration.bars_colors.title),
+        colors_values = masked_values(graph.data.colors.values, mask, nothing),
         next_colors_scale_index,
     )
 
@@ -233,15 +240,15 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
             index = 1,
             n_graphs = 1,
             graphs_gap = nothing,
-            n_annotations = length(graph.data.bars_annotations),
+            n_annotations = length(annotations),
             annotation_size = graph.configuration.bars_annotations,
         ),
-        values = graph.data.bars_values,
+        values,
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
         color = prefer_data(colors.final_colors_values, colors.colors_configuration.fixed),
-        hovers = graph.data.bars_hovers,
-        names = graph.data.bars_names,
+        hovers,
+        names,
         show_in_legend = false,
         implicit_values_range,
         colors_scale_index = colors.colors_scale_index,
@@ -252,20 +259,21 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     has_legend_only_traces = [false]
     annotations_colors = push_annotations_traces!(;
         traces,
-        names = graph.data.bars_names,
+        names,
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.bars_annotations,
+        annotations_data = annotations,
         annotation_size = graph.configuration.bars_annotations,
-        entries_hovers = graph.data.bars_hovers,
+        entries_hovers = hovers,
     )
 
     layout = bars_layout(;
         graph,
-        has_tick_names = graph.data.bars_names !== nothing,
+        has_tick_names = graph.data.names.values !== nothing,
         has_legend = false,
+        has_hovers = hovers !== nothing,
         implicit_values_range,
         colors,
         annotations_colors,
@@ -1006,10 +1014,29 @@ function push_annotation_legend_trace!(;
     return nothing
 end
 
+# The titles of the value and bar axes given in the graph data.
+function data_axes_titles(graph::BarsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+    return (graph.data.values.title, graph.data.names.title)
+end
+
+function data_axes_titles(graph::SeriesBarsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+    return (graph.data.value_axis_title, graph.data.bar_axis_title)
+end
+
+# The annotations of the bars given in the graph data.
+function data_annotations(graph::BarsGraph)::AbstractVector{AnnotationData}
+    return graph.data.annotations
+end
+
+function data_annotations(graph::SeriesBarsGraph)::AbstractVector{AnnotationData}
+    return graph.data.bars_annotations
+end
+
 function bars_layout(;
     graph::Union{BarsGraph, SeriesBarsGraph},
     has_tick_names::Bool,
     has_legend::Bool,
+    has_hovers::Bool = false,
     implicit_values_range::MaybeRange,
     specific_scaled_ranges::Maybe{AbstractVector{MaybeRange}} = nothing,
     colors::Maybe{ConfiguredColors} = nothing,
@@ -1052,7 +1079,9 @@ function bars_layout(;
         has_legend = has_legend || any([annotation_colors.show_in_legend for annotation_colors in annotations_colors])
     end
 
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
+    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
+
+    value_axis_title, bar_axis_title = data_axes_titles(graph)
 
     if graph isa SeriesBarsGraph
         if graph.configuration.stacking == StackValues
@@ -1093,7 +1122,7 @@ function bars_layout(;
             layout,
             plotly_axis(value_axis_letter, axis_index),
             graph.configuration.value_axis;
-            title = prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
+            title = prefer_data(value_axis_title, graph.configuration.value_axis.title),
             range = scaled_values_range,
             domain = plotly_sub_graph_domain(
                 SubGraph(; index = 1, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size),
@@ -1106,12 +1135,12 @@ function bars_layout(;
             # Only an axis of its own can be titled by a series; when the pairs share their axes, the series are named
             # in the legend instead.
             if graph.configuration.series_gap === nothing
-                title = prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title)
+                title = prefer_data(value_axis_title, graph.configuration.value_axis.title)
             else
-                title = prefer_data(
+                title = prefer_data(  # NOJET
                     graph.data.series_names,
                     value_axis_index,
-                    prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
+                    prefer_data(value_axis_title, graph.configuration.value_axis.title),
                 )
             end
             set_layout_axis!(  # NOJET
@@ -1150,7 +1179,7 @@ function bars_layout(;
     layout["$(bar_axis_letter)axis"] = Dict(
         :showgrid => false,
         :showticklabels => has_tick_names,
-        :title => graph.data.bar_axis_title,
+        :title => bar_axis_title,
         :anchor => bar_axis_anchor,
     )
 
@@ -1169,8 +1198,9 @@ function bars_layout(;
     end
 
     layout["annotations"] = plotly_annotations = []
+    annotations_data = data_annotations(graph)
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
-        annotation_data = graph.data.bars_annotations[annotation_index]
+        annotation_data = annotations_data[annotation_index]
         sub_graph =
             SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
         push_plotly_annotation!(;

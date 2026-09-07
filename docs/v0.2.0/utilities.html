@@ -644,6 +644,62 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.validate_string_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.validate_string_values">
+<code>SomeGraphs.Utilities.validate_string_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_string_values(context::ValidationContext, field::AbstractString, values::Maybe{AbstractVector})::Nothing
+</code>
+</pre>
+<p>Validate that the 
+<code>values
+</code> of a 
+<a href="common.html#SomeGraphs.Common.ValuesData">
+<code>ValuesData
+</code>
+</a> 
+<code>field
+</code> are strings (if specified).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.string_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.string_values">
+<code>SomeGraphs.Utilities.string_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">string_values(values_data::ValuesData)::Maybe{AbstractVector{&lt;:AbstractString}}
+</code>
+</pre>
+<p>The values of a 
+<a href="common.html#SomeGraphs.Common.ValuesData">
+<code>ValuesData
+</code>
+</a> which was validated to be strings.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.masked_values">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.masked_values">
 <code>SomeGraphs.Utilities.masked_values
@@ -1560,6 +1616,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.string_values">
+<code>SomeGraphs.Utilities.string_values
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_axis_sizes">
 <code>SomeGraphs.Utilities.validate_axis_sizes
 </code>
@@ -1580,6 +1642,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_numeric_values">
 <code>SomeGraphs.Utilities.validate_numeric_values
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.validate_string_values">
+<code>SomeGraphs.Utilities.validate_string_values
 </code>
 </a>
 </li>

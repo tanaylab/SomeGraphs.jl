@@ -1,18 +1,36 @@
 nested_test("bars") do
-    graph = bars_graph(; bars_values = collect(0:3) .- 1)
+    graph = bars_graph(; values = ValuesData(collect(0:3) .- 1))
 
     nested_test("invalid") do
-        graph.configuration.bars_colors.show_legend = true
-        graph.configuration.bars_colors.palette = Dict(["Foo" => "red"])
-        graph.data.bars_colors = ["Foo", "Foo", "Foo", "Foo"]
-        @test_throws chomp("""
-                           ArgumentError: can't specify graph.configuration.bars_colors.show_legend
-                           for a categorical graph.configuration.bars_colors.palette
-                           """) validate(ValidationContext(["graph"]), graph)
+        nested_test("legend") do
+            graph.configuration.bars_colors.show_legend = true
+            graph.configuration.bars_colors.palette = Dict(["Foo" => "red"])
+            graph.data.colors.values = ["Foo", "Foo", "Foo", "Foo"]
+            @test_throws chomp("""
+                               ArgumentError: can't specify graph.configuration.bars_colors.show_legend
+                               for a categorical graph.configuration.bars_colors.palette
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("~names") do
+            graph.data.names.values = [1, 2, 3, 4]
+            @test_throws "ArgumentError: non-string graph.data.names.values" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
     end
 
     nested_test("svg") do
         test_svg(graph, "bars.svg")
+        return nothing
+    end
+
+    nested_test("mask") do
+        graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
+        graph.data.bars.mask = [true, false, true, true]
+        graph.data.annotations = [AnnotationData(; title = "score", values = [1, 0.5, 0, 1])]
+        test_html(graph, "bars.mask.html")
         return nothing
     end
 
@@ -26,26 +44,27 @@ nested_test("bars") do
             end
 
             nested_test("names") do
-                graph.data.bars_names = ["Foo", "Bar", "Baz", "Vaz"]
+                graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
                 test_html(graph, "bars.$(orientation_name).names.html")
                 return nothing
             end
 
             nested_test("hovers") do
-                graph.data.bars_names = ["Foo", "Bar", "Baz", "Vaz"]
+                graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
+                graph.data.bars.hovers = ["H: $(index)" for index in 1:4]
                 test_html(graph, "bars.$(orientation_name).hovers.html")
                 return nothing
             end
 
             nested_test("colors") do
                 nested_test("named") do
-                    graph.data.bars_colors = ["red", "green", "blue", "black"]
+                    graph.data.colors.values = ["red", "green", "blue", "black"]
                     test_html(graph, "bars.$(orientation_name).colors.named.html")
                     return nothing
                 end
 
                 nested_test("continuous") do
-                    graph.data.bars_colors = [0, 1, 2, 3]
+                    graph.data.colors.values = [0, 1, 2, 3]
 
                     nested_test("()") do
                         test_html(graph, "bars.$(orientation_name).colors.continuous.html")
@@ -54,14 +73,14 @@ nested_test("bars") do
 
                     nested_test("legend") do
                         graph.configuration.bars_colors.show_legend = true
-                        graph.data.bars_colors_title = "Colors"
+                        graph.data.colors.title = "Colors"
                         test_html(graph, "bars.$(orientation_name).colors.continuous.legend.html")
                         return nothing
                     end
                 end
 
                 nested_test("categorical") do
-                    graph.data.bars_colors = ["Foo", "Bar", "Baz", "Bar"]
+                    graph.data.colors.values = ["Foo", "Bar", "Baz", "Bar"]
                     graph.configuration.bars_colors.palette = Dict(["Foo" => "red", "Bar" => "green", "Baz" => "blue"])
 
                     test_html(graph, "bars.$(orientation_name).colors.categorical.html")
@@ -111,7 +130,7 @@ nested_test("bars") do
 
             nested_test("annotations") do
                 nested_test("continuous") do
-                    graph.data.bars_annotations = [AnnotationData(; title = "score", values = [1, 0.5, 0, 1])]
+                    graph.data.annotations = [AnnotationData(; title = "score", values = [1, 0.5, 0, 1])]
 
                     nested_test("()") do
                         test_html(graph, "bars.$(orientation_name).continuous.html")
@@ -119,14 +138,14 @@ nested_test("bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.bars_annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.show_legend = true
                         test_html(graph, "bars.$(orientation_name).continuous.legend.html")
                         return nothing
                     end
                 end
 
                 nested_test("categorical") do
-                    graph.data.bars_annotations = [
+                    graph.data.annotations = [
                         AnnotationData(;
                             title = "is",
                             values = ["yes", "maybe", "no", "yes"],
@@ -142,14 +161,14 @@ nested_test("bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.bars_annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.show_legend = true
                         test_html(graph, "bars.$(orientation_name).categorical.legend.html")
                         return nothing
                     end
                 end
 
                 nested_test("both") do
-                    graph.data.bars_annotations = [
+                    graph.data.annotations = [
                         AnnotationData(; title = "score", values = [1, 0.5, 0, 1]),
                         AnnotationData(;
                             title = "is",
@@ -159,7 +178,7 @@ nested_test("bars") do
                             ),
                         ),
                     ]
-                    graph.data.bars_names = ["Foo", "Bar", "Baz", "Vaz"]
+                    graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
                     test_html(graph, "bars.$(orientation_name).both.html")
                     return nothing
                 end

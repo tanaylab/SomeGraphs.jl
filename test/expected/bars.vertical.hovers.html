@@ -2,33 +2,38 @@
 <head><meta charset="utf-8" /></head>
 <body>
 <div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
-    <script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+<script type="text/javascript">
 window.PlotlyConfig = {MathJaxConfig: 'local'};
 </script>
 <script src="https://cdn.plot.ly/plotly-2.33.0.min.js"></script>
 
-    <div
-        id=id-1
-        class="plotly-graph-div"
-        style="height:100%; width:100%;">
-    </div>
-    <script type="text/javascript">
-        
-        window.PLOTLYENV = window.PLOTLYENV || {}
-        
-        if (document.getElementById('id-1')) {
-    Plotly.newPlot(
-        'id-1',
-        [{"showlegend":false,
+<div
+id=id-1
+class="plotly-graph-div"
+style="height:100%; width:100%;">
+</div>
+<script type="text/javascript">
+
+window.PLOTLYENV = window.PLOTLYENV || {}
+
+if (document.getElementById('id-1')) {
+Plotly.newPlot(
+'id-1',
+[{"showlegend":false,
 "y":[-1.0,0.0,1.0,2.0],
 "type":"bar",
+"customdata":["H: 1",
+"H: 2",
+"H: 3",
+"H: 4"],
 "orientation":"v",
+"hovertemplate":"%{customdata}<extra></extra>",
 "x":["Foo",
 "Bar",
 "Baz",
 "Vaz"]}],
-        {"showlegend":false,
+{"showlegend":false,
 "xaxis":{"showgrid":false,
 "showticklabels":true},
 "paper_bgcolor":"white",
@@ -41,19 +46,20 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "showticklabels":true,
 "zeroline":true,
 "range":[-1.03,2.03]},
+"hoverlabel":{"align":"left"},
 "margin":{"l":50,
 "b":50,
 "r":50,
 "t":50}},
-        {"editable":false,
+{"editable":false,
 "responsive":true,
 "staticPlot":false,
 "scrollZoom":true},
-    )
+)
 }
 
-        
-    </script>
+
+</script>
 </div>
 
 </body>
