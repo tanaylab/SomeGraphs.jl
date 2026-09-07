@@ -95,8 +95,8 @@ nested_test("utilities") do
         end
 
         nested_test("log") do
-            sizes_configuration.log_scale = true
-            sizes_configuration.log_regularization = 1
+            sizes_configuration.axis.log_scale = Log2Scale
+            sizes_configuration.axis.log_regularization = 1
 
             nested_test("()") do
                 test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [6, 12, 18])
@@ -104,13 +104,13 @@ nested_test("utilities") do
             end
 
             nested_test("minimum") do
-                sizes_configuration.minimum = 0
+                sizes_configuration.axis.minimum = 0
                 test_same_values(scale_size_values(sizes_configuration, [-1, 1, 3]), [6, 12, 18])
                 return nothing
             end
 
             nested_test("maximum") do
-                sizes_configuration.maximum = 3
+                sizes_configuration.axis.maximum = 3
                 test_same_values(scale_size_values(sizes_configuration, [0, 1, 4]), [6, 12, 18])
                 return nothing
             end

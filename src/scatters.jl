@@ -3,12 +3,15 @@ Graphs for showing scatter points and/or lines.
 """
 module Scatters
 
+export BordersData
+export EdgesData
 export LineGraph
 export LineGraphConfiguration
 export LineGraphData
 export LinesGraph
 export LinesGraphConfiguration
 export LinesGraphData
+export PointsData
 export PointsGraph
 export PointsGraphConfiguration
 export PointsGraphData
@@ -132,30 +135,77 @@ function Validations.validate(context::ValidationContext, configuration::PointsG
 end
 
 """
+    @kwdef mutable struct PointsData
+        colors::ValuesData = ValuesData()
+        sizes::ValuesData = ValuesData()
+        entities::EntitiesData = EntitiesData()
+        order::Maybe{AbstractVector{<:Integer}} = nothing
+    end
+
+The per-point data of a [`PointsGraphData`](@ref), other than the coordinates: the `colors` and `sizes` values, the
+hovers and mask of the points (`entities`), and the `order` the points are drawn in. It mirrors the `points` of the
+[`PointsGraphConfiguration`](@ref).
+"""
+@kwdef mutable struct PointsData
+    colors::ValuesData = ValuesData()
+    sizes::ValuesData = ValuesData()
+    entities::EntitiesData = EntitiesData()
+    order::Maybe{AbstractVector{<:Integer}} = nothing
+end
+
+"""
+    @kwdef mutable struct BordersData
+        colors::ValuesData = ValuesData()
+        sizes::ValuesData = ValuesData()
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+    end
+
+The per-point data of the borders of a [`PointsGraphData`](@ref): the `colors` and `sizes` values, and the `mask` of
+the borders. Borders share the hovers and order of the points. It mirrors the `borders` of the
+[`PointsGraphConfiguration`](@ref).
+"""
+@kwdef mutable struct BordersData
+    colors::ValuesData = ValuesData()
+    sizes::ValuesData = ValuesData()
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+end
+
+"""
+    @kwdef mutable struct EdgesData
+        points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing
+        colors::ValuesData = ValuesData()
+        sizes::ValuesData = ValuesData()
+        styles::Maybe{AbstractVector{LineStyle}} = nothing
+        entities::EntitiesData = EntitiesData()
+        order::Maybe{AbstractVector{<:Integer}} = nothing
+    end
+
+The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `points` (given by their indices). The
+`colors`, `sizes` (widths) and `styles` override the `edges` of the [`PointsGraphConfiguration`](@ref) per edge. The
+`entities` hold the hovers and mask of the edges. If `order` is specified, the edges are drawn in that order.
+
+!!! note
+
+    Continuous colors for edges are not implemented due to the difficulty of getting Plotly to render them, and given
+    we didn't find (m)any use cases for them.
+"""
+@kwdef mutable struct EdgesData
+    points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing
+    colors::ValuesData = ValuesData()
+    sizes::ValuesData = ValuesData()
+    styles::Maybe{AbstractVector{LineStyle}} = nothing
+    entities::EntitiesData = EntitiesData()
+    order::Maybe{AbstractVector{<:Integer}} = nothing
+end
+
+"""
     @kwdef mutable struct PointsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        x_axis_title::Maybe{AbstractString} = nothing
-        y_axis_title::Maybe{AbstractString} = nothing
-        points_colors_title::Maybe{AbstractString} = nothing
-        borders_colors_title::Maybe{AbstractString} = nothing
-        edges_colors_title::Maybe{AbstractString} = nothing
-        points_xs::AbstractVector{<:Real} = Float32[]
-        points_ys::AbstractVector{<:Real} = Float32[]
-        points_sizes::Maybe{AbstractVector{<:Real}} = nothing
-        points_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-        points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-        points_order::Maybe{AbstractVector{<:Integer}} = nothing
-        points_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-        borders_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-        borders_sizes::Maybe{AbstractVector{<:Real}} = nothing
-        borders_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-        edges_points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing
-        edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-        edges_sizes::Maybe{AbstractVector{<:Real}} = nothing
-        edges_styles::Maybe{AbstractVector{LineStyle}} = nothing
-        edges_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-        edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
-        edges_order::Maybe{AbstractVector{<:Integer}} = nothing
+        x::ValuesData = ValuesData()
+        y::ValuesData = ValuesData()
+        points::PointsData = PointsData()
+        borders::BordersData = BordersData()
+        edges::EdgesData = EdgesData()
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
         diagonal_bands::BandsData = BandsData()
@@ -163,104 +213,83 @@ end
 
 The data for a scatter graph of points.
 
-By default, all the titles are empty. You can specify the overall `figure_title` as well as the `x_axis_title` and
-`y_axis_title` for the axes, and the `points_colors_title` and `borders_colors_title` for the legends.
+The `x` and `y` values are required, numeric, and of the same size (the number of points); their titles are the axis
+titles. If specified, the `points` and `borders` colors and sizes values must also be of the same size, as must the
+hovers and masks. Colors can be explicit color names if no `palette` is specified in the configuration; otherwise, they
+are either numeric values or category names depending on the type of palette specified. Sizes are the diameter in
+pixels (1/96th of an inch); border sizes are added to the point sizes. The colors titles are used for the legends, if
+`show_legend` is set for the relevant colors configuration (you can't specify `show_legend` if the colors data
+contains explicit color names).
 
-The `points_xs` and `points_ys` vectors must be of the same size. If specified, the `points_colors`, `points_sizes`
-`points_hovers`, `points_order` and/or `points_mask` vectors must also be of the same size. The `points_colors` can
-be explicit color names if no `palette` is specified in the configuration; otherwise, they are either numeric values or
-category names depending on the type of palette specified. Sizes are the diameter in pixels (1/96th of an inch). Hovers
-are only shown in interactive graphs (or when saving an HTML file).
+The `edges` draw straight lines between pairs of points; see [`EdgesData`](@ref).
 
-The `borders_colors`, `borders_sizes` and/or `borders_mask` vectors can be used to provide additional data per point.
-The border size is in addition to the point size.
+The masks of the points, borders and edges allow disabling an arbitrary subset of them. This is often more convenient
+than excluding the data from the arrays. This is also useful for defining points which are only used to draw edges
+between them and aren't drawn as actual points. The properties of excluded entities, other than their coordinates, are
+ignored (e.g., the colors of masked points need not be valid color names).
 
-It is possible to draw straight `edges_points` between specific point pairs. In this case the `edges` of the
-[`PointsGraphConfiguration`](@ref) will be used, and the `edges_colors`, `edges_sizes` (widths) and `edges_styles` will
-override it per edge. The `edges_hovers` provide the hover text shown for each edge.
-
-The `points_mask`, `borders_mask` and `edges_mask` allow disabling an arbitrary subset of the points, borders and/or
-edges. This is often more convenient than excluding the data from the arrays. This is also useful for defining points
-which are only used to draw edges between them and aren't drawn as actual points. The properties of excluded entities,
-other than their coordinates, are ignored (e.g., the `points_colors` of points with a zero `points_mask` value need not
-be valid color names).
-
-If `points_order` and/or `edges_order` are specified, we reorder the points and/or edges accordingly. This allows
+If the points and/or edges `order` is specified, we reorder the points and/or edges accordingly. This allows
 controlling which points and/or edges will appear on top of the others. Due to Plotly limitations, when using
 categorical colors, all the points (or edges) of one category must all be either above or below all the points of each
 other category. We therefore compute an overall priority for each category as the mean reordered index of all the points
 (or edges) of that category, and reorder the categories based on that.
-
-The `points_colors_title`, `borders_colors_title` and `edges_colors_title` are only used if `show_legend` is set for the
-relevant color configurations. You can't specify `show_legend` if the colors data contains explicit color names.
-palette.
-
-!!! note
-
-    Continuous colors for edges are not implemented due to the difficulty of getting Plotly to render them, and given
-    we didn't find (m)any use cases for them.
 """
 @kwdef mutable struct PointsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    x_axis_title::Maybe{AbstractString} = nothing
-    y_axis_title::Maybe{AbstractString} = nothing
-    points_colors_title::Maybe{AbstractString} = nothing
-    borders_colors_title::Maybe{AbstractString} = nothing
-    edges_colors_title::Maybe{AbstractString} = nothing
-    points_xs::AbstractVector{<:Real} = Float32[]
-    points_ys::AbstractVector{<:Real} = Float32[]
-    points_sizes::Maybe{AbstractVector{<:Real}} = nothing
-    points_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-    points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-    points_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
-    points_order::Maybe{AbstractVector{<:Integer}} = nothing
-    borders_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-    borders_sizes::Maybe{AbstractVector{<:Real}} = nothing
-    borders_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
-    edges_points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing
-    edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing
-    edges_sizes::Maybe{AbstractVector{<:Real}} = nothing
-    edges_styles::Maybe{AbstractVector{LineStyle}} = nothing
-    edges_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-    edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
-    edges_order::Maybe{AbstractVector{<:Integer}} = nothing
+    x::ValuesData = ValuesData()
+    y::ValuesData = ValuesData()
+    points::PointsData = PointsData()
+    borders::BordersData = BordersData()
+    edges::EdgesData = EdgesData()
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::PointsGraphData)::Nothing
-    validate_vector_is_not_empty(context, "points_xs", data.points_xs)
-    n_points = length(data.points_xs)
+    validate_numeric_values(context, "x.values", data.x.values; is_required = true)
+    validate_numeric_values(context, "y.values", data.y.values; is_required = true)
+    validate_numeric_values(context, "points.sizes.values", data.points.sizes.values)
+    validate_numeric_values(context, "borders.sizes.values", data.borders.sizes.values)
+    validate_numeric_values(context, "edges.sizes.values", data.edges.sizes.values)
 
-    validate_vector_length(context, "points_ys", data.points_ys, "points_xs", n_points)
-    validate_vector_length(context, "points_sizes", data.points_sizes, "points_xs", n_points)
-    validate_vector_length(context, "points_colors", data.points_colors, "points_xs", n_points)
-    validate_vector_length(context, "points_hovers", data.points_hovers, "points_xs", n_points)
-    validate_vector_length(context, "points_mask", data.points_mask, "points_xs", n_points)
-    validate_vector_length(context, "points_order", data.points_order, "points_xs", n_points)
+    xs = data.x.values
+    @assert xs !== nothing
+    validate_vector_is_not_empty(context, "x.values", xs)
+    n_points = length(xs)
 
-    validate_vector_length(context, "borders_colors", data.borders_colors, "points_xs", n_points)
-    validate_vector_length(context, "borders_sizes", data.borders_sizes, "points_xs", n_points)
-    validate_vector_length(context, "borders_mask", data.borders_mask, "points_xs", n_points)
+    validate_vector_length(context, "y.values", data.y.values, "x.values", n_points)
 
-    if data.edges_points === nothing
+    points = data.points
+    validate_vector_length(context, "points.colors.values", points.colors.values, "x.values", n_points)
+    validate_vector_length(context, "points.sizes.values", points.sizes.values, "x.values", n_points)
+    validate_vector_length(context, "points.entities.hovers", points.entities.hovers, "x.values", n_points)
+    validate_vector_length(context, "points.entities.mask", points.entities.mask, "x.values", n_points)
+    validate_vector_length(context, "points.order", points.order, "x.values", n_points)
+
+    borders = data.borders
+    validate_vector_length(context, "borders.colors.values", borders.colors.values, "x.values", n_points)
+    validate_vector_length(context, "borders.sizes.values", borders.sizes.values, "x.values", n_points)
+    validate_vector_length(context, "borders.mask", borders.mask, "x.values", n_points)
+
+    edges = data.edges
+    if edges.points === nothing
         n_edges = 0
     else
-        n_edges = length(data.edges_points)
+        n_edges = length(edges.points)
     end
-    validate_vector_length(context, "edges_colors", data.edges_colors, "edges_points", n_edges)
-    validate_vector_length(context, "edges_sizes", data.edges_sizes, "edges_points", n_edges)
-    validate_vector_length(context, "edges_styles", data.edges_styles, "edges_points", n_edges)
-    validate_vector_length(context, "edges_hovers", data.edges_hovers, "edges_points", n_edges)
-    validate_vector_length(context, "edges_mask", data.edges_mask, "edges_points", n_edges)
-    validate_vector_length(context, "edges_order", data.edges_order, "edges_points", n_edges)
+    validate_vector_length(context, "edges.colors.values", edges.colors.values, "edges.points", n_edges)
+    validate_vector_length(context, "edges.sizes.values", edges.sizes.values, "edges.points", n_edges)
+    validate_vector_length(context, "edges.styles", edges.styles, "edges.points", n_edges)
+    validate_vector_length(context, "edges.entities.hovers", edges.entities.hovers, "edges.points", n_edges)
+    validate_vector_length(context, "edges.entities.mask", edges.entities.mask, "edges.points", n_edges)
+    validate_vector_length(context, "edges.order", edges.order, "edges.points", n_edges)
 
-    if data.edges_colors !== nothing && eltype(data.edges_colors) <: Real
+    if edges.colors.values !== nothing && eltype(edges.colors.values) <: Real
         throw(ArgumentError("continuous colors for edges are not implemented"))
     end
 
-    validate_vector_entries(context, "edges_points", data.edges_points, data.edges_mask) do _, (from_point, to_point)
+    validate_vector_entries(context, "edges.points", edges.points, edges.entities.mask) do _, (from_point, to_point)
         for (field, value) in (("from_point", from_point), ("to_point", to_point))
             validate_in(context, field) do
                 validate_is_at_least(context, value, 1)
@@ -282,27 +311,11 @@ PointsGraph = Graph{PointsGraphData, PointsGraphConfiguration}
 """
     function points_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        x_axis_title::Maybe{AbstractString} = nothing,
-        y_axis_title::Maybe{AbstractString} = nothing,
-        points_colors_title::Maybe{AbstractString} = nothing,
-        borders_colors_title::Maybe{AbstractString} = nothing,
-        edges_colors_title::Maybe{AbstractString} = nothing,
-        points_xs::AbstractVector{<:Real} = Float32[],
-        points_ys::AbstractVector{<:Real} = Float32[],
-        points_sizes::Maybe{AbstractVector{<:Real}} = nothing,
-        points_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
-        points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        points_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-        points_order::Maybe{AbstractVector{<:Integer}} = nothing,
-        borders_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
-        borders_sizes::Maybe{AbstractVector{<:Real}} = nothing,
-        borders_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-        edges_points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing,
-        edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
-        edges_sizes::Maybe{AbstractVector{<:Real}} = nothing,
-        edges_styles::Maybe{AbstractVector{LineStyle}} = nothing,
-        edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-        edges_order::Maybe{AbstractVector{<:Integer}} = nothing,
+        x::ValuesData = ValuesData(),
+        y::ValuesData = ValuesData(),
+        points::PointsData = PointsData(),
+        borders::BordersData = BordersData(),
+        edges::EdgesData = EdgesData(),
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
         diagonal_bands::BandsData = BandsData(),
@@ -314,103 +327,59 @@ Create a [`PointsGraph`](@ref) by initializing only the [`PointsGraphData`](@ref
 """
 function points_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    x_axis_title::Maybe{AbstractString} = nothing,
-    y_axis_title::Maybe{AbstractString} = nothing,
-    points_colors_title::Maybe{AbstractString} = nothing,
-    borders_colors_title::Maybe{AbstractString} = nothing,
-    edges_colors_title::Maybe{AbstractString} = nothing,
-    points_xs::AbstractVector{<:Real} = Float32[],
-    points_ys::AbstractVector{<:Real} = Float32[],
-    points_sizes::Maybe{AbstractVector{<:Real}} = nothing,
-    points_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
-    points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    points_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-    points_order::Maybe{AbstractVector{<:Integer}} = nothing,
-    borders_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
-    borders_sizes::Maybe{AbstractVector{<:Real}} = nothing,
-    borders_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-    edges_points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing,
-    edges_colors::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}} = nothing,
-    edges_sizes::Maybe{AbstractVector{<:Real}} = nothing,
-    edges_styles::Maybe{AbstractVector{LineStyle}} = nothing,
-    edges_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    edges_mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
-    edges_order::Maybe{AbstractVector{<:Integer}} = nothing,
+    x::ValuesData = ValuesData(),
+    y::ValuesData = ValuesData(),
+    points::PointsData = PointsData(),
+    borders::BordersData = BordersData(),
+    edges::EdgesData = EdgesData(),
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
     configuration::PointsGraphConfiguration = PointsGraphConfiguration(),
 )::PointsGraph
     return PointsGraph(
-        PointsGraphData(;
-            figure_title,
-            x_axis_title,
-            y_axis_title,
-            points_colors_title,
-            borders_colors_title,
-            edges_colors_title,
-            points_xs,
-            points_ys,
-            points_sizes,
-            points_colors,
-            points_hovers,
-            points_mask,
-            points_order,
-            borders_colors,
-            borders_sizes,
-            borders_mask,
-            edges_points,
-            edges_colors,
-            edges_sizes,
-            edges_styles,
-            edges_hovers,
-            edges_mask,
-            edges_order,
-            vertical_bands,
-            horizontal_bands,
-            diagonal_bands,
-        ),
+        PointsGraphData(; figure_title, x, y, points, borders, edges, vertical_bands, horizontal_bands, diagonal_bands),
         configuration,
     )
 end
 
 function Common.validate_graph(graph::PointsGraph)::Nothing
     validate_values(
-        ValidationContext(["graph.data.points_xs"]),
-        graph.data.points_xs,
+        ValidationContext(["graph.data.x.values"]),
+        numeric_values(graph.data.x),
         ValidationContext(["graph.configuration.x_axis"]),
         graph.configuration.x_axis,
     )
 
     validate_values(
-        ValidationContext(["graph.data.points_ys"]),
-        graph.data.points_ys,
+        ValidationContext(["graph.data.y.values"]),
+        numeric_values(graph.data.y),
         ValidationContext(["graph.configuration.y_axis"]),
         graph.configuration.y_axis,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.points_colors"]),
-        graph.data.points_colors,
+        ValidationContext(["graph.data.points.colors.values"]),
+        graph.data.points.colors.values,
         ValidationContext(["graph.configuration.points.colors"]),
         graph.configuration.points.colors,
-        graph.data.points_mask,
+        graph.data.points.entities.mask,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.borders_colors"]),
-        graph.data.borders_colors,
+        ValidationContext(["graph.data.borders.colors.values"]),
+        graph.data.borders.colors.values,
         ValidationContext(["graph.configuration.borders.colors"]),
         graph.configuration.borders.colors,
-        graph.data.borders_mask,
+        graph.data.borders.mask,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.edges_colors"]),
-        graph.data.edges_colors,
+        ValidationContext(["graph.data.edges.colors.values"]),
+        graph.data.edges.colors.values,
         ValidationContext(["graph.configuration.edges.colors"]),
         graph.configuration.edges.colors,
-        graph.data.edges_mask,
+        graph.data.edges.entities.mask,
     )
 
     if graph.configuration.diagonal_bands.low.offset !== nothing ||
@@ -449,9 +418,9 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
     has_legend = false
     n_colors_scales = 0
     for (colors_configuration, colors_values) in (
-        (graph.configuration.points.colors, graph.data.points_colors),
-        (graph.configuration.borders.colors, graph.data.borders_colors),
-        (graph.configuration.edges.colors, graph.data.edges_colors),
+        (graph.configuration.points.colors, graph.data.points.colors.values),
+        (graph.configuration.borders.colors, graph.data.borders.colors.values),
+        (graph.configuration.edges.colors, graph.data.edges.colors.values),
     )
         if colors_configuration.show_legend
             if colors_configuration.palette isa CategoricalColors || colors_values isa AbstractVector{<:AbstractString}
@@ -549,66 +518,62 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
 
     traces = Vector{GenericTrace}()
 
-    scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
-    scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
+    points_xs = numeric_values(graph.data.x)
+    points_ys = numeric_values(graph.data.y)
+    @assert points_xs !== nothing
+    @assert points_ys !== nothing
+    scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs)
+    scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys)
 
     next_colors_scale_index = [1]
 
+    points = graph.data.points
     configured_points = configured_scatters(;
         legend_group = "Points",
         scatters_configuration = graph.configuration.points,
-        colors_title = prefer_data(graph.data.points_colors_title, graph.configuration.points.colors.title),
-        colors_values = graph.data.points_colors,
+        colors_title = prefer_data(points.colors.title, graph.configuration.points.colors.title),
+        colors_values = points.colors.values,
         next_colors_scale_index,
-        size_values = graph.data.points_sizes,
-        mask = graph.data.points_mask,
-        order = graph.data.points_order,
+        size_values = numeric_values(points.sizes),
+        mask = points.entities.mask,
+        order = points.order,
     )
 
+    borders = graph.data.borders
     configured_borders = configured_scatters(;
         legend_group = "Borders",
         scatters_configuration = graph.configuration.borders,
-        colors_title = prefer_data(graph.data.borders_colors_title, graph.configuration.borders.colors.title),
-        colors_values = graph.data.borders_colors,
+        colors_title = prefer_data(borders.colors.title, graph.configuration.borders.colors.title),
+        colors_values = borders.colors.values,
         next_colors_scale_index,
-        size_values = graph.data.borders_sizes,
-        mask = graph.data.borders_mask,
-        order = graph.data.points_order,
+        size_values = numeric_values(borders.sizes),
+        mask = borders.mask,
+        order = points.order,
     )
 
-    points_hovers = compute_points_hovers(;
-        original_points_xs = graph.data.points_xs,
-        original_points_ys = graph.data.points_ys,
-        scaled_points_xs,
-        scaled_points_ys,
-        configured_points,
-        configured_borders,
-        x_axis = graph.configuration.x_axis,
-        y_axis = graph.configuration.y_axis,
-        points_hovers = graph.data.points_hovers,
-    )
+    points_hovers = points.entities.hovers
 
     add_pixel_sizes(configured_points, configured_borders)
 
     configured_edges = configured_scatters(;
         legend_group = "Edges",
         scatters_configuration = graph.configuration.edges,
-        colors_title = prefer_data(graph.data.edges_colors_title, graph.configuration.edges.colors.title),
-        colors_values = graph.data.edges_colors,
+        colors_title = prefer_data(graph.data.edges.colors.title, graph.configuration.edges.colors.title),
+        colors_values = graph.data.edges.colors.values,
         next_colors_scale_index,
-        size_values = graph.data.edges_sizes,
-        mask = graph.data.edges_mask,
-        order = graph.data.edges_order,
+        size_values = numeric_values(graph.data.edges.sizes),
+        mask = graph.data.edges.entities.mask,
+        order = graph.data.edges.order,
     )
 
-    edges_points = graph.data.edges_points
+    edges_points = graph.data.edges.points
     if edges_points !== nothing && !graph.configuration.edges_over_points
         push_edge_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_edges)
     end
 
-    if graph.data.borders_colors !== nothing ||
-       graph.data.borders_sizes !== nothing ||
-       graph.data.borders_mask !== nothing ||
+    if borders.colors.values !== nothing ||
+       borders.sizes.values !== nothing ||
+       borders.mask !== nothing ||
        graph.configuration.borders.colors.fixed !== nothing ||
        graph.configuration.borders.sizes.fixed !== nothing
         push_points_traces!(;
@@ -655,12 +620,14 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
 
     has_legend =
         configured_points.show_in_legend || configured_borders.show_in_legend || configured_edges.show_in_legend
+    has_hovers = points_hovers !== nothing || graph.data.edges.entities.hovers !== nothing
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
         scaled_ys_range = scaled_points_ys.range,
         shapes,
         has_legend,
+        has_hovers,
     )
 
     next_colors_scale_offset_index = [Int(has_legend)]
@@ -682,110 +649,6 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     end
 
     return plotly_figure(traces, layout)
-end
-
-function compute_points_hovers(;
-    original_points_xs::AbstractVector{<:Real},
-    original_points_ys::AbstractVector{<:Real},
-    scaled_points_xs::ScaledData,
-    scaled_points_ys::ScaledData,
-    configured_points::ConfiguredScatters,
-    configured_borders::ConfiguredScatters,
-    x_axis::AxisConfiguration,
-    y_axis::AxisConfiguration,
-    points_hovers::Maybe{AbstractVector{<:AbstractString}},
-)::Maybe{AbstractVector{<:AbstractString}}
-    if x_axis.log_scale === nothing &&
-       !x_axis.percent &&
-       y_axis.log_scale === nothing &&
-       !y_axis.percent &&
-       configured_points.colors.original_color_values === nothing &&
-       configured_points.original_sizes === nothing &&
-       configured_borders.colors.original_color_values === nothing &&
-       configured_borders.original_sizes === nothing
-        return points_hovers
-    end
-
-    scaled_x_prefix = prefer_data(axis_ticks_prefix(x_axis), "")
-    scaled_x_suffix = prefer_data(axis_ticks_suffix(x_axis), "")
-    scaled_y_prefix = prefer_data(axis_ticks_prefix(y_axis), "")
-    scaled_y_suffix = prefer_data(axis_ticks_suffix(y_axis), "")
-
-    n_points = length(original_points_xs)
-    final_hovers = Vector{AbstractString}(undef, n_points)
-
-    has_same_xs = isapprox(original_points_xs, scaled_points_xs.values)  # NOJET
-    has_same_ys = isapprox(original_points_ys, scaled_points_ys.values)
-
-    for point_index in 1:n_points
-        texts = AbstractString[]
-
-        show_points_colors =
-            configured_points.colors.original_color_values !== nothing && (
-                eltype(configured_points.colors.original_color_values) <: Real ||
-                configured_points.colors.colors_configuration.palette !== nothing
-            )
-        show_borders_colors =
-            configured_borders.colors.original_color_values !== nothing && (
-                eltype(configured_borders.colors.original_color_values) <: Real ||
-                configured_borders.colors.colors_configuration.palette !== nothing
-            )
-        has_both_colors =
-            configured_points.colors.original_color_values !== nothing &&
-            configured_borders.colors.original_color_values !== nothing
-
-        if show_points_colors || show_borders_colors
-            push!(texts, "Color:")
-            if show_points_colors
-                if has_both_colors
-                    push!(texts, " in")
-                end
-                push!(texts, " $(configured_points.colors.original_color_values[point_index])")
-            end
-            if show_borders_colors
-                if has_both_colors
-                    push!(texts, " out")
-                end
-                push!(texts, " $(configured_borders.colors.original_color_values[point_index])")
-            end
-            push!(texts, "<br>")
-        end
-
-        has_both_sizes = configured_points.original_sizes !== nothing && configured_borders.original_sizes !== nothing
-        if configured_points.original_sizes !== nothing || configured_borders.original_sizes !== nothing
-            push!(texts, "Size:")
-            if configured_points.original_sizes !== nothing
-                if has_both_sizes
-                    push!(texts, " in")
-                end
-                push!(texts, " $(configured_points.original_sizes[point_index])")
-            end
-            if configured_borders.original_sizes !== nothing
-                if has_both_sizes
-                    push!(texts, " out")
-                end
-                push!(texts, " $(configured_borders.original_sizes[point_index])")
-            end
-            push!(texts, "<br>")
-        end
-
-        push!(texts, "X: $(original_points_xs[point_index])")
-        if !has_same_xs
-            push!(texts, " = $(scaled_x_prefix)$(scaled_points_xs.values[point_index])$(scaled_x_suffix)")
-        end
-        push!(texts, "<br>Y: $(original_points_ys[point_index])$(scaled_y_suffix)")
-        if !has_same_ys
-            push!(texts, " = $(scaled_y_prefix)$(scaled_points_ys.values[point_index])$(scaled_y_suffix)")
-        end
-        if points_hovers !== nothing
-            push!(texts, "<br>")
-            push!(texts, points_hovers[point_index])
-        end
-
-        final_hovers[point_index] = join(texts)
-    end
-
-    return final_hovers
 end
 
 function add_pixel_sizes(configured_points::ConfiguredScatters, configured_borders::ConfiguredScatters)::Nothing
@@ -823,13 +686,15 @@ function push_edge_traces!(;
     scaled_points_ys::ScaledData,
     configured_edges::ConfiguredScatters,
 )::Nothing
+    edges = graph.data.edges
+
     if configured_edges.colors.show_in_legend
-        edges_names = graph.data.edges_colors
+        edges_names = edges.colors.values
     else
         edges_names = nothing
     end
 
-    edges_points = graph.data.edges_points
+    edges_points = edges.points
     @assert edges_points !== nothing
     seen_names = Set{AbstractString}()
     legend_group_title = configured_edges.colors.colors_title
@@ -865,9 +730,7 @@ function push_edge_traces!(;
                     ),
                     "darkgrey",
                 ),
-                line_dash = plotly_line_dash(
-                    prefer_data(graph.data.edges_styles, edge_index, graph.configuration.edges_style),
-                ),
+                line_dash = plotly_line_dash(prefer_data(edges.styles, edge_index, graph.configuration.edges_style)),
                 name = prefer_data(edges_names, edge_index, nothing),
                 mode = "lines",
                 legendgroup = show_in_legend ? legend_group : nothing,
@@ -875,7 +738,7 @@ function push_edge_traces!(;
                 showlegend = show_in_legend,
                 coloraxis = plotly_axis("color", configured_edges.colors.colors_scale_index),
             )
-            edge_hover = prefer_data(graph.data.edges_hovers, edge_index, nothing)
+            edge_hover = prefer_data(edges.entities.hovers, edge_index, nothing)
             if edge_hover !== nothing
                 edge_trace[:text] = edge_hover
                 edge_trace[:hovertemplate] = "%{text}<extra></extra>"
@@ -1832,32 +1695,13 @@ function push_line_trace!(;
     return nothing
 end
 
-function masked_values(::Nothing, ::Any, ::Any)::Any
-    return nothing
+# The titles of the X and Y axes given in the graph data.
+function data_axes_titles(graph::PointsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+    return (graph.data.x.title, graph.data.y.title)
 end
 
-function masked_values(::Nothing, ::Nothing, ::Any)::Nothing
-    return nothing
-end
-
-function masked_values(values::AbstractVector{T}, ::Nothing, ::Any)::AbstractVector{T} where {T}
-    return values
-end
-
-function masked_values(
-    values::AbstractVector{T},
-    mask::Union{AbstractVector{Bool}, BitVector},
-    ::Nothing,
-)::AbstractVector{T} where {T}
-    return values[mask]
-end
-
-function masked_values(
-    values::AbstractVector{T},
-    mask::Union{AbstractVector{Bool}, BitVector},
-    order::AbstractVector{<:Integer},
-)::AbstractVector{T} where {T}
-    return masked_values(values[order], mask[order], nothing)
+function data_axes_titles(graph::Union{LineGraph, LinesGraph})::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+    return (graph.data.x_axis_title, graph.data.y_axis_title)
 end
 
 function scatters_layout(;
@@ -1866,14 +1710,17 @@ function scatters_layout(;
     scaled_ys_range::Range,
     shapes::AbstractVector{Shape},
     has_legend::Bool,
+    has_hovers::Bool = false,
 )::Layout
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
+    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
+
+    x_axis_title, y_axis_title = data_axes_titles(graph)
 
     set_layout_axis!(
         layout,
         "xaxis",
         graph.configuration.x_axis;
-        title = prefer_data(graph.data.x_axis_title, graph.configuration.x_axis.title),
+        title = prefer_data(x_axis_title, graph.configuration.x_axis.title),
         range = scaled_xs_range,
     )
 
@@ -1881,7 +1728,7 @@ function scatters_layout(;
         layout,
         "yaxis",
         graph.configuration.y_axis;
-        title = prefer_data(graph.data.y_axis_title, graph.configuration.y_axis.title),
+        title = prefer_data(y_axis_title, graph.configuration.y_axis.title),
         range = scaled_ys_range,
     )
 
@@ -1909,27 +1756,11 @@ function Common.flip_axes(graph::PointsGraph)::PointsGraph
     return PointsGraph(
         PointsGraphData(;
             figure_title = graph.data.figure_title,
-            x_axis_title = graph.data.y_axis_title,
-            y_axis_title = graph.data.x_axis_title,
-            points_colors_title = graph.data.points_colors_title,
-            borders_colors_title = graph.data.borders_colors_title,
-            edges_colors_title = graph.data.edges_colors_title,
-            points_xs = graph.data.points_ys,
-            points_ys = graph.data.points_xs,
-            points_sizes = graph.data.points_sizes,
-            points_colors = graph.data.points_colors,
-            points_hovers = graph.data.points_hovers,
-            points_mask = graph.data.points_mask,
-            points_order = graph.data.points_order,
-            borders_colors = graph.data.borders_colors,
-            borders_sizes = graph.data.borders_sizes,
-            borders_mask = graph.data.borders_mask,
-            edges_points = graph.data.edges_points,
-            edges_colors = graph.data.edges_colors,
-            edges_sizes = graph.data.edges_sizes,
-            edges_styles = graph.data.edges_styles,
-            edges_mask = graph.data.edges_mask,
-            edges_order = graph.data.edges_order,
+            x = graph.data.y,
+            y = graph.data.x,
+            points = graph.data.points,
+            borders = graph.data.borders,
+            edges = graph.data.edges,
             vertical_bands = graph.data.horizontal_bands,
             horizontal_bands = graph.data.vertical_bands,
             diagonal_bands = graph.data.diagonal_bands,
@@ -2016,8 +1847,7 @@ end
 
 function Common.flip_axes!(graph::PointsGraph)::PointsGraph
     data = graph.data
-    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
-    data.points_xs, data.points_ys = data.points_ys, data.points_xs
+    data.x, data.y = data.y, data.x
     data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
 
     configuration = graph.configuration

@@ -1,8 +1,18 @@
 nested_test("points") do
-    graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+    graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 
     nested_test("invalid") do
         context = ValidationContext(["graph"])
+
+        nested_test("!values") do
+            graph.data.x.values = nothing
+            @test_throws "ArgumentError: must specify graph.data.x.values" validate(context, graph)
+        end
+
+        nested_test("~values") do
+            graph.data.points.sizes.values = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+            @test_throws "ArgumentError: non-numeric graph.data.points.sizes.values" validate(context, graph)
+        end
 
         nested_test("diagonal") do
             nested_test("log") do
@@ -66,13 +76,13 @@ nested_test("points") do
     end
 
     nested_test("mask") do
-        graph.data.points_mask = [true, true, true, true, true, true, false, false, false, false, false]
+        graph.data.points.entities.mask = [true, true, true, true, true, true, false, false, false, false, false]
         test_html(graph, "points.mask.html")
         return nothing
     end
 
     nested_test("hovers") do
-        graph.data.points_hovers = ["H: $(index)" for index in 1:11]
+        graph.data.points.entities.hovers = ["H: $(index)" for index in 1:11]
         test_html(graph, "points.hovers.html")
         return nothing
     end
@@ -225,26 +235,26 @@ nested_test("points") do
         end
 
         nested_test("hovers") do
-            graph.data.points_hovers = ["H: $(index)" for index in 1:11]
+            graph.data.points.entities.hovers = ["H: $(index)" for index in 1:11]
             test_html(graph, "points.log.hovers.html")
             return nothing
         end
     end
 
     nested_test("edges") do
-        graph.data.edges_points = [(1, 7), (2, 8), (3, 9), (4, 10), (5, 11)]
+        graph.data.edges.points = [(1, 7), (2, 8), (3, 9), (4, 10), (5, 11)]
         nested_test("()") do
             test_html(graph, "points.edges.html")
             return nothing
         end
 
         nested_test("continuous") do
-            graph.data.edges_colors = collect(1:5)
+            graph.data.edges.colors.values = collect(1:5)
             @test_throws "continuous colors for edges are not implemented" validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("mask") do
-            graph.data.edges_mask = [true, true, true, false, false]
+            graph.data.edges.entities.mask = [true, true, true, false, false]
             test_html(graph, "points.edges.mask.html")
             return nothing
         end
@@ -262,26 +272,26 @@ nested_test("points") do
         end
 
         nested_test("styles") do
-            graph.data.edges_styles = [SolidLine, DashLine, DashDotLine, DotLine, SolidLine]
+            graph.data.edges.styles = [SolidLine, DashLine, DashDotLine, DotLine, SolidLine]
             test_html(graph, "points.edges.styles.html")
             return nothing
         end
 
         nested_test("hovers") do
-            graph.data.edges_hovers = ["E: $(index)" for index in 1:5]
+            graph.data.edges.entities.hovers = ["E: $(index)" for index in 1:5]
             test_html(graph, "points.edges.hovers.html")
             return nothing
         end
 
         nested_test("named") do
-            graph.data.edges_colors = ["red", "yellow", "green", "cyan", "blue"]
+            graph.data.edges.colors.values = ["red", "yellow", "green", "cyan", "blue"]
             test_html(graph, "points.edges.named.html")
             return nothing
         end
 
         nested_test("categorical") do
             graph.configuration.edges.colors.palette = Dict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
-            graph.data.edges_colors = ["Foo", "Bar", "Baz", "Bar", "Foo"]
+            graph.data.edges.colors.values = ["Foo", "Bar", "Baz", "Bar", "Foo"]
 
             nested_test("()") do
                 test_html(graph, "points.edges.categorical.html")
@@ -295,7 +305,7 @@ nested_test("points") do
             end
 
             nested_test("priorities") do
-                graph.data.edges_order = reverse!(collect(1:5))
+                graph.data.edges.order = reverse!(collect(1:5))
                 test_html(graph, "points.edges.categorical.priorities.html")
                 return nothing
             end
@@ -308,14 +318,14 @@ nested_test("points") do
         end
 
         nested_test("sizes") do
-            graph.data.edges_sizes = collect(1:5)
+            graph.data.edges.sizes.values = collect(1:5)
             test_html(graph, "points.edges.sizes.html")
             return nothing
         end
     end
 
     nested_test("continuous") do
-        graph.data.points_colors = collect(0:10)
+        graph.data.points.colors.values = collect(0:10)
 
         nested_test("()") do
             test_html(graph, "points.continuous.html")
@@ -350,7 +360,7 @@ nested_test("points") do
     end
 
     nested_test("named") do
-        graph.data.points_colors =
+        graph.data.points.colors.values =
             ["red", "yellow", "green", "cyan", "blue", "magenta", "blue", "cyan", "green", "yellow", "red"]
         test_html(graph, "points.named.html")
         return nothing
@@ -358,7 +368,7 @@ nested_test("points") do
 
     nested_test("categorical") do
         graph.configuration.points.colors.palette = Dict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
-        graph.data.points_colors = ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
+        graph.data.points.colors.values = ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
 
         nested_test("()") do
             test_html(graph, "points.categorical.html")
@@ -372,13 +382,13 @@ nested_test("points") do
         end
 
         nested_test("mask") do
-            graph.data.points_mask = [true, true, true, true, true, true, false, false, false, false, false]
+            graph.data.points.entities.mask = [true, true, true, true, true, true, false, false, false, false, false]
             test_html(graph, "points.categorical.mask.html")
             return nothing
         end
 
         nested_test("priorities") do
-            graph.data.points_order = reverse(collect(1:11))
+            graph.data.points.order = reverse(collect(1:11))
             test_html(graph, "points.points.categorical.priorities.html")
             return nothing
         end
@@ -386,7 +396,7 @@ nested_test("points") do
 
     nested_test("automatic") do
         graph.configuration.points.colors.palette = AutomaticColors()
-        graph.data.points_colors = ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
+        graph.data.points.colors.values = ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
 
         nested_test("()") do
             test_html(graph, "points.automatic.html")
@@ -400,17 +410,17 @@ nested_test("points") do
         end
 
         nested_test("~numeric") do
-            graph.data.points_colors = collect(0:10)
+            graph.data.points.colors.values = collect(0:10)
             @test_throws chomp("""
-                               ArgumentError: numeric graph.data.points_colors
+                               ArgumentError: numeric graph.data.points.colors.values
                                specified for automatic graph.configuration.points.colors.palette
                                """) graph.figure
         end
 
         nested_test("~missing") do
-            graph.data.points_colors = nothing
+            graph.data.points.colors.values = nothing
             @test_throws chomp("""
-                               ArgumentError: must specify (categorical) graph.data.points_colors
+                               ArgumentError: must specify (categorical) graph.data.points.colors.values
                                for automatic graph.configuration.points.colors.palette
                                """) graph.figure
         end
@@ -423,14 +433,14 @@ nested_test("points") do
     end
 
     nested_test("sizes") do
-        graph.data.points_sizes = collect(0:10)
+        graph.data.points.sizes.values = collect(0:10)
         test_html(graph, "points.sizes.html")
         return nothing
     end
 
     nested_test("borders") do
         nested_test("continuous") do
-            graph.data.borders_colors = collect(0:10)
+            graph.data.borders.colors.values = collect(0:10)
 
             nested_test("()") do
                 test_html(graph, "points.borders.continuous.html")
@@ -445,7 +455,7 @@ nested_test("points") do
         end
 
         nested_test("named") do
-            graph.data.borders_colors =
+            graph.data.borders.colors.values =
                 ["red", "yellow", "green", "cyan", "blue", "magenta", "blue", "cyan", "green", "yellow", "red"]
             test_html(graph, "points.borders.named.html")
             return nothing
@@ -453,7 +463,8 @@ nested_test("points") do
 
         nested_test("categorical") do
             graph.configuration.borders.colors.palette = Dict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
-            graph.data.borders_colors = ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
+            graph.data.borders.colors.values =
+                ["Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz", "Bar", "Foo", "Bar", "Baz"]
 
             nested_test("()") do
                 test_html(graph, "points.borders.categorical.html")
@@ -475,21 +486,21 @@ nested_test("points") do
 
         nested_test("sizes") do
             nested_test("()") do
-                graph.data.borders_sizes = collect(0:10)
+                graph.data.borders.sizes.values = collect(0:10)
                 test_html(graph, "points.borders.sizes.html")
                 return nothing
             end
 
             nested_test("size") do
                 graph.configuration.points.sizes.fixed = 12
-                graph.data.borders_sizes = collect(0:10)
+                graph.data.borders.sizes.values = collect(0:10)
                 test_html(graph, "points.borders.sizes.size.html")
                 return nothing
             end
 
             nested_test("sizes") do
-                graph.data.points_sizes = reverse(collect(0:10))
-                graph.data.borders_sizes = collect(0:10)
+                graph.data.points.sizes.values = reverse(collect(0:10))
+                graph.data.borders.sizes.values = collect(0:10)
                 test_html(graph, "points.borders.sizes.sizes.html")
                 return nothing
             end
@@ -497,15 +508,15 @@ nested_test("points") do
     end
 
     nested_test("offsets") do
-        graph.data.edges_points = [(1, 7), (2, 8), (3, 9), (4, 10), (5, 11)]
+        graph.data.edges.points = [(1, 7), (2, 8), (3, 9), (4, 10), (5, 11)]
 
         graph.data.figure_title = "Figure"
-        graph.data.x_axis_title = "X Axis"
-        graph.data.y_axis_title = "Y Axis"
+        graph.data.x.title = "X Axis"
+        graph.data.y.title = "Y Axis"
 
-        graph.data.points_colors_title = "Points"
-        graph.data.borders_colors_title = "Borders"
-        graph.data.edges_colors_title = "Edges"
+        graph.data.points.colors.title = "Points"
+        graph.data.borders.colors.title = "Borders"
+        graph.data.edges.colors.title = "Edges"
 
         graph.configuration.borders.colors.show_legend = true
         graph.configuration.points.colors.show_legend = true
@@ -513,15 +524,15 @@ nested_test("points") do
 
         nested_test("no-colors") do
             graph.configuration.points.colors.palette = Dict("Foo-P" => "red", "Bar-P" => "green", "Baz-P" => "blue")
-            graph.data.points_colors =
+            graph.data.points.colors.values =
                 ["Foo-P", "Bar-P", "Baz-P", "Bar-P", "Foo-P", "Bar-P", "Baz-P", "Bar-P", "Foo-P", "Bar-P", "Baz-P"]
 
             graph.configuration.borders.colors.palette = Dict("Foo-B" => "red", "Bar-B" => "green", "Baz-B" => "blue")
-            graph.data.borders_colors =
+            graph.data.borders.colors.values =
                 ["Foo-B", "Bar-B", "Baz-B", "Bar-B", "Foo-B", "Bar-B", "Baz-B", "Bar-B", "Foo-B", "Bar-B", "Baz-B"]
 
             graph.configuration.edges.colors.palette = Dict("Foo-E" => "red", "Bar-E" => "green", "Baz-E" => "blue")
-            graph.data.edges_colors = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
+            graph.data.edges.colors.values = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
 
             test_html(graph, "points.offsets.no-colors.html")
             return nothing
@@ -529,14 +540,14 @@ nested_test("points") do
 
         nested_test("one-colors") do
             graph.configuration.points.colors.palette = [0 => "red", 10 => "blue"]
-            graph.data.points_colors = collect(0:10)
+            graph.data.points.colors.values = collect(0:10)
 
             graph.configuration.borders.colors.palette = Dict("Foo-B" => "red", "Bar-B" => "green", "Baz-B" => "blue")
-            graph.data.borders_colors =
+            graph.data.borders.colors.values =
                 ["Foo-B", "Bar-B", "Baz-B", "Bar-B", "Foo-B", "Bar-B", "Baz-B", "Bar-B", "Foo-B", "Bar-B", "Baz-B"]
 
             graph.configuration.edges.colors.palette = Dict("Foo-E" => "red", "Bar-E" => "green", "Baz-E" => "blue")
-            graph.data.edges_colors = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
+            graph.data.edges.colors.values = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
 
             test_html(graph, "points.offsets.one-colors.html")
             return nothing
@@ -544,13 +555,13 @@ nested_test("points") do
 
         nested_test("two-colors") do
             graph.configuration.points.colors.palette = [0 => "red", 10 => "blue"]
-            graph.data.points_colors = collect(0:10)
+            graph.data.points.colors.values = collect(0:10)
 
             graph.configuration.borders.colors.palette = [0 => "blue", 10 => "green"]
-            graph.data.borders_colors = collect(0:10)
+            graph.data.borders.colors.values = collect(0:10)
 
             graph.configuration.edges.colors.palette = Dict("Foo-E" => "red", "Bar-E" => "green", "Baz-E" => "blue")
-            graph.data.edges_colors = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
+            graph.data.edges.colors.values = ["Foo-E", "Bar-E", "Baz-E", "Bar-E", "Foo-E"]
 
             test_html(graph, "points.offsets.two-colors.html")
             return nothing
@@ -558,7 +569,7 @@ nested_test("points") do
     end
 
     nested_test("density") do
-        graph.data.points_xs = [
+        graph.data.x.values = [
             0.2698393176826803,
             0.21199888259395777,
             -1.1403772919081927,
@@ -580,7 +591,7 @@ nested_test("points") do
             1.3005476302710504,
             -0.3156364801379863,
         ]
-        graph.data.points_ys = [
+        graph.data.y.values = [
             -0.1764741545510277,
             0.5007984744043152,
             -1.0092288051861404,
@@ -602,7 +613,7 @@ nested_test("points") do
             0.9034430051864035,
             -0.631083973233279,
         ]
-        graph.data.points_colors = points_density(graph.data.points_xs, graph.data.points_ys)
+        graph.data.points.colors.values = points_density(graph.data.x.values, graph.data.y.values)
         graph.configuration.points.colors.palette = "Viridis"
         graph.configuration.points.sizes.fixed = 16
         graph.configuration.figure.width = 200
@@ -617,7 +628,7 @@ nested_test("points") do
         end
 
         nested_test("priorities") do
-            graph.data.points_order = sortperm(graph.data.points_colors)
+            graph.data.points.order = sortperm(graph.data.points.colors.values)
             return test_html(graph, "points.density.priorities.html")
         end
     end

@@ -14,6 +14,9 @@ SomeGraphs.Utilities.configured_colors
 SomeGraphs.Utilities.ConfiguredAnnotation
 SomeGraphs.Utilities.validate_axis_sizes
 SomeGraphs.Utilities.validate_values
+SomeGraphs.Utilities.validate_numeric_values
+SomeGraphs.Utilities.numeric_values
+SomeGraphs.Utilities.masked_values
 SomeGraphs.Utilities.scale_axis_value
 SomeGraphs.Utilities.scale_axis_values
 SomeGraphs.Utilities.scale_size_values

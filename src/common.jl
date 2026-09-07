@@ -19,6 +19,7 @@ export ContinuousColors
 export DashDotLine
 export DashLine
 export DotLine
+export EntitiesData
 export FigureConfiguration
 export Graph
 export HorizontalValues
@@ -35,6 +36,7 @@ export SolidLine
 export StackFractions
 export StackValues
 export Stacking
+export ValuesData
 export ValuesOrientation
 export VerticalValues
 export categorical_palette
@@ -325,98 +327,6 @@ Supported log scales (when log scaling is enabled):
   - `Log2Scale` converts values to their log (base 2).
 """
 @enum LogScale Log10Scale Log2Scale
-
-"""
-    @kwdef mutable struct SizesConfiguration <: Validated
-        fixed::Maybe{Real} = nothing
-        minimum::Maybe{Real} = nothing
-        maximum::Maybe{Real} = nothing
-        log_scale::Bool = false
-        log_regularization::Real = 0
-        smallest::Real = 6
-        span::Real = 12
-    end
-
-Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
-used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be
-specified. The minimal size data value (or any values at most the specified `minimum`) is mapped to the `smallest` size
-in pixels, and the maximum size data value (or any values at least the specified `maximum`) is mapped to a size with an
-additional `span` in pixels. If `log_scale`, then we use the log of the data values (and of the specified `minimum`
-and/or `maximum`, if any), adding the `log_regularization` to avoid a log of zero or negative values.
-"""
-@kwdef mutable struct SizesConfiguration <: Validated
-    fixed::Maybe{Real} = nothing
-    minimum::Maybe{Real} = nothing
-    maximum::Maybe{Real} = nothing
-    log_scale::Bool = false
-    log_regularization::Real = 0
-    smallest::Real = 6
-    span::Real = 12
-end
-
-function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
-    if sizes_configuration.fixed !== nothing
-        validate_in(context, "fixed") do
-            return validate_is_above(context, sizes_configuration.fixed, 0)
-        end
-
-        if sizes_configuration.minimum !== nothing ||
-           sizes_configuration.maximum !== nothing ||
-           sizes_configuration.log_scale ||
-           sizes_configuration.log_regularization != 0 ||
-           sizes_configuration.span != 12
-            throw(
-                ArgumentError(
-                    "can't specify both $(location(context)).fixed\n" *
-                    "and any of $(location(context)).(minimum,maximum,log_scale,log_regularization,span)",
-                ),
-            )
-        end
-
-        return nothing
-    else
-        validate_is_range(context, "minimum", sizes_configuration.minimum, "maximum", sizes_configuration.maximum)
-
-        if sizes_configuration.log_scale
-            validate_in(context, "log_regularization") do
-                validate_is_at_least(context, sizes_configuration.log_regularization, 0)
-                return nothing
-            end
-            if sizes_configuration.minimum !== nothing
-                validate_in(context, "(minimum + log_regularization)") do
-                    validate_is_above(context, sizes_configuration.minimum + sizes_configuration.log_regularization, 0)
-                    return nothing
-                end
-            end
-            if sizes_configuration.maximum !== nothing
-                validate_in(context, "(maximum + log_regularization)") do
-                    validate_is_above(context, sizes_configuration.maximum + sizes_configuration.log_regularization, 0)
-                    return nothing
-                end
-            end
-        else
-            if sizes_configuration.log_regularization != 0
-                throw(
-                    ArgumentError(
-                        "non-zero non-log $(location(context)).log_regularization: $(sizes_configuration.log_regularization)",
-                    ),
-                )
-            end
-        end
-
-        validate_in(context, "smallest") do
-            validate_is_above(context, sizes_configuration.smallest, 0)
-            return nothing
-        end
-
-        validate_in(context, "span") do
-            validate_is_above(context, sizes_configuration.span, 0)
-            return nothing
-        end
-    end
-
-    return nothing
-end
 
 """
     @kwdef mutable struct AxisConfiguration <: Validated
@@ -1314,6 +1224,101 @@ function interpolate_color(palette::ContinuousColors, value::Real)::AbstractStri
     end
 end
 
+# Whether an axis configuration only uses the fields that apply to scaling values (`minimum`, `maximum`, `log_scale` and
+# `log_regularization`); the display fields must be left at their defaults.
+function is_values_axis(axis_configuration::AxisConfiguration)::Bool
+    return !axis_configuration.percent &&
+           axis_configuration.expand_fraction == 0 &&
+           axis_configuration.show_ticks &&
+           axis_configuration.ticks_angle === nothing &&
+           axis_configuration.show_grid &&
+           axis_configuration.grid_color == "lightgrey" &&
+           axis_configuration.title === nothing
+end
+
+# Whether an axis configuration only uses the fields that apply to a categorical (cross-series names) axis, namely
+# `show_ticks`, `ticks_angle` and `title`; the numeric and grid fields must be left at their defaults.
+function is_categorical_axis(axis_configuration::AxisConfiguration)::Bool
+    return axis_configuration.minimum === nothing &&
+           axis_configuration.maximum === nothing &&
+           axis_configuration.log_scale === nothing &&
+           axis_configuration.log_regularization == 0 &&
+           !axis_configuration.percent &&
+           axis_configuration.show_grid &&
+           axis_configuration.grid_color == "lightgrey"
+end
+
+# Whether an axis configuration is left at its defaults (other than `expand_fraction`).
+function is_default_axis(axis_configuration::AxisConfiguration)::Bool
+    return is_categorical_axis(axis_configuration) &&
+           axis_configuration.show_ticks &&
+           axis_configuration.ticks_angle === nothing &&
+           axis_configuration.title === nothing
+end
+
+"""
+    @kwdef mutable struct SizesConfiguration <: Validated
+        fixed::Maybe{Real} = nothing
+        axis::AxisConfiguration = AxisConfiguration()
+        smallest::Real = 6
+        span::Real = 12
+    end
+
+Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
+used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be
+specified. The `axis` scales the sizes data: values at most its `minimum` (or the minimal value) are mapped to the
+`smallest` size in pixels, values at least its `maximum` (or the maximal value) are mapped to a size with an additional
+`span` in pixels, and if `log_scale` is set the log of the values (plus the `log_regularization`) is used instead. The
+display fields of the `axis` (`percent`, ticks, grid, title) do not apply to sizes and must be left at their defaults.
+"""
+@kwdef mutable struct SizesConfiguration <: Validated
+    fixed::Maybe{Real} = nothing
+    axis::AxisConfiguration = AxisConfiguration()
+    smallest::Real = 6
+    span::Real = 12
+end
+
+function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
+    validate_field(context, "axis", sizes_configuration.axis)
+
+    if !is_values_axis(sizes_configuration.axis)
+        throw(
+            ArgumentError(
+                "specified display fields of $(location(context)).axis\n" *
+                "(only minimum, maximum, log_scale and log_regularization apply to sizes)",
+            ),
+        )
+    end
+
+    if sizes_configuration.fixed !== nothing
+        validate_in(context, "fixed") do
+            return validate_is_above(context, sizes_configuration.fixed, 0)
+        end
+
+        if !is_default_axis(sizes_configuration.axis) || sizes_configuration.span != 12
+            throw(
+                ArgumentError(
+                    "can't specify both $(location(context)).fixed\n" * "and any of $(location(context)).(axis,span)",
+                ),
+            )
+        end
+
+        return nothing
+    else
+        validate_in(context, "smallest") do
+            validate_is_above(context, sizes_configuration.smallest, 0)
+            return nothing
+        end
+
+        validate_in(context, "span") do
+            validate_is_above(context, sizes_configuration.span, 0)
+            return nothing
+        end
+    end
+
+    return nothing
+end
+
 """
     @kwdef mutable struct ColorsConfiguration <: Validated
         fixed::Maybe{AbstractString} = nothing
@@ -1592,6 +1597,41 @@ function Validations.validate(context::ValidationContext, annotation_size::Annot
     end
 
     return nothing
+end
+
+"""
+    @kwdef mutable struct ValuesData
+        values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
+        title::Maybe{AbstractString} = nothing
+    end
+
+A value per entity for one role of a graph (the X coordinates of points, their colors, the names of bars, ...), and
+the title of these values (which becomes the axis title, the colors title, ...). A role that is not in use has no
+`values`. Whether string values are allowed depends on the role.
+"""
+@kwdef mutable struct ValuesData
+    values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
+    title::Maybe{AbstractString} = nothing
+end
+
+function ValuesData(values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}})::ValuesData
+    return ValuesData(; values)
+end
+
+"""
+    @kwdef mutable struct EntitiesData
+        hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+    end
+
+The hovers and mask of one set of entities of a graph (the points of a points graph, the bars of a bars graph, ...),
+shared by all the roles of these entities. Hovers are only shown in interactive graphs (or when saving an HTML file).
+The mask disables an arbitrary subset of the entities, which is often more convenient than excluding them from the
+data; the properties of masked entities (other than their coordinates) are ignored.
+"""
+@kwdef mutable struct EntitiesData
+    hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
 end
 
 end  # module

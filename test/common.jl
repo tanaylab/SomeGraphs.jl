@@ -107,6 +107,26 @@ nested_test("common") do
         end
     end
 
+    nested_test("values_data") do
+        nested_test("()") do
+            values_data = ValuesData()
+            @test values_data.values === nothing
+            @test values_data.title === nothing
+        end
+
+        nested_test("values") do
+            values_data = ValuesData([1, 2])
+            @test values_data.values == [1, 2]
+            @test values_data.title === nothing
+        end
+
+        nested_test("title") do
+            values_data = ValuesData(["a", "b"], "Names")
+            @test values_data.values == ["a", "b"]
+            @test values_data.title == "Names"
+        end
+    end
+
     nested_test("sizes") do
         sizes = SizesConfiguration()
         context = ValidationContext(["sizes"])
@@ -127,61 +147,69 @@ nested_test("common") do
 
         nested_test("!fixed") do
             sizes.fixed = 1
-            sizes.log_scale = true
+            sizes.axis.log_scale = Log2Scale
             @test_throws chomp("""
                                ArgumentError: can't specify both sizes.fixed
-                               and any of sizes.(minimum,maximum,log_scale,log_regularization,span)
+                               and any of sizes.(axis,span)
+                               """) validate(context, sizes)
+        end
+
+        nested_test("~axis") do
+            sizes.axis.percent = true
+            @test_throws chomp("""
+                               ArgumentError: specified display fields of sizes.axis
+                               (only minimum, maximum, log_scale and log_regularization apply to sizes)
                                """) validate(context, sizes)
         end
 
         nested_test("range") do
-            sizes.minimum = 0
-            sizes.maximum = 0
+            sizes.axis.minimum = 0
+            sizes.axis.maximum = 0
             @test_throws chomp("""
-                               ArgumentError: range low limit sizes.minimum: 0
-                               is not below high limit sizes.maximum: 0
+                               ArgumentError: range low limit sizes.axis.minimum: 0
+                               is not below high limit sizes.axis.maximum: 0
                                """) validate(context, sizes)
         end
 
         nested_test("~log_regularization") do
-            sizes.log_regularization = 1
-            @test_throws "ArgumentError: non-zero non-log sizes.log_regularization: 1" validate(context, sizes)
+            sizes.axis.log_regularization = 1
+            @test_throws "ArgumentError: non-zero non-log sizes.axis.log_regularization: 1" validate(context, sizes)
         end
 
         nested_test("log_regularization") do
-            sizes.log_scale = true
-            sizes.log_regularization = -1
+            sizes.axis.log_scale = Log2Scale
+            sizes.axis.log_regularization = -1
             @test_throws chomp("""
-                               ArgumentError: too low sizes.log_regularization: -1
+                               ArgumentError: too low sizes.axis.log_regularization: -1
                                is not at least: 0
                                """) validate(context, sizes)
         end
 
         nested_test("log_regularization+minimum") do
-            sizes.log_scale = true
-            sizes.log_regularization = 1
+            sizes.axis.log_scale = Log2Scale
+            sizes.axis.log_regularization = 1
 
-            sizes.minimum = -3
+            sizes.axis.minimum = -3
             @test_throws chomp("""
-                               ArgumentError: too low sizes.(minimum + log_regularization): -2
+                               ArgumentError: too low sizes.axis.(minimum + log_regularization): -2
                                is not above: 0
                                """) validate(context, sizes)
 
-            sizes.minimum = 2
+            sizes.axis.minimum = 2
             return validate(context, sizes)
         end
 
         nested_test("log_regularization+maximum") do
-            sizes.log_scale = true
-            sizes.log_regularization = 1
+            sizes.axis.log_scale = Log2Scale
+            sizes.axis.log_regularization = 1
 
-            sizes.maximum = -3
+            sizes.axis.maximum = -3
             @test_throws chomp("""
-                               ArgumentError: too low sizes.(maximum + log_regularization): -2
+                               ArgumentError: too low sizes.axis.(maximum + log_regularization): -2
                                is not above: 0
                                """) validate(context, sizes)
 
-            sizes.maximum = 2
+            sizes.axis.maximum = 2
             return validate(context, sizes)
         end
 

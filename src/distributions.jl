@@ -28,6 +28,8 @@ using ..Common
 using ..Utilities
 using ..Validations
 
+import ..Common.is_categorical_axis
+import ..Common.is_default_axis
 import ..Validations.Maybe
 
 """
@@ -156,33 +158,6 @@ the `distribution.normalize` and `density_axis.percent` settings.
     value_bands::BandsConfiguration = BandsConfiguration()
     density_axis::AxisConfiguration = AxisConfiguration()
     cumulative_bands::BandsConfiguration = BandsConfiguration()
-end
-
-# Whether an axis configuration is left at its defaults (used to reject a specified density axis for the styles which
-# have no meaningful density scale).
-function is_default_axis(axis_configuration::AxisConfiguration)::Bool
-    return axis_configuration.minimum === nothing &&
-           axis_configuration.maximum === nothing &&
-           axis_configuration.log_scale === nothing &&
-           axis_configuration.log_regularization == 0 &&
-           !axis_configuration.percent &&
-           axis_configuration.show_ticks &&
-           axis_configuration.ticks_angle === nothing &&
-           axis_configuration.show_grid &&
-           axis_configuration.grid_color == "lightgrey" &&
-           axis_configuration.title === nothing
-end
-
-# Whether an axis configuration only uses the fields that apply to a categorical (cross-series names) axis, namely
-# `show_ticks`, `ticks_angle` and `title`; the numeric and grid fields must be left at their defaults.
-function is_categorical_axis(axis_configuration::AxisConfiguration)::Bool
-    return axis_configuration.minimum === nothing &&
-           axis_configuration.maximum === nothing &&
-           axis_configuration.log_scale === nothing &&
-           axis_configuration.log_regularization == 0 &&
-           !axis_configuration.percent &&
-           axis_configuration.show_grid &&
-           axis_configuration.grid_color == "lightgrey"
 end
 
 function Validations.validate(

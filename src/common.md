@@ -180,6 +180,8 @@ SomeGraphs.Common.COLOR_SCALES_LOCK
 ```@docs
 SomeGraphs.Common.AnnotationData
 SomeGraphs.Common.AnnotationSize
+SomeGraphs.Common.ValuesData
+SomeGraphs.Common.EntitiesData
 ```
 
 ## Index

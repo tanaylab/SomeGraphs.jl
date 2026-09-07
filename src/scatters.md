@@ -12,6 +12,9 @@ SomeGraphs.Scatters
 SomeGraphs.Scatters.PointsGraph
 SomeGraphs.Scatters.points_graph
 SomeGraphs.Scatters.PointsGraphData
+SomeGraphs.Scatters.PointsData
+SomeGraphs.Scatters.BordersData
+SomeGraphs.Scatters.EdgesData
 SomeGraphs.Scatters.PointsGraphConfiguration
 SomeGraphs.Scatters.ScattersConfiguration
 ```
@@ -22,7 +25,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -31,7 +34,7 @@ Flip axes (non-mutating):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 flipped = flip_axes(graph)
 using PlotlyDocumenter
 to_documenter(flipped.figure)
@@ -41,7 +44,7 @@ Flip axes (in-place):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 flip_axes!(graph)
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -51,7 +54,7 @@ Borders:
 
 ```@example
 using SomeGraphs
-graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 graph.configuration.borders.colors.fixed = "black"
 graph.configuration.borders.sizes.fixed = 1
 using PlotlyDocumenter
@@ -63,9 +66,9 @@ Edges:
 ```@example
 using SomeGraphs
 graph = points_graph(;
-    points_xs = collect(0:10) .* 10,
-    points_ys = collect(0:10) .^ 2,
-    edges_points = [(1, 8), (2, 9), (3, 10), (4, 11)],
+    x = ValuesData(collect(0:10) .* 10),
+    y = ValuesData(collect(0:10) .^ 2),
+    edges = EdgesData(; points = [(1, 8), (2, 9), (3, 10), (4, 11)]),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -75,7 +78,7 @@ Diagonal bands (linear scales):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 graph.configuration.diagonal_bands.low.offset = -25
 graph.configuration.diagonal_bands.middle.offset = 0
 graph.configuration.diagonal_bands.high.offset = +25
@@ -87,7 +90,7 @@ Diagonal bands (log scales):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 graph.configuration.x_axis.log_scale = Log10Scale
 graph.configuration.y_axis.log_scale = Log10Scale
 graph.configuration.x_axis.log_regularization = 1
@@ -108,7 +111,7 @@ SomeGraphs.Scatters.points_density
 ```@example
 using SomeGraphs
 graph = points_graph()
-graph.data.points_xs = [
+graph.data.x.values = [
     0.2698393176826803,
     0.21199888259395777,
     -1.1403772919081927,
@@ -130,7 +133,7 @@ graph.data.points_xs = [
     1.3005476302710504,
     -0.3156364801379863,
 ]
-graph.data.points_ys = [
+graph.data.y.values = [
     -0.1764741545510277,
     0.5007984744043152,
     -1.0092288051861404,
@@ -152,8 +155,8 @@ graph.data.points_ys = [
     0.9034430051864035,
     -0.631083973233279,
 ]
-graph.data.points_colors = points_density(graph.data.points_xs, graph.data.points_ys)
-graph.data.points_order = sortperm(graph.data.points_colors)
+graph.data.points.colors.values = points_density(graph.data.x.values, graph.data.y.values)
+graph.data.points.order = sortperm(graph.data.points.colors.values)
 graph.configuration.points.colors.palette = "Viridis"
 graph.configuration.points.sizes.fixed = 16
 graph.configuration.figure.width = 200

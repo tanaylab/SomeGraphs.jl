@@ -13,6 +13,8 @@ export fill_color
 export final_scaled_range
 export MaybeRange
 export axis_screen_ticks_angle
+export masked_values
+export numeric_values
 export plotly_axis
 export plotly_figure
 export plotly_layout
@@ -33,6 +35,7 @@ export SubGraph
 export validate_axis_sizes
 export validate_colors
 export validate_graph_bands
+export validate_numeric_values
 export validate_values
 
 using Colors
@@ -818,6 +821,81 @@ function final_scaled_range(implicit_scaled_range::Range, axis_configuration::Ax
 end
 
 """
+    validate_numeric_values(
+        context::ValidationContext,
+        field::AbstractString,
+        values::Maybe{AbstractVector};
+        is_required::Bool = false,
+    )::Nothing
+
+Validate that the `values` of a [`ValuesData`](@ref) `field` are numeric (if specified, or at all if `is_required`).
+"""
+function validate_numeric_values(
+    context::ValidationContext,
+    field::AbstractString,
+    values::Maybe{AbstractVector};
+    is_required::Bool = false,
+)::Nothing
+    if values === nothing
+        if is_required
+            throw(ArgumentError("must specify $(location(context)).$(field)"))
+        end
+    elseif !(eltype(values) <: Real)
+        throw(ArgumentError("non-numeric $(location(context)).$(field)"))
+    end
+    return nothing
+end
+
+"""
+    numeric_values(values_data::ValuesData)::Maybe{AbstractVector{<:Real}}
+
+The values of a [`ValuesData`](@ref) which was validated to be numeric.
+"""
+function numeric_values(values_data::ValuesData)::Maybe{AbstractVector{<:Real}}
+    values = values_data.values
+    @assert values === nothing || values isa AbstractVector{<:Real}
+    return values
+end
+
+"""
+    masked_values(
+        values::Maybe{AbstractVector},
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+        order::Maybe{AbstractVector{<:Integer}},
+    )::Maybe{AbstractVector}
+
+Reorder the `values` by the `order` (if any) and keep only the entries whose `mask` is true (if any). The result is
+shorter than the input when a mask is given.
+"""
+function masked_values(::Nothing, ::Any, ::Any)::Any
+    return nothing
+end
+
+function masked_values(::Nothing, ::Nothing, ::Any)::Nothing
+    return nothing
+end
+
+function masked_values(values::AbstractVector{T}, ::Nothing, ::Any)::AbstractVector{T} where {T}
+    return values
+end
+
+function masked_values(
+    values::AbstractVector{T},
+    mask::Union{AbstractVector{Bool}, BitVector},
+    ::Nothing,
+)::AbstractVector{T} where {T}
+    return values[mask]
+end
+
+function masked_values(
+    values::AbstractVector{T},
+    mask::Union{AbstractVector{Bool}, BitVector},
+    order::AbstractVector{<:Integer},
+)::AbstractVector{T} where {T}
+    return masked_values(values[order], mask[order], nothing)
+end
+
+"""
     scale_size_values(
         sizes_configuration::SizesConfiguration,
         values::Maybe{AbstractVector{<:Real}},
@@ -833,16 +911,18 @@ function scale_size_values(
         return nothing
     end
 
-    if sizes_configuration.minimum !== nothing
-        minimum_value = sizes_configuration.minimum
-        values = max.(values, sizes_configuration.minimum)
+    axis_configuration = sizes_configuration.axis
+
+    if axis_configuration.minimum !== nothing
+        minimum_value = axis_configuration.minimum
+        values = max.(values, axis_configuration.minimum)
     else
         minimum_value = minimum(values)
     end
 
-    if sizes_configuration.maximum !== nothing
-        maximum_value = sizes_configuration.maximum
-        values = min.(values, sizes_configuration.maximum)
+    if axis_configuration.maximum !== nothing
+        maximum_value = axis_configuration.maximum
+        values = min.(values, axis_configuration.maximum)
     else
         maximum_value = maximum(values)
     end
@@ -851,15 +931,15 @@ function scale_size_values(
         maximum_value += 1
     end
 
-    if sizes_configuration.log_scale
-        minimum_value = log(minimum_value + sizes_configuration.log_regularization)
-        maximum_value = log(maximum_value + sizes_configuration.log_regularization)
-        values = log.(values .+ sizes_configuration.log_regularization)
-    end
+    scaled_minimum_value = scale_axis_value(axis_configuration, minimum_value; clamp = false)
+    scaled_maximum_value = scale_axis_value(axis_configuration, maximum_value; clamp = false)
+    scaled_values = scale_axis_values(axis_configuration, values; clamp = false)
+    @assert scaled_values !== nothing
 
     return [
         sizes_configuration.smallest +
-        sizes_configuration.span * (value - minimum_value) / (maximum_value - minimum_value) for value in values
+        sizes_configuration.span * (scaled_value - scaled_minimum_value) /
+        (scaled_maximum_value - scaled_minimum_value) for scaled_value in scaled_values
     ]
 end
 

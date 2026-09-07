@@ -581,6 +581,101 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.validate_numeric_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.validate_numeric_values">
+<code>SomeGraphs.Utilities.validate_numeric_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_numeric_values(
+    context::ValidationContext,
+    field::AbstractString,
+    values::Maybe{AbstractVector};
+    is_required::Bool = false,
+)::Nothing
+</code>
+</pre>
+<p>Validate that the 
+<code>values
+</code> of a 
+<a href="common.html#SomeGraphs.Common.ValuesData">
+<code>ValuesData
+</code>
+</a> 
+<code>field
+</code> are numeric (if specified, or at all if 
+<code>is_required
+</code>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.numeric_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.numeric_values">
+<code>SomeGraphs.Utilities.numeric_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">numeric_values(values_data::ValuesData)::Maybe{AbstractVector{&lt;:Real}}
+</code>
+</pre>
+<p>The values of a 
+<a href="common.html#SomeGraphs.Common.ValuesData">
+<code>ValuesData
+</code>
+</a> which was validated to be numeric.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.masked_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.masked_values">
+<code>SomeGraphs.Utilities.masked_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">masked_values(
+    values::Maybe{AbstractVector},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+    order::Maybe{AbstractVector{&lt;:Integer}},
+)::Maybe{AbstractVector}
+</code>
+</pre>
+<p>Reorder the 
+<code>values
+</code> by the 
+<code>order
+</code> (if any) and keep only the entries whose 
+<code>mask
+</code> is true (if any). The result is shorter than the input when a mask is given.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.scale_axis_value">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.scale_axis_value">
 <code>SomeGraphs.Utilities.scale_axis_value
@@ -1363,6 +1458,18 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.masked_values">
+<code>SomeGraphs.Utilities.masked_values
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.numeric_values">
+<code>SomeGraphs.Utilities.numeric_values
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.plotly_axis">
 <code>SomeGraphs.Utilities.plotly_axis
 </code>
@@ -1467,6 +1574,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_graph_bands">
 <code>SomeGraphs.Utilities.validate_graph_bands
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.validate_numeric_values">
+<code>SomeGraphs.Utilities.validate_numeric_values
 </code>
 </a>
 </li>
