@@ -5,6 +5,7 @@ module Scatters
 
 export BordersData
 export EdgesData
+export LineData
 export LineGraph
 export LineGraphConfiguration
 export LineGraphData
@@ -936,11 +937,9 @@ end
 """
     @kwdef mutable struct LineGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        x_axis_title::Maybe{AbstractString} = nothing
-        y_axis_title::Maybe{AbstractString} = nothing
-        points_xs::AbstractVector{<:Real} = Float32[]
-        points_ys::AbstractVector{<:Real} = Float32[]
-        points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+        x::ValuesData = ValuesData()
+        y::ValuesData = ValuesData()
+        points::EntitiesData = EntitiesData()
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
         diagonal_bands::BandsData = BandsData()
@@ -948,30 +947,32 @@ end
 
 The data for a single line graph.
 
-By default, all the titles are empty. You can specify the overall `figure_title` as well as the `x_axis_title` and
-`y_axis_title` for the axes.
-
-The `points_xs` and `points_ys` vectors must be of the same size. If specified, the `points_hovers` vector must also be
-of the same size.
+The `x` and `y` values are required, numeric, and of the same size (the number of points); their titles are the axis
+titles. The `points` hold the hovers and mask of the points, which must be of the same size if specified. Masked points
+are left out of the line.
 """
 @kwdef mutable struct LineGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    x_axis_title::Maybe{AbstractString} = nothing
-    y_axis_title::Maybe{AbstractString} = nothing
-    points_xs::AbstractVector{<:Real} = Float32[]
-    points_ys::AbstractVector{<:Real} = Float32[]
-    points_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
+    x::ValuesData = ValuesData()
+    y::ValuesData = ValuesData()
+    points::EntitiesData = EntitiesData()
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::LineGraphData)::Nothing
-    validate_vector_is_not_empty(context, "points_xs", data.points_xs)
-    n_points = length(data.points_xs)
+    validate_numeric_values(context, "x.values", data.x.values; is_required = true)
+    validate_numeric_values(context, "y.values", data.y.values; is_required = true)
 
-    validate_vector_length(context, "points_ys", data.points_ys, "points_xs", n_points)
-    validate_vector_length(context, "points_hovers", data.points_hovers, "points_xs", n_points)
+    xs = data.x.values
+    @assert xs !== nothing
+    validate_vector_is_not_empty(context, "x.values", xs)
+    n_points = length(xs)
+
+    validate_vector_length(context, "y.values", data.y.values, "x.values", n_points)
+    validate_vector_length(context, "points.hovers", data.points.hovers, "x.values", n_points)
+    validate_vector_length(context, "points.mask", data.points.mask, "x.values", n_points)
 
     return nothing
 end
@@ -984,10 +985,9 @@ LineGraph = Graph{LineGraphData, LineGraphConfiguration}
 """
     function line_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        x_axis_title::Maybe{AbstractString} = nothing,
-        y_axis_title::Maybe{AbstractString} = nothing,
-        points_xs::AbstractVector{<:Real} = Float32[],
-        points_ys::AbstractVector{<:Real} = Float32[],
+        x::ValuesData = ValuesData(),
+        y::ValuesData = ValuesData(),
+        points::EntitiesData = EntitiesData(),
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
         diagonal_bands::BandsData = BandsData(),
@@ -999,26 +999,16 @@ Create a [`LineGraph`](@ref) by initializing only the [`LineGraphData`](@ref) fi
 """
 function line_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    x_axis_title::Maybe{AbstractString} = nothing,
-    y_axis_title::Maybe{AbstractString} = nothing,
-    points_xs::AbstractVector{<:Real} = Float32[],
-    points_ys::AbstractVector{<:Real} = Float32[],
+    x::ValuesData = ValuesData(),
+    y::ValuesData = ValuesData(),
+    points::EntitiesData = EntitiesData(),
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
     configuration::LineGraphConfiguration = LineGraphConfiguration(),
 )::LineGraph
     return LineGraph(
-        LineGraphData(;
-            figure_title,
-            x_axis_title,
-            y_axis_title,
-            points_xs,
-            points_ys,
-            vertical_bands,
-            horizontal_bands,
-            diagonal_bands,
-        ),
+        LineGraphData(; figure_title, x, y, points, vertical_bands, horizontal_bands, diagonal_bands),
         configuration,
     )
 end
@@ -1026,15 +1016,29 @@ end
 function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    scaled_points_xs = scaled_data(graph.configuration.x_axis, graph.data.points_xs)
-    scaled_points_ys = scaled_data(graph.configuration.y_axis, graph.data.points_ys)
+    points_xs = numeric_values(graph.data.x)
+    points_ys = numeric_values(graph.data.y)
+    @assert points_xs !== nothing
+    @assert points_ys !== nothing
+    scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs)
+    scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys)
+
+    mask = graph.data.points.mask
+    hovers = masked_values(graph.data.points.hovers, mask, nothing)
 
     traces = Vector{GenericTrace}()
 
     push_line_trace!(;
         traces,
-        scaled_points_xs,
-        scaled_points_ys,
+        scaled_points_xs = ScaledData(;
+            values = masked_values(scaled_points_xs.values, mask, nothing),
+            range = scaled_points_xs.range,
+        ),
+        scaled_points_ys = ScaledData(;
+            values = masked_values(scaled_points_ys.values, mask, nothing),
+            range = scaled_points_ys.range,
+        ),
+        hovers,
         line_color = graph.configuration.line.color,
         line_width = graph.configuration.line.width,
         line_style = graph.configuration.line.style,
@@ -1077,6 +1081,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         scaled_ys_range = scaled_points_ys.range,
         shapes,
         has_legend = false,
+        has_hovers = hovers !== nothing,
     )
 
     return plotly_figure(traces, layout)
@@ -1172,94 +1177,135 @@ function Validations.validate(
 end
 
 """
+    @kwdef mutable struct LineData
+        x::ValuesData = ValuesData()
+        y::ValuesData = ValuesData()
+        points::EntitiesData = EntitiesData()
+        name::Maybe{AbstractString} = nothing
+        hover::Maybe{AbstractString} = nothing
+        is_shown::Bool = true
+        color::Maybe{AbstractString} = nothing
+        width::Maybe{Real} = nothing
+        style::Maybe{LineStyle} = nothing
+        points_size::Maybe{Real} = nothing
+        points_color::Maybe{AbstractString} = nothing
+    end
+
+One line of a [`LinesGraphData`](@ref). The `x` and `y` values are required, numeric, and of the same size (the number
+of points of this line). The `points` hold the hovers and mask of these points; masked points are left out of the line.
+The `name` is shown in the legend. The `hover` (if any) is prefixed to the hover of each point. A line which is not
+`is_shown` is left out of the graph. The `color`, `width`, `style`, `points_size` and `points_color` override the
+[`LinesGraphConfiguration`](@ref) for this line; a `nothing` means the configuration default is used.
+"""
+@kwdef mutable struct LineData
+    x::ValuesData = ValuesData()
+    y::ValuesData = ValuesData()
+    points::EntitiesData = EntitiesData()
+    name::Maybe{AbstractString} = nothing
+    hover::Maybe{AbstractString} = nothing
+    is_shown::Bool = true
+    color::Maybe{AbstractString} = nothing
+    width::Maybe{Real} = nothing
+    style::Maybe{LineStyle} = nothing
+    points_size::Maybe{Real} = nothing
+    points_color::Maybe{AbstractString} = nothing
+end
+
+function Validations.validate(context::ValidationContext, line::LineData)::Nothing
+    validate_numeric_values(context, "x.values", line.x.values; is_required = true)
+    validate_numeric_values(context, "y.values", line.y.values; is_required = true)
+
+    xs = line.x.values
+    @assert xs !== nothing
+    validate_vector_is_not_empty(context, "x.values", xs)
+    n_points = length(xs)
+
+    validate_vector_length(context, "y.values", line.y.values, "x.values", n_points)
+    validate_vector_length(context, "points.hovers", line.points.hovers, "x.values", n_points)
+    validate_vector_length(context, "points.mask", line.points.mask, "x.values", n_points)
+
+    # These color names are used directly as Plotly colors; validate them (an invalid color name would otherwise be
+    # silently rendered black by Plotly).
+    validate_in(context, "color") do
+        validate_is_color(context, line.color)
+        return nothing
+    end
+    validate_in(context, "points_color") do
+        validate_is_color(context, line.points_color)
+        return nothing
+    end
+
+    return nothing
+end
+
+"""
     @kwdef mutable struct LinesGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        x_axis_title::Maybe{AbstractString} = nothing
-        y_axis_title::Maybe{AbstractString} = nothing
-        lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
-        lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
-        lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing
-        lines_order::Maybe{AbstractVector{<:Integer}} = nothing
+        lines::AbstractVector{LineData} = LineData[]
+        order::Maybe{AbstractVector{<:Integer}} = nothing
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
         diagonal_bands::BandsData = BandsData()
     end
 
-The data for a multi-line graph.
+The data for a multi-line graph, a [`LineData`](@ref) per line.
 
-By default, all the titles are empty. You can specify the overall `figure_title` as well as the `x_axis_title` and
-`y_axis_title` for the axes.
+The axes titles are the titles of the `x` (and `y`) values of the lines: all the lines that give one must give the
+same. The `name` of every shown line is required if `show_legend` is specified in the
+[`LinesGraphConfiguration`](@ref).
 
-All the `lines_*` vectors must be of the same size (the number of lines), and contain a vector per line. The
-`lines_points_xs` and `lines_points_ys` contain a vector per line; these vectors must all be of the same size for each
-line (the number of points in that specific line). A `nothing` entry in the other `lines_*` vectors means the
-configuration default is used for that line.
-
-The `lines_titles` is required if `show_legend` is specified in the [`LinesGraphConfiguration`](@ref).
-
-If `lines_order` is specified, we reorder the lines accordingly.
+If `order` is specified, we draw the lines in that order, so later lines appear on top of (or, when stacking, above)
+earlier ones.
 """
 @kwdef mutable struct LinesGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    x_axis_title::Maybe{AbstractString} = nothing
-    y_axis_title::Maybe{AbstractString} = nothing
-    lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-    lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-    lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
-    lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
-    lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing
-    lines_order::Maybe{AbstractVector{<:Integer}} = nothing
+    lines::AbstractVector{LineData} = LineData[]
+    order::Maybe{AbstractVector{<:Integer}} = nothing
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::LinesGraphData)::Nothing
-    validate_vector_is_not_empty(context, "lines_points_xs", data.lines_points_xs)
-    n_lines = length(data.lines_points_xs)
+    validate_vector_is_not_empty(context, "lines", data.lines)
+    validate_vector_length(context, "order", data.order, "lines", length(data.lines))
 
-    validate_vector_length(context, "lines_titles", data.lines_titles, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_points_ys", data.lines_points_ys, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_points_sizes", data.lines_points_sizes, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_points_colors", data.lines_points_colors, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_widths", data.lines_widths, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_colors", data.lines_colors, "lines_points_xs", n_lines)
-    validate_vector_length(context, "lines_styles", data.lines_styles, "lines_points_xs", n_lines)
-
-    # These color-name vectors are used directly as Plotly colors; validate them (an invalid color name would otherwise
-    # be silently rendered black by Plotly).
-    validate_vector_entries(context, "lines_colors", data.lines_colors) do _, color
-        validate_is_color(context, color)
+    validate_vector_entries(context, "lines", data.lines) do _, line
+        validate(context, line)
         return nothing
     end
-    validate_vector_entries(context, "lines_points_colors", data.lines_points_colors) do _, color
-        validate_is_color(context, color)
-        return nothing
-    end
-    validate_vector_length(context, "lines_order", data.lines_order, "lines_points_xs", n_lines)
 
-    for line_index in 1:n_lines
-        validate_vector_is_not_empty(context, "lines_points_xs[$(line_index)]", data.lines_points_xs[line_index])
-        n_points = length(data.lines_points_xs[line_index])
-
-        validate_vector_length(
-            context,
-            "lines_points_ys[$(line_index)]",
-            data.lines_points_ys[line_index],
-            "lines_points_xs[$(line_index)]",
-            n_points,
-        )
-    end
+    lines_axis_title(context, data.lines, :x)
+    lines_axis_title(context, data.lines, :y)
 
     return nothing
+end
+
+# The axis title shared by the lines: the one non-`nothing` title of their `x` (or `y`) values.
+function lines_axis_title(
+    context::ValidationContext,
+    lines::AbstractVector{LineData},
+    axis::Symbol,
+)::Maybe{AbstractString}
+    title = nothing
+    title_line_index = 0
+    for (line_index, line) in enumerate(lines)
+        line_title = getfield(line, axis).title
+        if line_title !== nothing
+            if title === nothing
+                title = line_title
+                title_line_index = line_index
+            elseif line_title != title
+                throw(
+                    ArgumentError(
+                        "conflicting $(location(context)).lines[$(line_index)].$(axis).title: $(line_title)\n" *
+                        "is different from $(location(context)).lines[$(title_line_index)].$(axis).title: $(title)",
+                    ),
+                )
+            end
+        end
+    end
+    return title
 end
 
 """
@@ -1270,17 +1316,8 @@ LinesGraph = Graph{LinesGraphData, LinesGraphConfiguration}
 """
     function lines_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        x_axis_title::Maybe{AbstractString} = nothing,
-        y_axis_title::Maybe{AbstractString} = nothing,
-        lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
-        lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
-        lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing
-        lines_order::Maybe{<:AbstractVector{<:Integer}} = nothing
+        lines::AbstractVector{LineData} = LineData[],
+        order::Maybe{AbstractVector{<:Integer}} = nothing,
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
         diagonal_bands::BandsData = BandsData(),
@@ -1292,40 +1329,15 @@ Create a [`LinesGraph`](@ref) by initializing only the [`LinesGraphData`](@ref) 
 """
 function lines_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    x_axis_title::Maybe{AbstractString} = nothing,
-    y_axis_title::Maybe{AbstractString} = nothing,
-    lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-    lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-    lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
-    lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
-    lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing,
-    lines_order::Maybe{<:AbstractVector{<:Integer}} = nothing,
+    lines::AbstractVector{LineData} = LineData[],
+    order::Maybe{AbstractVector{<:Integer}} = nothing,
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
     configuration::LinesGraphConfiguration = LinesGraphConfiguration(),
 )::LinesGraph
     return LinesGraph(
-        LinesGraphData(;
-            figure_title,
-            x_axis_title,
-            y_axis_title,
-            lines_titles,
-            lines_points_xs,
-            lines_points_ys,
-            lines_points_sizes,
-            lines_points_colors,
-            lines_widths,
-            lines_colors,
-            lines_styles,
-            lines_order,
-            vertical_bands,
-            horizontal_bands,
-            diagonal_bands,
-        ),
+        LinesGraphData(; figure_title, lines, order, vertical_bands, horizontal_bands, diagonal_bands),
         configuration,
     )
 end
@@ -1333,39 +1345,40 @@ end
 function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
     if graph isa LineGraph
         validate_values(
-            ValidationContext(["graph.data.points_xs"]),
-            graph.data.points_xs,
+            ValidationContext(["graph.data.x.values"]),
+            numeric_values(graph.data.x),
             ValidationContext(["graph.configuration.x_axis"]),
             graph.configuration.x_axis,
         )
 
         validate_values(
-            ValidationContext(["graph.data.points_ys"]),
-            graph.data.points_ys,
+            ValidationContext(["graph.data.y.values"]),
+            numeric_values(graph.data.y),
             ValidationContext(["graph.configuration.y_axis"]),
             graph.configuration.y_axis,
         )
 
     elseif graph isa LinesGraph
-        n_lines = length(graph.data.lines_points_xs)
-        for line_index in 1:n_lines
+        for (line_index, line) in enumerate(graph.data.lines)
             validate_values(
-                ValidationContext(["graph.data.lines_points_xs", line_index]),
-                graph.data.lines_points_xs[line_index],
+                ValidationContext(["graph.data.lines", line_index, "x.values"]),
+                numeric_values(line.x),
                 ValidationContext(["graph.configuration.x_axis"]),
                 graph.configuration.x_axis,
             )
 
-            ys_context = ValidationContext(["graph.data.lines_points_ys", line_index])
+            ys = numeric_values(line.y)
+            ys_context = ValidationContext(["graph.data.lines", line_index, "y.values"])
             validate_values(
                 ys_context,
-                graph.data.lines_points_ys[line_index],
+                ys,
                 ValidationContext(["graph.configuration.y_axis"]),
                 graph.configuration.y_axis,
             )
 
             if graph.configuration.stacking == StackFractions
-                for (y_index, y_value) in enumerate(graph.data.lines_points_ys[line_index])
+                @assert ys !== nothing
+                for (y_index, y_value) in enumerate(ys)
                     scaled_value = scale_axis_value(graph.configuration.y_axis, y_value)
                     if scaled_value !== nothing && scaled_value < 0
                         throw(
@@ -1377,6 +1390,16 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
                         )
                     end
                 end
+            end
+
+            # Stacking inserts points into the lines, which have no hovers.
+            if graph.configuration.stacking !== nothing && line.points.hovers !== nothing
+                throw(
+                    ArgumentError(
+                        "can't specify both graph.data.lines[$(line_index)].points.hovers\n" *
+                        "and graph.configuration.stacking",
+                    ),
+                )
             end
         end
 
@@ -1418,15 +1441,11 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
     )
 
     if graph isa LinesGraph && graph.configuration.show_legend  # NOJET
-        lines_titles = graph.data.lines_titles  # NOJET
-        if lines_titles === nothing
-            throw(ArgumentError("must specify graph.data.lines_titles for graph.configuration.show_legend"))
-        end
-        for (line_index, line_title) in enumerate(lines_titles)
-            if line_title === nothing
+        for (line_index, line) in enumerate(graph.data.lines)  # NOJET
+            if line.is_shown && line.name === nothing
                 throw(
                     ArgumentError(
-                        "must specify graph.data.lines_titles[$(line_index)] for graph.configuration.show_legend",
+                        "must specify graph.data.lines[$(line_index)].name for graph.configuration.show_legend",
                     ),
                 )
             end
@@ -1439,12 +1458,30 @@ end
 function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
-    n_lines = length(graph.data.lines_points_xs)
+    lines = graph.data.lines
+    lines_indices =
+        [line_index for line_index in prefer_data(graph.data.order, 1:length(lines)) if lines[line_index].is_shown]
 
-    scaled_lines_points_xs =
-        [scale_axis_values(graph.configuration.x_axis, line_points_xs) for line_points_xs in graph.data.lines_points_xs]
-    scaled_lines_points_ys =
-        [scale_axis_values(graph.configuration.y_axis, line_points_ys) for line_points_ys in graph.data.lines_points_ys]
+    scaled_lines_points_xs = AbstractVector{<:Real}[]
+    scaled_lines_points_ys = AbstractVector{<:Real}[]
+    lines_points_hovers = Maybe{AbstractVector{<:AbstractString}}[]
+    for line_index in lines_indices
+        line = lines[line_index]
+        points_xs = numeric_values(line.x)
+        points_ys = numeric_values(line.y)
+        @assert points_xs !== nothing
+        @assert points_ys !== nothing
+        mask = line.points.mask
+        push!(
+            scaled_lines_points_xs,
+            masked_values(scale_axis_values(graph.configuration.x_axis, points_xs), mask, nothing),
+        )
+        push!(
+            scaled_lines_points_ys,
+            masked_values(scale_axis_values(graph.configuration.y_axis, points_ys), mask, nothing),
+        )
+        push!(lines_points_hovers, masked_values(line.points.hovers, mask, nothing))
+    end
 
     stacked_scaled_ys_range = MaybeRange()
     if graph.configuration.stacking !== nothing
@@ -1492,28 +1529,40 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         end
     end
 
-    lines_indices = prefer_data(graph.data.lines_order, 1:n_lines)
+    has_hovers = false
+    for (position, line_index) in enumerate(lines_indices)
+        line = lines[line_index]
 
-    for line_index in lines_indices
         if graph.configuration.stacking === nothing
-            fill = !graph.configuration.line.is_filled ? "none" : "tozeroy"
+            fill_mode = !graph.configuration.line.is_filled ? "none" : "tozeroy"
         else
-            fill = !graph.configuration.line.is_filled ? "none" : line_index == 1 ? "tozeroy" : "tonexty"
+            fill_mode = !graph.configuration.line.is_filled ? "none" : position == 1 ? "tozeroy" : "tonexty"
         end
+
+        hovers = lines_points_hovers[position]
+        if line.hover !== nothing
+            if hovers === nothing
+                hovers = fill(line.hover, length(scaled_lines_points_xs[position]))
+            else
+                hovers = "$(line.hover)<br>" .* hovers
+            end
+        end
+        has_hovers |= hovers !== nothing
 
         push_line_trace!(;
             traces,
-            scaled_points_xs = ScaledData(; values = scaled_lines_points_xs[line_index], range = scaled_xs_range),
-            scaled_points_ys = ScaledData(; values = scaled_lines_points_ys[line_index], range = scaled_ys_range),
-            name = prefer_data(graph.data.lines_titles, line_index, nothing),
-            line_color = prefer_data(graph.data.lines_colors, line_index, graph.configuration.line.color),
-            line_width = prefer_data(graph.data.lines_widths, line_index, graph.configuration.line.width),
-            line_style = prefer_data(graph.data.lines_styles, line_index, graph.configuration.line.style),
+            scaled_points_xs = ScaledData(; values = scaled_lines_points_xs[position], range = scaled_xs_range),
+            scaled_points_ys = ScaledData(; values = scaled_lines_points_ys[position], range = scaled_ys_range),
+            hovers,
+            name = line.name,
+            line_color = prefer_data(line.color, graph.configuration.line.color),
+            line_width = prefer_data(line.width, graph.configuration.line.width),
+            line_style = prefer_data(line.style, graph.configuration.line.style),
             mode = graph.configuration.show_points ? "lines+markers" : "lines",
-            points_size = prefer_data(graph.data.lines_points_sizes, line_index, graph.configuration.points_size),
-            points_color = prefer_data(graph.data.lines_points_colors, line_index, graph.configuration.points_color),
+            points_size = prefer_data(line.points_size, graph.configuration.points_size),
+            points_color = prefer_data(line.points_color, graph.configuration.points_color),
             show_in_legend = graph.configuration.show_legend,
-            fill,
+            fill = fill_mode,
             stack_group,
             group_norm,
         )
@@ -1546,8 +1595,14 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         graph.configuration.diagonal_bands,
     )
 
-    layout =
-        scatters_layout(; graph, scaled_xs_range, scaled_ys_range, shapes, has_legend = graph.configuration.show_legend)
+    layout = scatters_layout(;
+        graph,
+        scaled_xs_range,
+        scaled_ys_range,
+        shapes,
+        has_legend = graph.configuration.show_legend,
+        has_hovers,
+    )
 
     return plotly_figure(traces, layout)
 end
@@ -1656,6 +1711,7 @@ function push_line_trace!(;
     traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
     scaled_points_ys::ScaledData,
+    hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     line_color::Maybe{AbstractString},
     line_width::Maybe{Real},
     line_style::Maybe{LineStyle},
@@ -1676,6 +1732,8 @@ function push_line_trace!(;
         scatter(;
             x = scaled_points_xs.values,
             y = scaled_points_ys.values,
+            text = hovers,
+            hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
             marker_size = points_size,
             marker_color = points_color,
             legendgroup = show_in_legend ? legend_group : nothing,
@@ -1696,12 +1754,13 @@ function push_line_trace!(;
 end
 
 # The titles of the X and Y axes given in the graph data.
-function data_axes_titles(graph::PointsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+function data_axes_titles(graph::Union{PointsGraph, LineGraph})::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
     return (graph.data.x.title, graph.data.y.title)
 end
 
-function data_axes_titles(graph::Union{LineGraph, LinesGraph})::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
-    return (graph.data.x_axis_title, graph.data.y_axis_title)
+function data_axes_titles(graph::LinesGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
+    context = ValidationContext(["graph.data"])
+    return (lines_axis_title(context, graph.data.lines, :x), lines_axis_title(context, graph.data.lines, :y))
 end
 
 function scatters_layout(;
@@ -1785,11 +1844,9 @@ function Common.flip_axes(graph::LineGraph)::LineGraph
     return LineGraph(
         LineGraphData(;
             figure_title = graph.data.figure_title,
-            x_axis_title = graph.data.y_axis_title,
-            y_axis_title = graph.data.x_axis_title,
-            points_xs = graph.data.points_ys,
-            points_ys = graph.data.points_xs,
-            points_hovers = graph.data.points_hovers,
+            x = graph.data.y,
+            y = graph.data.x,
+            points = graph.data.points,
             vertical_bands = graph.data.horizontal_bands,
             horizontal_bands = graph.data.vertical_bands,
             diagonal_bands = graph.data.diagonal_bands,
@@ -1813,17 +1870,22 @@ function Common.flip_axes(graph::LinesGraph)::LinesGraph
     return LinesGraph(
         LinesGraphData(;
             figure_title = graph.data.figure_title,
-            x_axis_title = graph.data.y_axis_title,
-            y_axis_title = graph.data.x_axis_title,
-            lines_titles = graph.data.lines_titles,
-            lines_points_xs = graph.data.lines_points_ys,
-            lines_points_ys = graph.data.lines_points_xs,
-            lines_points_sizes = graph.data.lines_points_sizes,
-            lines_points_colors = graph.data.lines_points_colors,
-            lines_widths = graph.data.lines_widths,
-            lines_colors = graph.data.lines_colors,
-            lines_styles = graph.data.lines_styles,
-            lines_order = graph.data.lines_order,
+            lines = [
+                LineData(;
+                    x = line.y,
+                    y = line.x,
+                    points = line.points,
+                    name = line.name,
+                    hover = line.hover,
+                    is_shown = line.is_shown,
+                    color = line.color,
+                    width = line.width,
+                    style = line.style,
+                    points_size = line.points_size,
+                    points_color = line.points_color,
+                ) for line in graph.data.lines
+            ],
+            order = graph.data.order,
             vertical_bands = graph.data.horizontal_bands,
             horizontal_bands = graph.data.vertical_bands,
             diagonal_bands = graph.data.diagonal_bands,
@@ -1860,8 +1922,7 @@ end
 
 function Common.flip_axes!(graph::LineGraph)::LineGraph
     data = graph.data
-    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
-    data.points_xs, data.points_ys = data.points_ys, data.points_xs
+    data.x, data.y = data.y, data.x
     data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
 
     configuration = graph.configuration
@@ -1874,8 +1935,9 @@ end
 
 function Common.flip_axes!(graph::LinesGraph)::LinesGraph
     data = graph.data
-    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
-    data.lines_points_xs, data.lines_points_ys = data.lines_points_ys, data.lines_points_xs
+    for line in data.lines
+        line.x, line.y = line.y, line.x
+    end
     data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
 
     configuration = graph.configuration

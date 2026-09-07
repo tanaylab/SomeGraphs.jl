@@ -635,7 +635,7 @@ nested_test("points") do
 end
 
 nested_test("line") do
-    graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+    graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 
     nested_test("invalid") do
         context = ValidationContext(["graph"])
@@ -707,6 +707,18 @@ nested_test("line") do
         return nothing
     end
 
+    nested_test("hovers") do
+        graph.data.points.hovers = ["H: $(index)" for index in 1:11]
+        test_html(graph, "line.hovers.html")
+        return nothing
+    end
+
+    nested_test("mask") do
+        graph.data.points.mask = [true, true, true, true, true, true, false, false, false, false, false]
+        test_html(graph, "line.mask.html")
+        return nothing
+    end
+
     nested_test("width") do
         graph.configuration.line.width = 8
         test_html(graph, "line.width.html")
@@ -755,8 +767,12 @@ nested_test("line") do
 end
 
 nested_test("lines") do
-    graph =
-        lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+    graph = lines_graph(;
+        lines = [
+            LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
+            LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+        ],
+    )
 
     nested_test("invalid") do
         context = ValidationContext(["graph"])
@@ -772,17 +788,26 @@ nested_test("lines") do
 
         nested_test("negative") do
             graph.configuration.stacking = StackFractions
-            graph.data.lines_points_ys[1][1] = -1
+            graph.data.lines[1].y.values[1] = -1
             @test_throws chomp("""
-                               ArgumentError: too low scaled graph.data.lines_points_ys[1][1]: -1.0
+                               ArgumentError: too low scaled graph.data.lines[1].y.values[1]: -1.0
                                is not at least: 0
                                when using graph.configuration.stacking: StackFractions
                                """) validate(context, graph)
         end
 
+        nested_test("stacked_hovers") do
+            graph.configuration.stacking = StackValues
+            graph.data.lines[2].points.hovers = ["A", "B"]
+            @test_throws chomp("""
+                               ArgumentError: can't specify both graph.data.lines[2].points.hovers
+                               and graph.configuration.stacking
+                               """) validate(context, graph)
+        end
+
         nested_test("legend") do
             graph.configuration.show_legend = true
-            @test_throws "must specify graph.data.lines_titles for graph.configuration.show_legend" validate(
+            @test_throws "must specify graph.data.lines[1].name for graph.configuration.show_legend" validate(
                 context,
                 graph,
             )
@@ -790,21 +815,30 @@ nested_test("lines") do
 
         nested_test("legend_entry") do
             graph.configuration.show_legend = true
-            graph.data.lines_titles = ["Foo", nothing]
-            @test_throws "must specify graph.data.lines_titles[2] for graph.configuration.show_legend" validate(
+            graph.data.lines[1].name = "Foo"
+            @test_throws "must specify graph.data.lines[2].name for graph.configuration.show_legend" validate(
                 context,
                 graph,
             )
         end
 
+        nested_test("~titles") do
+            graph.data.lines[1].x.title = "Foo"
+            graph.data.lines[2].x.title = "Bar"
+            @test_throws chomp("""
+                               ArgumentError: conflicting graph.data.lines[2].x.title: Bar
+                               is different from graph.data.lines[1].x.title: Foo
+                               """) validate(context, graph)
+        end
+
         nested_test("~colors") do
-            graph.data.lines_colors = ["red", "Oobleck"]
-            @test_throws "ArgumentError: invalid graph.data.lines_colors[2]: Oobleck" validate(context, graph)
+            graph.data.lines[2].color = "Oobleck"
+            @test_throws "ArgumentError: invalid graph.data.lines[2].color: Oobleck" validate(context, graph)
         end
 
         nested_test("~points_colors") do
-            graph.data.lines_points_colors = ["red", "Oobleck"]
-            @test_throws "ArgumentError: invalid graph.data.lines_points_colors[2]: Oobleck" validate(context, graph)
+            graph.data.lines[2].points_color = "Oobleck"
+            @test_throws "ArgumentError: invalid graph.data.lines[2].points_color: Oobleck" validate(context, graph)
         end
     end
 
@@ -815,20 +849,67 @@ nested_test("lines") do
 
     nested_test("legend") do
         graph.configuration.show_legend = true
-        graph.data.lines_titles = ["Foo", "Bar"]
+        graph.data.lines[1].name = "Foo"
+        graph.data.lines[2].name = "Bar"
         test_html(graph, "lines.legend.html")
         return nothing
     end
 
     nested_test("nothing") do
-        graph.data.lines_titles = ["Foo", nothing]
-        graph.data.lines_colors = [nothing, "red"]
-        graph.data.lines_widths = [4, nothing]
-        graph.data.lines_styles = [nothing, DotLine]
-        graph.data.lines_points_sizes = [nothing, 8]
-        graph.data.lines_points_colors = ["blue", nothing]
+        graph.data.lines[1].name = "Foo"
+        graph.data.lines[2].color = "red"
+        graph.data.lines[1].width = 4
+        graph.data.lines[2].style = DotLine
+        graph.data.lines[2].points_size = 8
+        graph.data.lines[1].points_color = "blue"
         test_html(graph, "lines.nothing.html")
         return nothing
+    end
+
+    nested_test("hovers") do
+        nested_test("points") do
+            graph.data.lines[1].points.hovers = ["A: $(index)" for index in 1:11]
+            graph.data.lines[2].points.hovers = ["B: 1", "B: 2"]
+            test_html(graph, "lines.hovers.points.html")
+            return nothing
+        end
+
+        nested_test("lines") do
+            graph.data.lines[1].hover = "Foo"
+            graph.data.lines[2].hover = "Bar"
+            test_html(graph, "lines.hovers.lines.html")
+            return nothing
+        end
+
+        nested_test("both") do
+            graph.data.lines[1].points.hovers = ["A: $(index)" for index in 1:11]
+            graph.data.lines[1].hover = "Foo"
+            graph.data.lines[2].hover = "Bar"
+            test_html(graph, "lines.hovers.both.html")
+            return nothing
+        end
+    end
+
+    nested_test("mask") do
+        nested_test("points") do
+            graph.data.lines[1].points.mask = [true, true, true, true, true, true, false, false, false, false, false]
+            test_html(graph, "lines.mask.points.html")
+            return nothing
+        end
+
+        nested_test("lines") do
+            graph.data.lines[2].is_shown = false
+            test_html(graph, "lines.mask.lines.html")
+            return nothing
+        end
+
+        nested_test("stacked") do
+            graph.configuration.stacking = StackValues
+            graph.configuration.line.is_filled = true
+            graph.data.lines[1].is_shown = false
+            test_html(graph, "lines.mask.stacked.html")
+            return nothing
+        end
     end
 
     nested_test("fill") do
@@ -840,7 +921,7 @@ nested_test("lines") do
         end
 
         nested_test("priorities") do
-            graph.data.lines_order = [2, 1]
+            graph.data.order = [2, 1]
             test_html(graph, "lines.fill.priorities.html")
             return nothing
         end

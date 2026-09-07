@@ -182,7 +182,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -191,7 +191,7 @@ With points:
 
 ```@example
 using SomeGraphs
-graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 graph.configuration.show_points = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -201,7 +201,7 @@ Filled:
 
 ```@example
 using SomeGraphs
-graph = line_graph(; points_xs = collect(0:10) .* 10, points_ys = collect(0:10) .^ 2)
+graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -211,6 +211,7 @@ to_documenter(graph.figure)
 SomeGraphs.Scatters.LinesGraph
 SomeGraphs.Scatters.lines_graph
 SomeGraphs.Scatters.LinesGraphData
+SomeGraphs.Scatters.LineData
 SomeGraphs.Scatters.LinesGraphConfiguration
 ```
 
@@ -220,7 +221,12 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+graph = lines_graph(;
+    lines = [
+        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
+        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+    ],
+)
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -229,7 +235,12 @@ Filled:
 
 ```@example
 using SomeGraphs
-graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+graph = lines_graph(;
+    lines = [
+        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
+        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+    ],
+)
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -239,7 +250,12 @@ Stacked:
 
 ```@example
 using SomeGraphs
-graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+graph = lines_graph(;
+    lines = [
+        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
+        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+    ],
+)
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackValues
 using PlotlyDocumenter
@@ -250,7 +266,12 @@ Fractions:
 
 ```@example
 using SomeGraphs
-graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+graph = lines_graph(;
+    lines = [
+        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
+        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+    ],
+)
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
 using PlotlyDocumenter
@@ -261,7 +282,12 @@ Percents:
 
 ```@example
 using SomeGraphs
-graph = lines_graph(; lines_points_xs = [collect(0:10) .* 10, [0, 90]], lines_points_ys = [collect(0:10) .^ 2, [50, 0]])
+graph = lines_graph(;
+    lines = [
+        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
+        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+    ],
+)
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
 graph.configuration.y_axis.percent = true
