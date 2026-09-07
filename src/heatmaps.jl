@@ -1680,12 +1680,12 @@ function expand_hovers(;
 
             if rows_hovers !== nothing
                 row_hover = rows_hovers[row_index]
-                if row_hover !== ""
+                if row_hover != ""
                     push!(text, row_hover)
                 end
             end
 
-            if column_hover !== nothing
+            if column_hover != ""
                 push!(text, column_hover)
             end
 

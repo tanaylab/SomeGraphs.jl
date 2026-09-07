@@ -392,8 +392,8 @@ end
         density_axis_title::Maybe{AbstractString} = nothing
         series_axis_title::Maybe{AbstractString} = nothing
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+        distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+        distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
         distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
         value_bands::BandsData = BandsData()
     end
@@ -401,7 +401,8 @@ end
 The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall
 `figure_title` as well as the `value_axis_title`. If specified, the `distributions_names` and/or the
 `distributions_colors` vectors must contain the same number of elements as the number of vectors in the
-`distributions_values`.
+`distributions_values`. A `nothing` entry in these vectors means the configuration default is used for that
+distribution.
 
 If `distributions_order` are specified, we reorder the distributions accordingly. This allows controlling which
 distributions will appear on top of the others.
@@ -416,8 +417,8 @@ specified; when there is a gap, whichever is given is used to title the series a
     density_axis_title::Maybe{AbstractString} = nothing
     series_axis_title::Maybe{AbstractString} = nothing
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-    distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-    distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
+    distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+    distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
     distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
     value_bands::BandsData = BandsData()
 end
@@ -506,8 +507,8 @@ DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfigurati
         density_axis_title::Maybe{AbstractString} = nothing,
         series_axis_title::Maybe{AbstractString} = nothing,
         distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-        distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
+        distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
         distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
         value_bands::BandsData = BandsData(),
         configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration()]
@@ -522,8 +523,8 @@ function distributions_graph(;
     density_axis_title::Maybe{AbstractString} = nothing,
     series_axis_title::Maybe{AbstractString} = nothing,
     distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-    distributions_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    distributions_colors::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
+    distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
     distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
     value_bands::BandsData = BandsData(),
     configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration(),
@@ -1096,12 +1097,16 @@ function push_series_annotations!(
 
     if series_axis.show_ticks && distributions_names !== nothing
         for index in 1:n_distributions
+            distribution_name = distributions_names[index]
+            if distribution_name === nothing
+                continue
+            end
             density_ref = "$(plotly_axis(density_axis_letter, index; short = true, force = true)) domain"
             if is_vertical_values
                 push!(
                     plotly_annotations,
                     Dict(
-                        :text => distributions_names[index],
+                        :text => distribution_name,
                         :textangle => textangle,
                         :x => 0.5,
                         :xref => density_ref,
@@ -1117,7 +1122,7 @@ function push_series_annotations!(
                 push!(
                     plotly_annotations,
                     Dict(
-                        :text => distributions_names[index],
+                        :text => distribution_name,
                         :textangle => textangle,
                         :x => 0,
                         :xref => "$(value_axis_letter) domain",
@@ -1144,7 +1149,7 @@ function push_series_annotations!(
         # tick font, and the rotation: a name perpendicular to the axis takes its full length, a parallel one one line.
         font_size = 12
         if series_axis.show_ticks && distributions_names !== nothing
-            longest_name = maximum(length.(distributions_names))
+            longest_name = maximum((name === nothing ? 0 : length(name) for name in distributions_names); init = 0)
             names_radians = series_angle * pi / 180
             names_extent =
                 longest_name * 0.6 * font_size * abs(sin(names_radians)) + font_size * abs(cos(names_radians))

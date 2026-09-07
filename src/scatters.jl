@@ -1313,14 +1313,14 @@ end
         figure_title::Maybe{AbstractString} = nothing
         x_axis_title::Maybe{AbstractString} = nothing
         y_axis_title::Maybe{AbstractString} = nothing
-        lines_titles::Maybe{AbstractVector{<:AbstractString}} = nothing
+        lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
         lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
         lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        lines_points_sizes::Maybe{AbstractVector{<:Real}} = nothing
-        lines_points_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
-        lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing
-        lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
-        lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing
+        lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
+        lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+        lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
+        lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+        lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing
         lines_order::Maybe{AbstractVector{<:Integer}} = nothing
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
@@ -1334,7 +1334,8 @@ By default, all the titles are empty. You can specify the overall `figure_title`
 
 All the `lines_*` vectors must be of the same size (the number of lines), and contain a vector per line. The
 `lines_points_xs` and `lines_points_ys` contain a vector per line; these vectors must all be of the same size for each
-line (the number of points in that specific line).
+line (the number of points in that specific line). A `nothing` entry in the other `lines_*` vectors means the
+configuration default is used for that line.
 
 The `lines_titles` is required if `show_legend` is specified in the [`LinesGraphConfiguration`](@ref).
 
@@ -1344,14 +1345,14 @@ If `lines_order` is specified, we reorder the lines accordingly.
     figure_title::Maybe{AbstractString} = nothing
     x_axis_title::Maybe{AbstractString} = nothing
     y_axis_title::Maybe{AbstractString} = nothing
-    lines_titles::Maybe{AbstractVector{<:AbstractString}} = nothing
+    lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
     lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
     lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-    lines_points_sizes::Maybe{AbstractVector{<:Real}} = nothing
-    lines_points_colors::Maybe{AbstractVector{<:AbstractString}} = nothing
-    lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing
-    lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
-    lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing
+    lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
+    lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+    lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
+    lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+    lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing
     lines_order::Maybe{AbstractVector{<:Integer}} = nothing
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
@@ -1408,14 +1409,14 @@ LinesGraph = Graph{LinesGraphData, LinesGraphConfiguration}
         [figure_title::Maybe{AbstractString} = nothing,
         x_axis_title::Maybe{AbstractString} = nothing,
         y_axis_title::Maybe{AbstractString} = nothing,
-        lines_titles::Maybe{AbstractVector{<:AbstractString}} = nothing
+        lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
         lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
         lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        lines_points_sizes::Maybe{<:AbstractVector{<:Real}} = nothing
-        lines_points_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
-        lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing
-        lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing
-        lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing
+        lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
+        lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+        lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing
+        lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+        lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing
         lines_order::Maybe{<:AbstractVector{<:Integer}} = nothing
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
@@ -1430,14 +1431,14 @@ function lines_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     x_axis_title::Maybe{AbstractString} = nothing,
     y_axis_title::Maybe{AbstractString} = nothing,
-    lines_titles::Maybe{AbstractVector{<:AbstractString}} = nothing,
+    lines_titles::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
     lines_points_xs::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
     lines_points_ys::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-    lines_points_sizes::Maybe{<:AbstractVector{<:Real}} = nothing,
-    lines_points_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing,
-    lines_widths::Maybe{<:AbstractVector{<:Real}} = nothing,
-    lines_colors::Maybe{<:AbstractVector{<:AbstractString}} = nothing,
-    lines_styles::Maybe{<:AbstractVector{LineStyle}} = nothing,
+    lines_points_sizes::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
+    lines_points_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
+    lines_widths::Maybe{AbstractVector{<:Maybe{Real}}} = nothing,
+    lines_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
+    lines_styles::Maybe{AbstractVector{<:Maybe{LineStyle}}} = nothing,
     lines_order::Maybe{<:AbstractVector{<:Integer}} = nothing,
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
@@ -1553,8 +1554,20 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
         graph.configuration.x_axis,
     )
 
-    if graph isa LinesGraph && graph.configuration.show_legend && graph.data.lines_titles === nothing  # NOJET
-        throw(ArgumentError("must specify graph.data.lines_titles for graph.configuration.show_legend"))
+    if graph isa LinesGraph && graph.configuration.show_legend  # NOJET
+        lines_titles = graph.data.lines_titles  # NOJET
+        if lines_titles === nothing
+            throw(ArgumentError("must specify graph.data.lines_titles for graph.configuration.show_legend"))
+        end
+        for (line_index, line_title) in enumerate(lines_titles)
+            if line_title === nothing
+                throw(
+                    ArgumentError(
+                        "must specify graph.data.lines_titles[$(line_index)] for graph.configuration.show_legend",
+                    ),
+                )
+            end
+        end
     end
 
     return nothing

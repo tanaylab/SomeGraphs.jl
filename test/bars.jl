@@ -173,7 +173,23 @@ nested_test("series_bars") do
     bars = collect(0:10) .^ 2
     graph = series_bars_graph(; series_bars_values = [foos, bars])
 
+    nested_test("nothing") do
+        graph.data.series_names = ["Foo", nothing]
+        graph.data.series_colors = [nothing, "red"]
+        graph.data.series_hovers = ["Foo", nothing]
+        test_html(graph, "series_bars.nothing.html")
+        return nothing
+    end
+
     nested_test("invalid") do
+        nested_test("!values") do
+            graph.data.series_bars_values = [Float32[], bars]
+            @test_throws "ArgumentError: empty vector graph.data.series_bars_values[1]" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
+
         nested_test("gap") do
             graph.configuration.stacking = StackValues
             graph.configuration.series_gap = 0.05

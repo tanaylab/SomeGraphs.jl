@@ -777,6 +777,15 @@ nested_test("lines") do
             )
         end
 
+        nested_test("legend_entry") do
+            graph.configuration.show_legend = true
+            graph.data.lines_titles = ["Foo", nothing]
+            @test_throws "must specify graph.data.lines_titles[2] for graph.configuration.show_legend" validate(
+                context,
+                graph,
+            )
+        end
+
         nested_test("~colors") do
             graph.data.lines_colors = ["red", "Oobleck"]
             @test_throws "ArgumentError: invalid graph.data.lines_colors[2]: Oobleck" validate(context, graph)
@@ -797,6 +806,17 @@ nested_test("lines") do
         graph.configuration.show_legend = true
         graph.data.lines_titles = ["Foo", "Bar"]
         test_html(graph, "lines.legend.html")
+        return nothing
+    end
+
+    nested_test("nothing") do
+        graph.data.lines_titles = ["Foo", nothing]
+        graph.data.lines_colors = [nothing, "red"]
+        graph.data.lines_widths = [4, nothing]
+        graph.data.lines_styles = [nothing, DotLine]
+        graph.data.lines_points_sizes = [nothing, 8]
+        graph.data.lines_points_colors = ["blue", nothing]
+        test_html(graph, "lines.nothing.html")
         return nothing
     end
 

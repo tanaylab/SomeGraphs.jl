@@ -1249,7 +1249,9 @@ end
 prefer_data(data_values::AbstractVector, index::Integer, configuration_value::Any)::Any
 </code>
 </pre>
-<p>Return a value to use, prefering the data value (which may be in a vector) to the configuration value.
+<p>Return a value to use, prefering the data value (which may be in a vector, where a 
+<code>nothing
+</code> entry also falls back to the configuration value) to the configuration value.
 </p>
 </div>
 </section>

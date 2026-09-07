@@ -1478,7 +1478,8 @@ end
     prefer_data(data_value::Any, configuration_value::Any)::Any
     prefer_data(data_values::AbstractVector, index::Integer, configuration_value::Any)::Any
 
-Return a value to use, prefering the data value (which may be in a vector) to the configuration value.
+Return a value to use, prefering the data value (which may be in a vector, where a `nothing` entry also falls back to
+the configuration value) to the configuration value.
 """
 function prefer_data(data_value::Any, configuration_value::Any)::Any
     if data_value === nothing
@@ -1489,10 +1490,10 @@ function prefer_data(data_value::Any, configuration_value::Any)::Any
 end
 
 function prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_value::Any)::Any
-    if data_values !== nothing
-        return data_values[index]
-    else
+    if data_values === nothing || data_values[index] === nothing
         return configuration_value
+    else
+        return data_values[index]
     end
 end
 

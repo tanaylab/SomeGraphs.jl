@@ -430,6 +430,14 @@ nested_test("distributions") do
             #! format: on
         ],
     )
+
+    nested_test("nothing") do
+        graph.data.distributions_names = ["Foo", nothing]
+        graph.data.distributions_colors = [nothing, "red"]
+        test_html(graph, "distributions.nothing.html")
+        return nothing
+    end
+
     nested_test("invalid") do
         nested_test("~density_axis") do
             graph.configuration.density_axis.show_ticks = false
