@@ -46,7 +46,10 @@ nested_test("common") do
     end
 
     nested_test("json") do
-        graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3], figure_title = "json title")
+        graph = distribution_graph(;
+            distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
+            figure_title = "json title",
+        )
         json = graph.json
         @test json isa AbstractString
         @test occursin("\"data\"", json)

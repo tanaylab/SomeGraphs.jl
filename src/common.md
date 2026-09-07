@@ -29,7 +29,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -38,7 +38,7 @@ Reduced size:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.figure.width = 300
 graph.configuration.figure.height = 300
 using PlotlyDocumenter
@@ -49,7 +49,7 @@ Change colors:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.figure.background_color = "lightyellow"
 graph.configuration.figure.paper_color = "lightgrey"
 using PlotlyDocumenter
@@ -66,7 +66,7 @@ Increased margins:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.figure.margins.left = 100
 graph.configuration.figure.margins.right = 200
 graph.configuration.figure.margins.top = 150
@@ -85,7 +85,7 @@ Disable ticks:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.show_ticks = false
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -95,7 +95,7 @@ Disable grid:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.show_grid = false
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -105,7 +105,7 @@ Override grid color:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.grid_color = "red"
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -115,7 +115,7 @@ Override range:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.minimum = 1
 graph.configuration.value_axis.maximum = 4
 using PlotlyDocumenter
@@ -126,7 +126,7 @@ Percent:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.percent = 1
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -142,7 +142,7 @@ Log 2:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.log_scale = Log2Scale
 graph.configuration.value_axis.log_regularization = 1
 using PlotlyDocumenter
@@ -153,7 +153,7 @@ Log 10:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution_values = [0, 0, 1, 1, 1, 3])
+graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.log_scale = Log10Scale
 graph.configuration.value_axis.log_regularization = 1e-5
 using PlotlyDocumenter

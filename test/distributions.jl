@@ -203,7 +203,8 @@ function test_distributions(  # UNTESTED
 
                 elseif plurality == "distributions"
                     nested_test("names") do
-                        graph.data.distributions_names = ["Foo", "Bar"]
+                        graph.data.distributions[1].name = "Foo"
+                        graph.data.distributions[2].name = "Bar"
 
                         nested_test("()") do
                             test_html(graph, "$(plurality).$(kind).$(name).names.html")
@@ -211,7 +212,7 @@ function test_distributions(  # UNTESTED
                         end
 
                         nested_test("priorities") do
-                            graph.data.distributions_order = [2, 1]
+                            graph.data.order = [2, 1]
                             test_html(graph, "$(plurality).$(kind).$(name).names.priorities.html")
                             return nothing
                         end
@@ -232,7 +233,8 @@ function test_distributions(  # UNTESTED
                             end
 
                             nested_test("names") do
-                                graph.data.distributions_names = ["Foo", "Bar"]
+                                graph.data.distributions[1].name = "Foo"
+                                graph.data.distributions[2].name = "Bar"
                                 test_html(graph, "$(plurality).$(kind).$(name).!gap.names.html")
                                 return nothing
                             end
@@ -248,7 +250,8 @@ end
 
 nested_test("distribution") do
     graph = distribution_graph(;
-        distribution_values = [
+        distribution = DistributionData(;
+            values = ValuesData([
             #! format: off
             79, 54, 74, 62, 85, 55, 88, 85, 51, 85, 54, 84, 78, 47, 83, 52, 62, 84, 52, 79, 51, 47, 78, 69, 74, 83,
             55, 76, 78, 79, 73, 77, 66, 80, 74, 52, 48, 80, 59, 90, 80, 58, 84, 58, 73, 83, 64, 53, 82, 59, 75, 90,
@@ -262,7 +265,8 @@ nested_test("distribution") do
             90, 54, 54, 77, 79, 64, 75, 47, 86, 63, 85, 82, 57, 82, 67, 74, 54, 83, 73, 73, 88, 80, 71, 83, 56, 79,
             78, 84, 58, 83, 43, 60, 75, 81, 46, 90, 46, 74, 140, 150,
             #! format: on
-        ],
+            ]),
+        ),
     )
 
     nested_test("show") do
@@ -270,7 +274,55 @@ nested_test("distribution") do
               "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .figure to show the graph)"
     end
 
+    nested_test("mask") do
+        n_values = length(graph.data.distribution.values.values)
+        graph.data.distribution.points.mask = [index % 3 != 0 for index in 1:n_values]
+        test_html(graph, "distribution.mask.html")
+        return nothing
+    end
+
+    nested_test("hovers") do
+        n_values = length(graph.data.distribution.values.values)
+        graph.data.distribution.points.hovers = ["V: $(index)" for index in 1:n_values]
+
+        nested_test("cumulative") do
+            graph.configuration.distribution.style = CumulativeDistribution
+            test_html(graph, "distribution.hovers.cumulative.html")
+            return nothing
+        end
+
+        nested_test("box_outliers") do
+            graph.configuration.distribution.style = BoxOutliersDistribution
+            graph.data.distribution.hover = "Distribution"
+            test_html(graph, "distribution.hovers.box_outliers.html")
+            return nothing
+        end
+    end
+
     nested_test("invalid") do
+        nested_test("!values") do
+            graph.data.distribution.values.values = nothing
+            @test_throws "ArgumentError: must specify graph.data.distribution.values.values" graph.figure
+        end
+
+        nested_test("~values") do
+            graph.data.distribution.values.values = ["Foo"]
+            @test_throws "ArgumentError: non-numeric graph.data.distribution.values.values" graph.figure
+        end
+
+        nested_test("~mask") do
+            graph.data.distribution.points.mask = [true, false]
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.distribution.points.mask: 2
+                               is different from length of graph.data.distribution.values.values: 274
+                               """) graph.figure
+        end
+
+        nested_test("~shown") do
+            graph.data.distribution.is_shown = false
+            @test_throws "ArgumentError: not is_shown graph.data.distribution" graph.figure
+        end
+
         nested_test("~density_axis") do
             graph.configuration.density_axis.show_ticks = false
             @test_throws chomp("""
@@ -279,9 +331,9 @@ nested_test("distribution") do
                                """) graph.figure
         end
 
-        nested_test("~distribution_color") do
-            graph.data.distribution_color = "Oobleck"
-            @test_throws "ArgumentError: invalid graph.data.distribution_color: Oobleck" graph.figure
+        nested_test("~color") do
+            graph.data.distribution.color = "Oobleck"
+            @test_throws "ArgumentError: invalid graph.data.distribution.color: Oobleck" graph.figure
         end
 
         nested_test("~normalize") do
@@ -363,7 +415,7 @@ nested_test("distribution") do
                     graph.configuration.density_axis.percent = true
                 else
                     @assert name == "counts"
-                    graph.data.distribution_name = "Counts"
+                    graph.data.distribution.name = "Counts"
                 end
                 return nothing
             end
@@ -409,12 +461,12 @@ end
 
 nested_test("distributions") do
     graph = distributions_graph(;
-        distributions_values = [
+        distributions = [
             #! format: off
-            [
+            DistributionData(; values = ValuesData([
                 0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10,
                 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25,
-            ], [
+            ])), DistributionData(; values = ValuesData([
                 79, 54, 74, 62, 85, 55, 88, 85, 51, 85, 54, 84, 78, 47, 83, 52, 62, 84, 52, 79, 51, 47, 78, 69, 74,
                 83, 55, 76, 78, 79, 73, 77, 66, 80, 74, 52, 48, 80, 59, 90, 80, 58, 84, 58, 73, 83, 64, 53, 82, 59,
                 75, 90, 54, 80, 54, 83, 71, 64, 77, 81, 59, 84, 48, 82, 60, 92, 78, 78, 65, 73, 82, 56, 79, 71, 62,
@@ -426,15 +478,39 @@ nested_test("distributions") do
                 60, 82, 91, 53, 78, 46, 77, 84, 49, 83, 71, 80, 49, 75, 64, 76, 53, 94, 55, 76, 50, 82, 54, 75, 78,
                 79, 78, 78, 70, 79, 70, 54, 86, 50, 90, 54, 54, 77, 79, 64, 75, 47, 86, 63, 85, 82, 57, 82, 67, 74,
                 54, 83, 73, 73, 88, 80, 71, 83, 56, 79, 78, 84, 58, 83, 43, 60, 75, 81, 46, 90, 46, 74, 140, 150,
-            ] ./ 10.0
+            ] ./ 10.0))
             #! format: on
         ],
     )
 
     nested_test("nothing") do
-        graph.data.distributions_names = ["Foo", nothing]
-        graph.data.distributions_colors = [nothing, "red"]
+        graph.data.distributions[1].name = "Foo"
+        graph.data.distributions[2].color = "red"
         test_html(graph, "distributions.nothing.html")
+        return nothing
+    end
+
+    nested_test("mask") do
+        n_values = length(graph.data.distributions[2].values.values)
+        graph.data.distributions[2].points.mask = [index % 3 != 0 for index in 1:n_values]
+        test_html(graph, "distributions.mask.html")
+        return nothing
+    end
+
+    nested_test("hovers") do
+        graph.configuration.distribution.style = CumulativeDistribution
+        n_values = length(graph.data.distributions[2].values.values)
+        graph.data.distributions[1].hover = "Foo"
+        graph.data.distributions[2].points.hovers = ["V: $(index)" for index in 1:n_values]
+        test_html(graph, "distributions.hovers.html")
+        return nothing
+    end
+
+    nested_test("!shown") do
+        graph.data.distributions[1].name = "Foo"
+        graph.data.distributions[2].name = "Bar"
+        graph.data.distributions[1].is_shown = false
+        test_html(graph, "distributions.!shown.html")
         return nothing
     end
 
@@ -456,21 +532,30 @@ nested_test("distributions") do
                                """) graph.figure
         end
 
+        nested_test("!distributions") do
+            empty!(graph.data.distributions)
+            @test_throws "ArgumentError: empty vector graph.data.distributions" graph.figure
+        end
+
         nested_test("!values") do
-            empty!(graph.data.distributions_values)
-            @test_throws "ArgumentError: empty vector graph.data.distributions_values" graph.figure
+            empty!(graph.data.distributions[1].values.values)
+            @test_throws "ArgumentError: empty vector graph.data.distributions[1].values.values" graph.figure
         end
 
-        nested_test("!value") do
-            empty!(graph.data.distributions_values[1])
-            @test_throws "ArgumentError: empty vector graph.data.distributions_values[1]" graph.figure
-        end
-
-        nested_test("~names") do
-            graph.data.distributions_names = ["Foo"]
+        nested_test("~order") do
+            graph.data.order = [1]
             @test_throws chomp("""
-                               ArgumentError: invalid length of graph.data.distributions_names: 1
-                               is different from length of graph.data.distributions_values: 2
+                               ArgumentError: invalid length of graph.data.order: 1
+                               is different from length of graph.data.distributions: 2
+                               """) graph.figure
+        end
+
+        nested_test("~values_titles") do
+            graph.data.distributions[1].values.title = "Foo"
+            graph.data.distributions[2].values.title = "Bar"
+            @test_throws chomp("""
+                               ArgumentError: conflicting graph.data.distributions[2].values.title: Bar
+                               is different from graph.data.distributions[1].values.title: Foo
                                """) graph.figure
         end
 
@@ -536,17 +621,9 @@ nested_test("distributions") do
             )
         end
 
-        nested_test("!colors") do
-            graph.data.distributions_colors = ["Red", "Oobleck"]
-            @test_throws "ArgumentError: invalid graph.data.distributions_colors[2]: Oobleck" graph.figure
-        end
-
-        nested_test("~colors") do
-            graph.data.distributions_colors = ["Red"]
-            @test_throws chomp("""
-                               ArgumentError: invalid length of graph.data.distributions_colors: 1
-                               is different from length of graph.data.distributions_values: 2
-                               """) graph.figure
+        nested_test("~color") do
+            graph.data.distributions[2].color = "Oobleck"
+            @test_throws "ArgumentError: invalid graph.data.distributions[2].color: Oobleck" graph.figure
         end
     end
 
@@ -583,7 +660,8 @@ nested_test("distributions") do
 
     nested_test("series_axis") do
         graph.configuration.distribution.style = BoxDistribution
-        graph.data.distributions_names = ["Foo", "Bar"]
+        graph.data.distributions[1].name = "Foo"
+        graph.data.distributions[2].name = "Bar"
 
         for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
             nested_test(name) do

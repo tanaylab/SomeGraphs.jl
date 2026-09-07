@@ -9,6 +9,7 @@ export CumulativeDistribution
 export CurveBoxDistribution
 export CurveDistribution
 export DistributionConfiguration
+export DistributionData
 export DistributionGraph
 export DistributionGraphConfiguration
 export DistributionGraphData
@@ -325,37 +326,81 @@ function Validations.validate(
 end
 
 """
+    @kwdef mutable struct DistributionData
+        values::ValuesData = ValuesData()
+        points::EntitiesData = EntitiesData()
+        name::Maybe{AbstractString} = nothing
+        hover::Maybe{AbstractString} = nothing
+        is_shown::Bool = true
+        color::Maybe{AbstractString} = nothing
+    end
+
+One distribution of a [`DistributionGraphData`](@ref) or a [`DistributionsGraphData`](@ref). The `values` are required
+and numeric; their title is the value axis title (shared by all the distributions of a multiple distributions graph).
+The `points` hold the hovers and mask of these values; masked values are left out of the distribution. Hovers are shown
+for the values that are drawn as points (along the cumulative curve, or the outliers of a box). The `hover` (if any) is
+prefixed to the hover of each value. The `name` is used as the name of the density axis, or (in a multiple
+distributions graph) as the cross-series name or the legend entry. A distribution which is not `is_shown` is left out
+of a multiple distributions graph. The `color` overrides the configuration for this distribution; a `nothing` means the
+configuration default is used.
+"""
+@kwdef mutable struct DistributionData
+    values::ValuesData = ValuesData()
+    points::EntitiesData = EntitiesData()
+    name::Maybe{AbstractString} = nothing
+    hover::Maybe{AbstractString} = nothing
+    is_shown::Bool = true
+    color::Maybe{AbstractString} = nothing
+end
+
+function Validations.validate(context::ValidationContext, distribution::DistributionData)::Nothing
+    validate_numeric_values(context, "values.values", distribution.values.values; is_required = true)
+
+    values = distribution.values.values
+    @assert values !== nothing
+    validate_vector_is_not_empty(context, "values.values", values)
+    n_values = length(values)
+
+    validate_vector_length(context, "points.hovers", distribution.points.hovers, "values.values", n_values)
+    validate_vector_length(context, "points.mask", distribution.points.mask, "values.values", n_values)
+
+    validate_in(context, "color") do
+        validate_is_color(context, distribution.color)
+        return nothing
+    end
+
+    return nothing
+end
+
+"""
     @kwdef mutable struct DistributionGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        value_axis_title::Maybe{AbstractString} = nothing
-        distribution_values::AbstractVector{<:Real} = Float32[]
-        distribution_name::Maybe{AbstractString} = nothing
-        distribution_color::Maybe{AbstractString} = nothing
+        distribution::DistributionData = DistributionData()
         value_bands::BandsData = BandsData()
         cumulative_bands::BandsData = BandsData()
     end
 
-The data for a single distribution graph. By default, all the titles are empty. You can specify the overall
-`figure_title` as well as the `value_axis_title`. The optional `distribution_name` is used as the name of the density
-axis. You can also specify the `distribution_color` and/or `value_bands` offsets here, if they are more of a data than a
-configuration parameter in the specific graph. This will override whatever is specified in the configuration.
+The data for a single distribution graph: the `distribution` (see [`DistributionData`](@ref)), whose `is_shown` must
+be `true`. By default, all the titles are empty. You can specify the overall `figure_title`. You can also specify the
+`value_bands` offsets here, if they are more of a data than a configuration parameter in the specific graph. This will
+override whatever is specified in the configuration.
 
 The `cumulative_bands` should only be specified if the `distribution.style` is `CumulativeDistribution`.
 """
 @kwdef mutable struct DistributionGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    value_axis_title::Maybe{AbstractString} = nothing
-    distribution_values::AbstractVector{<:Real} = Float32[]
-    distribution_name::Maybe{AbstractString} = nothing
-    distribution_color::Maybe{AbstractString} = nothing
+    distribution::DistributionData = DistributionData()
     value_bands::BandsData = BandsData()
     cumulative_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionGraphData)::Maybe{AbstractString}
-    validate_vector_is_not_empty(context, "distribution_values", data.distribution_values)
-    validate_in(context, "distribution_color") do
-        return validate_is_color(context, data.distribution_color)
+    validate_in(context, "distribution") do
+        validate(context, data.distribution)
+        return nothing
+    end
+    if !data.distribution.is_shown
+        throw(ArgumentError("not is_shown $(location(context)).distribution"))
     end
     return nothing
 end
@@ -363,24 +408,19 @@ end
 """
     @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        value_axis_title::Maybe{AbstractString} = nothing
+        distributions::AbstractVector{DistributionData} = DistributionData[]
+        order::Maybe{AbstractVector{<:Integer}} = nothing
         density_axis_title::Maybe{AbstractString} = nothing
         series_axis_title::Maybe{AbstractString} = nothing
-        distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-        distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
         value_bands::BandsData = BandsData()
     end
 
-The data for a multiple distributions graph. By default, all the titles are empty. You can specify the overall
-`figure_title` as well as the `value_axis_title`. If specified, the `distributions_names` and/or the
-`distributions_colors` vectors must contain the same number of elements as the number of vectors in the
-`distributions_values`. A `nothing` entry in these vectors means the configuration default is used for that
-distribution.
+The data for a multiple distributions graph, a [`DistributionData`](@ref) per distribution. By default, all the titles
+are empty. You can specify the overall `figure_title`. The value axis title is the title of the `values` of the
+distributions: all the distributions that give one must give the same.
 
-If `distributions_order` are specified, we reorder the distributions accordingly. This allows controlling which
-distributions will appear on top of the others.
+If `order` is specified, we reorder the distributions accordingly. This allows controlling which distributions will
+appear on top of the others.
 
 The `density_axis_title` titles the inner density axis. The `series_axis_title` titles the cross-series names axis and
 may only be specified when there is a gap (`distributions_gap` is not `nothing`). At most one of the two may be
@@ -388,50 +428,20 @@ specified; when there is a gap, whichever is given is used to title the series a
 """
 @kwdef mutable struct DistributionsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    value_axis_title::Maybe{AbstractString} = nothing
+    distributions::AbstractVector{DistributionData} = DistributionData[]
+    order::Maybe{AbstractVector{<:Integer}} = nothing
     density_axis_title::Maybe{AbstractString} = nothing
     series_axis_title::Maybe{AbstractString} = nothing
-    distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[]
-    distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    distributions_order::Maybe{AbstractVector{<:Integer}} = nothing
     value_bands::BandsData = BandsData()
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionsGraphData)::Maybe{AbstractString}
-    validate_vector_is_not_empty(context, "distributions_values", data.distributions_values)
+    validate_vector_is_not_empty(context, "distributions", data.distributions)
 
-    n_distributions = length(data.distributions_values)
+    validate_vector_length(context, "order", data.order, "distributions", length(data.distributions))
 
-    validate_vector_length(
-        context,
-        "distributions_names",
-        data.distributions_names,
-        "distributions_values",
-        n_distributions,
-    )
-    validate_vector_length(
-        context,
-        "distributions_colors",
-        data.distributions_colors,
-        "distributions_values",
-        n_distributions,
-    )
-    validate_vector_length(
-        context,
-        "distributions_order",
-        data.distributions_order,
-        "distributions_values",
-        n_distributions,
-    )
-
-    validate_vector_entries(context, "distributions_colors", data.distributions_colors) do _, distribution_color
-        validate_is_color(context, distribution_color)
-        return nothing
-    end
-
-    validate_vector_entries(context, "distributions_values", data.distributions_values) do _, distribution_values
-        validate_vector_is_not_empty(context, distribution_values)
+    validate_vector_entries(context, "distributions", data.distributions) do _, distribution
+        validate(context, distribution)
         return nothing
     end
 
@@ -447,9 +457,9 @@ DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
 """
     distribution_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        value_axis_title::Maybe{AbstractString} = nothing,
-        distribution_values::AbstractVector{<:Real} = Float32[],
-        distribution_name::Maybe{AbstractString} = nothing,
+        distribution::DistributionData = DistributionData(),
+        value_bands::BandsData = BandsData(),
+        cumulative_bands::BandsData = BandsData(),
         configuration::DistributionGraphConfiguration = DistributionGraphConfiguration()]
     )::DistributionGraph
 
@@ -458,13 +468,13 @@ Create a [`DistributionGraph`](@ref) by initializing only the [`DistributionGrap
 """
 function distribution_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    value_axis_title::Maybe{AbstractString} = nothing,
-    distribution_values::AbstractVector{<:Real} = Float32[],
-    distribution_name::Maybe{AbstractString} = nothing,
+    distribution::DistributionData = DistributionData(),
+    value_bands::BandsData = BandsData(),
+    cumulative_bands::BandsData = BandsData(),
     configuration::DistributionGraphConfiguration = DistributionGraphConfiguration(),
 )::DistributionGraph
     return DistributionGraph(
-        DistributionGraphData(; figure_title, value_axis_title, distribution_values, distribution_name),
+        DistributionGraphData(; figure_title, distribution, value_bands, cumulative_bands),
         configuration,
     )
 end
@@ -478,13 +488,10 @@ DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfigurati
 """
     distributions_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        value_axis_title::Maybe{AbstractString} = nothing,
+        distributions::AbstractVector{DistributionData} = DistributionData[],
+        order::Maybe{AbstractVector{<:Integer}} = nothing,
         density_axis_title::Maybe{AbstractString} = nothing,
         series_axis_title::Maybe{AbstractString} = nothing,
-        distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-        distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-        distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-        distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
         value_bands::BandsData = BandsData(),
         configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration()]
     )::DistributionsGraph
@@ -494,36 +501,74 @@ Create a [`DistributionsGraph`](@ref) by initializing only the [`DistributionsGr
 """
 function distributions_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    value_axis_title::Maybe{AbstractString} = nothing,
+    distributions::AbstractVector{DistributionData} = DistributionData[],
+    order::Maybe{AbstractVector{<:Integer}} = nothing,
     density_axis_title::Maybe{AbstractString} = nothing,
     series_axis_title::Maybe{AbstractString} = nothing,
-    distributions_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Float32}[],
-    distributions_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    distributions_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    distributions_order::Maybe{AbstractVector{<:Integer}} = nothing,
     value_bands::BandsData = BandsData(),
     configuration::DistributionsGraphConfiguration = DistributionsGraphConfiguration(),
 )::DistributionsGraph
     return DistributionsGraph(
         DistributionsGraphData(;
             figure_title,
-            value_axis_title,
+            distributions,
+            order,
             density_axis_title,
             series_axis_title,
-            distributions_values,
-            distributions_names,
-            distributions_colors,
-            distributions_order,
             value_bands,
         ),
         configuration,
     )
 end
 
+# The title of the value axis, taken from the values of the distribution(s).
+function value_axis_title(graph::DistributionGraph)::Maybe{AbstractString}
+    return graph.data.distribution.values.title
+end
+
+function value_axis_title(graph::DistributionsGraph)::Maybe{AbstractString}
+    return shared_values_title(
+        ValidationContext(["graph.data"]),
+        "distributions",
+        "values",
+        [distribution.values for distribution in graph.data.distributions],
+    )
+end
+
+# The indices of the distributions of a multiple distributions graph which are actually drawn, in the order they are
+# drawn in (that is, reordered by the `order`, skipping the ones that are not `is_shown`).
+function displayed_distributions(graph::DistributionsGraph)::AbstractVector{<:Integer}
+    distributions = graph.data.distributions
+    return [index for index in prefer_data(graph.data.order, 1:length(distributions)) if distributions[index].is_shown]
+end
+
+# The values of a distribution which are actually drawn (that is, not masked).
+function displayed_values(distribution::DistributionData)::AbstractVector{<:Real}
+    values = numeric_values(distribution.values)
+    @assert values !== nothing
+    return masked_values(values, distribution.points.mask, nothing)
+end
+
+# The hovers of the drawn values of a distribution, if any: the `hover` of the distribution prefixed to the `hovers` of
+# its `points`.
+function displayed_hovers(distribution::DistributionData, n_values::Integer)::Maybe{AbstractVector{<:AbstractString}}
+    hovers = masked_values(distribution.points.hovers, distribution.points.mask, nothing)
+    if distribution.hover !== nothing
+        if hovers === nothing
+            hovers = fill(distribution.hover, n_values)
+        else
+            hovers = "$(distribution.hover)<br>" .* hovers
+        end
+    end
+    return hovers
+end
+
 function Common.validate_graph(graph::DistributionGraph)::Nothing
+    values = numeric_values(graph.data.distribution.values)
+    @assert values !== nothing
     validate_values(
-        ValidationContext(["graph.data.distribution_values"]),
-        graph.data.distribution_values,
+        ValidationContext(["graph.data.distribution.values.values"]),
+        values,
         ValidationContext(["graph.configuration.value_axis"]),
         graph.configuration.value_axis,
     )
@@ -541,10 +586,12 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
 end
 
 function Common.validate_graph(graph::DistributionsGraph)::Nothing
-    for (index, distribution_values) in enumerate(graph.data.distributions_values)
+    for (index, distribution) in enumerate(graph.data.distributions)
+        values = numeric_values(distribution.values)
+        @assert values !== nothing
         validate_values(
-            ValidationContext(["graph.data.distributions_values", index]),
-            distribution_values,
+            ValidationContext(["graph.data.distributions", index, "values.values"]),
+            values,
             ValidationContext(["graph.configuration.value_axis"]),
             graph.configuration.value_axis,
         )
@@ -581,12 +628,17 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
 
     implicit_values_range = MaybeRange()
 
+    distribution = graph.data.distribution
+    values = displayed_values(distribution)
+    hovers = displayed_hovers(distribution, length(values))
+
     push!(
         traces,
         distribution_trace(;  # NOJET
-            values = graph.data.distribution_values,
-            name = prefer_data(graph.data.distribution_name, "Trace"),
-            color = prefer_data(graph.data.distribution_color, graph.configuration.distribution.line.color),
+            values,
+            hovers,
+            name = prefer_data(distribution.name, "Trace"),
+            color = prefer_data(distribution.color, graph.configuration.distribution.line.color),
             width = graph.configuration.distribution.line.width,
             is_filled = graph.configuration.distribution.line.is_filled,
             configuration = graph.configuration,
@@ -595,7 +647,15 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
         ),
     )
 
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend = false))
+    return plotly_figure(
+        traces,
+        distribution_layout(;
+            graph = graph,
+            implicit_values_range,
+            has_legend = false,
+            has_hovers = hovers !== nothing,
+        ),
+    )
 end
 
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
@@ -603,32 +663,43 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
 
     implicit_values_range = MaybeRange()
 
-    n_distributions = length(graph.data.distributions_values)
+    distributions_indices = displayed_distributions(graph)
+    n_distributions = length(distributions_indices)
 
-    distributions_indices = prefer_data(graph.data.distributions_order, 1:n_distributions)
+    traces = Vector{GenericTrace}()
+    has_hovers = false
+    has_legend = false
 
-    traces = [
-        distribution_trace(;
-            values = graph.data.distributions_values[index],
-            name = prefer_data(graph.data.distributions_names, index, nothing),
-            color = prefer_data(graph.data.distributions_colors, index, graph.configuration.distribution.line.color),
-            width = graph.configuration.distribution.line.width,
-            is_filled = graph.configuration.distribution.line.is_filled,
-            configuration = graph.configuration,
-            sub_graph = SubGraph(;
-                index = position,
-                n_graphs = n_distributions,
-                graphs_gap = graph.configuration.distributions_gap,
+    for (position, index) in enumerate(distributions_indices)
+        distribution = graph.data.distributions[index]
+        values = displayed_values(distribution)
+        hovers = displayed_hovers(distribution, length(values))
+        has_hovers |= hovers !== nothing
+        has_legend |= graph.configuration.distributions_gap === nothing && distribution.name !== nothing
+
+        push!(
+            traces,
+            distribution_trace(;
+                values,
+                hovers,
+                name = distribution.name,
+                color = prefer_data(distribution.color, graph.configuration.distribution.line.color),
+                width = graph.configuration.distribution.line.width,
+                is_filled = graph.configuration.distribution.line.is_filled,
+                configuration = graph.configuration,
+                sub_graph = SubGraph(;
+                    index = position,
+                    n_graphs = n_distributions,
+                    graphs_gap = graph.configuration.distributions_gap,
+                ),
+                implicit_values_range,
+                scale_group = "Distributions",
+                is_one_of_many = graph.configuration.distributions_gap === nothing,
             ),
-            implicit_values_range,
-            scale_group = "Distributions",
-            is_one_of_many = graph.configuration.distributions_gap === nothing,
-        ) for (position, index) in enumerate(distributions_indices)
-    ]
+        )
+    end
 
-    has_legend = graph.configuration.distributions_gap === nothing && graph.data.distributions_names !== nothing
-
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend))
+    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend, has_hovers))
 end
 
 # The (descending, normalized, percent) flags controlling the cumulative density axis, taken from the `distribution` and
@@ -660,6 +731,7 @@ end
 
 function distribution_trace(;
     values::AbstractVector{<:Real},
+    hovers::Maybe{AbstractVector{<:AbstractString}},
     name::Maybe{AbstractString},
     color::Maybe{AbstractString},
     width::Maybe{Real},
@@ -681,7 +753,11 @@ function distribution_trace(;
     if configuration.distribution.style == CumulativeDistribution
         n_values = length(scaled_values)
 
-        sort!(scaled_values)
+        permutation = sortperm(scaled_values)
+        scaled_values = scaled_values[permutation]
+        if hovers !== nothing
+            hovers = hovers[permutation]
+        end
         cumulative_values = Float32.(collect(1:n_values))
 
         is_descending, is_normalized, is_percent = cumulative_density_flags(configuration)
@@ -708,6 +784,7 @@ function distribution_trace(;
         if did_mask
             scaled_values = scaled_values[mask]
             cumulative_values = cumulative_values[mask]
+            hovers = masked_values(hovers, mask, nothing)
         end
 
         if configuration.distribution.values_orientation == VerticalValues
@@ -731,6 +808,8 @@ function distribution_trace(;
             y0,
             mode = "lines",
             name,
+            text = hovers,
+            hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
             line_color = color,
             line_width = width,
             fill = is_filled ? full : "none",
@@ -796,6 +875,7 @@ function distribution_trace(;
                           (BoxDistribution, ViolinBoxDistribution, CurveBoxDistribution),
             boxpoints,
             name,
+            text = configuration.distribution.style == HistogramDistribution ? nothing : hovers,
             line_color = color,
             line_width = width,
             fillcolor = is_filled ? fill_color(color) : nothing,
@@ -809,6 +889,7 @@ function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
     implicit_values_range::MaybeRange,
     has_legend::Bool,
+    has_hovers::Bool,
 )::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
 
@@ -828,7 +909,7 @@ function distribution_layout(;
     # apply to a graph of multiple distributions just as they do to a graph of a single one. They are pushed once per
     # sub-graph, using its own density axis, so they do not stretch across the gaps between the distributions.
     if graph isa DistributionsGraph && graph.configuration.distributions_gap !== nothing
-        n_sub_graphs = length(graph.data.distributions_values)
+        n_sub_graphs = length(displayed_distributions(graph))  # NOJET
     else
         n_sub_graphs = 1
     end
@@ -856,13 +937,13 @@ function distribution_layout(;
         end
     end
 
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, shapes)
+    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
 
     set_layout_axis!(
         layout,
         "$(value_axis_letter)axis",
         graph.configuration.value_axis;
-        title = prefer_data(graph.data.value_axis_title, graph.configuration.value_axis.title),
+        title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
         range = scaled_values_range,
     )
 
@@ -878,7 +959,7 @@ function distribution_layout(;
                 cumulative_maximum = 1.01
                 cumulative_bands_scale = 1
             else
-                max_count = length(graph.data.distribution_values)
+                max_count = length(displayed_values(graph.data.distribution))
                 cumulative_maximum = max_count + 1
                 cumulative_bands_scale = max_count
             end
@@ -892,7 +973,7 @@ function distribution_layout(;
                 layout,
                 "$(density_axis_letter)axis",
                 density_axis;
-                title = prefer_data(graph.data.distribution_name, density_axis.title),
+                title = prefer_data(graph.data.distribution.name, density_axis.title),
                 range = cumulative_range,
             )
 
@@ -920,13 +1001,14 @@ function distribution_layout(;
             density_axis = graph.configuration.density_axis
             _, is_normalized, is_percent = cumulative_density_flags(graph.configuration)
 
-            n_distributions = length(graph.data.distributions_values)  # NOJET
+            distributions = graph.data.distributions[displayed_distributions(graph)]  # NOJET
+            counts = [length(displayed_values(distribution)) for distribution in distributions]
             distributions_gap = graph.configuration.distributions_gap  # NOJET
             if distributions_gap === nothing
                 n_distributions = 1
+            else
+                n_distributions = length(distributions)
             end
-
-            max_counts = maximum(length.(graph.data.distributions_values))  # NOJET
 
             for index in 1:n_distributions
                 if is_percent
@@ -934,9 +1016,9 @@ function distribution_layout(;
                 elseif is_normalized
                     cumulative_maximum = 1.01
                 elseif distributions_gap === nothing
-                    cumulative_maximum = max_counts + 1
+                    cumulative_maximum = maximum(counts) + 1
                 else
-                    cumulative_maximum = length(graph.data.distributions_values[index]) + 1
+                    cumulative_maximum = counts[index] + 1
                 end
 
                 cumulative_range = Range(;
@@ -973,12 +1055,12 @@ function distribution_layout(;
                     layout,
                     "$(density_axis_letter)axis",
                     density_axis;
-                    title = prefer_data(graph.data.distribution_name, density_axis.title),
+                    title = prefer_data(graph.data.distribution.name, density_axis.title),
                     range = density_range,
                 )
             else
                 layout["$(density_axis_letter)axis"] =
-                    Dict(:showticklabels => false, :title => graph.data.distribution_name)
+                    Dict(:showticklabels => false, :title => graph.data.distribution.name)
             end
 
         elseif graph isa DistributionsGraph
@@ -990,7 +1072,7 @@ function distribution_layout(;
                 density_range = Range(; minimum = density_axis.minimum, maximum = density_axis.maximum)
             end
 
-            n_distributions = length(graph.data.distributions_values)  # NOJET
+            n_distributions = length(displayed_distributions(graph))  # NOJET
             distributions_gap = graph.configuration.distributions_gap  # NOJET
 
             if distributions_gap === nothing
@@ -1059,8 +1141,9 @@ function push_series_annotations!(
 )::Nothing
     configuration = graph.configuration
     series_axis = configuration.series_axis
-    distributions_names = graph.data.distributions_names
-    n_distributions = length(graph.data.distributions_values)
+    distributions_names =
+        [distribution.name for distribution in graph.data.distributions[displayed_distributions(graph)]]
+    n_distributions = length(distributions_names)
     is_vertical_values = configuration.distribution.values_orientation == VerticalValues
 
     series_ticks_angle = series_axis.ticks_angle
@@ -1070,7 +1153,7 @@ function push_series_annotations!(
 
     plotly_annotations = []
 
-    if series_axis.show_ticks && distributions_names !== nothing
+    if series_axis.show_ticks
         for index in 1:n_distributions
             distribution_name = distributions_names[index]
             if distribution_name === nothing
@@ -1123,7 +1206,7 @@ function push_series_annotations!(
         # we can't, so estimate their extent perpendicular to the series axis from the longest name, the (default ~12px)
         # tick font, and the rotation: a name perpendicular to the axis takes its full length, a parallel one one line.
         font_size = 12
-        if series_axis.show_ticks && distributions_names !== nothing
+        if series_axis.show_ticks
             longest_name = maximum((name === nothing ? 0 : length(name) for name in distributions_names); init = 0)
             names_radians = series_angle * pi / 180
             names_extent =
