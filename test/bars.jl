@@ -190,23 +190,83 @@ end
 nested_test("series_bars") do
     foos = collect(0:10) .* 5
     bars = collect(0:10) .^ 2
-    graph = series_bars_graph(; series_bars_values = [foos, bars])
+    graph =
+        series_bars_graph(; series = [SeriesData(; values = ValuesData(foos)), SeriesData(; values = ValuesData(bars))])
 
     nested_test("nothing") do
-        graph.data.series_names = ["Foo", nothing]
-        graph.data.series_colors = [nothing, "red"]
-        graph.data.series_hovers = ["Foo", nothing]
+        graph.data.series[1].name = "Foo"
+        graph.data.series[2].color = "red"
+        graph.data.series[1].hover = "Foo"
         test_html(graph, "series_bars.nothing.html")
         return nothing
     end
 
+    nested_test("mask") do
+        graph.data.names.values = "Foo-" .* string.(collect(0:10))
+        graph.data.annotations =
+            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+
+        nested_test("bars") do
+            graph.data.bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
+            test_html(graph, "series_bars.mask.bars.html")
+            return nothing
+        end
+
+        nested_test("series") do
+            graph.data.series[2].bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
+            test_html(graph, "series_bars.mask.series.html")
+            return nothing
+        end
+
+        nested_test("both") do
+            graph.data.bars.mask = [true, true, true, true, true, true, true, true, false, false, false]
+            graph.data.series[2].bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
+            test_html(graph, "series_bars.mask.both.html")
+            return nothing
+        end
+    end
+
     nested_test("invalid") do
         nested_test("!values") do
-            graph.data.series_bars_values = [Float32[], bars]
-            @test_throws "ArgumentError: empty vector graph.data.series_bars_values[1]" validate(
+            graph.data.series[1].values.values = Float32[]
+            @test_throws "ArgumentError: empty vector graph.data.series[1].values.values" validate(
                 ValidationContext(["graph"]),
                 graph,
             )
+        end
+
+        nested_test("~values") do
+            graph.data.series[2].values.values = [1, 2, 3]
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.series[2].values.values: 3
+                               is different from length of graph.data.series[1].values.values: 11
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("~titles") do
+            graph.data.series[1].values.title = "Foo"
+            graph.data.series[2].values.title = "Bar"
+            @test_throws chomp("""
+                               ArgumentError: conflicting graph.data.series[2].values.title: Bar
+                               is different from graph.data.series[1].values.title: Foo
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("~color") do
+            graph.data.series[2].color = "Oobleck"
+            @test_throws "ArgumentError: invalid graph.data.series[2].color: Oobleck" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
+
+        nested_test("stacked_mask") do
+            graph.configuration.stacking = StackValues
+            graph.data.series[2].bars.mask = fill(true, 11)
+            @test_throws chomp("""
+                               ArgumentError: can't specify both graph.data.series[2].bars.mask
+                               and graph.configuration.stacking
+                               """) validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("gap") do
@@ -219,12 +279,12 @@ nested_test("series_bars") do
         end
 
         nested_test("annotations") do
-            graph.data.bars_annotations =
+            graph.data.annotations =
                 [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
 
             nested_test("fixed") do
-                graph.data.bars_annotations[1].colors.fixed = "black"
-                @test_throws "ArgumentError: can't specify graph.data.bars_annotations[1].colors.fixed" validate(
+                graph.data.annotations[1].colors.fixed = "black"
+                @test_throws "ArgumentError: can't specify graph.data.annotations[1].colors.fixed" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
@@ -251,37 +311,29 @@ nested_test("series_bars") do
             graph.configuration.stacking = StackFractions
             foos[1] = -1
             @test_throws chomp("""
-                               ArgumentError: too low scaled graph.data.series_bars_values[1][1]: -1.0
+                               ArgumentError: too low scaled graph.data.series[1].values.values[1]: -1.0
                                is not at least: 0
                                when using graph.configuration.stacking: StackFractions
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("mirrored") do
-            graph.data.series_bars_values = [foos, bars, reverse(foos)]
+            push!(graph.data.series, SeriesData(; values = ValuesData(reverse(foos))))
             graph.configuration.mirrored = true
             @test_throws chomp("""
-                               ArgumentError: odd number of graph.data.series_bars_values: 3
+                               ArgumentError: odd number of graph.data.series: 3
                                when using graph.configuration.mirrored
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
-        nested_test("hovers") do
-            graph.data.bars_hovers = "B-" .* string.(collect(0:10))
-            graph.data.series_bars_hovers = ["F-" .* string.(collect(0:10)), "B-" .* string.(collect(0:10))]
-            @test_throws "ArgumentError: can't specify both graph.data.bars_hovers and graph.data.series_bars_hovers" validate(
-                ValidationContext(["graph"]),
-                graph,
-            )
-        end
-
         nested_test("title") do
-            graph.data.value_axis_title = "Values"
-            graph.data.series_names = ["Foo", "Bar"]
+            graph.data.series[1].values.title = "Values"
+            graph.data.series[1].name = "Foo"
+            graph.data.series[2].name = "Bar"
             graph.configuration.series_gap = 0.01
             @test_throws chomp(
                 """
-                ArgumentError: can't specify both graph.data.value_axis_title and graph.data.series_names
+                ArgumentError: can't specify both graph.data.series[*].values.title and graph.data.series[*].name
                 together with graph.configuration.series_gap
                 """,
             ) validate(ValidationContext(["graph"]), graph)
@@ -299,7 +351,7 @@ nested_test("series_bars") do
 
             nested_test("mirrored") do
                 graph.configuration.mirrored = true
-                graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                graph.data.names.values = "Foo-" .* string.(collect(0:10))
 
                 nested_test("()") do
                     test_html(graph, "series_bars.$(orientation_name).mirrored.html")
@@ -308,14 +360,19 @@ nested_test("series_bars") do
 
                 # The two sides are the only two sub-graphs, so the annotations are the spine between them.
                 nested_test("annotations") do
-                    graph.data.bars_annotations =
+                    graph.data.annotations =
                         [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
                     test_html(graph, "series_bars.$(orientation_name).mirrored.annotations.html")
                     return nothing
                 end
 
                 nested_test("pairs") do
-                    graph.data.series_bars_values = [foos, bars, reverse(foos), reverse(bars)]
+                    graph.data.series = [
+                        SeriesData(; values = ValuesData(foos)),
+                        SeriesData(; values = ValuesData(bars)),
+                        SeriesData(; values = ValuesData(reverse(foos))),
+                        SeriesData(; values = ValuesData(reverse(bars))),
+                    ]
 
                     nested_test("()") do
                         test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.html")
@@ -324,7 +381,7 @@ nested_test("series_bars") do
 
                     # Both pairs still share the two sides, so there is still a single spine to annotate.
                     nested_test("annotations") do
-                        graph.data.bars_annotations =
+                        graph.data.annotations =
                             [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
                         test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.annotations.html")
                         return nothing
@@ -340,7 +397,7 @@ nested_test("series_bars") do
 
                         # Each pair has a middle of its own and the graph has none, so the annotations stay outside.
                         nested_test("annotations") do
-                            graph.data.bars_annotations = [
+                            graph.data.annotations = [
                                 AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
                             ]
                             test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.annotations.html")
@@ -371,14 +428,15 @@ nested_test("series_bars") do
                 end
 
                 nested_test("names") do
-                    graph.data.series_names = ["Foo", "Bar"]
+                    graph.data.series[1].name = "Foo"
+                    graph.data.series[2].name = "Bar"
                     test_html(graph, "series_bars.$(orientation_name).gap.names.html")
                     return nothing
                 end
 
                 nested_test("annotations") do
                     nested_test("continuous") do
-                        graph.data.bars_annotations =
+                        graph.data.annotations =
                             [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
 
                         nested_test("()") do
@@ -387,14 +445,14 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.bars_annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.show_legend = true
                             test_html(graph, "series_bars.$(orientation_name).gap.continuous.legend.html")
                             return nothing
                         end
                     end
 
                     nested_test("categorical") do
-                        graph.data.bars_annotations = [
+                        graph.data.annotations = [
                             AnnotationData(;
                                 title = "is",
                                 values = [
@@ -422,14 +480,14 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.bars_annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.show_legend = true
                             test_html(graph, "series_bars.$(orientation_name).gap.categorical.legend.html")
                             return nothing
                         end
                     end
 
                     nested_test("both") do
-                        graph.data.bars_annotations = [
+                        graph.data.annotations = [
                             AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
                             AnnotationData(;
                                 title = "is",
@@ -451,7 +509,7 @@ nested_test("series_bars") do
                                 ),
                             ),
                         ]
-                        graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                        graph.data.names.values = "Foo-" .* string.(collect(0:10))
                         test_html(graph, "series_bars.$(orientation_name).gap.both.html")
                         return nothing
                     end
@@ -460,34 +518,44 @@ nested_test("series_bars") do
 
             nested_test("hovers") do
                 nested_test("both") do
-                    graph.data.series_hovers = ["Foo", "Bar"]
-                    graph.data.bars_hovers = "B-" .* string.(collect(0:10))
+                    graph.data.series[1].hover = "Foo"
+                    graph.data.series[2].hover = "Bar"
+                    graph.data.bars.hovers = "B-" .* string.(collect(0:10))
                     test_html(graph, "series_bars.$(orientation_name).hovers.both.html")
                     return nothing
                 end
 
                 nested_test("bars") do
-                    graph.data.bars_hovers = "B-" .* string.(collect(0:10))
+                    graph.data.bars.hovers = "B-" .* string.(collect(0:10))
                     test_html(graph, "series_bars.$(orientation_name).hovers.bars.html")
                     return nothing
                 end
 
                 nested_test("series") do
-                    graph.data.series_hovers = ["Foo", "Bar"]
+                    graph.data.series[1].hover = "Foo"
+                    graph.data.series[2].hover = "Bar"
                     test_html(graph, "series_bars.$(orientation_name).hovers.series.html")
                     return nothing
                 end
 
                 nested_test("series_bars") do
-                    graph.data.series_bars_hovers = ["F-" .* string.(collect(0:10)), "B-" .* string.(collect(0:10))]
+                    graph.data.series[1].bars.hovers = "F-" .* string.(collect(0:10))
+                    graph.data.series[2].bars.hovers = "B-" .* string.(collect(0:10))
 
                     nested_test("()") do
                         test_html(graph, "series_bars.$(orientation_name).hovers.series_bars.html")
                         return nothing
                     end
 
+                    nested_test("bars") do
+                        graph.data.bars.hovers = "S-" .* string.(collect(0:10))
+                        test_html(graph, "series_bars.$(orientation_name).hovers.series_bars.bars.html")
+                        return nothing
+                    end
+
                     nested_test("series") do
-                        graph.data.series_hovers = ["Foo", "Bar"]
+                        graph.data.series[1].hover = "Foo"
+                        graph.data.series[2].hover = "Bar"
                         test_html(graph, "series_bars.$(orientation_name).hovers.series_bars.series.html")
                         return nothing
                     end
@@ -496,7 +564,7 @@ nested_test("series_bars") do
 
             nested_test("annotations") do
                 nested_test("continuous") do
-                    graph.data.bars_annotations =
+                    graph.data.annotations =
                         [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
 
                     nested_test("()") do
@@ -505,14 +573,14 @@ nested_test("series_bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.bars_annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.show_legend = true
                         test_html(graph, "series_bars.$(orientation_name).continuous.legend.html")
                         return nothing
                     end
                 end
 
                 nested_test("categorical") do
-                    graph.data.bars_annotations = [
+                    graph.data.annotations = [
                         AnnotationData(;
                             title = "is",
                             values = [
@@ -540,14 +608,14 @@ nested_test("series_bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.bars_annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.show_legend = true
                         test_html(graph, "series_bars.$(orientation_name).categorical.legend.html")
                         return nothing
                     end
                 end
 
                 nested_test("both") do
-                    graph.data.bars_annotations = [
+                    graph.data.annotations = [
                         AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
                         AnnotationData(;
                             title = "is",
@@ -569,7 +637,7 @@ nested_test("series_bars") do
                             ),
                         ),
                     ]
-                    graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                    graph.data.names.values = "Foo-" .* string.(collect(0:10))
                     test_html(graph, "series_bars.$(orientation_name).both.html")
                     return nothing
                 end
@@ -584,7 +652,8 @@ nested_test("series_bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.series_names = ["Foo", "Bar"]
+                        graph.data.series[1].name = "Foo"
+                        graph.data.series[2].name = "Bar"
                         test_html(graph, "series_bars.$(orientation_name).values.legend.html")
                         return nothing
                     end
@@ -605,10 +674,11 @@ nested_test("series_bars") do
 
                 nested_test("annotations") do
                     graph.configuration.stacking = StackValues
-                    graph.data.series_names = ["Foo", "Bar"]
+                    graph.data.series[1].name = "Foo"
+                    graph.data.series[2].name = "Bar"
 
                     nested_test("continuous") do
-                        graph.data.bars_annotations =
+                        graph.data.annotations =
                             [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
 
                         nested_test("()") do
@@ -617,14 +687,14 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.bars_annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.show_legend = true
                             test_html(graph, "series_bars.$(orientation_name).values.continuous.legend.html")
                             return nothing
                         end
                     end
 
                     nested_test("categorical") do
-                        graph.data.bars_annotations = [
+                        graph.data.annotations = [
                             AnnotationData(;
                                 title = "is",
                                 values = [
@@ -652,14 +722,14 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.bars_annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.show_legend = true
                             test_html(graph, "series_bars.$(orientation_name).values.categorical.legend.html")
                             return nothing
                         end
                     end
 
                     nested_test("both") do
-                        graph.data.bars_annotations = [
+                        graph.data.annotations = [
                             AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
                             AnnotationData(;
                                 title = "is",
@@ -681,7 +751,7 @@ nested_test("series_bars") do
                                 ),
                             ),
                         ]
-                        graph.data.bars_names = "Foo-" .* string.(collect(0:10))
+                        graph.data.names.values = "Foo-" .* string.(collect(0:10))
                         test_html(graph, "series_bars.values.$(orientation_name).both.html")
                         return nothing
                     end

@@ -1275,37 +1275,10 @@ function Validations.validate(context::ValidationContext, data::LinesGraphData):
         return nothing
     end
 
-    lines_axis_title(context, data.lines, :x)
-    lines_axis_title(context, data.lines, :y)
+    shared_values_title(context, "lines", "x", [line.x for line in data.lines])
+    shared_values_title(context, "lines", "y", [line.y for line in data.lines])
 
     return nothing
-end
-
-# The axis title shared by the lines: the one non-`nothing` title of their `x` (or `y`) values.
-function lines_axis_title(
-    context::ValidationContext,
-    lines::AbstractVector{LineData},
-    axis::Symbol,
-)::Maybe{AbstractString}
-    title = nothing
-    title_line_index = 0
-    for (line_index, line) in enumerate(lines)
-        line_title = getfield(line, axis).title
-        if line_title !== nothing
-            if title === nothing
-                title = line_title
-                title_line_index = line_index
-            elseif line_title != title
-                throw(
-                    ArgumentError(
-                        "conflicting $(location(context)).lines[$(line_index)].$(axis).title: $(line_title)\n" *
-                        "is different from $(location(context)).lines[$(title_line_index)].$(axis).title: $(title)",
-                    ),
-                )
-            end
-        end
-    end
-    return title
 end
 
 """
@@ -1760,7 +1733,11 @@ end
 
 function data_axes_titles(graph::LinesGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
     context = ValidationContext(["graph.data"])
-    return (lines_axis_title(context, graph.data.lines, :x), lines_axis_title(context, graph.data.lines, :y))
+    lines = graph.data.lines
+    return (
+        shared_values_title(context, "lines", "x", [line.x for line in lines]),
+        shared_values_title(context, "lines", "y", [line.y for line in lines]),
+    )
 end
 
 function scatters_layout(;

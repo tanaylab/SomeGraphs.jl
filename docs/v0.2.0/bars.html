@@ -339,12 +339,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='inshY5adPg' class='' style=';'>
+<div id='gz7OMYUFTR' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("inshY5adPg")
+    const PLOT = document.getElementById("gz7OMYUFTR")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -366,12 +366,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='TuO7w6SyNl' class='' style=';'>
+<div id='HygMrZQFxf' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("TuO7w6SyNl")
+    const PLOT = document.getElementById("HygMrZQFxf")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","x":0}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -424,15 +424,10 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">function series_bars_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
-    bar_axis_title::Maybe{AbstractString} = nothing,
-    value_axis_title::Maybe{AbstractString} = nothing,
-    series_bars_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Vector{Float32}}(),
-    series_bars_hovers::Maybe{AbstractVector{&lt;:AbstractVector{&lt;:AbstractString}}} = nothing,
-    bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
-    bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
-    series_names::Maybe{AbstractVector{&lt;:Maybe{AbstractString}}} = nothing,
-    series_colors::Maybe{AbstractVector{&lt;:Maybe{AbstractString}}} = nothing,
-    series_hovers::Maybe{AbstractVector{&lt;:Maybe{AbstractString}}} = nothing,
+    series::AbstractVector{SeriesData} = SeriesData[],
+    names::ValuesData = ValuesData(),
+    bars::EntitiesData = EntitiesData(),
+    annotations::AbstractVector{AnnotationData} = AnnotationData[],
     configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration()]
 )::SeriesBarsGraph
 </code>
@@ -470,54 +465,74 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct SeriesBarsGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    bar_axis_title::Maybe{AbstractString} = nothing
-    value_axis_title::Maybe{AbstractString} = nothing
-    series_bars_values::AbstractVector{&lt;:AbstractVector{&lt;:Real}} = Vector{Vector{Float32}}()
-    series_bars_hovers::Maybe{AbstractVector{&lt;:AbstractVector{&lt;:AbstractString}}} = nothing
-    bars_names::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
-    bars_hovers::Maybe{AbstractVector{&lt;:AbstractString}} = nothing
-    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    series_names::Maybe{AbstractVector{&lt;:Maybe{AbstractString}}} = nothing
-    series_colors::Maybe{AbstractVector{&lt;:Maybe{AbstractString}}} = nothing
-    series_hovers::Maybe{AbstractVector{&lt;:Maybe{AbstractString}}} = nothing
+    series::AbstractVector{SeriesData} = SeriesData[]
+    names::ValuesData = ValuesData()
+    bars::EntitiesData = EntitiesData()
+    annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
 </code>
 </pre>
-<p>The data for a graph of multiple series of bars.
+<p>The data for a graph of multiple series of bars, a 
+<a href="bars.html#SomeGraphs.Bars.SeriesData">
+<code>SeriesData
+</code>
+</a> per series.
 </p>
-<p>All the vectors in the 
-<code>series_bars_values
-</code> must have the same length (the number of bars). The number of entries in 
-<code>bars_names
-</code> and/or 
-<code>bars_hovers
-</code> must be the same. The number of entries in 
-<code>series_names
-</code>, 
-<code>series_colors
-</code> and/or 
-<code>series_hovers
-</code> must be the number of series (the number of vectors in 
-<code>series_bars_values
-</code>). A 
-<code>nothing
-</code> entry in these vectors means the configuration default is used for that series.
+<p>All the series must have the same number of bars. The value axis title is the title of the series&#39; values: all the series that give one must give the same. The 
+<code>names
+</code> values (if any) are strings, one per bar, shown as the bar axis ticks; their title is the bar axis title. The 
+<code>bars
+</code> hold the hovers and mask shared by the bars of all the series; masked bars are left out of every series. You can even add annotations to the bars.
 </p>
-<p>The 
-<code>bars_hovers
-</code> give each bar the same hover in every series. Use 
-<code>series_bars_hovers
-</code> instead when a bar&#39;s hover depends on which series it is in; it must have the same shape as 
-<code>series_bars_values
-</code>, and only one of the two may be specified. Either way, the 
-<code>series_hovers
-</code> are prefixed to whichever is given.
+<p>The hover of a bar in a series is the 
+<code>hover
+</code> of the series, then the shared hover of the bar, then the hover of the bar in the series, skipping whichever is not specified.
 </p>
-<p>All the bars of each series have the same color. If the 
-<code>series_names
-</code> are specified, then they are used in a legend (or, if using 
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Bars.SeriesData">
+<a class="docstring-binding" href="#SomeGraphs.Bars.SeriesData">
+<code>SomeGraphs.Bars.SeriesData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct SeriesData
+    values::ValuesData = ValuesData()
+    bars::EntitiesData = EntitiesData()
+    name::Maybe{AbstractString} = nothing
+    hover::Maybe{AbstractString} = nothing
+    color::Maybe{AbstractString} = nothing
+end
+</code>
+</pre>
+<p>One series of a 
+<a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphData">
+<code>SeriesBarsGraphData
+</code>
+</a>. The 
+<code>values
+</code> are required and numeric, one per bar; their title is the value axis title shared by all the series. The 
+<code>bars
+</code> hold the hovers and mask of the bars of this series alone. The 
+<code>name
+</code> is shown in the legend (or, if using 
 <code>series_gap
-</code>, as the separate axes titles).
+</code>, as the title of the series&#39; own axis). The 
+<code>hover
+</code> (if any) is prefixed to the hover of each bar of the series. All the bars of a series have the same 
+<code>color
+</code>; a 
+<code>nothing
+</code> means the color is chosen automatically by Plotly.
 </p>
 </div>
 </section>
@@ -594,17 +609,22 @@ end
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = series_bars_graph(; series_bars_values = [collect(0:10) .* 5, collect(0:10) .^ 2])
+graph = series_bars_graph(;
+    series = [
+        SeriesData(; values = ValuesData(collect(0:10) .* 5)),
+        SeriesData(; values = ValuesData(collect(0:10) .^ 2)),
+    ],
+)
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='vprV8UgGHT' class='' style=';'>
+<div id='aqkFJvpVf8' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("vprV8UgGHT")
+    const PLOT = document.getElementById("aqkFJvpVf8")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -620,18 +640,23 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = series_bars_graph(; series_bars_values = [collect(0:10) .* 5, collect(0:10) .^ 2])
-graph.data.bars_annotations = [AnnotationData(; title = &quot;score&quot;, values = collect(0:10) .% 3)]
+graph = series_bars_graph(;
+    series = [
+        SeriesData(; values = ValuesData(collect(0:10) .* 5)),
+        SeriesData(; values = ValuesData(collect(0:10) .^ 2)),
+    ],
+)
+graph.data.annotations = [AnnotationData(; title = &quot;score&quot;, values = collect(0:10) .% 3)]
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='IbZCy9H3nQ' class='' style=';'>
+<div id='ZNQ7ytT37c' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("IbZCy9H3nQ")
+    const PLOT = document.getElementById("ZNQ7ytT37c")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","x":0}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -691,6 +716,12 @@ to_documenter(graph.figure)
 <li>
 <a href="bars.html#SomeGraphs.Bars.SeriesBarsGraphData">
 <code>SomeGraphs.Bars.SeriesBarsGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.SeriesData">
+<code>SomeGraphs.Bars.SeriesData
 </code>
 </a>
 </li>

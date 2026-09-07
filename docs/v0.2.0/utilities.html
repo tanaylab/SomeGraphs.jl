@@ -700,6 +700,45 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.shared_values_title">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.shared_values_title">
+<code>SomeGraphs.Utilities.shared_values_title
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">shared_values_title(
+    context::ValidationContext,
+    field::AbstractString,
+    role::AbstractString,
+    values_datas::AbstractVector{ValuesData},
+)::Maybe{AbstractString}
+</code>
+</pre>
+<p>The title shared by the 
+<code>values_datas
+</code> of the 
+<code>role
+</code> of the entries of a 
+<code>field
+</code> (e.g., the 
+<code>x
+</code> of each of the 
+<code>lines
+</code>): the one non-
+<code>nothing
+</code> title among them. Two different titles are an error.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.masked_values">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.masked_values">
 <code>SomeGraphs.Utilities.masked_values
@@ -1612,6 +1651,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.set_layout_colorscale!">
 <code>SomeGraphs.Utilities.set_layout_colorscale!
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.shared_values_title">
+<code>SomeGraphs.Utilities.shared_values_title
 </code>
 </a>
 </li>

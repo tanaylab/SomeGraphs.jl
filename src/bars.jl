@@ -9,6 +9,7 @@ export BarsGraphData
 export SeriesBarsGraph
 export SeriesBarsGraphConfiguration
 export SeriesBarsGraphData
+export SeriesData
 export bars_graph
 export series_bars_graph
 
@@ -350,99 +351,106 @@ function Validations.validate(context::ValidationContext, configuration::SeriesB
 end
 
 """
-    @kwdef mutable struct SeriesBarsGraphData <: AbstractGraphData
-        figure_title::Maybe{AbstractString} = nothing
-        bar_axis_title::Maybe{AbstractString} = nothing
-        value_axis_title::Maybe{AbstractString} = nothing
-        series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}()
-        series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing
-        bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-        bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-        series_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        series_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-        series_hovers::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+    @kwdef mutable struct SeriesData
+        values::ValuesData = ValuesData()
+        bars::EntitiesData = EntitiesData()
+        name::Maybe{AbstractString} = nothing
+        hover::Maybe{AbstractString} = nothing
+        color::Maybe{AbstractString} = nothing
     end
 
-The data for a graph of multiple series of bars.
+One series of a [`SeriesBarsGraphData`](@ref). The `values` are required and numeric, one per bar; their title is the
+value axis title shared by all the series. The `bars` hold the hovers and mask of the bars of this series alone. The
+`name` is shown in the legend (or, if using `series_gap`, as the title of the series' own axis). The `hover` (if any) is
+prefixed to the hover of each bar of the series. All the bars of a series have the same `color`; a `nothing` means the
+color is chosen automatically by Plotly.
+"""
+@kwdef mutable struct SeriesData
+    values::ValuesData = ValuesData()
+    bars::EntitiesData = EntitiesData()
+    name::Maybe{AbstractString} = nothing
+    hover::Maybe{AbstractString} = nothing
+    color::Maybe{AbstractString} = nothing
+end
 
-All the vectors in the `series_bars_values` must have the same length (the number of bars). The number of entries in
-`bars_names` and/or `bars_hovers` must be the same. The number of entries in `series_names`, `series_colors` and/or
-`series_hovers` must be the number of series (the number of vectors in `series_bars_values`). A `nothing` entry in
-these vectors means the configuration default is used for that series.
+function Validations.validate(context::ValidationContext, series::SeriesData)::Nothing
+    validate_numeric_values(context, "values.values", series.values.values; is_required = true)
 
-The `bars_hovers` give each bar the same hover in every series. Use `series_bars_hovers` instead when a bar's hover
-depends on which series it is in; it must have the same shape as `series_bars_values`, and only one of the two may be
-specified. Either way, the `series_hovers` are prefixed to whichever is given.
+    values = series.values.values
+    @assert values !== nothing
+    validate_vector_is_not_empty(context, "values.values", values)
+    n_bars = length(values)
 
-All the bars of each series have the same color. If the `series_names` are specified, then they are used in a legend
-(or, if using `series_gap`, as the separate axes titles).
+    validate_vector_length(context, "bars.hovers", series.bars.hovers, "values.values", n_bars)
+    validate_vector_length(context, "bars.mask", series.bars.mask, "values.values", n_bars)
+
+    validate_in(context, "color") do
+        validate_is_color(context, series.color)
+        return nothing
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct SeriesBarsGraphData <: AbstractGraphData
+        figure_title::Maybe{AbstractString} = nothing
+        series::AbstractVector{SeriesData} = SeriesData[]
+        names::ValuesData = ValuesData()
+        bars::EntitiesData = EntitiesData()
+        annotations::AbstractVector{AnnotationData} = AnnotationData[]
+    end
+
+The data for a graph of multiple series of bars, a [`SeriesData`](@ref) per series.
+
+All the series must have the same number of bars. The value axis title is the title of the series' values: all the
+series that give one must give the same. The `names` values (if any) are strings, one per bar, shown as the bar axis
+ticks; their title is the bar axis title. The `bars` hold the hovers and mask shared by the bars of all the series;
+masked bars are left out of every series. You can even add annotations to the bars.
+
+The hover of a bar in a series is the `hover` of the series, then the shared hover of the bar, then the hover of the bar
+in the series, skipping whichever is not specified.
 """
 @kwdef mutable struct SeriesBarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    bar_axis_title::Maybe{AbstractString} = nothing
-    value_axis_title::Maybe{AbstractString} = nothing
-    series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}()
-    series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing
-    bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-    bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-    bars_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    series_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    series_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
-    series_hovers::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing
+    series::AbstractVector{SeriesData} = SeriesData[]
+    names::ValuesData = ValuesData()
+    bars::EntitiesData = EntitiesData()
+    annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
 
 function Validations.validate(context::ValidationContext, data::SeriesBarsGraphData)::Nothing
-    validate_vector_is_not_empty(context, "series_bars_values", data.series_bars_values)
+    validate_vector_is_not_empty(context, "series", data.series)
+    validate_string_values(context, "names.values", data.names.values)
 
-    n_series = length(data.series_bars_values)
-    n_bars = length(data.series_bars_values[1])
+    validate_vector_entries(context, "series", data.series) do _, series
+        validate(context, series)
+        return nothing
+    end
 
-    for series_index in 1:n_series
-        validate_vector_is_not_empty(
-            context,
-            "series_bars_values[$(series_index)]",
-            data.series_bars_values[series_index],
-        )
+    first_values = data.series[1].values.values
+    @assert first_values !== nothing
+    n_bars = length(first_values)
+    for (series_index, series) in enumerate(data.series)
         validate_vector_length(
             context,
-            "series_bars_values[$(series_index)]",
-            data.series_bars_values[series_index],
-            "series_bars_values[1]",
+            "series[$(series_index)].values.values",
+            series.values.values,
+            "series[1].values.values",
             n_bars,
         )
     end
 
-    series_bars_hovers = data.series_bars_hovers
-    if series_bars_hovers !== nothing
-        validate_vector_length(context, "series_bars_hovers", series_bars_hovers, "series_bars_values", n_series)
-        for series_index in 1:n_series
-            validate_vector_length(
-                context,
-                "series_bars_hovers[$(series_index)]",
-                series_bars_hovers[series_index],
-                "series_bars_values[*]",
-                n_bars,
-            )
-        end
-    end
+    validate_vector_length(context, "names.values", data.names.values, "series[1].values.values", n_bars)
+    validate_vector_length(context, "bars.hovers", data.bars.hovers, "series[1].values.values", n_bars)
+    validate_vector_length(context, "bars.mask", data.bars.mask, "series[1].values.values", n_bars)
 
-    validate_vector_length(context, "bars_names", data.bars_names, "series_bars_values[*]", n_bars)
-    validate_vector_length(context, "bars_hovers", data.bars_hovers, "series_bars_values[*]", n_bars)
-
-    validate_vector_entries(context, "bars_annotations", data.bars_annotations) do _, bars_annotation
-        validate(context, bars_annotation, "series_bars_values[*]", n_bars)
+    validate_vector_entries(context, "annotations", data.annotations) do _, annotation
+        validate(context, annotation, "series[1].values.values", n_bars)
         return nothing
     end
 
-    validate_vector_length(context, "series_names", data.series_names, "series_bars_values", n_series)
-    validate_vector_length(context, "series_colors", data.series_colors, "series_bars_values", n_series)
-    validate_vector_length(context, "series_hovers", data.series_hovers, "series_bars_values", n_series)
-
-    validate_vector_entries(context, "series_colors", data.series_colors) do _, series_color
-        validate_is_color(context, series_color)
-        return nothing
-    end
+    shared_values_title(context, "series", "values", [series.values for series in data.series])
 
     return nothing
 end
@@ -455,15 +463,10 @@ SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
 """
     function series_bars_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        bar_axis_title::Maybe{AbstractString} = nothing,
-        value_axis_title::Maybe{AbstractString} = nothing,
-        series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}(),
-        series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing,
-        bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        series_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-        series_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-        series_hovers::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
+        series::AbstractVector{SeriesData} = SeriesData[],
+        names::ValuesData = ValuesData(),
+        bars::EntitiesData = EntitiesData(),
+        annotations::AbstractVector{AnnotationData} = AnnotationData[],
         configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration()]
     )::SeriesBarsGraph
 
@@ -472,51 +475,45 @@ Create a [`SeriesBarsGraph`](@ref) by initializing only the [`SeriesBarsGraphDat
 """
 function series_bars_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    bar_axis_title::Maybe{AbstractString} = nothing,
-    value_axis_title::Maybe{AbstractString} = nothing,
-    series_bars_values::AbstractVector{<:AbstractVector{<:Real}} = Vector{Vector{Float32}}(),
-    series_bars_hovers::Maybe{AbstractVector{<:AbstractVector{<:AbstractString}}} = nothing,
-    bars_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    bars_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    series_names::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    series_colors::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
-    series_hovers::Maybe{AbstractVector{<:Maybe{AbstractString}}} = nothing,
+    series::AbstractVector{SeriesData} = SeriesData[],
+    names::ValuesData = ValuesData(),
+    bars::EntitiesData = EntitiesData(),
+    annotations::AbstractVector{AnnotationData} = AnnotationData[],
     configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration(),
 )::SeriesBarsGraph
-    return SeriesBarsGraph(
-        SeriesBarsGraphData(;
-            figure_title,
-            bar_axis_title,
-            value_axis_title,
-            series_bars_values,
-            series_bars_hovers,
-            bars_names,
-            bars_hovers,
-            series_names,
-            series_colors,
-            series_hovers,
-        ),
-        configuration,
+    return SeriesBarsGraph(SeriesBarsGraphData(; figure_title, series, names, bars, annotations), configuration)
+end
+
+# The value axis title shared by the series.
+function series_value_axis_title(graph::SeriesBarsGraph)::Maybe{AbstractString}
+    return shared_values_title(
+        ValidationContext(["graph.data"]),
+        "series",
+        "values",
+        [series.values for series in graph.data.series],
     )
 end
 
 function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
-    n_series = length(graph.data.series_bars_values)
-    for series_index in 1:n_series
+    n_series = length(graph.data.series)
+    for (series_index, series) in enumerate(graph.data.series)
+        values = numeric_values(series.values)
+        values_context = ValidationContext(["graph.data.series", series_index, "values.values"])
         validate_values(
-            ValidationContext(["graph.data.series_bars_values", series_index]),
-            graph.data.series_bars_values[series_index],
+            values_context,
+            values,
             ValidationContext(["graph.configuration.value_axis"]),
             graph.configuration.value_axis,
         )
 
         if graph.configuration.stacking == StackFractions
-            for (bar_index, bar_value) in enumerate(graph.data.series_bars_values[series_index])
+            @assert values !== nothing
+            for (bar_index, bar_value) in enumerate(values)
                 scaled_value = scale_axis_value(graph.configuration.value_axis, bar_value)
                 if scaled_value === nothing || scaled_value < 0
                     throw(
                         ArgumentError(
-                            "too low scaled graph.data.series_bars_values[$(series_index)][$(bar_index)]: $(scaled_value)\n" *
+                            "too low scaled $(location(values_context))[$(bar_index)]: $(scaled_value)\n" *
                             "is not at least: 0\n" *
                             "when using graph.configuration.stacking: StackFractions",
                         ),
@@ -524,18 +521,24 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
                 end
             end
         end
+
+        # Stacking adds up the series bar by bar, so the bars of one series can't be masked on their own.
+        if graph.configuration.stacking !== nothing && series.bars.mask !== nothing
+            throw(
+                ArgumentError(
+                    "can't specify both graph.data.series[$(series_index)].bars.mask\n" *
+                    "and graph.configuration.stacking",
+                ),
+            )
+        end
     end
 
-    if graph.data.bars_hovers !== nothing && graph.data.series_bars_hovers !== nothing
-        throw(ArgumentError("can't specify both graph.data.bars_hovers and graph.data.series_bars_hovers"))
-    end
-
-    if graph.data.value_axis_title !== nothing &&
-       graph.data.series_names !== nothing &&
+    if series_value_axis_title(graph) !== nothing &&
+       any(series.name !== nothing for series in graph.data.series) &&
        graph.configuration.series_gap !== nothing
         throw(
             ArgumentError(
-                "can't specify both graph.data.value_axis_title and graph.data.series_names\n" *
+                "can't specify both graph.data.series[*].values.title and graph.data.series[*].name\n" *
                 "together with graph.configuration.series_gap",
             ),
         )
@@ -543,10 +546,7 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
 
     if graph.configuration.mirrored && n_series % 2 != 0
         throw(
-            ArgumentError(
-                "odd number of graph.data.series_bars_values: $(n_series)\n" *
-                "when using graph.configuration.mirrored",
-            ),
+            ArgumentError("odd number of graph.data.series: $(n_series)\n" * "when using graph.configuration.mirrored"),
         )
     end
 
@@ -555,10 +555,38 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         graphs_gap = graph.configuration.series_gap,
         n_graphs = n_series,
         annotation_size = graph.configuration.bars_annotations,
-        n_annotations = length(graph.data.bars_annotations),
+        n_annotations = length(graph.data.annotations),
     )
 
     return nothing
+end
+
+# The combination of the mask shared by all the series and the mask of one series (if any).
+function combined_mask(
+    shared_mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+    series_mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::Maybe{Union{AbstractVector{Bool}, BitVector}}
+    if shared_mask === nothing
+        return series_mask
+    elseif series_mask === nothing
+        return shared_mask
+    else
+        return shared_mask .& series_mask
+    end
+end
+
+# Join two sets of hovers (if any) line by line.
+function joined_hovers(
+    first_hovers::Maybe{AbstractVector{<:AbstractString}},
+    second_hovers::Maybe{AbstractVector{<:AbstractString}},
+)::Maybe{AbstractVector{<:AbstractString}}
+    if first_hovers === nothing
+        return second_hovers
+    elseif second_hovers === nothing
+        return first_hovers
+    else
+        return first_hovers .* "<br>" .* second_hovers
+    end
 end
 
 # Widen a range to include zero, which is where a bar is measured from - so a bar graph whose values are all far from
@@ -618,8 +646,18 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     implicit_values_range = MaybeRange()
 
-    n_series = length(graph.data.series_bars_values)
-    n_bars = length(graph.data.series_bars_values[1])
+    all_series = graph.data.series
+    n_series = length(all_series)
+    first_values = numeric_values(all_series[1].values)
+    @assert first_values !== nothing
+    n_bars = length(first_values)
+
+    shared_mask = graph.data.bars.mask
+    # Default names are given before masking so masked out bars do not shift the names of the rest.
+    default_names = prefer_data(string_values(graph.data.names), string.(1:n_bars))
+    names = masked_values(default_names, shared_mask, nothing)
+    bars_hovers = masked_values(graph.data.bars.hovers, shared_mask, nothing)
+    annotations = [masked_annotation(annotation, shared_mask) for annotation in graph.data.annotations]
 
     n_axes = n_value_axes(graph.configuration, n_series)
 
@@ -632,23 +670,27 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         specific_scaled_ranges = MaybeRange[MaybeRange() for _ in 1:n_axes]
     end
 
-    show_in_legend = graph.data.series_names !== nothing && graph.configuration.series_gap === nothing
+    show_in_legend = any(series.name !== nothing for series in all_series) && graph.configuration.series_gap === nothing
+    has_hovers = false
 
-    for series_index in 1:n_series
-        if graph.data.series_bars_hovers === nothing
-            bars_hovers = graph.data.bars_hovers
-        else
-            bars_hovers = graph.data.series_bars_hovers[series_index]
-        end
+    for (series_index, series) in enumerate(all_series)
+        series_mask = combined_mask(shared_mask, series.bars.mask)
+        values = numeric_values(series.values)
+        @assert values !== nothing
+        values = masked_values(values, series_mask, nothing)
 
-        series_hover = prefer_data(graph.data.series_hovers, series_index, nothing)
-        if series_hover === nothing
-            hovers = bars_hovers
-        elseif bars_hovers === nothing
-            hovers = fill(series_hover, n_bars)
-        else
-            hovers = ["$(series_hover)<br>$(bar_hover)" for bar_hover in bars_hovers]
+        hovers = joined_hovers(
+            masked_values(graph.data.bars.hovers, series_mask, nothing),
+            masked_values(series.bars.hovers, series_mask, nothing),
+        )
+        if series.hover !== nothing
+            if hovers === nothing
+                hovers = fill(series.hover, length(values))
+            else
+                hovers = "$(series.hover)<br>" .* hovers
+            end
         end
+        has_hovers |= hovers !== nothing
 
         if graph.configuration.stacking === nothing
             implicit_values_range = common_implicit_values_range
@@ -663,17 +705,17 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                 n_graphs = n_axes,
                 graphs_gap = value_axes_gap(graph.configuration),
                 mirrored = graph.configuration.mirrored,
-                n_annotations = length(graph.data.bars_annotations),
+                n_annotations = length(annotations),
                 annotation_size = graph.configuration.bars_annotations,
             ),
-            name = prefer_data(graph.data.series_names, series_index, nothing),
-            values = graph.data.series_bars_values[series_index],
+            name = series.name,
+            values,
             value_axis = graph.configuration.value_axis,
             values_orientation = graph.configuration.values_orientation,
-            color = prefer_data(graph.data.series_colors, series_index, nothing),
+            color = series.color,
             hovers,
             show_in_legend,
-            names = graph.data.bars_names,
+            names = masked_values(default_names, series_mask, nothing),
             implicit_values_range,
         )
 
@@ -751,7 +793,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     has_legend_only_traces = [false]
     annotations_colors = push_annotations_traces!(;
         traces,
-        names = graph.data.bars_names,
+        names,
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
         n_graphs = n_axes,
@@ -759,15 +801,16 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         mirrored = graph.configuration.mirrored,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.bars_annotations,
+        annotations_data = annotations,
         annotation_size = graph.configuration.bars_annotations,
-        entries_hovers = graph.data.bars_hovers,
+        entries_hovers = bars_hovers,
     )
 
     layout = bars_layout(;
         graph,
-        has_tick_names = graph.data.bars_names !== nothing,
+        has_tick_names = graph.data.names.values !== nothing,
         has_legend = show_in_legend,
+        has_hovers,
         implicit_values_range,
         specific_scaled_ranges,
         annotations_colors,
@@ -1020,16 +1063,7 @@ function data_axes_titles(graph::BarsGraph)::Tuple{Maybe{AbstractString}, Maybe{
 end
 
 function data_axes_titles(graph::SeriesBarsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
-    return (graph.data.value_axis_title, graph.data.bar_axis_title)
-end
-
-# The annotations of the bars given in the graph data.
-function data_annotations(graph::BarsGraph)::AbstractVector{AnnotationData}
-    return graph.data.annotations
-end
-
-function data_annotations(graph::SeriesBarsGraph)::AbstractVector{AnnotationData}
-    return graph.data.bars_annotations
+    return (series_value_axis_title(graph), graph.data.names.title)
 end
 
 function bars_layout(;
@@ -1091,7 +1125,7 @@ function bars_layout(;
         else
             @assert graph.configuration.stacking === nothing
         end
-        n_series = length(graph.data.series_bars_values)
+        n_series = length(graph.data.series)  # NOJET
         graphs_gap = value_axes_gap(graph.configuration)  # NOJET
         n_graphs = n_value_axes(graph.configuration, n_series)  # NOJET
         mirrored = graph.configuration.mirrored
@@ -1137,9 +1171,8 @@ function bars_layout(;
             if graph.configuration.series_gap === nothing
                 title = prefer_data(value_axis_title, graph.configuration.value_axis.title)
             else
-                title = prefer_data(  # NOJET
-                    graph.data.series_names,
-                    value_axis_index,
+                title = prefer_data(
+                    graph.data.series[value_axis_index].name,  # NOJET
                     prefer_data(value_axis_title, graph.configuration.value_axis.title),
                 )
             end
@@ -1198,9 +1231,8 @@ function bars_layout(;
     end
 
     layout["annotations"] = plotly_annotations = []
-    annotations_data = data_annotations(graph)
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
-        annotation_data = annotations_data[annotation_index]
+        annotation_data = graph.data.annotations[annotation_index]
         sub_graph =
             SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
         push_plotly_annotation!(;

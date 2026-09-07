@@ -31,6 +31,7 @@ export scale_axis_values
 export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
+export shared_values_title
 export string_values
 export SubGraph
 export validate_axis_sizes
@@ -884,6 +885,44 @@ function string_values(values_data::ValuesData)::Maybe{AbstractVector{<:Abstract
     values = values_data.values
     @assert values === nothing || values isa AbstractVector{<:AbstractString}
     return values
+end
+
+"""
+    shared_values_title(
+        context::ValidationContext,
+        field::AbstractString,
+        role::AbstractString,
+        values_datas::AbstractVector{ValuesData},
+    )::Maybe{AbstractString}
+
+The title shared by the `values_datas` of the `role` of the entries of a `field` (e.g., the `x` of each of the `lines`):
+the one non-`nothing` title among them. Two different titles are an error.
+"""
+function shared_values_title(
+    context::ValidationContext,
+    field::AbstractString,
+    role::AbstractString,
+    values_datas::AbstractVector{ValuesData},
+)::Maybe{AbstractString}
+    title = nothing
+    title_index = 0
+    for (index, values_data) in enumerate(values_datas)
+        entry_title = values_data.title
+        if entry_title !== nothing
+            if title === nothing
+                title = entry_title
+                title_index = index
+            elseif entry_title != title
+                throw(
+                    ArgumentError(
+                        "conflicting $(location(context)).$(field)[$(index)].$(role).title: $(entry_title)\n" *
+                        "is different from $(location(context)).$(field)[$(title_index)].$(role).title: $(title)",
+                    ),
+                )
+            end
+        end
+    end
+    return title
 end
 
 """
