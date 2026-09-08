@@ -26,6 +26,7 @@ export distributions_graph
 using PlotlyBase
 
 using ..Common
+using ..Sources
 using ..Utilities
 using ..Validations
 
@@ -580,6 +581,20 @@ function collect_hidden_values_range!(
     return nothing
 end
 
+"""
+    distribution_values_fields(graph::DistributionGraph)::AxisFields
+
+The values of the distribution, along the `value_axis`.
+"""
+function Sources.distribution_values_fields(graph::DistributionGraph)::AxisFields
+    distribution = graph.data.distribution
+    return VectorFields(
+        distribution.values,
+        distribution.points,
+        AxisConfigurationFields(graph.configuration.value_axis),
+    )
+end
+
 function Common.validate_graph(graph::DistributionGraph)::Nothing
     values = numeric_values(graph.data.distribution.values)
     @assert values !== nothing
@@ -600,6 +615,20 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
     validate_graph_bands("cumulative_bands", graph.configuration.cumulative_bands, graph.data.cumulative_bands)
 
     return nothing
+end
+
+"""
+    distributions_values_fields(graph::DistributionsGraph, index::Integer)::AxisFields
+
+The values of the `index` distribution, along the (shared) `value_axis`.
+"""
+function Sources.distributions_values_fields(graph::DistributionsGraph, index::Integer)::AxisFields
+    distribution = graph.data.distributions[index]
+    return VectorFields(
+        distribution.values,
+        distribution.points,
+        AxisConfigurationFields(graph.configuration.value_axis),
+    )
 end
 
 function Common.validate_graph(graph::DistributionsGraph)::Nothing

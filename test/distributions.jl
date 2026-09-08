@@ -274,6 +274,14 @@ nested_test("distribution") do
               "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .figure to show the graph)"
     end
 
+    nested_test("fields") do
+        fields = distribution_values_fields(graph)
+        @test fields.data.values === graph.data.distribution.values
+        @test fields.data.entities === graph.data.distribution.points
+        @test fields.configuration.axis === graph.configuration.value_axis
+        return nothing
+    end
+
     nested_test("mask") do
         n_values = length(graph.data.distribution.values.values)
 
@@ -492,6 +500,14 @@ nested_test("distributions") do
             #! format: on
         ],
     )
+
+    nested_test("fields") do
+        fields = distributions_values_fields(graph, 2)
+        @test fields.data.values === graph.data.distributions[2].values
+        @test fields.data.entities === graph.data.distributions[2].points
+        @test fields.configuration.axis === graph.configuration.value_axis
+        return nothing
+    end
 
     nested_test("nothing") do
         graph.data.distributions[1].name = "Foo"

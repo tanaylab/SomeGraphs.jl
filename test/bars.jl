@@ -26,6 +26,26 @@ nested_test("bars") do
         return nothing
     end
 
+    nested_test("fields") do
+        fields = values_fields(graph)
+        @test fields.data.values === graph.data.values
+        @test fields.data.entities === graph.data.bars
+        @test fields.configuration.axis === graph.configuration.value_axis
+
+        fields = colors_fields(graph)
+        @test fields.data.values === graph.data.colors
+        @test fields.data.entities === graph.data.bars
+        @test fields.configuration.axis === graph.configuration.colors.axis
+        @test fields.configuration.colors === graph.configuration.colors
+
+        graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+        fields = annotations_fields(graph, 1)
+        @test fields.data.values === graph.data.annotations[1].values
+        @test fields.data.entities === graph.data.bars
+        @test fields.configuration.colors === graph.data.annotations[1].colors
+        return nothing
+    end
+
     nested_test("mask") do
         graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
         graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
@@ -209,6 +229,21 @@ nested_test("series_bars") do
         graph.data.series[2].color = "red"
         graph.data.series[1].hover = "Foo"
         test_html(graph, "series_bars.nothing.html")
+        return nothing
+    end
+
+    nested_test("fields") do
+        fields = series_values_fields(graph, 2)
+        @test fields.data.values === graph.data.series[2].values
+        @test fields.data.entities === graph.data.series[2].bars
+        @test fields.configuration.axis === graph.configuration.value_axis
+
+        graph.data.annotations =
+            [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+        fields = annotations_fields(graph, 1)
+        @test fields.data.values === graph.data.annotations[1].values
+        @test fields.data.entities === graph.data.bars
+        @test fields.configuration.colors === graph.data.annotations[1].colors
         return nothing
     end
 

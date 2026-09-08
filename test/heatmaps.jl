@@ -5,6 +5,27 @@ nested_test("heatmaps") do
         8 9 10 11;
     ]))
 
+    nested_test("fields") do
+        fields = entries_fields(graph)
+        @test fields.data.values === graph.data.entries
+        @test fields.data.entities === graph.data.cells
+        @test fields.configuration.axis === graph.configuration.entries.colors.axis
+        @test fields.configuration.colors === graph.configuration.entries.colors
+
+        graph.data.rows.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0], "score"))]
+        fields = rows_annotations_fields(graph, 1)
+        @test fields.data.values === graph.data.rows.annotations[1].values
+        @test fields.data.entities === graph.data.rows.entities
+        @test fields.configuration.colors === graph.data.rows.annotations[1].colors
+
+        graph.data.columns.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+        fields = columns_annotations_fields(graph, 1)
+        @test fields.data.values === graph.data.columns.annotations[1].values
+        @test fields.data.entities === graph.data.columns.entities
+        @test fields.configuration.colors === graph.data.columns.annotations[1].colors
+        return nothing
+    end
+
     nested_test("invalid") do
         nested_test("fixed") do
             graph.configuration.entries.colors.fixed = "black"

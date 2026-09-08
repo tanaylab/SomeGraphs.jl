@@ -75,6 +75,55 @@ nested_test("points") do
         return nothing
     end
 
+    nested_test("fields") do
+        fields = x_fields(graph)
+        @test fields.data.values === graph.data.x
+        @test fields.data.entities === graph.data.points.entities
+        @test fields.configuration.axis === graph.configuration.x_axis
+
+        fields = y_fields(graph)
+        @test fields.data.values === graph.data.y
+        @test fields.data.entities === graph.data.points.entities
+        @test fields.configuration.axis === graph.configuration.y_axis
+
+        fields = points_colors_fields(graph)
+        @test fields.data.values === graph.data.points.colors
+        @test fields.data.entities === graph.data.points.entities
+        @test fields.configuration.axis === graph.configuration.points.colors.axis
+        @test fields.configuration.colors === graph.configuration.points.colors
+
+        fields = points_sizes_fields(graph)
+        @test fields.data.values === graph.data.points.sizes
+        @test fields.data.entities === graph.data.points.entities
+        @test fields.configuration.axis === graph.configuration.points.sizes.axis
+        @test fields.configuration.sizes === graph.configuration.points.sizes
+
+        fields = borders_colors_fields(graph)
+        @test fields.data.values === graph.data.borders.colors
+        @test fields.data.entities === graph.data.points.entities
+        @test fields.configuration.colors === graph.configuration.borders.colors
+
+        fields = borders_sizes_fields(graph)
+        @test fields.data.values === graph.data.borders.sizes
+        @test fields.data.entities === graph.data.points.entities
+        @test fields.configuration.sizes === graph.configuration.borders.sizes
+
+        fields = edges_colors_fields(graph)
+        @test fields.data.values === graph.data.edges.colors
+        @test fields.data.entities === graph.data.edges.entities
+        @test fields.configuration.colors === graph.configuration.edges.colors
+
+        fields = edges_sizes_fields(graph)
+        @test fields.data.values === graph.data.edges.sizes
+        @test fields.data.entities === graph.data.edges.entities
+        @test fields.configuration.sizes === graph.configuration.edges.sizes
+
+        # Hovers added through one view of the points are seen through all of them.
+        add_hovers!(x_fields(graph).data.entities, string.(1:11); title = "X")
+        @test points_colors_fields(graph).data.entities.hovers == "X: " .* string.(1:11)
+        return nothing
+    end
+
     nested_test("mask") do
         graph.data.points.entities.mask = [true, true, true, true, true, true, false, false, false, false, false]
 
@@ -721,6 +770,19 @@ nested_test("line") do
         return nothing
     end
 
+    nested_test("fields") do
+        fields = x_fields(graph)
+        @test fields.data.values === graph.data.x
+        @test fields.data.entities === graph.data.points
+        @test fields.configuration.axis === graph.configuration.x_axis
+
+        fields = y_fields(graph)
+        @test fields.data.values === graph.data.y
+        @test fields.data.entities === graph.data.points
+        @test fields.configuration.axis === graph.configuration.y_axis
+        return nothing
+    end
+
     nested_test("hovers") do
         graph.data.points.hovers = ["H: $(index)" for index in 1:11]
         test_html(graph, "line.hovers.html")
@@ -868,6 +930,19 @@ nested_test("lines") do
 
     nested_test("()") do
         test_html(graph, "lines.html")
+        return nothing
+    end
+
+    nested_test("fields") do
+        fields = x_fields(graph, 2)
+        @test fields.data.values === graph.data.lines[2].x
+        @test fields.data.entities === graph.data.lines[2].points
+        @test fields.configuration.axis === graph.configuration.x_axis
+
+        fields = y_fields(graph, 2)
+        @test fields.data.values === graph.data.lines[2].y
+        @test fields.data.entities === graph.data.lines[2].points
+        @test fields.configuration.axis === graph.configuration.y_axis
         return nothing
     end
 

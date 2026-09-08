@@ -15,6 +15,7 @@ export bars_graph
 export series_bars_graph
 
 using ..Common
+using ..Sources
 using ..Utilities
 using ..Validations
 
@@ -181,6 +182,34 @@ function bars_graph(;
         BarsGraphData(; figure_title, values, names, bars, colors, annotations, value_bands),
         configuration,
     )
+end
+
+"""
+    values_fields(graph::BarsGraph)::AxisFields
+
+The values of the bars, along the `value_axis`.
+"""
+function Sources.values_fields(graph::BarsGraph)::AxisFields
+    return VectorFields(graph.data.values, graph.data.bars, AxisConfigurationFields(graph.configuration.value_axis))
+end
+
+"""
+    colors_fields(graph::BarsGraph)::ColorsFields
+
+The colors of the bars.
+"""
+function Sources.colors_fields(graph::BarsGraph)::ColorsFields
+    return VectorFields(graph.data.colors, graph.data.bars, ColorsConfigurationFields(graph.configuration.colors))
+end
+
+"""
+    annotations_fields(graph::BarsGraph, index::Integer)::ColorsFields
+
+The `index` annotation of the bars, which shares the entities of the bars.
+"""
+function Sources.annotations_fields(graph::BarsGraph, index::Integer)::ColorsFields
+    annotation = graph.data.annotations[index]
+    return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
 end
 
 function Common.validate_graph(graph::BarsGraph)::Nothing
@@ -505,6 +534,27 @@ function series_value_axis_title(graph::SeriesBarsGraph)::Maybe{AbstractString}
         "values",
         [series.values for series in graph.data.series],
     )
+end
+
+"""
+    series_values_fields(graph::SeriesBarsGraph, index::Integer)::AxisFields
+
+The values of the bars of the `index` series, along the (shared) `value_axis`. The entities are the bars of the series
+alone.
+"""
+function Sources.series_values_fields(graph::SeriesBarsGraph, index::Integer)::AxisFields
+    series = graph.data.series[index]
+    return VectorFields(series.values, series.bars, AxisConfigurationFields(graph.configuration.value_axis))
+end
+
+"""
+    annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
+
+The `index` annotation of the bars, which shares the entities of the bars (the ones shared by all the series).
+"""
+function Sources.annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
+    annotation = graph.data.annotations[index]
+    return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
 end
 
 function Common.validate_graph(graph::SeriesBarsGraph)::Nothing

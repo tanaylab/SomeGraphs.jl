@@ -14,6 +14,9 @@ include("common.jl")
 include("utilities.jl")
 @reexport using .Utilities
 
+include("sources.jl")
+@reexport using .Sources
+
 include("distributions.jl")
 @reexport using .Distributions
 

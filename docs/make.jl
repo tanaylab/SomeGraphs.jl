@@ -41,6 +41,7 @@ makedocs(;
         "scatters.md",
         "bars.md",
         "heatmaps.md",
+        "sources.md",
         "utilities.md",
     ],
 )

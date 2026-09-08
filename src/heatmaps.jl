@@ -35,6 +35,7 @@ export WardLinkage
 export WardPreSquaredLinkage
 
 using ..Common
+using ..Sources
 using ..Utilities
 using ..Validations
 
@@ -469,6 +470,35 @@ function entries_values(graph::HeatmapGraph)::AbstractMatrix{<:Real}
     values = graph.data.entries.values
     @assert values !== nothing
     return values
+end
+
+"""
+    entries_fields(graph::HeatmapGraph)::MatrixFields
+
+The entries of the heatmap, colored by the `entries.colors`.
+"""
+function Sources.entries_fields(graph::HeatmapGraph)::MatrixFields
+    return MatrixFields(graph.data.entries, graph.data.cells, graph.configuration.entries.colors)
+end
+
+"""
+    rows_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+
+The `index` annotation of the rows, which shares the entities of the rows.
+"""
+function Sources.rows_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+    annotation = graph.data.rows.annotations[index]
+    return VectorFields(annotation.values, graph.data.rows.entities, ColorsConfigurationFields(annotation.colors))
+end
+
+"""
+    columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+
+The `index` annotation of the columns, which shares the entities of the columns.
+"""
+function Sources.columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+    annotation = graph.data.columns.annotations[index]
+    return VectorFields(annotation.values, graph.data.columns.entities, ColorsConfigurationFields(annotation.colors))
 end
 
 function Common.validate_graph(graph::HeatmapGraph)::Nothing
