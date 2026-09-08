@@ -77,8 +77,22 @@ nested_test("points") do
 
     nested_test("mask") do
         graph.data.points.entities.mask = [true, true, true, true, true, true, false, false, false, false, false]
-        test_html(graph, "points.mask.html")
-        return nothing
+
+        nested_test("()") do
+            test_html(graph, "points.mask.html")
+            return nothing
+        end
+
+        nested_test("!hidden") do
+            graph.configuration.x_axis.include_hidden = false
+            graph.configuration.y_axis.include_hidden = false
+            graph.data.points.colors.values = collect(0:10)
+            graph.data.points.sizes.values = collect(0:10)
+            graph.configuration.points.colors.axis.include_hidden = false
+            graph.configuration.points.sizes.axis.include_hidden = false
+            test_html(graph, "points.mask.!hidden.html")
+            return nothing
+        end
     end
 
     nested_test("hovers") do
@@ -715,8 +729,18 @@ nested_test("line") do
 
     nested_test("mask") do
         graph.data.points.mask = [true, true, true, true, true, true, false, false, false, false, false]
-        test_html(graph, "line.mask.html")
-        return nothing
+
+        nested_test("()") do
+            test_html(graph, "line.mask.html")
+            return nothing
+        end
+
+        nested_test("!hidden") do
+            graph.configuration.x_axis.include_hidden = false
+            graph.configuration.y_axis.include_hidden = false
+            test_html(graph, "line.mask.!hidden.html")
+            return nothing
+        end
     end
 
     nested_test("width") do
@@ -893,8 +917,18 @@ nested_test("lines") do
     nested_test("mask") do
         nested_test("points") do
             graph.data.lines[1].points.mask = [true, true, true, true, true, true, false, false, false, false, false]
-            test_html(graph, "lines.mask.points.html")
-            return nothing
+
+            nested_test("()") do
+                test_html(graph, "lines.mask.points.html")
+                return nothing
+            end
+
+            nested_test("!hidden") do
+                graph.configuration.x_axis.include_hidden = false
+                graph.configuration.y_axis.include_hidden = false
+                test_html(graph, "lines.mask.points.!hidden.html")
+                return nothing
+            end
         end
 
         nested_test("lines") do

@@ -196,17 +196,6 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
     return nothing
 end
 
-# An annotation restricted to the unmasked entries.
-function masked_annotation(
-    annotation::AnnotationData,
-    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
-)::AnnotationData
-    return AnnotationData(;
-        values = ValuesData(masked_values(annotation.values.values, mask, nothing), annotation.values.title),
-        colors = annotation.colors,
-    )
-end
-
 function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
@@ -219,33 +208,36 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     n_bars = length(values)
     mask = graph.data.bars.mask
 
-    # Default names are given before masking so masked out bars do not shift the names of the rest.
-    names = masked_values(prefer_data(string_values(graph.data.names), string.(1:n_bars)), mask, nothing)
-    values = masked_values(values, mask, nothing)
+    # Default names are given before masking so hidden bars do not shift the names of the rest.
+    default_names = prefer_data(string_values(graph.data.names), string.(1:n_bars))
+    names = masked_values(default_names, mask, nothing)
     hovers = masked_values(graph.data.bars.hovers, mask, nothing)
-    annotations = [masked_annotation(annotation, mask) for annotation in graph.data.annotations]
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
         colors_configuration = graph.configuration.bars_colors,
         colors_title = prefer_data(graph.data.colors.title, graph.configuration.bars_colors.title),
-        colors_values = masked_values(graph.data.colors.values, mask, nothing),
+        colors_values = graph.data.colors.values,
         next_colors_scale_index,
+        mask,
     )
 
-    push_bar_trace!(;
+    push_bar_trace!(;  # NOJET
         traces,
         sub_graph = SubGraph(;
             index = 1,
             n_graphs = 1,
             graphs_gap = nothing,
-            n_annotations = length(annotations),
+            n_annotations = length(graph.data.annotations),
             annotation_size = graph.configuration.bars_annotations,
         ),
-        values,
+        values = masked_values(values, mask, nothing),
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
-        color = prefer_data(colors.final_colors_values, colors.colors_configuration.fixed),
+        color = prefer_data(
+            masked_values(colors.final_colors_values, mask, nothing),
+            colors.colors_configuration.fixed,
+        ),
         hovers,
         names,
         show_in_legend = false,
@@ -253,19 +245,27 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         colors_scale_index = colors.colors_scale_index,
     )
 
+    collect_hidden_range!(
+        implicit_values_range,
+        graph.configuration.value_axis,
+        scale_axis_values(graph.configuration.value_axis, values; clamp = false),
+        mask,
+    )
     collect_zero_range!(implicit_values_range, graph.configuration.value_axis)
 
     has_legend_only_traces = [false]
     annotations_colors = push_annotations_traces!(;
         traces,
-        names,
+        names = default_names,
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = annotations,
+        annotations_data = graph.data.annotations,
         annotation_size = graph.configuration.bars_annotations,
-        entries_hovers = hovers,
+        entries_hovers = graph.data.bars.hovers,
+        mask,
+        order = mask === nothing ? nothing : findall(mask),
     )
 
     layout = bars_layout(;
@@ -651,16 +651,15 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     n_bars = length(first_values)
 
     shared_mask = graph.data.bars.mask
-    # Default names are given before masking so masked out bars do not shift the names of the rest.
+    # Default names are given before masking so hidden bars do not shift the names of the rest.
     default_names = prefer_data(string_values(graph.data.names), string.(1:n_bars))
-    names = masked_values(default_names, shared_mask, nothing)
-    bars_hovers = masked_values(graph.data.bars.hovers, shared_mask, nothing)
-    annotations = [masked_annotation(annotation, shared_mask) for annotation in graph.data.annotations]
 
     n_axes = n_value_axes(graph.configuration, n_series)
 
+    # The hidden bars take part in the ranges (unless the axis says otherwise); stacked, through their own totals.
     common_implicit_values_range = MaybeRange()
     total_scaled_values_per_axis = Maybe{AbstractVector{<:AbstractFloat}}[nothing for _ in 1:n_axes]
+    all_total_scaled_values_per_axis = Maybe{AbstractVector{<:AbstractFloat}}[nothing for _ in 1:n_axes]
     specific_scaled_values = Vector{AbstractVector{<:Real}}(undef, n_series)
     if n_axes == 1
         specific_scaled_ranges = nothing
@@ -673,9 +672,9 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     for (series_index, series) in enumerate(all_series)
         series_mask = combined_mask(shared_mask, series.bars.mask)
-        values = numeric_values(series.values)
-        @assert values !== nothing
-        values = masked_values(values, series_mask, nothing)
+        all_values = numeric_values(series.values)
+        @assert all_values !== nothing
+        values = masked_values(all_values, series_mask, nothing)
 
         hovers = joined_hovers(
             masked_values(graph.data.bars.hovers, series_mask, nothing),
@@ -703,7 +702,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                 n_graphs = n_axes,
                 graphs_gap = value_axes_gap(graph.configuration),
                 mirrored = graph.configuration.mirrored,
-                n_annotations = length(annotations),
+                n_annotations = length(graph.data.annotations),
                 annotation_size = graph.configuration.bars_annotations,
             ),
             name = series.name,
@@ -719,21 +718,36 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
         specific_scaled_values[series_index] = scaled_values
         axis_index = value_axis_index(graph.configuration, series_index)
+        all_scaled_values = scale_axis_values(graph.configuration.value_axis, all_values; clamp = false)
 
         # Stacked, it is the totals below which say how far each axis has to reach, so they are collected instead.
-        if specific_scaled_ranges !== nothing && graph.configuration.stacking === nothing
-            collect_range!(specific_scaled_ranges[axis_index], scaled_values)
-            if graph.configuration.mirrored
-                collect_range!(specific_scaled_ranges[mirror_value_axis_index(axis_index)], scaled_values)
+        if graph.configuration.stacking === nothing
+            collect_hidden_range!(implicit_values_range, graph.configuration.value_axis, all_scaled_values, series_mask)
+            if specific_scaled_ranges !== nothing
+                range_axes_indices =
+                    graph.configuration.mirrored ? (axis_index, mirror_value_axis_index(axis_index)) : (axis_index,)
+                for range_axis_index in range_axes_indices
+                    collect_range!(specific_scaled_ranges[range_axis_index], scaled_values)
+                    collect_hidden_range!(
+                        specific_scaled_ranges[range_axis_index],
+                        graph.configuration.value_axis,
+                        all_scaled_values,
+                        series_mask,
+                    )
+                end
             end
         end
 
         if graph.configuration.stacking !== nothing
             total_scaled_values = total_scaled_values_per_axis[axis_index]
+            all_total_scaled_values = all_total_scaled_values_per_axis[axis_index]
             if total_scaled_values === nothing
                 total_scaled_values_per_axis[axis_index] = copy(scaled_values)
+                all_total_scaled_values_per_axis[axis_index] = copy(all_scaled_values)
             else
+                @assert all_total_scaled_values !== nothing
                 total_scaled_values .+= scaled_values
+                all_total_scaled_values .+= all_scaled_values
             end
         end
     end
@@ -741,11 +755,26 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     if graph.configuration.stacking == StackValues
         for (axis_index, total_scaled_values) in enumerate(total_scaled_values_per_axis)
             @assert total_scaled_values !== nothing
+            all_total_scaled_values = all_total_scaled_values_per_axis[axis_index]
+            @assert all_total_scaled_values !== nothing
             if specific_scaled_ranges === nothing
                 collect_range!(implicit_values_range, total_scaled_values)
+                collect_hidden_range!(
+                    implicit_values_range,
+                    graph.configuration.value_axis,
+                    all_total_scaled_values,
+                    shared_mask,
+                )
             else
-                collect_range!(specific_scaled_ranges[axis_index], total_scaled_values)
-                collect_range!(specific_scaled_ranges[mirror_value_axis_index(axis_index)], total_scaled_values)
+                for range_axis_index in (axis_index, mirror_value_axis_index(axis_index))
+                    collect_range!(specific_scaled_ranges[range_axis_index], total_scaled_values)
+                    collect_hidden_range!(
+                        specific_scaled_ranges[range_axis_index],
+                        graph.configuration.value_axis,
+                        all_total_scaled_values,
+                        shared_mask,
+                    )
+                end
             end
         end
 
@@ -791,7 +820,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     has_legend_only_traces = [false]
     annotations_colors = push_annotations_traces!(;
         traces,
-        names,
+        names = default_names,
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
         n_graphs = n_axes,
@@ -799,9 +828,11 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         mirrored = graph.configuration.mirrored,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = annotations,
+        annotations_data = graph.data.annotations,
         annotation_size = graph.configuration.bars_annotations,
-        entries_hovers = bars_hovers,
+        entries_hovers = graph.data.bars.hovers,
+        mask = shared_mask,
+        order = shared_mask === nothing ? nothing : findall(shared_mask),
     )
 
     layout = bars_layout(;
@@ -891,6 +922,7 @@ function push_annotations_traces!(;
     annotations_data::AbstractVector{AnnotationData},
     annotation_size::AnnotationSize,
     entries_hovers::Maybe{AbstractVector{<:AbstractString}},
+    mask::Maybe{Union{BitVector, AbstractVector{Bool}}} = nothing,
     order::Maybe{AbstractVector{<:Integer}} = nothing,
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}} = nothing,
 )::AbstractVector{ConfiguredColors}
@@ -911,12 +943,15 @@ function push_annotations_traces!(;
             entries_hovers,
             next_colors_scale_index,
             has_legend_only_traces,
+            mask,
             order,
             expanded_mask,
         ) for (annotation_index, annotation_data) in enumerate(annotations_data)
     ]
 end
 
+# Push the traces of one annotation. The annotation values, `entries_hovers` and `names` cover all the entries; the
+# `order` (if any) selects the shown entries, in the order they are shown in, and the `mask` (if any) marks them.
 function push_annotation_traces!(;
     traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
@@ -933,6 +968,7 @@ function push_annotation_traces!(;
     entries_hovers::Maybe{AbstractVector{<:AbstractString}},
     next_colors_scale_index::AbstractVector{<:Integer},
     has_legend_only_traces::AbstractVector{Bool},
+    mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
     order::Maybe{AbstractVector{<:Integer}},
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::ConfiguredColors
@@ -945,6 +981,7 @@ function push_annotation_traces!(;
         colors_title = annotation_title,
         colors_values = annotation_values,
         next_colors_scale_index,
+        mask,
     )
 
     sub_graph = SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
@@ -978,7 +1015,11 @@ function push_annotation_traces!(;
     push_bar_trace!(;  # NOJET
         traces,
         sub_graph,
-        values = expanded_mask !== nothing ? expanded_mask : fill(1.0, length(annotation_values)),
+        values = if expanded_mask !== nothing
+            expanded_mask
+        else
+            fill(1.0, order === nothing ? length(annotation_values) : length(order))
+        end,
         value_axis = AxisConfiguration(;
             minimum = 0,
             maximum = 1,

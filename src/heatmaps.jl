@@ -106,6 +106,7 @@ end
         reorder::Maybe{HeatmapReorder} = nothing
         linkage::Maybe{HeatmapLinkage} = nothing
         metric::Maybe{PreMetric} = nothing
+        include_hidden::Bool = true
         groups_gap::Maybe{Integer} = 1
         subgroups_gap::Maybe{Integer} = nothing
         dendogram_size::Maybe{Real} = nothing
@@ -117,6 +118,11 @@ the sizes of the annotations shown to the side of the axis.
 
 You can use `reorder` to reorder the entries of the axis. When specifying `linkage`, by default, the clustering uses the
 `Euclidean` distance metric. You can override this by specifying the `metric`.
+
+By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not
+move the rest. Set `include_hidden` to `false` to cluster the shown entries only. Either way the resulting order and
+tree (see [`heatmap_order`](@ref)) describe all the entries; when the hidden ones were left out of the clustering, they
+come last, joined to the root of the tree. This has no effect on an `Hclust` given in the data, which is used as is.
 
 If groups are specified for the entries in the [`HeatmapAxisData`](@ref), they can be used to constrain the clustering,
 and/or to create visible gaps in the heatmap (between entries of different groups). The `groups_gap` is the number of
@@ -145,6 +151,7 @@ If a dendogram tree is shown, the `dendogram_line` can be used to control it. Th
     reorder::Maybe{HeatmapReorder} = nothing
     linkage::Maybe{HeatmapLinkage} = nothing
     metric::Maybe{PreMetric} = nothing
+    include_hidden::Bool = true
     groups_gap::Maybe{Integer} = 1
     subgroups_gap::Maybe{Integer} = nothing
     dendogram_size::Maybe{Real} = nothing
@@ -810,6 +817,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotations_data = graph.data.columns.annotations,
         annotation_size = graph.configuration.columns.annotations,
         entries_hovers = graph.data.columns.entities.hovers,
+        mask = columns_mask,
         order = columns_order,
         expanded_mask = expanded_columns_mask,
     )
@@ -825,6 +833,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotations_data = graph.data.rows.annotations,
         annotation_size = graph.configuration.rows.annotations,
         entries_hovers = graph.data.rows.entities.hovers,
+        mask = rows_mask,
         order = rows_order,
         expanded_mask = expanded_rows_mask,
     )
@@ -1055,7 +1064,126 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     return plotly_figure(traces, layout)
 end
 
+# Whether the clustering of an axis leaves out its hidden entries. A given tree covers all of them, so it is used as is.
+function is_clustering_shown(axis_data::HeatmapAxisData, axis_configuration::HeatmapAxisConfiguration)::Bool
+    return !axis_configuration.include_hidden && axis_data.entities.mask !== nothing && !(axis_data.order isa Hclust)
+end
+
+# The data of an axis restricted to its shown entries, for clustering them alone: the shown entries of the (explicit)
+# order, the groups and subgroups, and the matching dimension of the `arrange_by` matrix. Nothing else takes part in the
+# clustering.
+function shown_axis_data(
+    axis::HeatmapAxisData,
+    mask::Union{AbstractVector{Bool}, BitVector},
+    dimension::Integer,
+)::HeatmapAxisData
+    order = axis.order
+    if order !== nothing
+        @assert order isa AbstractVector
+        shown_positions = cumsum(mask)
+        order = [shown_positions[index] for index in order if mask[index]]
+    end
+
+    arrange_by = axis.arrange_by
+    if arrange_by !== nothing
+        arrange_by = dimension == 1 ? arrange_by[mask, :] : arrange_by[:, mask]
+    end
+
+    return HeatmapAxisData(;
+        order,
+        groups = masked_values(axis.groups, mask, nothing),
+        subgroups = masked_values(axis.subgroups, mask, nothing),
+        arrange_by,
+    )
+end
+
+# The order of an axis clustered without its hidden entries, extended to all the entries: the shown ones in their order,
+# then the hidden ones.
+function all_entries_order(
+    order::AbstractVector{<:Integer},
+    mask::Union{AbstractVector{Bool}, BitVector},
+)::AbstractVector{<:Integer}
+    return vcat(findall(mask)[order], findall(.!mask))
+end
+
+# The tree of an axis clustered without its hidden entries, extended to all the entries: the leaves renumbered back to
+# the entries they stand for, and each hidden entry joined to the root at the height of the tree, so the order of the
+# tree is the order above.
+function all_entries_hclust(clusters::Hclust, mask::Union{AbstractVector{Bool}, BitVector})::Hclust
+    shown_indices = findall(mask)
+
+    merges = copy(clusters.merges)
+    is_leaf = merges .< 0
+    merges[is_leaf] .= .-shown_indices[.-merges[is_leaf]]
+
+    heights = copy(clusters.heights)
+    top_height = isempty(heights) ? zero(eltype(heights)) : maximum(heights)
+    root = isempty(heights) ? -shown_indices[1] : length(heights)
+    for hidden_index in findall(.!mask)
+        merges = vcat(merges, [root -hidden_index])
+        push!(heights, top_height)
+        root = length(heights)
+    end
+
+    return Hclust(merges, heights, all_entries_order(clusters.order, mask), clusters.linkage)
+end
+
 function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+    rows_mask = is_clustering_shown(graph.data.rows, graph.configuration.rows) ? graph.data.rows.entities.mask : nothing
+    columns_mask = if is_clustering_shown(graph.data.columns, graph.configuration.columns)
+        graph.data.columns.entities.mask
+    else
+        nothing
+    end
+
+    # An axis copying the order of the other one clusters nothing itself, so it is clustered (and completed) exactly as
+    # the axis it copies from; its own mask only matters when it is displayed.
+    if graph.configuration.rows.reorder == SameOrder
+        rows_mask = columns_mask
+    elseif graph.configuration.columns.reorder == SameOrder
+        columns_mask = rows_mask
+    end
+
+    if rows_mask === nothing && columns_mask === nothing
+        return compute_clustered_order(graph)
+    end
+
+    values = entries_values(graph)
+    clustered_graph = HeatmapGraph(
+        HeatmapGraphData(;
+            entries = MatrixData(
+                values[rows_mask === nothing ? (:) : rows_mask, columns_mask === nothing ? (:) : columns_mask],
+            ),
+            rows = rows_mask === nothing ? graph.data.rows : shown_axis_data(graph.data.rows, rows_mask, 1),
+            columns = if columns_mask === nothing
+                graph.data.columns
+            else
+                shown_axis_data(graph.data.columns, columns_mask, 2)
+            end,
+        ),
+        graph.configuration,
+    )
+    clustered_order = compute_clustered_order(clustered_graph)
+
+    rows_order = clustered_order.rows_order
+    rows_hclust = clustered_order.rows_hclust
+    if rows_mask !== nothing
+        rows_order = all_entries_order(rows_order, rows_mask)
+        rows_hclust = rows_hclust === nothing ? nothing : all_entries_hclust(rows_hclust, rows_mask)
+    end
+
+    columns_order = clustered_order.columns_order
+    columns_hclust = clustered_order.columns_hclust
+    if columns_mask !== nothing
+        columns_order = all_entries_order(columns_order, columns_mask)
+        columns_hclust = columns_hclust === nothing ? nothing : all_entries_hclust(columns_hclust, columns_mask)
+    end
+
+    return HeatmapGraphOrder(rows_order, rows_hclust, columns_order, columns_hclust)
+end
+
+# The order of the entries of a graph, clustering all of them.
+function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
     data_rows_arrange_by = prefer_data(graph.data.rows.arrange_by, entries_values(graph))
     data_columns_arrange_by = prefer_data(graph.data.columns.arrange_by, entries_values(graph))
     @assert data_rows_arrange_by !== nothing

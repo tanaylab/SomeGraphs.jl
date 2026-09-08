@@ -276,9 +276,19 @@ nested_test("distribution") do
 
     nested_test("mask") do
         n_values = length(graph.data.distribution.values.values)
-        graph.data.distribution.points.mask = [index % 3 != 0 for index in 1:n_values]
-        test_html(graph, "distribution.mask.html")
-        return nothing
+
+        nested_test("()") do
+            graph.data.distribution.points.mask = [index % 3 != 0 for index in 1:n_values]
+            test_html(graph, "distribution.mask.html")
+            return nothing
+        end
+
+        nested_test("!hidden") do
+            graph.data.distribution.points.mask = [index < n_values - 1 for index in 1:n_values]
+            graph.configuration.value_axis.include_hidden = false
+            test_html(graph, "distribution.mask.!hidden.html")
+            return nothing
+        end
     end
 
     nested_test("hovers") do
@@ -492,9 +502,19 @@ nested_test("distributions") do
 
     nested_test("mask") do
         n_values = length(graph.data.distributions[2].values.values)
-        graph.data.distributions[2].points.mask = [index % 3 != 0 for index in 1:n_values]
-        test_html(graph, "distributions.mask.html")
-        return nothing
+
+        nested_test("()") do
+            graph.data.distributions[2].points.mask = [index % 3 != 0 for index in 1:n_values]
+            test_html(graph, "distributions.mask.html")
+            return nothing
+        end
+
+        nested_test("!hidden") do
+            graph.data.distributions[2].points.mask = [index < n_values - 1 for index in 1:n_values]
+            graph.configuration.value_axis.include_hidden = false
+            test_html(graph, "distributions.mask.!hidden.html")
+            return nothing
+        end
     end
 
     nested_test("hovers") do

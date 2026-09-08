@@ -655,6 +655,18 @@ nested_test("heatmaps") do
             test_html(graph, "heatmap.reorder.columns=rows.html")
             return nothing
         end
+
+        # The rows copy the columns order, which was clustered without the hidden column; both put it last.
+        nested_test("!hidden") do
+            graph.data.columns.entities.mask = [true, false, true]
+            graph.configuration.columns.reorder = OptimalHclust
+            graph.configuration.columns.include_hidden = false
+            graph.configuration.rows.reorder = SameOrder
+            test_html(graph, "heatmap.reorder.rows=columns.!hidden.html")
+            @test graph.order.rows_order == graph.order.columns_order
+            @test graph.order.columns_order[end] == 2
+            return nothing
+        end
     end
 
     nested_test("mask") do
@@ -678,9 +690,18 @@ nested_test("heatmaps") do
         ]
 
         nested_test("rows") do
-            graph.data.rows.entities.mask = [true, false, true]
-            test_html(graph, "heatmap.mask.rows.html")
-            return nothing
+            nested_test("()") do
+                graph.data.rows.entities.mask = [true, false, true]
+                test_html(graph, "heatmap.mask.rows.html")
+                return nothing
+            end
+
+            nested_test("!hidden") do
+                graph.data.rows.entities.mask = [true, true, false]
+                graph.data.rows.annotations[1].colors.axis.include_hidden = false
+                test_html(graph, "heatmap.mask.rows.!hidden.html")
+                return nothing
+            end
         end
 
         nested_test("columns") do
@@ -707,6 +728,28 @@ nested_test("heatmaps") do
             return nothing
         end
 
+        # Rows clustered without the hidden row, which comes last; the columns are left alone.
+        nested_test("!hidden") do
+            graph.data.rows.entities.mask = [true, false, true]
+            graph.configuration.rows.include_hidden = false
+
+            nested_test("order") do
+                graph.data.rows.order = [3, 2, 1]
+                graph.configuration.rows.reorder = ReorderHclust
+                @test graph.order.rows_order == [3, 1, 2]
+                return nothing
+            end
+
+            nested_test("arrange_by") do
+                graph.data.rows.arrange_by = Float32[1 2; 3 4; 5 6]
+                graph.configuration.rows.reorder = OptimalHclust
+                @test sort(graph.order.rows_order) == 1:3
+                @test graph.order.rows_order[end] == 2
+                @test graph.order.columns_order == 1:4
+                return nothing
+            end
+        end
+
         # The clustering sees all the columns, hidden ones included; only the drawn tree is pruned.
         nested_test("dendogram") do
             graph.configuration.columns.reorder = OptimalHclust
@@ -727,6 +770,22 @@ nested_test("heatmaps") do
             nested_test("first") do
                 graph.data.columns.entities.mask = [false, true, true, true]
                 test_html(graph, "heatmap.mask.dendogram.first.html")
+                return nothing
+            end
+
+            # The clustering sees only the shown columns; the order and the tree still cover all of them, hidden last.
+            nested_test("!hidden") do
+                graph.data.columns.entities.mask = [true, false, true, true]
+                graph.configuration.columns.include_hidden = false
+                test_html(graph, "heatmap.mask.dendogram.!hidden.html")
+                @test sort(graph.order.columns_order) == 1:4
+                @test graph.order.columns_order[end] == 2
+                @test graph.order.columns_hclust.order == graph.order.columns_order
+
+                other_graph = heatmap_graph(; entries = MatrixData(graph.data.entries.values))
+                other_graph.data.columns.entities.mask = graph.data.columns.entities.mask
+                other_graph.data.columns.order = graph.order.columns_hclust
+                @test other_graph.order.columns_order == graph.order.columns_order
                 return nothing
             end
         end

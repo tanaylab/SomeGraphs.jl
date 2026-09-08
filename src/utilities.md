@@ -40,6 +40,8 @@ SomeGraphs.Utilities.push_diagonal_bands_shapes
 SomeGraphs.Utilities.MaybeRange
 SomeGraphs.Utilities.Range
 SomeGraphs.Utilities.collect_range!
+SomeGraphs.Utilities.collect_hidden_range!
+SomeGraphs.Utilities.range_values
 SomeGraphs.Utilities.final_scaled_range
 SomeGraphs.Utilities.prefer_data
 ```

@@ -563,6 +563,23 @@ function displayed_hovers(distribution::DistributionData, n_values::Integer)::Ma
     return hovers
 end
 
+# Collect the hidden values of a distribution into the implicit range of the value axis (if the axis includes them).
+function collect_hidden_values_range!(
+    implicit_values_range::MaybeRange,
+    value_axis::AxisConfiguration,
+    distribution::DistributionData,
+)::Nothing
+    values = numeric_values(distribution.values)
+    @assert values !== nothing
+    collect_hidden_range!(
+        implicit_values_range,
+        value_axis,
+        scale_axis_values(value_axis, values; clamp = false),
+        distribution.points.mask,
+    )
+    return nothing
+end
+
 function Common.validate_graph(graph::DistributionGraph)::Nothing
     values = numeric_values(graph.data.distribution.values)
     @assert values !== nothing
@@ -646,6 +663,7 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
             is_one_of_many = false,
         ),
     )
+    collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
 
     return plotly_figure(
         traces,
@@ -697,6 +715,7 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
                 is_one_of_many = graph.configuration.distributions_gap === nothing,
             ),
         )
+        collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
     end
 
     return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend, has_hovers))

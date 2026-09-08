@@ -28,10 +28,23 @@ nested_test("bars") do
 
     nested_test("mask") do
         graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
-        graph.data.bars.mask = [true, false, true, true]
         graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
-        test_html(graph, "bars.mask.html")
-        return nothing
+
+        nested_test("()") do
+            graph.data.bars.mask = [true, false, true, true]
+            test_html(graph, "bars.mask.html")
+            return nothing
+        end
+
+        nested_test("!hidden") do
+            graph.data.bars.mask = [true, true, false, false]
+            graph.data.colors.values = [0, 1, 2, 3]
+            graph.configuration.value_axis.include_hidden = false
+            graph.configuration.bars_colors.axis.include_hidden = false
+            graph.data.annotations[1].colors.axis.include_hidden = false
+            test_html(graph, "bars.mask.!hidden.html")
+            return nothing
+        end
     end
 
     for (orientation_name, orientation_value) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
@@ -220,6 +233,13 @@ nested_test("series_bars") do
             graph.data.bars.mask = [true, true, true, true, true, true, true, true, false, false, false]
             graph.data.series[2].bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
             test_html(graph, "series_bars.mask.both.html")
+            return nothing
+        end
+
+        nested_test("!hidden") do
+            graph.data.bars.mask = [true, true, true, true, true, true, true, true, false, false, false]
+            graph.configuration.value_axis.include_hidden = false
+            test_html(graph, "series_bars.mask.!hidden.html")
             return nothing
         end
     end

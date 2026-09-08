@@ -450,9 +450,15 @@ end
     range::Range
 end
 
-function scaled_data(axis_configuration::AxisConfiguration, values::AbstractVector{<:Real})::ScaledData
+# The scaled values of an axis, and their range (which covers the hidden values too, unless the axis says otherwise).
+function scaled_data(
+    axis_configuration::AxisConfiguration,
+    values::AbstractVector{<:Real},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::ScaledData
     scaled_values = scale_axis_values(axis_configuration, values)
-    implicit_scaled_range = Range(; minimum = minimum(scaled_values), maximum = maximum(scaled_values))
+    ranged_values = range_values(axis_configuration, scaled_values, mask)
+    implicit_scaled_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
     scaled_range = final_scaled_range(implicit_scaled_range, axis_configuration)
     return ScaledData(; values = scaled_values, range = scaled_range)
 end
@@ -488,7 +494,7 @@ function configured_scatters(;
 
     pixel_size = scatters_configuration.sizes.fixed
     if pixel_size === nothing
-        pixel_sizes = scale_size_values(scatters_configuration.sizes, size_values)
+        pixel_sizes = scale_size_values(scatters_configuration.sizes, size_values, mask)
         if pixel_sizes === nothing
             pixel_size = scatters_configuration.sizes.smallest
         end
@@ -523,12 +529,12 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     points_ys = numeric_values(graph.data.y)
     @assert points_xs !== nothing
     @assert points_ys !== nothing
-    scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs)
-    scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys)
+    points = graph.data.points
+    scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs, points.entities.mask)
+    scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys, points.entities.mask)
 
     next_colors_scale_index = [1]
 
-    points = graph.data.points
     configured_points = configured_scatters(;
         legend_group = "Points",
         scatters_configuration = graph.configuration.points,
@@ -1020,10 +1026,10 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
     points_ys = numeric_values(graph.data.y)
     @assert points_xs !== nothing
     @assert points_ys !== nothing
-    scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs)
-    scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys)
-
     mask = graph.data.points.mask
+    scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs, mask)
+    scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys, mask)
+
     hovers = masked_values(graph.data.points.hovers, mask, nothing)
 
     traces = Vector{GenericTrace}()
@@ -1435,6 +1441,11 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     lines_indices =
         [line_index for line_index in prefer_data(graph.data.order, 1:length(lines)) if lines[line_index].is_shown]
 
+    # The hidden points are collected into the ranges here; the shown ones below, after the stacking (if any) unified
+    # them. Stacked, the Y range is that of the totals, which the hidden points are not part of.
+    implicit_scaled_xs_range = MaybeRange()
+    implicit_scaled_ys_range = MaybeRange()
+
     scaled_lines_points_xs = AbstractVector{<:Real}[]
     scaled_lines_points_ys = AbstractVector{<:Real}[]
     lines_points_hovers = Maybe{AbstractVector{<:AbstractString}}[]
@@ -1445,14 +1456,14 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         @assert points_xs !== nothing
         @assert points_ys !== nothing
         mask = line.points.mask
-        push!(
-            scaled_lines_points_xs,
-            masked_values(scale_axis_values(graph.configuration.x_axis, points_xs), mask, nothing),
-        )
-        push!(
-            scaled_lines_points_ys,
-            masked_values(scale_axis_values(graph.configuration.y_axis, points_ys), mask, nothing),
-        )
+        scaled_points_xs = scale_axis_values(graph.configuration.x_axis, points_xs)
+        scaled_points_ys = scale_axis_values(graph.configuration.y_axis, points_ys)
+        collect_hidden_range!(implicit_scaled_xs_range, graph.configuration.x_axis, scaled_points_xs, mask)
+        if graph.configuration.stacking === nothing
+            collect_hidden_range!(implicit_scaled_ys_range, graph.configuration.y_axis, scaled_points_ys, mask)
+        end
+        push!(scaled_lines_points_xs, masked_values(scaled_points_xs, mask, nothing))
+        push!(scaled_lines_points_ys, masked_values(scaled_points_ys, mask, nothing))
         push!(lines_points_hovers, masked_values(line.points.hovers, mask, nothing))
     end
 
@@ -1462,13 +1473,11 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
             unify_lines_points(scaled_lines_points_xs, scaled_lines_points_ys)
     end
 
-    implicit_scaled_xs_range = MaybeRange()
     for scaled_points_xs in scaled_lines_points_xs
         collect_range!(implicit_scaled_xs_range, scaled_points_xs)
     end
     scaled_xs_range = final_scaled_range(implicit_scaled_xs_range, graph.configuration.x_axis)
 
-    implicit_scaled_ys_range = MaybeRange()
     if graph.configuration.stacking == StackValues
         implicit_scaled_ys_range = stacked_scaled_ys_range
     else

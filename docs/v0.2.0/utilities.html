@@ -857,6 +857,7 @@ scale_axis_values(
 <code class="language-julia hljs">scale_size_values(
     sizes_configuration::SizesConfiguration,
     values::Maybe{AbstractVector{&lt;:Real}},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Maybe{AbstractVector{&lt;:Real}}
 </code>
 </pre>
@@ -864,7 +865,11 @@ scale_axis_values(
 <code>values
 </code> according to 
 <code>sizes_configuration
-</code>.
+</code>. The 
+<code>mask
+</code> (if any) marks the shown entities; the hidden ones are left out of the implicit range of the sizes unless the axis 
+<code>include_hidden
+</code> is set.
 </p>
 </div>
 </section>
@@ -1399,6 +1404,73 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.collect_hidden_range!">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.collect_hidden_range!">
+<code>SomeGraphs.Utilities.collect_hidden_range!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">collect_hidden_range!(
+    range::MaybeRange,
+    axis_configuration::AxisConfiguration,
+    scaled_values::AbstractVector{&lt;:Real},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::Nothing
+</code>
+</pre>
+<p>Expand the implicit 
+<code>range
+</code> of an axis to cover the hidden 
+<code>scaled_values
+</code> (the ones whose 
+<code>mask
+</code> is false), if the axis does 
+<code>include_hidden
+</code>. The shown values are collected by whoever draws them.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.range_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.range_values">
+<code>SomeGraphs.Utilities.range_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">range_values(
+    axis_configuration::AxisConfiguration,
+    values::AbstractArray,
+    mask::Maybe{AbstractArray{Bool}},
+)::AbstractArray
+</code>
+</pre>
+<p>The 
+<code>values
+</code> which take part in the implicit range of an axis: all of them, unless the axis does not 
+<code>include_hidden
+</code>, in which case only the ones shown by the 
+<code>mask
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.final_scaled_range">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.final_scaled_range">
 <code>SomeGraphs.Utilities.final_scaled_range
@@ -1533,6 +1605,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.collect_hidden_range!">
+<code>SomeGraphs.Utilities.collect_hidden_range!
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.collect_range!">
 <code>SomeGraphs.Utilities.collect_range!
 </code>
@@ -1625,6 +1703,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.push_vertical_bands_shapes">
 <code>SomeGraphs.Utilities.push_vertical_bands_shapes
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.range_values">
+<code>SomeGraphs.Utilities.range_values
 </code>
 </a>
 </li>

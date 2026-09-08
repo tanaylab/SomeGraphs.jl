@@ -6,6 +6,7 @@ module Utilities
 
 export axis_ticks_prefix
 export axis_ticks_suffix
+export collect_hidden_range!
 export collect_range!
 export configured_colors
 export ConfiguredColors
@@ -26,6 +27,7 @@ export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
 export push_vertical_bands_shapes
 export Range
+export range_values
 export scale_axis_value
 export scale_axis_values
 export scale_size_values
@@ -967,32 +969,36 @@ end
     scale_size_values(
         sizes_configuration::SizesConfiguration,
         values::Maybe{AbstractVector{<:Real}},
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
     )::Maybe{AbstractVector{<:Real}}
 
-Scale a vector of `values` according to `sizes_configuration`.
+Scale a vector of `values` according to `sizes_configuration`. The `mask` (if any) marks the shown entities; the hidden
+ones are left out of the implicit range of the sizes unless the axis `include_hidden` is set.
 """
 function scale_size_values(
     sizes_configuration::SizesConfiguration,
     values::Maybe{AbstractVector{<:Real}},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Maybe{AbstractVector{<:Real}}
     if values === nothing
         return nothing
     end
 
     axis_configuration = sizes_configuration.axis
+    ranged_values = range_values(axis_configuration, values, mask)
 
     if axis_configuration.minimum !== nothing
         minimum_value = axis_configuration.minimum
         values = max.(values, axis_configuration.minimum)
     else
-        minimum_value = minimum(values)
+        minimum_value = minimum(ranged_values)
     end
 
     if axis_configuration.maximum !== nothing
         maximum_value = axis_configuration.maximum
         values = min.(values, axis_configuration.maximum)
     else
-        maximum_value = maximum(values)
+        maximum_value = maximum(ranged_values)
     end
 
     if maximum_value == minimum_value
@@ -1672,6 +1678,51 @@ function collect_range!(
 end
 
 """
+    range_values(
+        axis_configuration::AxisConfiguration,
+        values::AbstractArray,
+        mask::Maybe{AbstractArray{Bool}},
+    )::AbstractArray
+
+The `values` which take part in the implicit range of an axis: all of them, unless the axis does not `include_hidden`,
+in which case only the ones shown by the `mask`.
+"""
+function range_values(
+    axis_configuration::AxisConfiguration,
+    values::AbstractArray,
+    mask::Maybe{AbstractArray{Bool}},
+)::AbstractArray
+    if mask === nothing || axis_configuration.include_hidden
+        return values
+    else
+        return values[mask]
+    end
+end
+
+"""
+    collect_hidden_range!(
+        range::MaybeRange,
+        axis_configuration::AxisConfiguration,
+        scaled_values::AbstractVector{<:Real},
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+    )::Nothing
+
+Expand the implicit `range` of an axis to cover the hidden `scaled_values` (the ones whose `mask` is false), if the axis
+does `include_hidden`. The shown values are collected by whoever draws them.
+"""
+function collect_hidden_range!(
+    range::MaybeRange,
+    axis_configuration::AxisConfiguration,
+    scaled_values::AbstractVector{<:Real},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::Nothing
+    if mask !== nothing && axis_configuration.include_hidden
+        collect_range!(range, scaled_values[.!mask])
+    end
+    return nothing
+end
+
+"""
     @kwdef struct SubGraph
         index::Integer
         n_graphs::Integer
@@ -2055,12 +2106,8 @@ function configured_colors(;
                 (final_value, entry) in zip(final_color_palette_values, colors_configuration.palette)
             ]
         else
-            if mask === nothing || colors_configuration.axis.include_hidden
-                range_values = final_colors_values
-            else
-                range_values = final_colors_values[mask]
-            end
-            implicit_scaled_colors_range = Range(; minimum = minimum(range_values), maximum = maximum(range_values))
+            ranged_values = range_values(colors_configuration.axis, final_colors_values, mask)
+            implicit_scaled_colors_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
             final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
         end
     end
