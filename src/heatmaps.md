@@ -210,6 +210,34 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
+Hide some rows and cells. The hidden ones are still part of the data, so they still count in the colors scale (unless
+`include_hidden` is disabled in its axis):
+
+```@example
+using SomeGraphs
+graph = heatmap_graph(;
+    entries = MatrixData([
+        4 1 5;
+        3 2 4;
+        2 3 3;
+        1 4 2;
+    ]),
+    cells = MatrixEntitiesData(; mask = [
+        true true false;
+        true true true;
+        true true true;
+        false true true;
+    ]),
+    rows = HeatmapAxisData(;
+        names = ValuesData(["A", "B", "C", "D"]),
+        entities = EntitiesData(; mask = [true, false, true, true]),
+    ),
+    columns = HeatmapAxisData(; names = ValuesData(["X", "Y", "Z"])),
+)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
 ## Index
 
 ```@index

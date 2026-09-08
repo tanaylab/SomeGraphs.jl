@@ -1989,17 +1989,18 @@ end
         colors_title::Maybe{AbstractString},
         colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractMatrix{<:Real}}},
         next_colors_scale_index::AbstractVector{<:Integer},
-        mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector, AbstractMatrix{Bool}, BitMatrix}} = nothing,
     )::ConfiguredColors
 
-Apply the colors configuration to the colors data.
+Apply the colors configuration to the colors data. The `mask` (if any) marks the shown entities; the hidden ones get no
+categorical color, and are left out of the implicit range of the colors scale unless the axis `include_hidden` is set.
 """
 function configured_colors(;
     colors_configuration::ColorsConfiguration,
     colors_title::Maybe{AbstractString},
     colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}, AbstractMatrix{<:Real}}},
     next_colors_scale_index::AbstractVector{<:Integer},
-    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector, AbstractMatrix{Bool}, BitMatrix}} = nothing,
 )::ConfiguredColors
     original_color_values = colors_values
     scaled_colors_palette = nothing
@@ -2054,8 +2055,12 @@ function configured_colors(;
                 (final_value, entry) in zip(final_color_palette_values, colors_configuration.palette)
             ]
         else
-            implicit_scaled_colors_range =
-                Range(; minimum = minimum(final_colors_values), maximum = maximum(final_colors_values))
+            if mask === nothing || colors_configuration.axis.include_hidden
+                range_values = final_colors_values
+            else
+                range_values = final_colors_values[mask]
+            end
+            implicit_scaled_colors_range = Range(; minimum = minimum(range_values), maximum = maximum(range_values))
             final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
         end
     end

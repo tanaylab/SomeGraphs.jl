@@ -112,20 +112,36 @@ nested_test("heatmaps") do
         end
 
         nested_test("mask") do
-            nested_test("rows") do
-                graph.data.rows.entities.mask = [true, false, true]
-                @test_throws "ArgumentError: unsupported heatmap graph.data.rows.entities.mask" validate(
+            nested_test("!rows") do
+                graph.data.rows.entities.mask = [false, false, false]
+                @test_throws "ArgumentError: all entries hidden by graph.data.rows.entities.mask" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
             end
 
-            nested_test("cells") do
-                graph.data.cells.mask = trues(3, 4)
-                @test_throws "ArgumentError: unsupported heatmap graph.data.cells.mask" validate(
+            nested_test("~rows") do
+                graph.data.rows.entities.mask = [true, false]
+                @test_throws chomp("""
+                                   ArgumentError: invalid length of graph.data.rows.entities.mask: 2
+                                   is different from length of graph.data.entries.values.rows: 3
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("!cells") do
+                graph.data.cells.mask = falses(3, 4)
+                @test_throws "ArgumentError: all cells hidden by graph.data.cells.mask" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
+            end
+
+            nested_test("~cells") do
+                graph.data.cells.mask = trues(2, 2)
+                @test_throws chomp("""
+                                   ArgumentError: invalid size of graph.data.cells.mask: (2, 2)
+                                   is different from size of graph.data.entries.values: (3, 4)
+                                   """) validate(ValidationContext(["graph"]), graph)
             end
         end
 
@@ -638,6 +654,100 @@ nested_test("heatmaps") do
             graph.configuration.columns.reorder = SameOrder
             test_html(graph, "heatmap.reorder.columns=rows.html")
             return nothing
+        end
+    end
+
+    nested_test("mask") do
+        graph.data.rows.names.values = ["X", "Y", "Z"]
+        graph.data.columns.names.values = ["A", "B", "C", "D"]
+        graph.data.rows.entities.hovers = ["R:X", "R:Y", "R:Z"]
+        graph.data.columns.entities.hovers = ["C:A", "C:B", "C:C", "C:D"]
+        graph.data.cells.hovers = [
+            "XA" "XB" "XC" "XD";
+            "YA" "YB" "YC" "YD";
+            "ZA" "ZB" "ZC" "ZD";
+        ]
+        graph.data.rows.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0], "score"))]
+        graph.data.columns.annotations = [
+            AnnotationData(;
+                values = ValuesData(["yes", "maybe", "no", "yes"], "is"),
+                colors = ColorsConfiguration(;
+                    palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
+                ),
+            ),
+        ]
+
+        nested_test("rows") do
+            graph.data.rows.entities.mask = [true, false, true]
+            test_html(graph, "heatmap.mask.rows.html")
+            return nothing
+        end
+
+        nested_test("columns") do
+            graph.data.columns.entities.mask = [true, false, true, false]
+            test_html(graph, "heatmap.mask.columns.html")
+            return nothing
+        end
+
+        nested_test("both") do
+            graph.data.rows.entities.mask = [true, false, true]
+            graph.data.columns.entities.mask = [true, false, true, true]
+            graph.data.rows.groups = [1, 2, 2]
+            graph.data.columns.groups = [1, 1, 2, 3]
+            test_html(graph, "heatmap.mask.both.html")
+            return nothing
+        end
+
+        # The order describes all the rows, hidden ones included.
+        nested_test("order") do
+            graph.data.rows.entities.mask = [true, false, true]
+            graph.data.rows.order = [3, 2, 1]
+            test_html(graph, "heatmap.mask.order.html")
+            @test graph.order.rows_order == [3, 2, 1]
+            return nothing
+        end
+
+        # The clustering sees all the columns, hidden ones included; only the drawn tree is pruned.
+        nested_test("dendogram") do
+            graph.configuration.columns.reorder = OptimalHclust
+            graph.configuration.columns.dendogram_size = 0.2
+
+            nested_test("()") do
+                graph.data.columns.entities.mask = [true, false, true, true]
+                test_html(graph, "heatmap.mask.dendogram.html")
+                @test sort(graph.order.columns_order) == 1:4
+                @test graph.order.columns_hclust.order == graph.order.columns_order
+
+                other_graph = heatmap_graph(; entries = MatrixData(graph.data.entries.values))
+                other_graph.data.columns.order = graph.order.columns_hclust
+                @test other_graph.order.columns_order == graph.order.columns_order
+                return nothing
+            end
+
+            nested_test("first") do
+                graph.data.columns.entities.mask = [false, true, true, true]
+                test_html(graph, "heatmap.mask.dendogram.first.html")
+                return nothing
+            end
+        end
+
+        nested_test("cells") do
+            graph.data.cells.mask = [
+                false true true true;
+                true true true true;
+                true true true false;
+            ]
+
+            nested_test("()") do
+                test_html(graph, "heatmap.mask.cells.html")
+                return nothing
+            end
+
+            nested_test("!hidden") do
+                graph.configuration.entries_colors.axis.include_hidden = false
+                test_html(graph, "heatmap.mask.cells.!hidden.html")
+                return nothing
+            end
         end
     end
 

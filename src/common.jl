@@ -334,6 +334,7 @@ Supported log scales (when log scaling is enabled):
     @kwdef mutable struct AxisConfiguration <: Validated
         minimum::Maybe{Real} = nothing
         maximum::Maybe{Real} = nothing
+        include_hidden::Bool = true
         expand_fraction::Real = 0
         log_scale::Maybe{LogScale} = nothing
         log_regularization::Real = 0
@@ -346,7 +347,9 @@ Supported log scales (when log scaling is enabled):
     end
 
 Generic configuration for a graph axis. Everything is optional; by default, the `minimum` and `maximum` are computed
-automatically from the data.
+automatically from the data. Entities hidden by a mask (see [`EntitiesData`](@ref)) still take part in this computation,
+so hiding some of them does not move the axis. Set `include_hidden` to `false` to compute the range from the shown
+entities only.
 
 The `expand_fraction` grows the visible range by this fraction of its size on each side (e.g. `0.01` adds 1% at both
 ends). This keeps round markers at the extreme values from being clipped by the plot border. It is applied in the scaled
@@ -372,6 +375,7 @@ set, so you can override this in the data.
 @kwdef mutable struct AxisConfiguration <: Validated
     minimum::Maybe{Real} = nothing
     maximum::Maybe{Real} = nothing
+    include_hidden::Bool = true
     expand_fraction::Real = 0
     log_scale::Maybe{LogScale} = nothing
     log_regularization::Real = 0
@@ -1243,6 +1247,7 @@ end
 function is_categorical_axis(axis_configuration::AxisConfiguration)::Bool
     return axis_configuration.minimum === nothing &&
            axis_configuration.maximum === nothing &&
+           axis_configuration.include_hidden &&
            axis_configuration.log_scale === nothing &&
            axis_configuration.log_regularization == 0 &&
            !axis_configuration.percent &&
@@ -1543,8 +1548,9 @@ end
 
 The hovers and mask of one set of entities of a graph (the points of a points graph, the bars of a bars graph, ...),
 shared by all the roles of these entities. Hovers are only shown in interactive graphs (or when saving an HTML file).
-The mask disables an arbitrary subset of the entities, which is often more convenient than excluding them from the
-data; the properties of masked entities (other than their coordinates) are ignored.
+The mask hides an arbitrary subset of the entities. Hidden entities are still part of the data: they take part in
+whatever is computed from it (axis ranges, clustering), unless the relevant configuration says otherwise (see
+`include_hidden` in [`AxisConfiguration`](@ref)). They are just not drawn.
 """
 @kwdef mutable struct EntitiesData
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
@@ -1576,8 +1582,8 @@ end
     end
 
 The hovers and mask of the entities of a graph which are arranged in rows and columns (the cells of a heatmap). Hovers
-are only shown in interactive graphs (or when saving an HTML file). The mask disables an arbitrary subset of the
-entities.
+are only shown in interactive graphs (or when saving an HTML file). The mask hides an arbitrary subset of the entities,
+as in [`EntitiesData`](@ref).
 """
 @kwdef mutable struct MatrixEntitiesData
     hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing

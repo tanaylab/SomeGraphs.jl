@@ -479,11 +479,15 @@ end
     colors_title::Maybe{AbstractString},
     colors_values::Maybe{Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}, AbstractMatrix{&lt;:Real}}},
     next_colors_scale_index::AbstractVector{&lt;:Integer},
-    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector, AbstractMatrix{Bool}, BitMatrix}} = nothing,
 )::ConfiguredColors
 </code>
 </pre>
-<p>Apply the colors configuration to the colors data.
+<p>Apply the colors configuration to the colors data. The 
+<code>mask
+</code> (if any) marks the shown entities; the hidden ones get no categorical color, and are left out of the implicit range of the colors scale unless the axis 
+<code>include_hidden
+</code> is set.
 </p>
 </div>
 </section>

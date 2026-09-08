@@ -90,7 +90,7 @@ The computed final order and clustering of the rows and the columns of a heatmap
   - `columns_order` and `columns_hclust` are the same for the columns.
 
 These describe the order of the data, not the order it is displayed in; applying the `origin` is up to whoever shows
-the graph.
+the graph, as is skipping the hidden rows and columns (the order and the tree include them).
 """
 struct HeatmapGraphOrder
     rows_order::AbstractVector{<:Integer}
@@ -256,8 +256,8 @@ end
     end
 
 The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `names` are strings, one per entry,
-shown as the tick labels; their title is the axis title. The `entities` hold the hovers of the entries (the mask is not
-supported). The `annotations` are shown to the side of the axis.
+shown as the tick labels; their title is the axis title. The `entities` hold the hovers and mask of the entries. The
+`annotations` are shown to the side of the axis.
 
 By default, if reordering the entries, this is based on the `entries.values` of the graph. You can override this by
 specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.values` (the rows
@@ -270,6 +270,11 @@ Alternatively you can force the order of the entries by specifying the `order` p
 
 If `groups` are specified, then a gap can be added between entries of different groups. Groups can also be used to
 constrain the computed clustering. The `subgroups` are a second, finer level of grouping nested in the groups.
+
+Hidden entries (see the mask of [`EntitiesData`](@ref)) are not drawn, but they are still part of the data: the
+clustering sees them, and the `order` (a permutation or a tree) always describes all the entries, hidden ones included.
+This way the order computed for one graph (see [`heatmap_order`](@ref)) can be given to another graph of the same data,
+whether or not the two hide the same entries. At least one entry must be shown.
 """
 @kwdef mutable struct HeatmapAxisData
     names::ValuesData = ValuesData()
@@ -295,8 +300,9 @@ function Validations.validate(
     validate_vector_length(context, "$(name).names.values", axis.names.values, base, n_entries)
 
     validate_vector_length(context, "$(name).entities.hovers", axis.entities.hovers, base, n_entries)
-    if axis.entities.mask !== nothing
-        throw(ArgumentError("unsupported heatmap $(location(context)).$(name).entities.mask"))
+    validate_vector_length(context, "$(name).entities.mask", axis.entities.mask, base, n_entries)
+    if axis.entities.mask !== nothing && !any(axis.entities.mask)
+        throw(ArgumentError("all entries hidden by $(location(context)).$(name).entities.mask"))
     end
 
     if axis.order isa Hclust
@@ -339,8 +345,10 @@ The data for a graph showing a heatmap (matrix) of entries.
 
 This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation,
 colors must be continuous. The `entries` values are required; their title is the title of the colors scale. The `cells`
-hold the hovers of the entries (the mask is not supported). The hover for each rectangle is a combination of the hovers
-of the cell, of its row and of its column.
+hold the hovers and mask of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its
+row and of its column. Hidden cells are drawn as gaps; their values are still part of the data (they must be valid, they
+take part in the clustering, and in the range of the colors scale unless `include_hidden` is disabled in the
+`entries_colors.axis`). At least one cell must be shown.
 
 The `rows` and `columns` hold the data of each axis (see [`HeatmapAxisData`](@ref)).
 
@@ -390,8 +398,9 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     n_rows, n_columns = size(values)
 
     validate_matrix_size(context, "cells.hovers", data.cells.hovers, "entries.values", size(values))
-    if data.cells.mask !== nothing
-        throw(ArgumentError("unsupported heatmap $(location(context)).cells.mask"))
+    validate_matrix_size(context, "cells.mask", data.cells.mask, "entries.values", size(values))
+    if data.cells.mask !== nothing && !any(data.cells.mask)
+        throw(ArgumentError("all cells hidden by $(location(context)).cells.mask"))
     end
 
     validate(context, data.rows, "rows", n_rows)
@@ -667,21 +676,38 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     traces = Vector{GenericTrace}()
 
     next_colors_scale_index = [1]
+    cells_mask = graph.data.cells.mask
     colors = configured_colors(;
         colors_configuration = graph.configuration.entries_colors,
         colors_title = prefer_data(graph.data.entries.title, graph.configuration.entries_colors.title),
         colors_values = entries_values(graph),
         next_colors_scale_index,
+        mask = cells_mask,
     )
 
     final_order = heatmap_order(graph)
 
     # The order is that of the data; the `origin` decides which end of each axis the first entry is shown at.
-    rows_order =
-        displayed_order(final_order.rows_order, graph.configuration.origin in (HeatmapTopLeft, HeatmapTopRight))
-    columns_order =
-        displayed_order(final_order.columns_order, graph.configuration.origin in (HeatmapBottomRight, HeatmapTopRight))
+    rows_mask = graph.data.rows.entities.mask
+    columns_mask = graph.data.columns.entities.mask
+    rows_order = displayed_order(
+        final_order.rows_order,
+        rows_mask,
+        graph.configuration.origin in (HeatmapTopLeft, HeatmapTopRight),
+    )
+    columns_order = displayed_order(
+        final_order.columns_order,
+        columns_mask,
+        graph.configuration.origin in (HeatmapBottomRight, HeatmapTopRight),
+    )
+
     reordered_values = colors.final_colors_values[rows_order, columns_order]
+    if cells_mask !== nothing
+        # Hidden cells are `missing` (serialized as JSON `null`) rather than `NaN`: Plotly renders both as blank, but the
+        # JSON writer used by `to_html` rejects `NaN`.
+        reordered_values = Matrix{Union{eltype(reordered_values), Missing}}(reordered_values)
+        reordered_values[.!cells_mask[rows_order, columns_order]] .= missing
+    end
 
     n_rows_annotations = length(graph.data.rows.annotations)
     n_columns_annotations = length(graph.data.columns.annotations)
@@ -806,7 +832,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if graph.configuration.rows.dendogram_size !== nothing
         rows_max_height = push_dendogram_trace!(;
             traces,
-            clusters = final_order.rows_hclust,
+            clusters = displayed_hclust(final_order.rows_hclust, rows_mask),
             values_orientation = HorizontalValues,
             dendogram_line = graph.configuration.rows.dendogram_line,
             expanded_mask = expanded_rows_mask,
@@ -827,7 +853,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if graph.configuration.columns.dendogram_size !== nothing
         columns_max_height = push_dendogram_trace!(;
             traces,
-            clusters = final_order.columns_hclust,
+            clusters = displayed_hclust(final_order.columns_hclust, columns_mask),
             values_orientation = VerticalValues,
             dendogram_line = graph.configuration.columns.dendogram_line,
             expanded_mask = expanded_columns_mask,
@@ -1199,10 +1225,61 @@ function Base.getproperty(graph::HeatmapGraph, property::Symbol)::Any
     end
 end
 
-# The order the entries of an axis are shown in, which is the order of the data, reversed if the `origin` places the
-# first entry at the far end of the axis.
-function displayed_order(order::AbstractVector{<:Integer}, is_reversed::Bool)::AbstractVector{<:Integer}
+# The entries of an axis which are shown, in the order they are shown in: the order of the data without the hidden
+# entries, reversed if the `origin` places the first entry at the far end of the axis.
+function displayed_order(
+    order::AbstractVector{<:Integer},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+    is_reversed::Bool,
+)::AbstractVector{<:Integer}
+    if mask !== nothing
+        order = [index for index in order if mask[index]]
+    end
     return is_reversed ? reverse(order) : order
+end
+
+# The tree of the shown entries of an axis: the tree of the data with the hidden entries pruned out of it, and the
+# remaining leaves renumbered to the positions of the shown entries. A merge left with a single subtree is dropped, and
+# that subtree takes its place.
+function displayed_hclust(clusters::Hclust, ::Nothing)::Hclust
+    return clusters
+end
+
+function displayed_hclust(clusters::Hclust, mask::Union{AbstractVector{Bool}, BitVector})::Hclust
+    shown_positions = cumsum(mask)
+    n_merges = size(clusters.merges, 1)
+
+    # The pruned node each merge maps to: a leaf (negative) or a merge (positive) of the pruned tree, or `nothing` if it
+    # held only hidden leaves.
+    pruned_node_per_merge = Vector{Maybe{Int}}(undef, n_merges)
+
+    function pruned_node(node::Integer)::Maybe{Int}
+        if node < 0
+            return mask[-node] ? -shown_positions[-node] : nothing
+        else
+            return pruned_node_per_merge[node]
+        end
+    end
+
+    pruned_merges = Int[]
+    pruned_heights = eltype(clusters.heights)[]
+    for merge_index in 1:n_merges
+        left_node = pruned_node(clusters.merges[merge_index, 1])
+        right_node = pruned_node(clusters.merges[merge_index, 2])
+        if left_node === nothing
+            pruned_node_per_merge[merge_index] = right_node
+        elseif right_node === nothing
+            pruned_node_per_merge[merge_index] = left_node
+        else
+            push!(pruned_merges, left_node, right_node)
+            push!(pruned_heights, clusters.heights[merge_index])
+            pruned_node_per_merge[merge_index] = length(pruned_heights)
+        end
+    end
+
+    pruned_order = [shown_positions[index] for index in clusters.order if mask[index]]
+
+    return Hclust(permutedims(reshape(pruned_merges, 2, :)), pruned_heights, pruned_order, clusters.linkage)
 end
 
 function finalize_order(;
@@ -1484,7 +1561,7 @@ function compute_expansion_mask(
 end
 
 function expand_z_matrix(
-    z::AbstractMatrix{<:Real},
+    z::AbstractMatrix{<:Union{Real, Missing}},
     rows_order::Maybe{AbstractVector{<:Integer}},
     expanded_rows_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
     columns_order::Maybe{AbstractVector{<:Integer}},
