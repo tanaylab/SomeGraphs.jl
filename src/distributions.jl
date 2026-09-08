@@ -631,6 +631,16 @@ function Sources.distributions_values_fields(graph::DistributionsGraph, index::I
     )
 end
 
+"""
+    add_distribution!(graph::DistributionsGraph, [distribution::DistributionData = DistributionData()])::Int
+
+Append a `distribution` and return its index.
+"""
+function Sources.add_distribution!(graph::DistributionsGraph, distribution::DistributionData = DistributionData())::Int
+    push!(graph.data.distributions, distribution)
+    return length(graph.data.distributions)
+end
+
 function Common.validate_graph(graph::DistributionsGraph)::Nothing
     for (index, distribution) in enumerate(graph.data.distributions)
         values = numeric_values(distribution.values)

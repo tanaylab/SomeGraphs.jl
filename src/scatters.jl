@@ -1456,6 +1456,16 @@ function Sources.y_fields(graph::LinesGraph, index::Integer)::AxisFields
     return VectorFields(line.y, line.points, AxisConfigurationFields(graph.configuration.y_axis))
 end
 
+"""
+    add_line!(graph::LinesGraph, [line::LineData = LineData()])::Int
+
+Append a `line` and return its index.
+"""
+function Sources.add_line!(graph::LinesGraph, line::LineData = LineData())::Int
+    push!(graph.data.lines, line)
+    return length(graph.data.lines)
+end
+
 function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
     if graph isa LineGraph
         validate_values(

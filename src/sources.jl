@@ -11,6 +11,9 @@ view into the graph.
 Some fields are shared between several views. For example, hovers for points in scatter graphs can be given by the X
 data, the Y data, or the color data. To support this we provide functions for adding hovers into the common (shared)
 field instead of simply overwriting it.
+
+Some views are of one entry of a vector of structures (a series of bars, a line, a distribution, an annotation). Such an
+entry is appended by `add_series!` and its siblings, which return the index the view accessors take.
 """
 module Sources
 
@@ -25,7 +28,13 @@ export SizesConfigurationFields
 export SizesFields
 export VectorDataFields
 export VectorFields
+export add_annotation!
+export add_columns_annotation!
+export add_distribution!
 export add_hovers!
+export add_line!
+export add_rows_annotation!
+export add_series!
 export annotations_fields
 export borders_colors_fields
 export borders_sizes_fields
@@ -420,5 +429,53 @@ function columns_groups_fields end
 The data source view of the subgroups of the columns of a graph. The subgroups have no title.
 """
 function columns_subgroups_fields end
+
+"""
+    add_series!(graph, [series::SeriesData = SeriesData()])::Int
+
+Append a series to a graph (of series of bars) and return its index (for `series_values_fields`). Whatever the `series`
+leaves at its defaults can be set later, through the view or directly.
+"""
+function add_series! end
+
+"""
+    add_line!(graph, [line::LineData = LineData()])::Int
+
+Append a line to a graph (of lines) and return its index (for `x_fields` and `y_fields`). Whatever the `line` leaves
+at its defaults can be set later, through the views or directly.
+"""
+function add_line! end
+
+"""
+    add_distribution!(graph, [distribution::DistributionData = DistributionData()])::Int
+
+Append a distribution to a graph (of distributions) and return its index (for `distributions_values_fields`). Whatever
+the `distribution` leaves at its defaults can be set later, through the view or directly.
+"""
+function add_distribution! end
+
+"""
+    add_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an annotation to the entities of a graph (the bars) and return its index (for `annotations_fields`). Whatever
+the `annotation` leaves at its defaults can be set later, through the view.
+"""
+function add_annotation! end
+
+"""
+    add_rows_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an annotation to the rows of a graph and return its index (for `rows_annotations_fields`). Whatever the
+`annotation` leaves at its defaults can be set later, through the view.
+"""
+function add_rows_annotation! end
+
+"""
+    add_columns_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an annotation to the columns of a graph and return its index (for `columns_annotations_fields`). Whatever the
+`annotation` leaves at its defaults can be set later, through the view.
+"""
+function add_columns_annotation! end
 
 end  # module

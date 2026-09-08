@@ -501,6 +501,16 @@ function Sources.rows_annotations_fields(graph::HeatmapGraph, index::Integer)::C
 end
 
 """
+    add_rows_annotation!(graph::HeatmapGraph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an `annotation` of the rows and return its index.
+"""
+function Sources.add_rows_annotation!(graph::HeatmapGraph, annotation::AnnotationData = AnnotationData())::Int
+    push!(graph.data.rows.annotations, annotation)
+    return length(graph.data.rows.annotations)
+end
+
+"""
     columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
 
 The `index` annotation of the columns, which shares the entities of the columns.
@@ -508,6 +518,16 @@ The `index` annotation of the columns, which shares the entities of the columns.
 function Sources.columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
     annotation = graph.data.columns.annotations[index]
     return VectorFields(annotation.values, graph.data.columns.entities, ColorsConfigurationFields(annotation.colors))
+end
+
+"""
+    add_columns_annotation!(graph::HeatmapGraph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an `annotation` of the columns and return its index.
+"""
+function Sources.add_columns_annotation!(graph::HeatmapGraph, annotation::AnnotationData = AnnotationData())::Int
+    push!(graph.data.columns.annotations, annotation)
+    return length(graph.data.columns.annotations)
 end
 
 """

@@ -12,17 +12,29 @@ nested_test("heatmaps") do
         @test fields.configuration.axis === graph.configuration.entries.colors.axis
         @test fields.configuration.colors === graph.configuration.entries.colors
 
-        graph.data.rows.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0], "score"))]
+        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0], "score"))
+        @test add_rows_annotation!(graph, annotation) == 1
+        @test graph.data.rows.annotations[1] === annotation
         fields = rows_annotations_fields(graph, 1)
-        @test fields.data.values === graph.data.rows.annotations[1].values
+        @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.rows.entities
-        @test fields.configuration.colors === graph.data.rows.annotations[1].colors
+        @test fields.configuration.colors === annotation.colors
 
-        graph.data.columns.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+        @test add_rows_annotation!(graph) == 2
+        rows_annotations_fields(graph, 2).data.values.values = [0, 1, 0]
+        @test graph.data.rows.annotations[2].values.values == [0, 1, 0]
+
+        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))
+        @test add_columns_annotation!(graph, annotation) == 1
+        @test graph.data.columns.annotations[1] === annotation
         fields = columns_annotations_fields(graph, 1)
-        @test fields.data.values === graph.data.columns.annotations[1].values
+        @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.columns.entities
-        @test fields.configuration.colors === graph.data.columns.annotations[1].colors
+        @test fields.configuration.colors === annotation.colors
+
+        @test add_columns_annotation!(graph) == 2
+        columns_annotations_fields(graph, 2).data.values.values = [0, 1, 0, 1]
+        @test graph.data.columns.annotations[2].values.values == [0, 1, 0, 1]
 
         for (fields, values, entities) in (
             (rows_names_fields(graph), graph.data.rows.names, graph.data.rows.entities),

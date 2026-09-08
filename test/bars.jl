@@ -38,11 +38,18 @@ nested_test("bars") do
         @test fields.configuration.axis === graph.configuration.colors.axis
         @test fields.configuration.colors === graph.configuration.colors
 
-        graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))
+        @test add_annotation!(graph, annotation) == 1
+        @test graph.data.annotations[1] === annotation
         fields = annotations_fields(graph, 1)
-        @test fields.data.values === graph.data.annotations[1].values
+        @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.bars
-        @test fields.configuration.colors === graph.data.annotations[1].colors
+        @test fields.configuration.colors === annotation.colors
+
+        @test add_annotation!(graph) == 2
+        fields = annotations_fields(graph, 2)
+        fields.data.values.values = [0, 1, 0, 1]
+        @test graph.data.annotations[2].values.values == [0, 1, 0, 1]
 
         fields = names_fields(graph)
         @test fields.values === graph.data.names
@@ -242,12 +249,30 @@ nested_test("series_bars") do
         @test fields.data.entities === graph.data.series[2].bars
         @test fields.configuration.axis === graph.configuration.value_axis
 
-        graph.data.annotations =
-            [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))
+        @test add_annotation!(graph, annotation) == 1
+        @test graph.data.annotations[1] === annotation
         fields = annotations_fields(graph, 1)
-        @test fields.data.values === graph.data.annotations[1].values
+        @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.bars
-        @test fields.configuration.colors === graph.data.annotations[1].colors
+        @test fields.configuration.colors === annotation.colors
+
+        @test add_annotation!(graph) == 2
+        fields = annotations_fields(graph, 2)
+        fields.data.values.values = collect(0:10)
+        @test graph.data.annotations[2].values.values == collect(0:10)
+
+        series = SeriesData(; name = "Baz")
+        @test add_series!(graph, series) == 3
+        @test graph.data.series[3] === series
+        fields = series_values_fields(graph, 3)
+        @test fields.data.values === series.values
+        @test fields.data.entities === series.bars
+
+        @test add_series!(graph) == 4
+        fields = series_values_fields(graph, 4)
+        fields.data.values.values = collect(0:10)
+        @test graph.data.series[4].values.values == collect(0:10)
 
         fields = names_fields(graph)
         @test fields.values === graph.data.names

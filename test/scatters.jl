@@ -943,6 +943,16 @@ nested_test("lines") do
         @test fields.data.values === graph.data.lines[2].y
         @test fields.data.entities === graph.data.lines[2].points
         @test fields.configuration.axis === graph.configuration.y_axis
+
+        line = LineData(; name = "Baz")
+        @test add_line!(graph, line) == 3
+        @test graph.data.lines[3] === line
+        @test x_fields(graph, 3).data.values === line.x
+        @test y_fields(graph, 3).data.values === line.y
+
+        @test add_line!(graph) == 4
+        x_fields(graph, 4).data.values.values = [0, 1]
+        @test graph.data.lines[4].x.values == [0, 1]
         return nothing
     end
 

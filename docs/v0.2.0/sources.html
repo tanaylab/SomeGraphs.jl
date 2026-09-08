@@ -161,6 +161,10 @@
 </p>
 <p>Some fields are shared between several views. For example, hovers for points in scatter graphs can be given by the X data, the Y data, or the color data. To support this we provide functions for adding hovers into the common (shared) field instead of simply overwriting it.
 </p>
+<p>Some views are of one entry of a vector of structures (a series of bars, a line, a distribution, an annotation). Such an entry is appended by 
+<code>add_series!
+</code> and its siblings, which return the index the view accessors take.
+</p>
 </div>
 </section>
 </details>
@@ -1072,6 +1076,166 @@ y_fields(graph, index::Integer)::AxisFields
 </section>
 </details>
 </article>
+<p>A view of one entry of a vector of structures (a series, a line, a distribution, an annotation) needs the entry to exist. These append one and return the index the accessors take:
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_series!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_series!">
+<code>SomeGraphs.Sources.add_series!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_series!(graph, [series::SeriesData = SeriesData()])::Int
+</code>
+</pre>
+<p>Append a series to a graph (of series of bars) and return its index (for 
+<code>series_values_fields
+</code>). Whatever the 
+<code>series
+</code> leaves at its defaults can be set later, through the view or directly.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_line!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_line!">
+<code>SomeGraphs.Sources.add_line!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_line!(graph, [line::LineData = LineData()])::Int
+</code>
+</pre>
+<p>Append a line to a graph (of lines) and return its index (for 
+<code>x_fields
+</code> and 
+<code>y_fields
+</code>). Whatever the 
+<code>line
+</code> leaves at its defaults can be set later, through the views or directly.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_distribution!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_distribution!">
+<code>SomeGraphs.Sources.add_distribution!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_distribution!(graph, [distribution::DistributionData = DistributionData()])::Int
+</code>
+</pre>
+<p>Append a distribution to a graph (of distributions) and return its index (for 
+<code>distributions_values_fields
+</code>). Whatever the 
+<code>distribution
+</code> leaves at its defaults can be set later, through the view or directly.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_annotation!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_annotation!">
+<code>SomeGraphs.Sources.add_annotation!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
+</code>
+</pre>
+<p>Append an annotation to the entities of a graph (the bars) and return its index (for 
+<code>annotations_fields
+</code>). Whatever the 
+<code>annotation
+</code> leaves at its defaults can be set later, through the view.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_rows_annotation!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_rows_annotation!">
+<code>SomeGraphs.Sources.add_rows_annotation!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_rows_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
+</code>
+</pre>
+<p>Append an annotation to the rows of a graph and return its index (for 
+<code>rows_annotations_fields
+</code>). Whatever the 
+<code>annotation
+</code> leaves at its defaults can be set later, through the view.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_columns_annotation!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_columns_annotation!">
+<code>SomeGraphs.Sources.add_columns_annotation!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_columns_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
+</code>
+</pre>
+<p>Append an annotation to the columns of a graph and return its index (for 
+<code>columns_annotations_fields
+</code>). Whatever the 
+<code>annotation
+</code> leaves at its defaults can be set later, through the view.
+</p>
+</div>
+</section>
+</details>
+</article>
 <p>
 <strong>Example:
 </strong>
@@ -1094,12 +1258,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XWmSWjug8J' class='' style=';'>
+<div id='rKyrOccZ0A' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XWmSWjug8J")
+    const PLOT = document.getElementById("rKyrOccZ0A")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1199,8 +1363,44 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.add_annotation!">
+<code>SomeGraphs.Sources.add_annotation!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.add_columns_annotation!">
+<code>SomeGraphs.Sources.add_columns_annotation!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.add_distribution!">
+<code>SomeGraphs.Sources.add_distribution!
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.add_hovers!">
 <code>SomeGraphs.Sources.add_hovers!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.add_line!">
+<code>SomeGraphs.Sources.add_line!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.add_rows_annotation!">
+<code>SomeGraphs.Sources.add_rows_annotation!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.add_series!">
+<code>SomeGraphs.Sources.add_series!
 </code>
 </a>
 </li>

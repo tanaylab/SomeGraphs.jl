@@ -55,6 +55,18 @@ SomeGraphs.Sources.columns_groups_fields
 SomeGraphs.Sources.columns_subgroups_fields
 ```
 
+A view of one entry of a vector of structures (a series, a line, a distribution, an annotation) needs the entry to
+exist. These append one and return the index the accessors take:
+
+```@docs
+SomeGraphs.Sources.add_series!
+SomeGraphs.Sources.add_line!
+SomeGraphs.Sources.add_distribution!
+SomeGraphs.Sources.add_annotation!
+SomeGraphs.Sources.add_rows_annotation!
+SomeGraphs.Sources.add_columns_annotation!
+```
+
 **Example:**
 
 One source function, filling a role from a vector of values with a title and a hover line, applied to the X and Y

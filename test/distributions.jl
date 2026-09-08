@@ -506,6 +506,15 @@ nested_test("distributions") do
         @test fields.data.values === graph.data.distributions[2].values
         @test fields.data.entities === graph.data.distributions[2].points
         @test fields.configuration.axis === graph.configuration.value_axis
+
+        distribution = DistributionData(; name = "Baz")
+        @test add_distribution!(graph, distribution) == 3
+        @test graph.data.distributions[3] === distribution
+        @test distributions_values_fields(graph, 3).data.values === distribution.values
+
+        @test add_distribution!(graph) == 4
+        distributions_values_fields(graph, 4).data.values.values = [0, 1]
+        @test graph.data.distributions[4].values.values == [0, 1]
         return nothing
     end
 

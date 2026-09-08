@@ -221,6 +221,16 @@ function Sources.annotations_fields(graph::BarsGraph, index::Integer)::ColorsFie
     return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
 end
 
+"""
+    add_annotation!(graph::BarsGraph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an `annotation` of the bars and return its index.
+"""
+function Sources.add_annotation!(graph::BarsGraph, annotation::AnnotationData = AnnotationData())::Int
+    push!(graph.data.annotations, annotation)
+    return length(graph.data.annotations)
+end
+
 function Common.validate_graph(graph::BarsGraph)::Nothing
     validate_values(
         ValidationContext(["graph.data.values.values"]),
@@ -557,6 +567,16 @@ function Sources.series_values_fields(graph::SeriesBarsGraph, index::Integer)::A
 end
 
 """
+    add_series!(graph::SeriesBarsGraph, [series::SeriesData = SeriesData()])::Int
+
+Append a `series` of bars and return its index.
+"""
+function Sources.add_series!(graph::SeriesBarsGraph, series::SeriesData = SeriesData())::Int
+    push!(graph.data.series, series)
+    return length(graph.data.series)
+end
+
+"""
     annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
 
 The `index` annotation of the bars, which shares the entities of the bars (the ones shared by all the series).
@@ -564,6 +584,16 @@ The `index` annotation of the bars, which shares the entities of the bars (the o
 function Sources.annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
     annotation = graph.data.annotations[index]
     return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
+end
+
+"""
+    add_annotation!(graph::SeriesBarsGraph, [annotation::AnnotationData = AnnotationData()])::Int
+
+Append an `annotation` of the bars (the ones shared by all the series) and return its index.
+"""
+function Sources.add_annotation!(graph::SeriesBarsGraph, annotation::AnnotationData = AnnotationData())::Int
+    push!(graph.data.annotations, annotation)
+    return length(graph.data.annotations)
 end
 
 """
