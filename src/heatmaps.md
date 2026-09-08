@@ -162,7 +162,7 @@ graph = heatmap_graph(;
     rows = HeatmapAxisData(;
         names = ValuesData(["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))],
-        groups = [1, 1, 2, 2],
+        groups = ValuesData([1, 1, 2, 2]),
     ),
     columns = HeatmapAxisData(;
         names = ValuesData(["X", "Y", "Z"]),
@@ -174,7 +174,7 @@ graph = heatmap_graph(;
                 ),
             ),
         ],
-        groups = ["L", "M", "M"],
+        groups = ValuesData(["L", "M", "M"]),
     ),
 )
 graph.configuration.rows.reorder = OptimalHclust
@@ -201,8 +201,8 @@ graph = heatmap_graph(;
     rows = HeatmapAxisData(; names = ValuesData(["A", "B", "C", "D"])),
     columns = HeatmapAxisData(;
         names = ValuesData(["U", "V", "W", "X", "Y", "Z"]),
-        groups = [1, 1, 1, 2, 2, 2],
-        subgroups = ["P", "Q", "P", "R", "R", "S"],
+        groups = ValuesData([1, 1, 1, 2, 2, 2]),
+        subgroups = ValuesData(["P", "Q", "P", "R", "R", "S"]),
     ),
 )
 graph.configuration.columns.reorder = OptimalHclust

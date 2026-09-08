@@ -23,6 +23,18 @@ nested_test("heatmaps") do
         @test fields.data.values === graph.data.columns.annotations[1].values
         @test fields.data.entities === graph.data.columns.entities
         @test fields.configuration.colors === graph.data.columns.annotations[1].colors
+
+        for (fields, values, entities) in (
+            (rows_names_fields(graph), graph.data.rows.names, graph.data.rows.entities),
+            (columns_names_fields(graph), graph.data.columns.names, graph.data.columns.entities),
+            (rows_groups_fields(graph), graph.data.rows.groups, graph.data.rows.entities),
+            (rows_subgroups_fields(graph), graph.data.rows.subgroups, graph.data.rows.entities),
+            (columns_groups_fields(graph), graph.data.columns.groups, graph.data.columns.entities),
+            (columns_subgroups_fields(graph), graph.data.columns.subgroups, graph.data.columns.entities),
+        )
+            @test fields.values === values
+            @test fields.entities === entities
+        end
         return nothing
     end
 
@@ -76,9 +88,9 @@ nested_test("heatmaps") do
         end
 
         nested_test("groups") do
-            graph.data.rows.groups = [1, 2, 2]
+            graph.data.rows.groups.values = [1, 2, 2]
             graph.configuration.rows.groups_gap = nothing
-            @test_throws chomp("no effect for specified graph.data.rows.groups") validate(
+            @test_throws chomp("no effect for specified graph.data.rows.groups.values") validate(
                 ValidationContext(["graph"]),
                 graph,
             )
@@ -401,8 +413,8 @@ nested_test("heatmaps") do
     nested_test("flip") do
         graph.data.rows.names.values = ["X", "Y", "Z"]
         graph.data.columns.names.values = ["A", "B", "C", "D"]
-        graph.data.columns.groups = [1, 1, 2, 2]
-        graph.data.columns.subgroups = ["P", "Q", "Q", "R"]
+        graph.data.columns.groups.values = [1, 1, 2, 2]
+        graph.data.columns.subgroups.values = ["P", "Q", "Q", "R"]
         graph.configuration.columns.subgroups_gap = 1
         graph.data.columns.arrange_by = Float32[1 2 3 4; 5 6 7 8]
         graph.configuration.columns.reorder = OptimalHclust
@@ -497,8 +509,8 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows.groups = [1, 2, 2]
-                graph.data.columns.groups = [1, 1, 2, 3]
+                graph.data.rows.groups.values = [1, 2, 2]
+                graph.data.columns.groups.values = [1, 1, 2, 3]
                 graph.data.rows.names.values = ["X", "Y", "Z"]
                 graph.data.columns.names.values = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.annotations.dendogram.gaps.html")
@@ -507,8 +519,8 @@ nested_test("heatmaps") do
         end
 
         nested_test("gaps") do
-            graph.data.rows.groups = [1, 2, 2]
-            graph.data.columns.groups = [1, 1, 2, 3]
+            graph.data.rows.groups.values = [1, 2, 2]
+            graph.data.columns.groups.values = [1, 1, 2, 3]
             graph.data.rows.names.values = ["X", "Y", "Z"]
             graph.data.columns.names.values = ["A", "B", "C", "D"]
             test_html(graph, "heatmap.annotations.gaps.html")
@@ -641,8 +653,8 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows.groups = [1, 2, 2]
-                graph.data.columns.groups = [1, 1, 2, 3]
+                graph.data.rows.groups.values = [1, 2, 2]
+                graph.data.columns.groups.values = [1, 1, 2, 3]
                 graph.data.rows.names.values = ["X", "Y", "Z"]
                 graph.data.columns.names.values = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.dendogram.gaps.html")
@@ -734,8 +746,8 @@ nested_test("heatmaps") do
         nested_test("both") do
             graph.data.rows.entities.mask = [true, false, true]
             graph.data.columns.entities.mask = [true, false, true, true]
-            graph.data.rows.groups = [1, 2, 2]
-            graph.data.columns.groups = [1, 1, 2, 3]
+            graph.data.rows.groups.values = [1, 2, 2]
+            graph.data.columns.groups.values = [1, 1, 2, 3]
             test_html(graph, "heatmap.mask.both.html")
             return nothing
         end
@@ -848,8 +860,8 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows.groups = [1, 2, 2]
-                graph.data.columns.groups = [1, 1, 2, 3]
+                graph.data.rows.groups.values = [1, 2, 2]
+                graph.data.columns.groups.values = [1, 1, 2, 3]
                 graph.data.rows.names.values = ["X", "Y", "Z"]
                 graph.data.columns.names.values = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.hovers.entries.gaps.html")
@@ -867,8 +879,8 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows.groups = [1, 2, 2]
-                graph.data.columns.groups = [1, 1, 2, 3]
+                graph.data.rows.groups.values = [1, 2, 2]
+                graph.data.columns.groups.values = [1, 1, 2, 3]
                 graph.data.rows.names.values = ["X", "Y", "Z"]
                 graph.data.columns.names.values = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.hovers.axes.gaps.html")
@@ -891,8 +903,8 @@ nested_test("heatmaps") do
             end
 
             nested_test("gaps") do
-                graph.data.rows.groups = [1, 2, 2]
-                graph.data.columns.groups = [1, 1, 2, 3]
+                graph.data.rows.groups.values = [1, 2, 2]
+                graph.data.columns.groups.values = [1, 1, 2, 3]
                 graph.data.rows.names.values = ["X", "Y", "Z"]
                 graph.data.columns.names.values = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.hovers.both.gaps.html")
@@ -921,10 +933,10 @@ nested_test("heatmaps") do
         # The groups constrain the clustering, so they change the order - but only once the cache is reset.
         nested_test("reset") do
             graph.configuration.columns.reorder = OptimalHclust
-            graph.data.columns.groups = [1, 1, 2, 2]
+            graph.data.columns.groups.values = [1, 1, 2, 2]
             grouped_order = graph.order.columns_order
 
-            graph.data.columns.groups = [1, 2, 2, 1]
+            graph.data.columns.groups.values = [1, 2, 2, 1]
             @test graph.order.columns_order == grouped_order
 
             reset_order!(graph)
@@ -999,8 +1011,8 @@ nested_test("heatmaps") do
         groups = [subgroup <= 3 ? 2 : 1 for subgroup in subgroups]
 
         graph = heatmap_graph(; entries = MatrixData(vcat(values, values .* 2)))
-        graph.data.columns.groups = groups
-        graph.data.columns.subgroups = ["S$(subgroup)" for subgroup in subgroups]
+        graph.data.columns.groups.values = groups
+        graph.data.columns.subgroups.values = ["S$(subgroup)" for subgroup in subgroups]
         graph.configuration.columns.reorder = OptimalHclust
 
         nested_test("()") do
@@ -1014,7 +1026,7 @@ nested_test("heatmaps") do
         end
 
         nested_test("numbered") do
-            graph.data.columns.subgroups = subgroups
+            graph.data.columns.subgroups.values = subgroups
             columns_order = graph.order.columns_order
 
             # Numbering both levels lays the columns out in the order of their (group, subgroup) pair, which is not the
@@ -1026,11 +1038,11 @@ nested_test("heatmaps") do
 
         # A subgroup is nested in its group, so each group may number its own subgroups the same way.
         nested_test("reused") do
-            graph.data.columns.subgroups = repeat(1:3; inner = 2, outer = 2)
+            graph.data.columns.subgroups.values = repeat(1:3; inner = 2, outer = 2)
             columns_order = graph.order.columns_order
             @test labels_in_order(columns_order, groups) == [1, 2]
             @test length(labels_in_order(columns_order, subgroups)) == 6
-            @test labels_in_order(columns_order, graph.data.columns.subgroups) == [1, 2, 3, 1, 2, 3]
+            @test labels_in_order(columns_order, graph.data.columns.subgroups.values) == [1, 2, 3, 1, 2, 3]
             return nothing
         end
 
@@ -1051,8 +1063,8 @@ nested_test("heatmaps") do
 
         nested_test("invalid") do
             nested_test("groups") do
-                graph.data.columns.groups = nothing
-                @test_throws "ArgumentError: can't specify heatmap graph.data.columns.subgroups without columns.groups" validate(
+                graph.data.columns.groups.values = nothing
+                @test_throws "ArgumentError: can't specify heatmap graph.data.columns.subgroups.values without columns.groups.values" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
@@ -1060,19 +1072,27 @@ nested_test("heatmaps") do
 
             nested_test("effect") do
                 graph.configuration.columns.reorder = nothing
-                @test_throws "ArgumentError: no effect for specified graph.data.columns.subgroups" validate(
+                @test_throws "ArgumentError: no effect for specified graph.data.columns.subgroups.values" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
             end
 
             nested_test("gap") do
-                graph.data.columns.subgroups = nothing
+                graph.data.columns.subgroups.values = nothing
                 graph.configuration.columns.subgroups_gap = 1
                 @test_throws chomp("""
                                    can't specify heatmap graph.configuration.columns.subgroups_gap
-                                   without graph.data.columns.subgroups
+                                   without graph.data.columns.subgroups.values
                                    """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("title") do
+                graph.data.columns.groups.title = "Groups"
+                @test_throws "ArgumentError: can't specify heatmap graph.data.columns.groups.title" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
             end
         end
     end

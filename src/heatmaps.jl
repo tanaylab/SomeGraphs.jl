@@ -276,8 +276,8 @@ end
         names::ValuesData = ValuesData()
         entities::EntitiesData = EntitiesData()
         order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-        groups::Maybe{AbstractVector} = nothing
-        subgroups::Maybe{AbstractVector} = nothing
+        groups::ValuesData = ValuesData()
+        subgroups::ValuesData = ValuesData()
         arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
     end
@@ -295,8 +295,9 @@ matrix should be in row-major layout, but that's not critical.
 Alternatively you can force the order of the entries by specifying the `order` permutation. You can also specify an
 `Hclust` object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
 
-If `groups` are specified, then a gap can be added between entries of different groups. Groups can also be used to
-constrain the computed clustering. The `subgroups` are a second, finer level of grouping nested in the groups.
+If `groups` values (numbers or strings, one per entry) are specified, then a gap can be added between entries of
+different groups. Groups can also be used to constrain the computed clustering. The `subgroups` are a second, finer
+level of grouping nested in the groups. Neither has a title.
 
 Hidden entries (see the mask of [`EntitiesData`](@ref)) are not drawn, but they are still part of the data: the
 clustering sees them, and the `order` (a permutation or a tree) always describes all the entries, hidden ones included.
@@ -307,8 +308,8 @@ whether or not the two hide the same entries. At least one entry must be shown.
     names::ValuesData = ValuesData()
     entities::EntitiesData = EntitiesData()
     order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    groups::Maybe{AbstractVector} = nothing
-    subgroups::Maybe{AbstractVector} = nothing
+    groups::ValuesData = ValuesData()
+    subgroups::ValuesData = ValuesData()
     arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
@@ -339,14 +340,22 @@ function Validations.validate(
     end
     validate_vector_length(context, "$(name).order", order, base, n_entries)
 
-    validate_vector_length(context, "$(name).groups", axis.groups, base, n_entries)
-    validate_vector_length(context, "$(name).subgroups", axis.subgroups, base, n_entries)
+    for (field, values_data) in (("groups", axis.groups), ("subgroups", axis.subgroups))
+        validate_vector_length(context, "$(name).$(field).values", values_data.values, base, n_entries)
+        if values_data.title !== nothing
+            throw(ArgumentError("can't specify heatmap $(location(context)).$(name).$(field).title"))
+        end
+    end
 
     # The subgroups of an axis are a second, finer level of grouping, so they only make sense together with the groups.
     # A subgroup is nested in its group, so the same subgroup in two different groups is two different subgroups;
     # there's no need for the subgroups to be unique.
-    if axis.subgroups !== nothing && axis.groups === nothing
-        throw(ArgumentError("can't specify heatmap $(location(context)).$(name).subgroups without $(name).groups"))
+    if axis.subgroups.values !== nothing && axis.groups.values === nothing
+        throw(
+            ArgumentError(
+                "can't specify heatmap $(location(context)).$(name).subgroups.values without $(name).groups.values",
+            ),
+        )
     end
 
     validate_matrix_dimension(context, "$(name).arrange_by", axis.arrange_by, name == "rows" ? 1 : 2, base, n_entries)
@@ -499,6 +508,60 @@ The `index` annotation of the columns, which shares the entities of the columns.
 function Sources.columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
     annotation = graph.data.columns.annotations[index]
     return VectorFields(annotation.values, graph.data.columns.entities, ColorsConfigurationFields(annotation.colors))
+end
+
+"""
+    rows_names_fields(graph::HeatmapGraph)::VectorDataFields
+
+The names of the rows; their title is the title of the rows axis.
+"""
+function Sources.rows_names_fields(graph::HeatmapGraph)::VectorDataFields
+    return VectorDataFields(graph.data.rows.names, graph.data.rows.entities)
+end
+
+"""
+    columns_names_fields(graph::HeatmapGraph)::VectorDataFields
+
+The names of the columns; their title is the title of the columns axis.
+"""
+function Sources.columns_names_fields(graph::HeatmapGraph)::VectorDataFields
+    return VectorDataFields(graph.data.columns.names, graph.data.columns.entities)
+end
+
+"""
+    rows_groups_fields(graph::HeatmapGraph)::VectorDataFields
+
+The groups of the rows.
+"""
+function Sources.rows_groups_fields(graph::HeatmapGraph)::VectorDataFields
+    return VectorDataFields(graph.data.rows.groups, graph.data.rows.entities)
+end
+
+"""
+    rows_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+
+The subgroups of the rows.
+"""
+function Sources.rows_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+    return VectorDataFields(graph.data.rows.subgroups, graph.data.rows.entities)
+end
+
+"""
+    columns_groups_fields(graph::HeatmapGraph)::VectorDataFields
+
+The groups of the columns.
+"""
+function Sources.columns_groups_fields(graph::HeatmapGraph)::VectorDataFields
+    return VectorDataFields(graph.data.columns.groups, graph.data.columns.entities)
+end
+
+"""
+    columns_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+
+The subgroups of the columns.
+"""
+function Sources.columns_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+    return VectorDataFields(graph.data.columns.subgroups, graph.data.columns.entities)
 end
 
 function Common.validate_graph(graph::HeatmapGraph)::Nothing
@@ -705,20 +768,20 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             @assert false
         end
 
-        if !is_using_groups && axis_data.groups !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name).groups"))
+        if !is_using_groups && axis_data.groups.values !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name).groups.values"))
         end
 
         ## Unlike the groups, the subgroups have their own gap, so they are of use if either the axis is clustered (they
         ## constrain the clustering) or they are gapped.
-        if !is_clustered && axis_configuration.subgroups_gap === nothing && axis_data.subgroups !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name).subgroups"))
+        if !is_clustered && axis_configuration.subgroups_gap === nothing && axis_data.subgroups.values !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name).subgroups.values"))
         end
 
-        if axis_configuration.subgroups_gap !== nothing && axis_data.subgroups === nothing
+        if axis_configuration.subgroups_gap !== nothing && axis_data.subgroups.values === nothing
             throw(ArgumentError(chomp("""
                                       can't specify heatmap graph.configuration.$(name).subgroups_gap
-                                      without graph.data.$(name).subgroups
+                                      without graph.data.$(name).subgroups.values
                                       """)))
         end
     end
@@ -794,16 +857,16 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     expanded_rows_mask = compute_expansion_mask(
         rows_order,
-        graph.data.rows.groups,
+        graph.data.rows.groups.values,
         graph.configuration.rows.groups_gap,
-        graph.data.rows.subgroups,
+        graph.data.rows.subgroups.values,
         graph.configuration.rows.subgroups_gap,
     )
     expanded_columns_mask = compute_expansion_mask(
         columns_order,
-        graph.data.columns.groups,
+        graph.data.columns.groups.values,
         graph.configuration.columns.groups_gap,
-        graph.data.columns.subgroups,
+        graph.data.columns.subgroups.values,
         graph.configuration.columns.subgroups_gap,
     )
 
@@ -1140,8 +1203,8 @@ function shown_axis_data(
 
     return HeatmapAxisData(;
         order,
-        groups = masked_values(axis.groups, mask, nothing),
-        subgroups = masked_values(axis.subgroups, mask, nothing),
+        groups = ValuesData(; values = masked_values(axis.groups.values, mask, nothing)),
+        subgroups = ValuesData(; values = masked_values(axis.subgroups.values, mask, nothing)),
         arrange_by,
     )
 end
@@ -1291,8 +1354,8 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
     data_columns_order, data_columns_hclust = finalize_order(;
         data_order = graph.data.columns.order,
         data_arrange_by = data_columns_arrange_by,
-        data_groups = graph.data.columns.groups,
-        data_subgroups = graph.data.columns.subgroups,
+        data_groups = graph.data.columns.groups.values,
+        data_subgroups = graph.data.columns.subgroups.values,
         slant_order = slant_columns_order,
         configuration_reorder = graph.configuration.columns.reorder,
         configuration_dendogram_size = graph.configuration.columns.dendogram_size,
@@ -1303,8 +1366,8 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
     data_rows_order, data_rows_hclust = finalize_order(;
         data_order = graph.data.rows.order,
         data_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1)),
-        data_groups = graph.data.rows.groups,
-        data_subgroups = graph.data.rows.subgroups,
+        data_groups = graph.data.rows.groups.values,
+        data_subgroups = graph.data.rows.subgroups.values,
         slant_order = slant_rows_order,
         configuration_reorder = graph.configuration.rows.reorder,
         configuration_dendogram_size = graph.configuration.rows.dendogram_size,

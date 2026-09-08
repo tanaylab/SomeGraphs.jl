@@ -31,14 +31,21 @@ export borders_colors_fields
 export borders_sizes_fields
 export colors_fields
 export columns_annotations_fields
+export columns_groups_fields
+export columns_names_fields
+export columns_subgroups_fields
 export distribution_values_fields
 export distributions_values_fields
 export edges_colors_fields
 export edges_sizes_fields
 export entries_fields
+export names_fields
 export points_colors_fields
 export points_sizes_fields
 export rows_annotations_fields
+export rows_groups_fields
+export rows_names_fields
+export rows_subgroups_fields
 export series_values_fields
 export values_fields
 export x_fields
@@ -98,6 +105,10 @@ The data half of a data source view (see [`VectorFields`](@ref)): the [`ValuesDa
 X coordinates of its points, their colors, ...) and the [`EntitiesData`](@ref) of the entities these values belong to.
 Both are the graph's own objects, so writing into them changes the graph. Several roles of the same entities (say, the
 X, Y, colors and sizes of points) share one `entities`, so hovers added through any of them are seen by all.
+
+A source which only writes values, a title and hovers takes a `VectorDataFields`. The data half of every
+[`VectorFields`](@ref) is one, and so is a view of a role that has no configuration to speak of (the names of the bars,
+the groups of the rows of a heatmap), so such a source applies to all of them alike.
 """
 struct VectorDataFields
     values::ValuesData
@@ -359,5 +370,55 @@ The data source view of one annotation of the columns of a graph, given the `ind
 shares the entities of the columns.
 """
 function columns_annotations_fields end
+
+"""
+    names_fields(graph)::VectorDataFields
+
+The data source view of the names of the entities of a graph (of its bars); their title is the title of the axis of the
+entities.
+"""
+function names_fields end
+
+"""
+    rows_names_fields(graph)::VectorDataFields
+
+The data source view of the names of the rows of a graph; their title is the title of the rows axis.
+"""
+function rows_names_fields end
+
+"""
+    columns_names_fields(graph)::VectorDataFields
+
+The data source view of the names of the columns of a graph; their title is the title of the columns axis.
+"""
+function columns_names_fields end
+
+"""
+    rows_groups_fields(graph)::VectorDataFields
+
+The data source view of the groups of the rows of a graph. The groups have no title.
+"""
+function rows_groups_fields end
+
+"""
+    rows_subgroups_fields(graph)::VectorDataFields
+
+The data source view of the subgroups of the rows of a graph. The subgroups have no title.
+"""
+function rows_subgroups_fields end
+
+"""
+    columns_groups_fields(graph)::VectorDataFields
+
+The data source view of the groups of the columns of a graph. The groups have no title.
+"""
+function columns_groups_fields end
+
+"""
+    columns_subgroups_fields(graph)::VectorDataFields
+
+The data source view of the subgroups of the columns of a graph. The subgroups have no title.
+"""
+function columns_subgroups_fields end
 
 end  # module

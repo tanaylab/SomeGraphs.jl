@@ -203,6 +203,15 @@ function Sources.colors_fields(graph::BarsGraph)::ColorsFields
 end
 
 """
+    names_fields(graph::BarsGraph)::VectorDataFields
+
+The names of the bars; their title is the title of the bars axis.
+"""
+function Sources.names_fields(graph::BarsGraph)::VectorDataFields
+    return VectorDataFields(graph.data.names, graph.data.bars)
+end
+
+"""
     annotations_fields(graph::BarsGraph, index::Integer)::ColorsFields
 
 The `index` annotation of the bars, which shares the entities of the bars.
@@ -555,6 +564,15 @@ The `index` annotation of the bars, which shares the entities of the bars (the o
 function Sources.annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
     annotation = graph.data.annotations[index]
     return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
+end
+
+"""
+    names_fields(graph::SeriesBarsGraph)::VectorDataFields
+
+The names of the bars (shared by all the series); their title is the title of the bars axis.
+"""
+function Sources.names_fields(graph::SeriesBarsGraph)::VectorDataFields
+    return VectorDataFields(graph.data.names, graph.data.bars)
 end
 
 function Common.validate_graph(graph::SeriesBarsGraph)::Nothing

@@ -46,6 +46,13 @@ SomeGraphs.Sources.distributions_values_fields
 SomeGraphs.Sources.entries_fields
 SomeGraphs.Sources.rows_annotations_fields
 SomeGraphs.Sources.columns_annotations_fields
+SomeGraphs.Sources.names_fields
+SomeGraphs.Sources.rows_names_fields
+SomeGraphs.Sources.columns_names_fields
+SomeGraphs.Sources.rows_groups_fields
+SomeGraphs.Sources.rows_subgroups_fields
+SomeGraphs.Sources.columns_groups_fields
+SomeGraphs.Sources.columns_subgroups_fields
 ```
 
 **Example:**

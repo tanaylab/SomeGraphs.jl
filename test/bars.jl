@@ -43,6 +43,10 @@ nested_test("bars") do
         @test fields.data.values === graph.data.annotations[1].values
         @test fields.data.entities === graph.data.bars
         @test fields.configuration.colors === graph.data.annotations[1].colors
+
+        fields = names_fields(graph)
+        @test fields.values === graph.data.names
+        @test fields.entities === graph.data.bars
         return nothing
     end
 
@@ -244,6 +248,10 @@ nested_test("series_bars") do
         @test fields.data.values === graph.data.annotations[1].values
         @test fields.data.entities === graph.data.bars
         @test fields.configuration.colors === graph.data.annotations[1].colors
+
+        fields = names_fields(graph)
+        @test fields.values === graph.data.names
+        @test fields.entities === graph.data.bars
         return nothing
     end
 
