@@ -29,6 +29,8 @@ export Log10Scale
 export Log2Scale
 export LogScale
 export MarginsConfiguration
+export MatrixData
+export MatrixEntitiesData
 export NAMED_COLOR_SCALES
 export PlotlyFigure
 export SizesConfiguration
@@ -1515,91 +1517,6 @@ relevant [`AxisConfiguration`](@ref) to display percents.
 @enum Stacking StackValues StackFractions
 
 """
-    @kwdef mutable struct AnnotationData <: Validated
-        title::Maybe{AbstractString} = nothing
-        values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}} = Float32[]
-        hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-        colors::ColorsConfiguration = ColorsConfiguration()
-    end
-
-An annotation to attach to an axis. This applies to discrete axes (bars axis for a [`BarsGraph`](@ref
-SomeGraphs.Bars.BarsGraph) or the rows and/or columns of a `HeatmapGraph`). The number of the `values` and the optional
-`hovers` must be the same as the number of entries in the axis.
-
-The `colors` configuration is part of the data, because the color of annotations (in particular, categorical ones) is
-tightly coupled with the data.
-
-!!! note
-
-    If you want to show the color scale of some annotation(s) using `show_legend`, keep in mind Plotly places a limit of
-    at most two color scales in a graph, because "reasons".
-"""
-@kwdef mutable struct AnnotationData <: Validated
-    title::Maybe{AbstractString} = nothing
-    values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}} = Float32[]
-    hovers::Maybe{Union{AbstractVector{<:AbstractString}}} = nothing
-    colors::ColorsConfiguration = ColorsConfiguration()
-end
-
-function Validations.validate(
-    context::ValidationContext,
-    annotation_data::AnnotationData,
-    expected_base::AbstractString,
-    expected_length::Integer,
-)::Nothing
-    validate_field(context, "colors", annotation_data.colors)
-
-    if annotation_data.colors.fixed !== nothing
-        throw(ArgumentError("can't specify $(location(context)).colors.fixed"))
-    end
-
-    validate_vector_length(context, "values", annotation_data.values, expected_base, expected_length)
-
-    # With no palette, the annotation's string values are used as explicit color names; validate them (an invalid color
-    # name would otherwise be silently rendered black by Plotly).
-    if annotation_data.colors.palette === nothing && annotation_data.values isa AbstractVector{<:AbstractString}
-        validate_vector_entries(context, "values", annotation_data.values) do _, color
-            validate_is_color(context, color)
-            return nothing
-        end
-    end
-
-    validate_vector_length(context, "hovers", annotation_data.hovers, expected_base, expected_length)
-
-    return nothing
-end
-
-"""
-    @kwdef mutable struct AnnotationSize
-        size::AbstractFloat = 0.05
-        gap::AbstractFloat = 0.005
-    end
-
-Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The
-sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.
-"""
-@kwdef mutable struct AnnotationSize <: Validated
-    size::AbstractFloat = 0.05
-    gap::AbstractFloat = 0.005
-end
-
-function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
-    validate_in(context, "annotation_size") do
-        validate_is_above(context, annotation_size.size, 0)
-        validate_is_below(context, annotation_size.size, 1)
-        return nothing
-    end
-
-    validate_in(context, "gap_size") do
-        validate_is_at_least(context, annotation_size.gap, 0)
-        validate_is_below(context, annotation_size.gap, 1)
-        return nothing
-    end
-
-    return nothing
-end
-
-"""
     @kwdef mutable struct ValuesData
         values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
         title::Maybe{AbstractString} = nothing
@@ -1632,6 +1549,123 @@ data; the properties of masked entities (other than their coordinates) are ignor
 @kwdef mutable struct EntitiesData
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+end
+
+"""
+    @kwdef mutable struct MatrixData
+        values::Maybe{AbstractMatrix{<:Real}} = nothing
+        title::Maybe{AbstractString} = nothing
+    end
+
+A value per row per column of a graph (the entries of a heatmap), and the title of these values (which becomes the
+colors title).
+"""
+@kwdef mutable struct MatrixData
+    values::Maybe{AbstractMatrix{<:Real}} = nothing
+    title::Maybe{AbstractString} = nothing
+end
+
+function MatrixData(values::AbstractMatrix{<:Real})::MatrixData
+    return MatrixData(; values)
+end
+
+"""
+    @kwdef mutable struct MatrixEntitiesData
+        hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
+        mask::Maybe{Union{AbstractMatrix{Bool}, BitMatrix}} = nothing
+    end
+
+The hovers and mask of the entities of a graph which are arranged in rows and columns (the cells of a heatmap). Hovers
+are only shown in interactive graphs (or when saving an HTML file). The mask disables an arbitrary subset of the
+entities.
+"""
+@kwdef mutable struct MatrixEntitiesData
+    hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
+    mask::Maybe{Union{AbstractMatrix{Bool}, BitMatrix}} = nothing
+end
+
+"""
+    @kwdef mutable struct AnnotationData <: Validated
+        values::ValuesData = ValuesData()
+        colors::ColorsConfiguration = ColorsConfiguration()
+    end
+
+An annotation to attach to an axis. This applies to discrete axes (bars axis for a [`BarsGraph`](@ref
+SomeGraphs.Bars.BarsGraph) or the rows and/or columns of a `HeatmapGraph`). The `values` are required, one per entry of
+the axis; their title is the title of the annotation. Hovering an annotation shows the hovers of the axis entries.
+
+The `colors` configuration is part of the data, because the color of annotations (in particular, categorical ones) is
+tightly coupled with the data.
+
+!!! note
+
+    If you want to show the color scale of some annotation(s) using `show_legend`, keep in mind Plotly places a limit of
+    at most two color scales in a graph, because "reasons".
+"""
+@kwdef mutable struct AnnotationData <: Validated
+    values::ValuesData = ValuesData()
+    colors::ColorsConfiguration = ColorsConfiguration()
+end
+
+function Validations.validate(
+    context::ValidationContext,
+    annotation_data::AnnotationData,
+    expected_base::AbstractString,
+    expected_length::Integer,
+)::Nothing
+    validate_field(context, "colors", annotation_data.colors)
+
+    if annotation_data.colors.fixed !== nothing
+        throw(ArgumentError("can't specify $(location(context)).colors.fixed"))
+    end
+
+    values = annotation_data.values.values
+    if values === nothing
+        throw(ArgumentError("must specify $(location(context)).values.values"))
+    end
+
+    validate_vector_length(context, "values.values", values, expected_base, expected_length)
+
+    # With no palette, the annotation's string values are used as explicit color names; validate them (an invalid color
+    # name would otherwise be silently rendered black by Plotly).
+    if annotation_data.colors.palette === nothing && values isa AbstractVector{<:AbstractString}
+        validate_vector_entries(context, "values.values", values) do _, color
+            validate_is_color(context, color)
+            return nothing
+        end
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct AnnotationSize
+        size::AbstractFloat = 0.05
+        gap::AbstractFloat = 0.005
+    end
+
+Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The
+sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.
+"""
+@kwdef mutable struct AnnotationSize <: Validated
+    size::AbstractFloat = 0.05
+    gap::AbstractFloat = 0.005
+end
+
+function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
+    validate_in(context, "annotation_size") do
+        validate_is_above(context, annotation_size.size, 0)
+        validate_is_below(context, annotation_size.size, 1)
+        return nothing
+    end
+
+    validate_in(context, "gap_size") do
+        validate_is_at_least(context, annotation_size.gap, 0)
+        validate_is_below(context, annotation_size.gap, 1)
+        return nothing
+    end
+
+    return nothing
 end
 
 end  # module

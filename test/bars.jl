@@ -29,7 +29,7 @@ nested_test("bars") do
     nested_test("mask") do
         graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
         graph.data.bars.mask = [true, false, true, true]
-        graph.data.annotations = [AnnotationData(; title = "score", values = [1, 0.5, 0, 1])]
+        graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
         test_html(graph, "bars.mask.html")
         return nothing
     end
@@ -130,7 +130,7 @@ nested_test("bars") do
 
             nested_test("annotations") do
                 nested_test("continuous") do
-                    graph.data.annotations = [AnnotationData(; title = "score", values = [1, 0.5, 0, 1])]
+                    graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
 
                     nested_test("()") do
                         test_html(graph, "bars.$(orientation_name).continuous.html")
@@ -147,8 +147,7 @@ nested_test("bars") do
                 nested_test("categorical") do
                     graph.data.annotations = [
                         AnnotationData(;
-                            title = "is",
-                            values = ["yes", "maybe", "no", "yes"],
+                            values = ValuesData(["yes", "maybe", "no", "yes"], "is"),
                             colors = ColorsConfiguration(;
                                 palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                             ),
@@ -169,10 +168,9 @@ nested_test("bars") do
 
                 nested_test("both") do
                     graph.data.annotations = [
-                        AnnotationData(; title = "score", values = [1, 0.5, 0, 1]),
+                        AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score")),
                         AnnotationData(;
-                            title = "is",
-                            values = ["yes", "maybe", "no", "yes"],
+                            values = ValuesData(["yes", "maybe", "no", "yes"], "is"),
                             colors = ColorsConfiguration(;
                                 palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                             ),
@@ -204,7 +202,7 @@ nested_test("series_bars") do
     nested_test("mask") do
         graph.data.names.values = "Foo-" .* string.(collect(0:10))
         graph.data.annotations =
-            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+            [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
 
         nested_test("bars") do
             graph.data.bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
@@ -280,7 +278,7 @@ nested_test("series_bars") do
 
         nested_test("annotations") do
             graph.data.annotations =
-                [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
 
             nested_test("fixed") do
                 graph.data.annotations[1].colors.fixed = "black"
@@ -361,7 +359,7 @@ nested_test("series_bars") do
                 # The two sides are the only two sub-graphs, so the annotations are the spine between them.
                 nested_test("annotations") do
                     graph.data.annotations =
-                        [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                        [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
                     test_html(graph, "series_bars.$(orientation_name).mirrored.annotations.html")
                     return nothing
                 end
@@ -381,8 +379,9 @@ nested_test("series_bars") do
 
                     # Both pairs still share the two sides, so there is still a single spine to annotate.
                     nested_test("annotations") do
-                        graph.data.annotations =
-                            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                        graph.data.annotations = [
+                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
+                        ]
                         test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.annotations.html")
                         return nothing
                     end
@@ -398,7 +397,9 @@ nested_test("series_bars") do
                         # Each pair has a middle of its own and the graph has none, so the annotations stay outside.
                         nested_test("annotations") do
                             graph.data.annotations = [
-                                AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                                AnnotationData(;
+                                    values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                                ),
                             ]
                             test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.annotations.html")
                             return nothing
@@ -436,8 +437,9 @@ nested_test("series_bars") do
 
                 nested_test("annotations") do
                     nested_test("continuous") do
-                        graph.data.annotations =
-                            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                        graph.data.annotations = [
+                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
+                        ]
 
                         nested_test("()") do
                             test_html(graph, "series_bars.$(orientation_name).gap.continuous.html")
@@ -454,20 +456,22 @@ nested_test("series_bars") do
                     nested_test("categorical") do
                         graph.data.annotations = [
                             AnnotationData(;
-                                title = "is",
-                                values = [
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                ],
+                                values = ValuesData(
+                                    [
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                    ],
+                                    "is",
+                                ),
                                 colors = ColorsConfiguration(;
                                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                                 ),
@@ -488,22 +492,24 @@ nested_test("series_bars") do
 
                     nested_test("both") do
                         graph.data.annotations = [
-                            AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
                             AnnotationData(;
-                                title = "is",
-                                values = [
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                ],
+                                values = ValuesData(
+                                    [
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                    ],
+                                    "is",
+                                ),
                                 colors = ColorsConfiguration(;
                                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                                 ),
@@ -565,7 +571,7 @@ nested_test("series_bars") do
             nested_test("annotations") do
                 nested_test("continuous") do
                     graph.data.annotations =
-                        [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                        [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
 
                     nested_test("()") do
                         test_html(graph, "series_bars.$(orientation_name).continuous.html")
@@ -582,20 +588,10 @@ nested_test("series_bars") do
                 nested_test("categorical") do
                     graph.data.annotations = [
                         AnnotationData(;
-                            title = "is",
-                            values = [
-                                "yes",
-                                "maybe",
-                                "no",
-                                "maybe",
-                                "yes",
-                                "maybe",
-                                "no",
-                                "maybe",
-                                "yes",
-                                "maybe",
-                                "no",
-                            ],
+                            values = ValuesData(
+                                ["yes", "maybe", "no", "maybe", "yes", "maybe", "no", "maybe", "yes", "maybe", "no"],
+                                "is",
+                            ),
                             colors = ColorsConfiguration(;
                                 palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                             ),
@@ -616,22 +612,12 @@ nested_test("series_bars") do
 
                 nested_test("both") do
                     graph.data.annotations = [
-                        AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                        AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
                         AnnotationData(;
-                            title = "is",
-                            values = [
-                                "yes",
-                                "maybe",
-                                "no",
-                                "maybe",
-                                "yes",
-                                "maybe",
-                                "no",
-                                "maybe",
-                                "yes",
-                                "maybe",
-                                "no",
-                            ],
+                            values = ValuesData(
+                                ["yes", "maybe", "no", "maybe", "yes", "maybe", "no", "maybe", "yes", "maybe", "no"],
+                                "is",
+                            ),
                             colors = ColorsConfiguration(;
                                 palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                             ),
@@ -678,8 +664,9 @@ nested_test("series_bars") do
                     graph.data.series[2].name = "Bar"
 
                     nested_test("continuous") do
-                        graph.data.annotations =
-                            [AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0])]
+                        graph.data.annotations = [
+                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
+                        ]
 
                         nested_test("()") do
                             test_html(graph, "series_bars.$(orientation_name).values.continuous.html")
@@ -696,20 +683,22 @@ nested_test("series_bars") do
                     nested_test("categorical") do
                         graph.data.annotations = [
                             AnnotationData(;
-                                title = "is",
-                                values = [
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                ],
+                                values = ValuesData(
+                                    [
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                    ],
+                                    "is",
+                                ),
                                 colors = ColorsConfiguration(;
                                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                                 ),
@@ -730,22 +719,24 @@ nested_test("series_bars") do
 
                     nested_test("both") do
                         graph.data.annotations = [
-                            AnnotationData(; title = "score", values = [1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0]),
+                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
                             AnnotationData(;
-                                title = "is",
-                                values = [
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                    "maybe",
-                                    "yes",
-                                    "maybe",
-                                    "no",
-                                ],
+                                values = ValuesData(
+                                    [
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                        "maybe",
+                                        "yes",
+                                        "maybe",
+                                        "no",
+                                    ],
+                                    "is",
+                                ),
                                 colors = ColorsConfiguration(;
                                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                                 ),

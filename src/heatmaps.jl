@@ -7,6 +7,8 @@ export AverageLinkage
 export CompleteLinkage
 export heatmap_graph
 export heatmap_order
+export HeatmapAxisConfiguration
+export HeatmapAxisData
 export HeatmapBottomLeft
 export HeatmapBottomRight
 export HeatmapGraph
@@ -98,25 +100,93 @@ struct HeatmapGraphOrder
 end
 
 """
+    @kwdef mutable struct HeatmapAxisConfiguration <: Validated
+        title::Maybe{AbstractString} = nothing
+        annotations::AnnotationSize = AnnotationSize()
+        reorder::Maybe{HeatmapReorder} = nothing
+        linkage::Maybe{HeatmapLinkage} = nothing
+        metric::Maybe{PreMetric} = nothing
+        groups_gap::Maybe{Integer} = 1
+        subgroups_gap::Maybe{Integer} = nothing
+        dendogram_size::Maybe{Real} = nothing
+        dendogram_line::LineConfiguration = LineConfiguration()
+    end
+
+Configure one axis (the rows or the columns) of a heatmap. The `title` is the title of the axis. The `annotations` are
+the sizes of the annotations shown to the side of the axis.
+
+You can use `reorder` to reorder the entries of the axis. When specifying `linkage`, by default, the clustering uses the
+`Euclidean` distance metric. You can override this by specifying the `metric`.
+
+If groups are specified for the entries in the [`HeatmapAxisData`](@ref), they can be used to constrain the clustering,
+and/or to create visible gaps in the heatmap (between entries of different groups). The `groups_gap` is the number of
+fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry
+between adjacent entries of different groups. A gap of `nothing` will not be shown.
+
+If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is
+contiguous, and within it each subgroup is contiguous. Their `subgroups_gap` works the same way, and defaults to
+`nothing` because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+
+Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level
+specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of
+their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the
+subgroups inside each of them.
+
+If you specify `dendogram_size`, then you should either specify linkage (for computing a clustering) or must specify
+`Hclust` order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual
+inconvenient units (fractions of the total graph size) because Plotly.
+
+If a dendogram tree is shown, the `dendogram_line` can be used to control it. The default color is black. The
+`is_filled` field shouldn't be set as it has no meaning here.
+"""
+@kwdef mutable struct HeatmapAxisConfiguration <: Validated
+    title::Maybe{AbstractString} = nothing
+    annotations::AnnotationSize = AnnotationSize()
+    reorder::Maybe{HeatmapReorder} = nothing
+    linkage::Maybe{HeatmapLinkage} = nothing
+    metric::Maybe{PreMetric} = nothing
+    groups_gap::Maybe{Integer} = 1
+    subgroups_gap::Maybe{Integer} = nothing
+    dendogram_size::Maybe{Real} = nothing
+    dendogram_line::LineConfiguration = LineConfiguration()
+end
+
+function Validations.validate(context::ValidationContext, configuration::HeatmapAxisConfiguration)::Nothing
+    validate_field(context, "annotations", configuration.annotations)
+    validate_field(context, "dendogram_line", configuration.dendogram_line)
+
+    validate_in(context, "groups_gap") do
+        return validate_is_above(context, configuration.groups_gap, 0)
+    end
+    validate_in(context, "subgroups_gap") do
+        return validate_is_above(context, configuration.subgroups_gap, 0)
+    end
+    validate_in(context, "dendogram_size") do
+        return validate_is_above(context, configuration.dendogram_size, 0)
+    end
+
+    dendogram_line = configuration.dendogram_line
+    if dendogram_line.is_filled
+        throw(ArgumentError("can't specify heatmap $(location(context)).dendogram_line.is_filled"))
+    end
+
+    if configuration.dendogram_size === nothing &&
+       (dendogram_line.width !== nothing || dendogram_line.style != SolidLine || dendogram_line.color !== nothing)
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap $(location(context)).dendogram_line.*
+                                  without $(location(context)).dendogram_size
+                                  """)))
+    end
+
+    return nothing
+end
+
+"""
     @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         entries_colors::ColorsConfiguration = ColorsConfiguration()
-        rows_annotations::AnnotationSize = AnnotationSize()
-        columns_annotations::AnnotationSize = AnnotationSize()
-        rows_reorder::Maybe{HeatmapReorder} = nothing
-        columns_reorder::Maybe{HeatmapReorder} = nothing
-        rows_linkage::Maybe{HeatmapLinkage} = nothing
-        columns_linkage::Maybe{HeatmapLinkage} = nothing
-        rows_metric::Maybe{PreMetric} = nothing
-        columns_metric::Maybe{PreMetric} = nothing
-        rows_groups_gap::Maybe{Integer} = 1
-        rows_subgroups_gap::Maybe{Integer} = nothing
-        columns_groups_gap::Maybe{Integer} = 1
-        columns_subgroups_gap::Maybe{Integer} = nothing
-        rows_dendogram_size::Maybe{Real} = nothing
-        columns_dendogram_size::Maybe{Real} = nothing
-        rows_dendogram_line::LineConfiguration = LineConfiguration()
-        columns_dendogram_line::LineConfiguration = LineConfiguration()
+        rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
+        columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
         origin::HeatmapOrigin = HeatmapBottomLeft
         final_order::Maybe{HeatmapGraphOrder} = nothing
     end
@@ -127,29 +197,7 @@ This displays a matrix of values using a rectangle at each position. Due to Plot
 tweak the graph size for best results; there's no way to directly control the width and height of the rectangles. In
 addition, the only supported color configurations are using continuous color palettes.
 
-You can use `..._reorder` reorder the data. When specifying `..._linkage`, by default, the clustering uses the
-`Euclidean` distance metric. You can override this by specifying the `..._metric`.
-
-If groups are specified for some entries (rows and/or columns), they can be used to constrain the clustering, and/or to
-create visible gaps in the heatmap (between entries of different groups). The size of the gaps is the number of fake
-entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between
-adjacent entries of different groups. A gap of `nothing` will not be shown.
-
-If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is
-contiguous, and within it each subgroup is contiguous. Their `..._subgroups_gap` works the same way, and defaults to
-`nothing` because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
-
-Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level
-specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of
-their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the
-subgroups inside each of them.
-
-If you specify `..._dendogram_size`, then you should either specify linkage (for computing a clustering) or must specify
-`Hclust` order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual
-inconvenient units (fractions of the total graph size) because Plotly.
-
-If a dendogram tree is shown, the `..._dendogram_line` can be used to control it. The default color is black. The
-`is_filled` field shouldn't be set as it has no meaning here.
+The `rows` and `columns` configure each axis (see [`HeatmapAxisConfiguration`](@ref)).
 
 The `final_order` caches the computed order of the rows and the columns; access it through the graph's `order` (e.g.,
 for generating other graphs in an identical order). It is computed once, whether the graph's figure is generated or its
@@ -158,32 +206,16 @@ order is asked for first.
 !!! note
 
     Nothing detects that the cache went stale. Call [`reset_order!`](@ref) if anything it was computed from is changed
-    after it was computed - that is, the `..._reorder`, `..._linkage` and `..._metric` configuration, and the
-    `entries_values`, `..._order`, `..._arrange_by`, `..._groups` and `..._subgroups` data. The groups are easy to forget: they
-    constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order
-    of the first grouping unless the cache is reset in between.
+    after it was computed - that is, the `reorder`, `linkage` and `metric` of the axes configuration, and the
+    `entries.values` and the `order`, `arrange_by`, `groups` and `subgroups` of the axes data. The groups are easy to
+    forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently
+    reuses the order of the first grouping unless the cache is reset in between.
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    x_axis_title::Maybe{AbstractString} = nothing
-    y_axis_title::Maybe{AbstractString} = nothing
     entries_colors::ColorsConfiguration = ColorsConfiguration()
-    rows_annotations::AnnotationSize = AnnotationSize()
-    columns_annotations::AnnotationSize = AnnotationSize()
-    rows_reorder::Maybe{HeatmapReorder} = nothing
-    columns_reorder::Maybe{HeatmapReorder} = nothing
-    rows_linkage::Maybe{HeatmapLinkage} = nothing
-    columns_linkage::Maybe{HeatmapLinkage} = nothing
-    rows_metric::Maybe{PreMetric} = nothing
-    columns_metric::Maybe{PreMetric} = nothing
-    rows_groups_gap::Maybe{Integer} = 1
-    rows_subgroups_gap::Maybe{Integer} = nothing
-    columns_groups_gap::Maybe{Integer} = 1
-    columns_subgroups_gap::Maybe{Integer} = nothing
-    rows_dendogram_size::Maybe{Real} = nothing
-    columns_dendogram_size::Maybe{Real} = nothing
-    rows_dendogram_line::LineConfiguration = LineConfiguration()
-    columns_dendogram_line::LineConfiguration = LineConfiguration()
+    rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
+    columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
     final_order::Maybe{HeatmapGraphOrder} = nothing
 end
@@ -191,8 +223,8 @@ end
 function Validations.validate(context::ValidationContext, configuration::HeatmapGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "entries_colors", configuration.entries_colors)
-    validate_field(context, "rows_annotations", configuration.rows_annotations)
-    validate_field(context, "columns_annotations", configuration.columns_annotations)
+    validate_field(context, "rows", configuration.rows)
+    validate_field(context, "columns", configuration.columns)
 
     if configuration.entries_colors.fixed !== nothing
         throw(ArgumentError("can't specify heatmap $(location(context)).entries_colors.fixed"))
@@ -202,48 +234,93 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
         throw(ArgumentError("can't specify heatmap categorical $(location(context)).entries_colors.palette"))
     end
 
-    validate_in(context, "rows_groups_gap") do
-        return validate_is_above(context, configuration.rows_groups_gap, 0)
-    end
-    validate_in(context, "columns_groups_gap") do
-        return validate_is_above(context, configuration.columns_groups_gap, 0)
-    end
-    validate_in(context, "rows_subgroups_gap") do
-        return validate_is_above(context, configuration.rows_subgroups_gap, 0)
-    end
-    validate_in(context, "columns_subgroups_gap") do
-        return validate_is_above(context, configuration.columns_subgroups_gap, 0)
-    end
-
-    validate_in(context, "rows_dendogram_size") do
-        return validate_is_above(context, configuration.rows_dendogram_size, 0)
-    end
-    validate_in(context, "columns_dendogram_size") do
-        return validate_is_above(context, configuration.columns_dendogram_size, 0)
-    end
-
-    for (name, dendogram_line, dendogram_size) in (
-        ("rows", configuration.rows_dendogram_line, configuration.rows_dendogram_size),
-        ("columns", configuration.columns_dendogram_line, configuration.columns_dendogram_size),
-    )
-        if dendogram_line.is_filled
-            throw(ArgumentError("can't specify heatmap $(location(context)).$(name)_dendogram_line.is_filled"))
-        end
-
-        if dendogram_size === nothing &&
-           (dendogram_line.width !== nothing || dendogram_line.style != SolidLine || dendogram_line.color !== nothing)
-            throw(ArgumentError(chomp("""
-                                      can't specify heatmap $(location(context)).$(name)_dendogram_line.*
-                                      without $(location(context)).$(name)_dendogram_size
-                                      """)))
-        end
-    end
-
-    if configuration.rows_reorder == SameOrder && configuration.columns_reorder == SameOrder
+    if configuration.rows.reorder == SameOrder && configuration.columns.reorder == SameOrder
         throw(ArgumentError(chomp("""
-                                  can't specify both heatmap $(location(context)).rows_reorder: SameOrder
-                                  and heatmap $(location(context)).columns_reorder: SameOrder
+                                  can't specify both heatmap $(location(context)).rows.reorder: SameOrder
+                                  and heatmap $(location(context)).columns.reorder: SameOrder
                                   """)))
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct HeatmapAxisData
+        names::ValuesData = ValuesData()
+        entities::EntitiesData = EntitiesData()
+        order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+        groups::Maybe{AbstractVector} = nothing
+        subgroups::Maybe{AbstractVector} = nothing
+        arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+        annotations::AbstractVector{AnnotationData} = AnnotationData[]
+    end
+
+The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `names` are strings, one per entry,
+shown as the tick labels; their title is the axis title. The `entities` hold the hovers of the entries (the mask is not
+supported). The `annotations` are shown to the side of the axis.
+
+By default, if reordering the entries, this is based on the `entries.values` of the graph. You can override this by
+specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.values` (the rows
+`arrange_by` must have the same number of rows, and the columns `arrange_by` the same number of columns); the other
+dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows `arrange_by`
+matrix should be in row-major layout, but that's not critical.
+
+Alternatively you can force the order of the entries by specifying the `order` permutation. You can also specify an
+`Hclust` object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
+
+If `groups` are specified, then a gap can be added between entries of different groups. Groups can also be used to
+constrain the computed clustering. The `subgroups` are a second, finer level of grouping nested in the groups.
+"""
+@kwdef mutable struct HeatmapAxisData
+    names::ValuesData = ValuesData()
+    entities::EntitiesData = EntitiesData()
+    order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    groups::Maybe{AbstractVector} = nothing
+    subgroups::Maybe{AbstractVector} = nothing
+    arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+    annotations::AbstractVector{AnnotationData} = AnnotationData[]
+end
+
+# Validate the data of the `name` (rows or columns) axis of a heatmap with `n_entries`. The context is that of the whole
+# graph data, so the messages can refer to the entries.
+function Validations.validate(
+    context::ValidationContext,
+    axis::HeatmapAxisData,
+    name::AbstractString,
+    n_entries::Integer,
+)::Nothing
+    base = "entries.values.$(name)"
+
+    validate_string_values(context, "$(name).names.values", axis.names.values)
+    validate_vector_length(context, "$(name).names.values", axis.names.values, base, n_entries)
+
+    validate_vector_length(context, "$(name).entities.hovers", axis.entities.hovers, base, n_entries)
+    if axis.entities.mask !== nothing
+        throw(ArgumentError("unsupported heatmap $(location(context)).$(name).entities.mask"))
+    end
+
+    if axis.order isa Hclust
+        order = axis.order.order
+    else
+        order = axis.order
+    end
+    validate_vector_length(context, "$(name).order", order, base, n_entries)
+
+    validate_vector_length(context, "$(name).groups", axis.groups, base, n_entries)
+    validate_vector_length(context, "$(name).subgroups", axis.subgroups, base, n_entries)
+
+    # The subgroups of an axis are a second, finer level of grouping, so they only make sense together with the groups.
+    # A subgroup is nested in its group, so the same subgroup in two different groups is two different subgroups;
+    # there's no need for the subgroups to be unique.
+    if axis.subgroups !== nothing && axis.groups === nothing
+        throw(ArgumentError("can't specify heatmap $(location(context)).$(name).subgroups without $(name).groups"))
+    end
+
+    validate_matrix_dimension(context, "$(name).arrange_by", axis.arrange_by, name == "rows" ? 1 : 2, base, n_entries)
+
+    validate_vector_entries(context, "$(name).annotations", axis.annotations) do _, annotation
+        validate(context, annotation, base, n_entries)
+        return nothing
     end
 
     return nothing
@@ -252,42 +329,20 @@ end
 """
     @kwdef mutable struct HeatmapGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        x_axis_title::Maybe{AbstractString} = nothing
-        y_axis_title::Maybe{AbstractString} = nothing
-        entries_colors_title::Maybe{AbstractString} = nothing
-        entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;]
-        rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-        entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
-        rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-        columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-        rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-        columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-        rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-        columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-        rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-        columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-        rows_groups::Maybe{AbstractVector} = nothing
-        columns_groups::Maybe{AbstractVector} = nothing
+        entries::MatrixData = MatrixData()
+        cells::MatrixEntitiesData = MatrixEntitiesData()
+        rows::HeatmapAxisData = HeatmapAxisData()
+        columns::HeatmapAxisData = HeatmapAxisData()
     end
 
 The data for a graph showing a heatmap (matrix) of entries.
 
 This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation,
-colors must be continuous. The hover for each rectangle is a combination of the `entries_hovers`, `rows_hovers`
-and `columns_hovers` for the entry.
+colors must be continuous. The `entries` values are required; their title is the title of the colors scale. The `cells`
+hold the hovers of the entries (the mask is not supported). The hover for each rectangle is a combination of the hovers
+of the cell, of its row and of its column.
 
-By default, if reordering the data, this is based on the `entries_values`. You can override this by specifying an
-`..._arrange_by` matrix. Only the reordered dimension needs to match the `entries_values` (the `rows_arrange_by` must
-have the same number of rows, and the `columns_arrange_by` the same number of columns); the other dimension holds
-whatever features you want to cluster by, and need not match. For efficiency the `rows_arrange_by` matrix should be in
-row-major layout, but that's not critical.
-
-Alternatively you can force the order of the data by specifying the `..._order` permutation. You can also specify an
-`Hclust` object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
-
-If `..._groups` are specified, then a gap can be added between entries of different groups. Groups can also be
-used to constrain the computed clustering.
+The `rows` and `columns` hold the data of each axis (see [`HeatmapAxisData`](@ref)).
 
 Valid combinations of the fields controlling order and clustering are:
 
@@ -321,93 +376,26 @@ All other combinations are invalid. Note:
 """
 @kwdef mutable struct HeatmapGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    x_axis_title::Maybe{AbstractString} = nothing
-    y_axis_title::Maybe{AbstractString} = nothing
-    entries_colors_title::Maybe{AbstractString} = nothing
-    entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;]
-    rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-    columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing
-    entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
-    rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-    columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
-    rows_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    columns_annotations::AbstractVector{AnnotationData} = AnnotationData[]
-    rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    rows_groups::Maybe{AbstractVector} = nothing
-    rows_subgroups::Maybe{AbstractVector} = nothing
-    columns_groups::Maybe{AbstractVector} = nothing
-    columns_subgroups::Maybe{AbstractVector} = nothing
-end
-
-# The subgroups of an axis are a second, finer level of grouping, so they only make sense together with the groups. A
-# subgroup is nested in its group, so the same subgroup in two different groups is two different subgroups; there's no
-# need for the subgroups to be unique.
-function validate_subgroups(
-    context::ValidationContext,
-    name::AbstractString,
-    groups::Maybe{AbstractVector},
-    subgroups::Maybe{AbstractVector},
-)::Nothing
-    if subgroups !== nothing && groups === nothing
-        throw(ArgumentError("can't specify heatmap $(location(context)).$(name)_subgroups without $(name)_groups"))
-    end
-    return nothing
+    entries::MatrixData = MatrixData()
+    cells::MatrixEntitiesData = MatrixEntitiesData()
+    rows::HeatmapAxisData = HeatmapAxisData()
+    columns::HeatmapAxisData = HeatmapAxisData()
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
-    n_rows, n_columns = size(data.entries_values)
-
-    validate_matrix_dimension(context, "rows_arrange_by", data.rows_arrange_by, 1, "entries_values.rows", n_rows)
-    validate_matrix_dimension(
-        context,
-        "columns_arrange_by",
-        data.columns_arrange_by,
-        2,
-        "entries_values.columns",
-        n_columns,
-    )
-
-    validate_vector_length(context, "rows_names", data.rows_names, "entries_values.rows", n_rows)
-    validate_vector_length(context, "columns_names", data.columns_names, "entries_values.columns", n_columns)
-
-    validate_matrix_size(context, "entries_hovers", data.entries_hovers, "entries_values", size(data.entries_values))
-    validate_vector_length(context, "rows_hovers", data.rows_hovers, "entries_values.rows", n_rows)
-    validate_vector_length(context, "columns_hovers", data.columns_hovers, "entries_values.columns", n_columns)
-
-    validate_vector_length(context, "rows_groups", data.rows_groups, "entries_values.rows", n_rows)
-    validate_vector_length(context, "columns_groups", data.columns_groups, "entries_values.columns", n_columns)
-    validate_vector_length(context, "rows_subgroups", data.rows_subgroups, "entries_values.rows", n_rows)
-    validate_vector_length(context, "columns_subgroups", data.columns_subgroups, "entries_values.columns", n_columns)
-
-    validate_subgroups(context, "rows", data.rows_groups, data.rows_subgroups)
-    validate_subgroups(context, "columns", data.columns_groups, data.columns_subgroups)
-
-    if data.rows_order isa Hclust
-        rows_order = data.rows_order.order  # UNTESTED
-    else
-        rows_order = data.rows_order
+    values = data.entries.values
+    if values === nothing
+        throw(ArgumentError("must specify $(location(context)).entries.values"))
     end
-    validate_vector_length(context, "rows_order", rows_order, "entries_values.rows", n_rows)
+    n_rows, n_columns = size(values)
 
-    if data.columns_order isa Hclust
-        columns_order = data.columns_order.order
-    else
-        columns_order = data.columns_order
-    end
-    validate_vector_length(context, "columns_order", columns_order, "entries_values.columns", n_columns)
-
-    validate_vector_entries(context, "rows_annotations", data.rows_annotations) do _, rows_annotation
-        validate(context, rows_annotation, "entries_values.rows", n_rows)
-        return nothing
+    validate_matrix_size(context, "cells.hovers", data.cells.hovers, "entries.values", size(values))
+    if data.cells.mask !== nothing
+        throw(ArgumentError("unsupported heatmap $(location(context)).cells.mask"))
     end
 
-    validate_vector_entries(context, "columns_annotations", data.columns_annotations) do _, columns_annotation
-        validate(context, columns_annotation, "entries_values.columns", n_columns)
-        return nothing
-    end
+    validate(context, data.rows, "rows", n_rows)
+    validate(context, data.columns, "columns", n_columns)
 
     return nothing
 end
@@ -420,25 +408,10 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
 """
     function heatmap_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        x_axis_title::Maybe{AbstractString} = nothing,
-        y_axis_title::Maybe{AbstractString} = nothing,
-        entries_colors_title::Maybe{AbstractString} = nothing,
-        entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;],
-        rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing,
-        rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-        rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-        columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-        rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-        columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-        rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-        columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-        rows_groups::Maybe{AbstractVector} = nothing,
-        rows_subgroups::Maybe{AbstractVector} = nothing,
-        columns_groups::Maybe{AbstractVector} = nothing,
-        columns_subgroups::Maybe{AbstractVector} = nothing,
+        entries::MatrixData = MatrixData(),
+        cells::MatrixEntitiesData = MatrixEntitiesData(),
+        rows::HeatmapAxisData = HeatmapAxisData(),
+        columns::HeatmapAxisData = HeatmapAxisData(),
         configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
     )::HeatmapGraph
 
@@ -447,165 +420,94 @@ Create a [`HeatmapGraph`](@ref) by initializing only the [`HeatmapGraphData`](@r
 """
 function heatmap_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    x_axis_title::Maybe{AbstractString} = nothing,
-    y_axis_title::Maybe{AbstractString} = nothing,
-    entries_colors_title::Maybe{AbstractString} = nothing,
-    entries_values::Maybe{AbstractMatrix{<:Real}} = Float32[;;],
-    rows_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    columns_names::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    entries_hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing,
-    rows_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    columns_hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
-    rows_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-    columns_annotations::AbstractVector{AnnotationData} = AnnotationData[],
-    rows_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    columns_arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing,
-    rows_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-    columns_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing,
-    rows_groups::Maybe{AbstractVector} = nothing,
-    rows_subgroups::Maybe{AbstractVector} = nothing,
-    columns_groups::Maybe{AbstractVector} = nothing,
-    columns_subgroups::Maybe{AbstractVector} = nothing,
+    entries::MatrixData = MatrixData(),
+    cells::MatrixEntitiesData = MatrixEntitiesData(),
+    rows::HeatmapAxisData = HeatmapAxisData(),
+    columns::HeatmapAxisData = HeatmapAxisData(),
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
 )::HeatmapGraph
-    return HeatmapGraph(
-        HeatmapGraphData(;
-            figure_title,
-            x_axis_title,
-            y_axis_title,
-            entries_colors_title,
-            entries_values,
-            rows_names,
-            columns_names,
-            entries_hovers,
-            rows_hovers,
-            columns_hovers,
-            rows_annotations,
-            columns_annotations,
-            rows_arrange_by,
-            columns_arrange_by,
-            rows_order,
-            columns_order,
-            rows_groups,
-            rows_subgroups,
-            columns_groups,
-            columns_subgroups,
-        ),
-        configuration,
-    )
+    return HeatmapGraph(HeatmapGraphData(; figure_title, entries, cells, rows, columns), configuration)
+end
+
+# The entries values of a validated heatmap graph.
+function entries_values(graph::HeatmapGraph)::AbstractMatrix{<:Real}
+    values = graph.data.entries.values
+    @assert values !== nothing
+    return values
 end
 
 function Common.validate_graph(graph::HeatmapGraph)::Nothing
+    values = entries_values(graph)
+
     validate_colors(
-        ValidationContext(["graph.data.entries_values"]),
-        graph.data.entries_values,
+        ValidationContext(["graph.data.entries.values"]),
+        values,
         ValidationContext(["graph.configuration.entries_colors"]),
         graph.configuration.entries_colors,
     )
 
     validate_axis_sizes(;
         axis_name = "columns",
-        annotation_size = graph.configuration.columns_annotations,
-        n_annotations = length(graph.data.columns_annotations),
-        dendogram_size = graph.configuration.rows_dendogram_size,
+        annotation_size = graph.configuration.columns.annotations,
+        n_annotations = length(graph.data.columns.annotations),
+        dendogram_size = graph.configuration.rows.dendogram_size,
     )
 
     validate_axis_sizes(;
         axis_name = "rows",
-        annotation_size = graph.configuration.rows_annotations,
-        n_annotations = length(graph.data.rows_annotations),
-        dendogram_size = graph.configuration.columns_dendogram_size,
+        annotation_size = graph.configuration.rows.annotations,
+        n_annotations = length(graph.data.rows.annotations),
+        dendogram_size = graph.configuration.columns.dendogram_size,
     )
 
-    n_rows, n_columns = size(graph.data.entries_values)
+    n_rows, n_columns = size(values)
     if n_rows != n_columns
-        for (name, value) in
-            (("rows", graph.configuration.rows_reorder), ("columns", graph.configuration.columns_reorder))
-            if value == SameOrder
+        for (name, axis_configuration) in (("rows", graph.configuration.rows), ("columns", graph.configuration.columns))
+            if axis_configuration.reorder == SameOrder
                 throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.configuration.$(name)_reorder: SameOrder
+                                          can't specify heatmap graph.configuration.$(name).reorder: SameOrder
                                           for a non-square matrix: $(n_rows) rows x $(n_columns) columns
                                           """)))
             end
         end
     end
 
-    for (
-        name,
-        data_order,
-        data_arrange_by,
-        data_groups,
-        data_subgroups,
-        configuration_reorder,
-        configuration_linkage,
-        configuration_metric,
-        configuration_groups_gap,
-        configuration_subgroups_gap,
-        configuration_dendogram_size,
-        other_name,
-        other_data_order,
-        other_configuration_reorder,
-        other_configuration_dendogram_size,
-    ) in (
-        (
-            "columns",
-            graph.data.columns_order,
-            graph.data.columns_arrange_by,
-            graph.data.columns_groups,
-            graph.data.columns_subgroups,
-            graph.configuration.columns_reorder,
-            graph.configuration.columns_linkage,
-            graph.configuration.columns_metric,
-            graph.configuration.columns_groups_gap,
-            graph.configuration.columns_subgroups_gap,
-            graph.configuration.columns_dendogram_size,
-            "rows",
-            graph.data.rows_order,
-            graph.configuration.rows_reorder,
-            graph.configuration.rows_dendogram_size,
-        ),
-        (
-            "rows",
-            graph.data.rows_order,
-            graph.data.rows_arrange_by,
-            graph.data.rows_groups,
-            graph.data.rows_subgroups,
-            graph.configuration.rows_reorder,
-            graph.configuration.rows_linkage,
-            graph.configuration.rows_metric,
-            graph.configuration.rows_groups_gap,
-            graph.configuration.rows_subgroups_gap,
-            graph.configuration.rows_dendogram_size,
-            "columns",
-            graph.data.columns_order,
-            graph.configuration.columns_reorder,
-            graph.configuration.columns_dendogram_size,
-        ),
+    for (name, axis_data, axis_configuration, other_name, other_axis_data, other_axis_configuration) in (
+        ("columns", graph.data.columns, graph.configuration.columns, "rows", graph.data.rows, graph.configuration.rows),
+        ("rows", graph.data.rows, graph.configuration.rows, "columns", graph.data.columns, graph.configuration.columns),
     )
+        data_order = axis_data.order
+        data_arrange_by = axis_data.arrange_by
+        configuration_reorder = axis_configuration.reorder
+        configuration_linkage = axis_configuration.linkage
+        configuration_metric = axis_configuration.metric
+        configuration_dendogram_size = axis_configuration.dendogram_size
+        other_data_order = other_axis_data.order
+
         is_clustered = false
-        is_using_groups = configuration_groups_gap !== nothing
+        is_using_groups = axis_configuration.groups_gap !== nothing
         if data_order === nothing
             if configuration_reorder === nothing
                 if configuration_dendogram_size === nothing
                     if data_arrange_by !== nothing
                         throw(ArgumentError(chomp("""
-                                                  can't specify heatmap graph.data.$(name)_arrange_by
-                                                  without graph.configuration.$(name)_dendogram_size
-                                                  or graph.configuration.$(name)_reorder
+                                                  can't specify heatmap graph.data.$(name).arrange_by
+                                                  without graph.configuration.$(name).dendogram_size
+                                                  or graph.configuration.$(name).reorder
                                                   """)))
                     end
                     if configuration_linkage !== nothing
                         throw(ArgumentError(chomp("""
-                                                  can't specify heatmap graph.configuration.$(name)_linkage
-                                                  without graph.configuration.$(name)_dendogram_size
-                                                  or graph.configuration.$(name)_reorder
+                                                  can't specify heatmap graph.configuration.$(name).linkage
+                                                  without graph.configuration.$(name).dendogram_size
+                                                  or graph.configuration.$(name).reorder
                                                   """)))
                     end
                     if configuration_metric !== nothing
                         throw(ArgumentError(chomp("""
-                                                  can't specify heatmap graph.configuration.$(name)_metric
-                                                  without graph.configuration.$(name)_dendogram_size
-                                                  or graph.configuration.$(name)_reorder
+                                                  can't specify heatmap graph.configuration.$(name).metric
+                                                  without graph.configuration.$(name).dendogram_size
+                                                  or graph.configuration.$(name).reorder
                                                   """)))
                     end
                 end
@@ -613,27 +515,27 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             elseif configuration_reorder == SameOrder
                 if data_arrange_by !== nothing
                     throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.data.$(name)_arrange_by
-                                              for graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              can't specify heatmap graph.data.$(name).arrange_by
+                                              for graph.configuration.$(name).reorder: $(configuration_reorder)
                                               """)))
                 end
                 if configuration_linkage !== nothing
                     throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name)_linkage
-                                              for graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              can't specify heatmap graph.configuration.$(name).linkage
+                                              for graph.configuration.$(name).reorder: $(configuration_reorder)
                                               """)))
                 end
                 if configuration_metric !== nothing
                     throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name)_metric
-                                              for graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              can't specify heatmap graph.configuration.$(name).metric
+                                              for graph.configuration.$(name).reorder: $(configuration_reorder)
                                               """)))
                 end
-                if other_data_order === nothing && other_configuration_reorder === nothing
+                if other_data_order === nothing && other_axis_configuration.reorder === nothing
                     throw(
                         ArgumentError(
                             chomp("""
-                                  can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                  can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
                                   without an order to copy from the $(other_name)
                                   """),
                         ),
@@ -641,11 +543,11 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 end
                 if configuration_dendogram_size !== nothing &&
                    !(other_data_order isa Hclust) &&
-                   other_configuration_reorder === nothing &&
-                   other_configuration_dendogram_size === nothing
+                   other_axis_configuration.reorder === nothing &&
+                   other_axis_configuration.dendogram_size === nothing
                     throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name)_dendogram_size
-                                              with graph.configuration.$(name)_reorder: $(configuration_reorder)
+                                              can't specify heatmap graph.configuration.$(name).dendogram_size
+                                              with graph.configuration.$(name).reorder: $(configuration_reorder)
                                               without a tree to copy from the $(other_name)
                                               """)))
                 end
@@ -657,8 +559,8 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 throw(
                     ArgumentError(
                         chomp("""
-                              can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
-                              without explicit vector graph.data.$(name)_order
+                              can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
+                              without explicit vector graph.data.$(name).order
                               """),
                     ),
                 )
@@ -667,39 +569,39 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
         elseif data_order isa Hclust
             if configuration_linkage !== nothing
                 throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.configuration.$(name)_linkage
-                                          for explicit hclust graph.data.$(name)_order
+                                          can't specify heatmap graph.configuration.$(name).linkage
+                                          for explicit hclust graph.data.$(name).order
                                           """)))
             end
             if configuration_metric !== nothing
                 throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.configuration.$(name)_metric
-                                          for explicit hclust graph.data.$(name)_order
+                                          can't specify heatmap graph.configuration.$(name).metric
+                                          for explicit hclust graph.data.$(name).order
                                           """)))
             end
             if !(configuration_reorder in (nothing, SlantedHclust, SlantedPreSquaredHclust))
                 throw(
                     ArgumentError(
                         chomp("""
-                              can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
-                              for explicit hclust graph.data.$(name)_order
+                              can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
+                              for explicit hclust graph.data.$(name).order
                               """),
                     ),
                 )
             end
             if configuration_reorder === nothing && data_arrange_by !== nothing
                 throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.data.$(name)_arrange_by
-                                          without graph.configuration.$(name)_reorder
-                                          for explicit hclust graph.data.$(name)_order
+                                          can't specify heatmap graph.data.$(name).arrange_by
+                                          without graph.configuration.$(name).reorder
+                                          for explicit hclust graph.data.$(name).order
                                           """)))
             end
 
         elseif data_order isa AbstractVector
             if data_arrange_by !== nothing
                 throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.data.$(name)_arrange_by
-                                          for explicit vector graph.data.$(name)_order
+                                          can't specify heatmap graph.data.$(name).arrange_by
+                                          for explicit vector graph.data.$(name).order
                                           """)))
             end
 
@@ -710,8 +612,8 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
                 throw(
                     ArgumentError(
                         chomp("""
-                              can't specify heatmap graph.configuration.$(name)_reorder: $(configuration_reorder)
-                              for explicit vector graph.data.$(name)_order
+                              can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
+                              for explicit vector graph.data.$(name).order
                               """),
                     ),
                 )
@@ -720,16 +622,16 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             if configuration_dendogram_size === nothing
                 if configuration_linkage !== nothing
                     throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name)_linkage
-                                              for explicit vector graph.data.$(name)_order
-                                              without graph.configuration.$(name)_dendogram_size
+                                              can't specify heatmap graph.configuration.$(name).linkage
+                                              for explicit vector graph.data.$(name).order
+                                              without graph.configuration.$(name).dendogram_size
                                               """)))
                 end
                 if configuration_metric !== nothing
                     throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name)_metric
-                                              for explicit vector graph.data.$(name)_order
-                                              without graph.configuration.$(name)_dendogram_size
+                                              can't specify heatmap graph.configuration.$(name).metric
+                                              for explicit vector graph.data.$(name).order
+                                              without graph.configuration.$(name).dendogram_size
                                               """)))
                 end
             end
@@ -738,20 +640,20 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             @assert false
         end
 
-        if !is_using_groups && data_groups !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name)_groups"))
+        if !is_using_groups && axis_data.groups !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name).groups"))
         end
 
         ## Unlike the groups, the subgroups have their own gap, so they are of use if either the axis is clustered (they
         ## constrain the clustering) or they are gapped.
-        if !is_clustered && configuration_subgroups_gap === nothing && data_subgroups !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name)_subgroups"))
+        if !is_clustered && axis_configuration.subgroups_gap === nothing && axis_data.subgroups !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name).subgroups"))
         end
 
-        if configuration_subgroups_gap !== nothing && data_subgroups === nothing
+        if axis_configuration.subgroups_gap !== nothing && axis_data.subgroups === nothing
             throw(ArgumentError(chomp("""
-                                      can't specify heatmap graph.configuration.$(name)_subgroups_gap
-                                      without graph.data.$(name)_subgroups
+                                      can't specify heatmap graph.configuration.$(name).subgroups_gap
+                                      without graph.data.$(name).subgroups
                                       """)))
         end
     end
@@ -767,8 +669,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     next_colors_scale_index = [1]
     colors = configured_colors(;
         colors_configuration = graph.configuration.entries_colors,
-        colors_title = prefer_data(graph.data.entries_colors_title, graph.configuration.entries_colors.title),
-        colors_values = graph.data.entries_values,
+        colors_title = prefer_data(graph.data.entries.title, graph.configuration.entries_colors.title),
+        colors_values = entries_values(graph),
         next_colors_scale_index,
     )
 
@@ -781,16 +683,16 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         displayed_order(final_order.columns_order, graph.configuration.origin in (HeatmapBottomRight, HeatmapTopRight))
     reordered_values = colors.final_colors_values[rows_order, columns_order]
 
-    n_rows_annotations = length(graph.data.rows_annotations)
-    n_columns_annotations = length(graph.data.columns_annotations)
+    n_rows_annotations = length(graph.data.rows.annotations)
+    n_columns_annotations = length(graph.data.columns.annotations)
 
     columns_sub_graph = SubGraph(;
         index = 1,
         n_graphs = 1,
         graphs_gap = nothing,
         n_annotations = n_rows_annotations,
-        annotation_size = graph.configuration.rows_annotations,
-        dendogram_size = graph.configuration.rows_dendogram_size,
+        annotation_size = graph.configuration.rows.annotations,
+        dendogram_size = graph.configuration.rows.dendogram_size,
     )
 
     rows_sub_graph = SubGraph(;
@@ -798,8 +700,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         n_graphs = 1,
         graphs_gap = nothing,
         n_annotations = n_columns_annotations,
-        annotation_size = graph.configuration.columns_annotations,
-        dendogram_size = graph.configuration.columns_dendogram_size,
+        annotation_size = graph.configuration.columns.annotations,
+        dendogram_size = graph.configuration.columns.dendogram_size,
     )
 
     xaxis_index, _, yaxis_index, _ = plotly_sub_graph_axes(;
@@ -810,43 +712,34 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     expanded_rows_mask = compute_expansion_mask(
         rows_order,
-        graph.data.rows_groups,
-        graph.configuration.rows_groups_gap,
-        graph.data.rows_subgroups,
-        graph.configuration.rows_subgroups_gap,
+        graph.data.rows.groups,
+        graph.configuration.rows.groups_gap,
+        graph.data.rows.subgroups,
+        graph.configuration.rows.subgroups_gap,
     )
     expanded_columns_mask = compute_expansion_mask(
         columns_order,
-        graph.data.columns_groups,
-        graph.configuration.columns_groups_gap,
-        graph.data.columns_subgroups,
-        graph.configuration.columns_subgroups_gap,
+        graph.data.columns.groups,
+        graph.configuration.columns.groups_gap,
+        graph.data.columns.subgroups,
+        graph.configuration.columns.subgroups_gap,
     )
 
     expanded_z = expand_z_matrix(reordered_values, rows_order, expanded_rows_mask, columns_order, expanded_columns_mask)
 
     n_expanded_rows, n_expanded_columns = size(expanded_z)
 
-    rows_hovers = graph.data.rows_hovers
+    rows_hovers = graph.data.rows.entities.hovers
     if rows_hovers !== nothing
         rows_hovers = rows_hovers[rows_order]
     end
 
-    columns_hovers = graph.data.columns_hovers
+    columns_hovers = graph.data.columns.entities.hovers
     if columns_hovers !== nothing
         columns_hovers = columns_hovers[columns_order]
     end
 
-    entries_hovers = graph.data.entries_hovers
-
-    if graph.configuration.entries_colors.axis.log_scale !== nothing
-        if entries_hovers === nothing
-            entries_hovers = "Z: " .* string.(graph.data.entries_values)
-        else
-            entries_hovers .*= "<br>Z: " .* string.(graph.data.entries_values)  # UNTESTED
-        end
-    end
-
+    entries_hovers = graph.data.cells.hovers
     if entries_hovers !== nothing
         entries_hovers = entries_hovers[rows_order, columns_order]
     end
@@ -888,9 +781,9 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = VerticalValues,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.columns_annotations,
-        annotation_size = graph.configuration.columns_annotations,
-        entries_hovers = graph.data.columns_hovers,
+        annotations_data = graph.data.columns.annotations,
+        annotation_size = graph.configuration.columns.annotations,
+        entries_hovers = graph.data.columns.entities.hovers,
         order = columns_order,
         expanded_mask = expanded_columns_mask,
     )
@@ -903,19 +796,19 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = HorizontalValues,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.rows_annotations,
-        annotation_size = graph.configuration.rows_annotations,
-        entries_hovers = graph.data.rows_hovers,
+        annotations_data = graph.data.rows.annotations,
+        annotation_size = graph.configuration.rows.annotations,
+        entries_hovers = graph.data.rows.entities.hovers,
         order = rows_order,
         expanded_mask = expanded_rows_mask,
     )
 
-    if graph.configuration.rows_dendogram_size !== nothing
+    if graph.configuration.rows.dendogram_size !== nothing
         rows_max_height = push_dendogram_trace!(;
             traces,
             clusters = final_order.rows_hclust,
             values_orientation = HorizontalValues,
-            dendogram_line = graph.configuration.rows_dendogram_line,
+            dendogram_line = graph.configuration.rows.dendogram_line,
             expanded_mask = expanded_rows_mask,
             basis_sub_graph = rows_sub_graph,
             values_sub_graph = SubGraph(;
@@ -923,20 +816,20 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                 n_graphs = 1,
                 graphs_gap = nothing,
                 n_annotations = n_rows_annotations,
-                annotation_size = graph.configuration.rows_annotations,
-                dendogram_size = graph.configuration.rows_dendogram_size,
+                annotation_size = graph.configuration.rows.annotations,
+                dendogram_size = graph.configuration.rows.dendogram_size,
             ),
         )
     else
         rows_max_height = 0
     end
 
-    if graph.configuration.columns_dendogram_size !== nothing
+    if graph.configuration.columns.dendogram_size !== nothing
         columns_max_height = push_dendogram_trace!(;
             traces,
             clusters = final_order.columns_hclust,
             values_orientation = VerticalValues,
-            dendogram_line = graph.configuration.columns_dendogram_line,
+            dendogram_line = graph.configuration.columns.dendogram_line,
             expanded_mask = expanded_columns_mask,
             basis_sub_graph = columns_sub_graph,
             values_sub_graph = SubGraph(;
@@ -944,8 +837,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                 n_graphs = 1,
                 graphs_gap = nothing,
                 n_annotations = n_columns_annotations,
-                annotation_size = graph.configuration.columns_annotations,
-                dendogram_size = graph.configuration.columns_dendogram_size,
+                annotation_size = graph.configuration.columns.annotations,
+                dendogram_size = graph.configuration.columns.dendogram_size,
             ),
         )
     else
@@ -961,18 +854,18 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             any([annotation_colors.show_in_legend for annotation_colors in columns_annotations_colors])
         )
     has_hovers =
-        graph.data.entries_hovers !== nothing ||
-        graph.data.rows_hovers !== nothing ||
-        graph.data.columns_hovers !== nothing
+        graph.data.cells.hovers !== nothing ||
+        graph.data.rows.entities.hovers !== nothing ||
+        graph.data.columns.entities.hovers !== nothing
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers)
 
-    expanded_rows_names = expand_vector(graph.data.rows_names, rows_order, expanded_rows_mask, "")
+    expanded_rows_names = expand_vector(string_values(graph.data.rows.names), rows_order, expanded_rows_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("y", yaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows_names !== nothing);
-        title = prefer_data(graph.data.y_axis_title, graph.configuration.y_axis_title),
+        AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows.names.values !== nothing);
+        title = prefer_data(graph.data.rows.names.title, graph.configuration.rows.title),
         ticks_values = expanded_rows_names === nothing ? nothing : collect(1:n_expanded_rows),
         ticks_labels = expanded_rows_names,
         range = Range(; minimum = 0.5, maximum = n_expanded_rows + 0.5),
@@ -982,19 +875,20 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                 n_graphs = 1,
                 graphs_gap = nothing,
                 n_annotations = n_columns_annotations,
-                annotation_size = graph.configuration.columns_annotations,
-                dendogram_size = graph.configuration.columns_dendogram_size,
+                annotation_size = graph.configuration.columns.annotations,
+                dendogram_size = graph.configuration.columns.dendogram_size,
             ),
         ),
         is_zeroable = false,
     )
 
-    expanded_columns_names = expand_vector(graph.data.columns_names, columns_order, expanded_columns_mask, "")
+    expanded_columns_names =
+        expand_vector(string_values(graph.data.columns.names), columns_order, expanded_columns_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("x", xaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns_names !== nothing);
-        title = prefer_data(graph.data.x_axis_title, graph.configuration.x_axis_title),
+        AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns.names.values !== nothing);
+        title = prefer_data(graph.data.columns.names.title, graph.configuration.columns.title),
         ticks_values = expanded_columns_names === nothing ? nothing : collect(1:n_expanded_columns),
         ticks_labels = expanded_columns_names,
         range = Range(; minimum = 0.5, maximum = n_expanded_columns + 0.5),
@@ -1004,8 +898,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                 n_graphs = 1,
                 graphs_gap = nothing,
                 n_annotations = n_rows_annotations,
-                annotation_size = graph.configuration.rows_annotations,
-                dendogram_size = graph.configuration.rows_dendogram_size,
+                annotation_size = graph.configuration.rows.annotations,
+                dendogram_size = graph.configuration.rows.dendogram_size,
             ),
         ),
         is_zeroable = false,
@@ -1040,19 +934,19 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         (
             "y",
             VerticalValues,
-            graph.data.columns_annotations,
+            graph.data.columns.annotations,
             columns_annotations_colors,
-            graph.configuration.columns_annotations,
-            graph.configuration.columns_dendogram_size,
+            graph.configuration.columns.annotations,
+            graph.configuration.columns.dendogram_size,
             columns_max_height,
         ),
         (
             "x",
             HorizontalValues,
-            graph.data.rows_annotations,
+            graph.data.rows.annotations,
             rows_annotations_colors,
-            graph.configuration.rows_annotations,
-            graph.configuration.rows_dendogram_size,
+            graph.configuration.rows.annotations,
+            graph.configuration.rows.dendogram_size,
             rows_max_height,
         ),
     )
@@ -1073,7 +967,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                     plotly_annotations,
                     values_sub_graph = sub_graph,
                     values_orientation,
-                    title = annotation_data.title,
+                    title = annotation_data.values.title,
                 )
                 set_layout_axis!(  # NOJET
                     layout,
@@ -1091,7 +985,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                         colors_configuration = annotation_data.colors,
                         scaled_colors_palette = annotation_colors.scaled_colors_palette,
                         range = nothing,
-                        annotation_data.title,
+                        title = annotation_data.values.title,
                         show_scale = annotation_colors.show_scale,
                         next_colors_scale_offset_index,
                         colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
@@ -1136,23 +1030,23 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 end
 
 function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
-    data_rows_arrange_by = prefer_data(graph.data.rows_arrange_by, graph.data.entries_values)
-    data_columns_arrange_by = prefer_data(graph.data.columns_arrange_by, graph.data.entries_values)
+    data_rows_arrange_by = prefer_data(graph.data.rows.arrange_by, entries_values(graph))
+    data_columns_arrange_by = prefer_data(graph.data.columns.arrange_by, entries_values(graph))
     @assert data_rows_arrange_by !== nothing
     @assert data_columns_arrange_by !== nothing
 
     slant_rows = (
-        graph.configuration.rows_reorder in
+        graph.configuration.rows.reorder in
         (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
     )
     slant_columns = (
-        graph.configuration.columns_reorder in
+        graph.configuration.columns.reorder in
         (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
     )
 
-    slant_rows_is_pre_squared = graph.configuration.rows_reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
+    slant_rows_is_pre_squared = graph.configuration.rows.reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
     slant_columns_is_pre_squared =
-        graph.configuration.columns_reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
+        graph.configuration.columns.reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
 
     if slant_rows &&
        slant_columns &&
@@ -1165,7 +1059,7 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
         slant_columns_order = nothing
 
         if slant_rows
-            if graph.configuration.columns_reorder == SameOrder
+            if graph.configuration.columns.reorder == SameOrder
                 slant_rows_order, slant_columns_order =
                     slanted_orders(data_rows_arrange_by; same_order = true, squared_order = !slant_rows_is_pre_squared)
             else
@@ -1175,7 +1069,7 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
         end
 
         if slant_columns
-            if graph.configuration.rows_reorder == SameOrder
+            if graph.configuration.rows.reorder == SameOrder
                 slant_rows_order, slant_columns_order = slanted_orders(
                     data_columns_arrange_by;
                     same_order = true,
@@ -1192,44 +1086,44 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
     end
 
     data_columns_order, data_columns_hclust = finalize_order(;
-        data_order = graph.data.columns_order,
+        data_order = graph.data.columns.order,
         data_arrange_by = data_columns_arrange_by,
-        data_groups = graph.data.columns_groups,
-        data_subgroups = graph.data.columns_subgroups,
+        data_groups = graph.data.columns.groups,
+        data_subgroups = graph.data.columns.subgroups,
         slant_order = slant_columns_order,
-        configuration_reorder = graph.configuration.columns_reorder,
-        configuration_dendogram_size = graph.configuration.columns_dendogram_size,
-        configuration_linkage = graph.configuration.columns_linkage,
-        configuration_metric = graph.configuration.columns_metric,
+        configuration_reorder = graph.configuration.columns.reorder,
+        configuration_dendogram_size = graph.configuration.columns.dendogram_size,
+        configuration_linkage = graph.configuration.columns.linkage,
+        configuration_metric = graph.configuration.columns.metric,
     )
 
     data_rows_order, data_rows_hclust = finalize_order(;
-        data_order = graph.data.rows_order,
+        data_order = graph.data.rows.order,
         data_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1)),
-        data_groups = graph.data.rows_groups,
-        data_subgroups = graph.data.rows_subgroups,
+        data_groups = graph.data.rows.groups,
+        data_subgroups = graph.data.rows.subgroups,
         slant_order = slant_rows_order,
-        configuration_reorder = graph.configuration.rows_reorder,
-        configuration_dendogram_size = graph.configuration.rows_dendogram_size,
-        configuration_linkage = graph.configuration.rows_linkage,
-        configuration_metric = graph.configuration.rows_metric,
+        configuration_reorder = graph.configuration.rows.reorder,
+        configuration_dendogram_size = graph.configuration.rows.dendogram_size,
+        configuration_linkage = graph.configuration.rows.linkage,
+        configuration_metric = graph.configuration.rows.metric,
     )
 
-    if graph.configuration.rows_reorder == SameOrder
+    if graph.configuration.rows.reorder == SameOrder
         @assert data_rows_order === nothing
         @assert data_rows_hclust === nothing
         data_rows_order = data_columns_order
         data_rows_hclust = data_columns_hclust
     end
 
-    if graph.configuration.columns_reorder == SameOrder
+    if graph.configuration.columns.reorder == SameOrder
         @assert data_columns_order === nothing
         @assert data_columns_hclust === nothing
         data_columns_order = data_rows_order
         data_columns_hclust = data_rows_hclust
     end
 
-    n_rows, n_columns = size(graph.data.entries_values)  # NOJET
+    n_rows, n_columns = size(entries_values(graph))  # NOJET
 
     # An axis that wasn't reordered is still reported as an explicit permutation, so the order can be used as-is.
     if data_rows_order === nothing
@@ -1254,15 +1148,15 @@ the graph will reuse it, and vice versa.
 Use this to list the entries in the order they are shown:
 
 ```julia
-ordered_rows_names = graph.data.rows_names[graph.order.rows_order]
+ordered_rows_names = graph.data.rows.names.values[graph.order.rows_order]
 ```
 
 Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its
 order (and, if they use the same groups, they will also have the same gaps):
 
 ```julia
-graph.configuration.columns_reorder = OptimalHclust
-other_graph.data.columns_order = graph.order.columns_order
+graph.configuration.columns.reorder = OptimalHclust
+other_graph.data.columns.order = graph.order.columns_order
 ```
 
 If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order
@@ -1270,10 +1164,10 @@ If the graphs also show a dendogram, give them the tree instead of the order. Th
 refers to the original column indices):
 
 ```julia
-graph.configuration.columns_reorder = OptimalHclust
-graph.configuration.columns_dendogram_size = 0.1
-other_graph.data.columns_order = graph.order.columns_hclust
-other_graph.configuration.columns_dendogram_size = 0.1
+graph.configuration.columns.reorder = OptimalHclust
+graph.configuration.columns.dendogram_size = 0.1
+other_graph.data.columns.order = graph.order.columns_hclust
+other_graph.configuration.columns.dendogram_size = 0.1
 ```
 """
 function heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
@@ -1617,8 +1511,8 @@ function expand_z_matrix(
     end
 
     if expanded_columns_mask === nothing
-        n_expanded_columns = n_columns  # UNTESTED
-        expanded_columns_mask = 1:n_columns  # UNTESTED
+        n_expanded_columns = n_columns
+        expanded_columns_mask = 1:n_columns
     else
         n_expanded_columns = length(expanded_columns_mask)
     end
@@ -1696,59 +1590,41 @@ function expand_hovers(;
     return expanded_hovers
 end
 
+# The data of an axis, moved to the other axis of the graph (that is, with its `arrange_by` matrix transposed).
+function flipped_axis_data(axis::HeatmapAxisData)::HeatmapAxisData
+    return HeatmapAxisData(;
+        names = axis.names,
+        entities = axis.entities,
+        order = axis.order,
+        groups = axis.groups,
+        subgroups = axis.subgroups,
+        arrange_by = axis.arrange_by === nothing ? nothing : transpose(axis.arrange_by),
+        annotations = axis.annotations,
+    )
+end
+
 function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph
-    return HeatmapGraph(
+    entries = graph.data.entries
+    cells = graph.data.cells
+    return HeatmapGraph(  # NOJET
         HeatmapGraphData(;
             figure_title = graph.data.figure_title,
-            x_axis_title = graph.data.y_axis_title,
-            y_axis_title = graph.data.x_axis_title,
-            entries_colors_title = graph.data.entries_colors_title,
-            entries_values = graph.data.entries_values === nothing ? nothing : transpose(graph.data.entries_values),
-            rows_names = graph.data.columns_names,
-            columns_names = graph.data.rows_names,
-            entries_hovers = if graph.data.entries_hovers === nothing
-                nothing
-            else
-                PermutedDimsArray(graph.data.entries_hovers, (2, 1))  # NOJET
-            end,
-            rows_hovers = graph.data.columns_hovers,
-            columns_hovers = graph.data.rows_hovers,
-            rows_annotations = graph.data.columns_annotations,
-            columns_annotations = graph.data.rows_annotations,
-            rows_arrange_by = if graph.data.columns_arrange_by === nothing
-                nothing
-            else
-                transpose(graph.data.columns_arrange_by)
-            end,
-            columns_arrange_by = if graph.data.rows_arrange_by === nothing
-                nothing
-            else
-                transpose(graph.data.rows_arrange_by)
-            end,
-            rows_order = graph.data.columns_order,
-            columns_order = graph.data.rows_order,
-            rows_groups = graph.data.columns_groups,
-            columns_groups = graph.data.rows_groups,
+            entries = MatrixData(;
+                values = entries.values === nothing ? nothing : transpose(entries.values),
+                title = entries.title,
+            ),
+            cells = MatrixEntitiesData(;
+                hovers = cells.hovers === nothing ? nothing : PermutedDimsArray(cells.hovers, (2, 1)),
+                mask = cells.mask === nothing ? nothing : transpose(cells.mask),
+            ),
+            rows = flipped_axis_data(graph.data.columns),
+            columns = flipped_axis_data(graph.data.rows),
         ),
         HeatmapGraphConfiguration(;
             figure = graph.configuration.figure,
-            x_axis_title = graph.configuration.y_axis_title,
-            y_axis_title = graph.configuration.x_axis_title,
             entries_colors = graph.configuration.entries_colors,
-            rows_annotations = graph.configuration.columns_annotations,
-            columns_annotations = graph.configuration.rows_annotations,
-            rows_reorder = graph.configuration.columns_reorder,
-            columns_reorder = graph.configuration.rows_reorder,
-            rows_linkage = graph.configuration.columns_linkage,
-            columns_linkage = graph.configuration.rows_linkage,
-            rows_metric = graph.configuration.columns_metric,
-            columns_metric = graph.configuration.rows_metric,
-            rows_groups_gap = graph.configuration.columns_groups_gap,
-            columns_groups_gap = graph.configuration.rows_groups_gap,
-            rows_dendogram_size = graph.configuration.columns_dendogram_size,
-            columns_dendogram_size = graph.configuration.rows_dendogram_size,
-            rows_dendogram_line = graph.configuration.columns_dendogram_line,
-            columns_dendogram_line = graph.configuration.rows_dendogram_line,
+            rows = graph.configuration.columns,
+            columns = graph.configuration.rows,
             origin = graph.configuration.origin,
         ),
     )
@@ -1756,34 +1632,18 @@ end
 
 function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph
     data = graph.data
-    data.x_axis_title, data.y_axis_title = data.y_axis_title, data.x_axis_title
-    data.entries_values = data.entries_values === nothing ? nothing : transpose(data.entries_values)
-    data.entries_hovers = data.entries_hovers === nothing ? nothing : PermutedDimsArray(data.entries_hovers, (2, 1))  # NOJET
-    data.rows_names, data.columns_names = data.columns_names, data.rows_names
-    data.rows_hovers, data.columns_hovers = data.columns_hovers, data.rows_hovers
-    data.rows_annotations, data.columns_annotations = data.columns_annotations, data.rows_annotations
-    old_rows_arrange_by = data.rows_arrange_by
-    old_columns_arrange_by = data.columns_arrange_by
-    data.rows_arrange_by = old_columns_arrange_by === nothing ? nothing : transpose(old_columns_arrange_by)
-    data.columns_arrange_by = old_rows_arrange_by === nothing ? nothing : transpose(old_rows_arrange_by)
-    data.rows_order, data.columns_order = data.columns_order, data.rows_order
-    data.rows_groups, data.columns_groups = data.columns_groups, data.rows_groups
+    data.entries.values = data.entries.values === nothing ? nothing : transpose(data.entries.values)
+    data.cells.hovers = data.cells.hovers === nothing ? nothing : PermutedDimsArray(data.cells.hovers, (2, 1))  # NOJET
+    data.cells.mask = data.cells.mask === nothing ? nothing : transpose(data.cells.mask)
+    data.rows, data.columns = data.columns, data.rows
+    for axis in (data.rows, data.columns)
+        if axis.arrange_by !== nothing
+            axis.arrange_by = transpose(axis.arrange_by)
+        end
+    end
 
     configuration = graph.configuration
-    configuration.x_axis_title, configuration.y_axis_title = configuration.y_axis_title, configuration.x_axis_title
-    configuration.rows_annotations, configuration.columns_annotations =
-        configuration.columns_annotations, configuration.rows_annotations
-    configuration.rows_reorder, configuration.columns_reorder =
-        configuration.columns_reorder, configuration.rows_reorder
-    configuration.rows_linkage, configuration.columns_linkage =
-        configuration.columns_linkage, configuration.rows_linkage
-    configuration.rows_metric, configuration.columns_metric = configuration.columns_metric, configuration.rows_metric
-    configuration.rows_groups_gap, configuration.columns_groups_gap =
-        configuration.columns_groups_gap, configuration.rows_groups_gap
-    configuration.rows_dendogram_size, configuration.columns_dendogram_size =
-        configuration.columns_dendogram_size, configuration.rows_dendogram_size
-    configuration.rows_dendogram_line, configuration.columns_dendogram_line =
-        configuration.columns_dendogram_line, configuration.rows_dendogram_line
+    configuration.rows, configuration.columns = configuration.columns, configuration.rows
 
     return graph
 end

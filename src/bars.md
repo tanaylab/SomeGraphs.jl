@@ -31,7 +31,7 @@ Annotations:
 ```@example
 using SomeGraphs
 graph = bars_graph(; values = ValuesData(collect(0:10) .* 10))
-graph.data.annotations = [AnnotationData(; title = "score", values = collect(0:10) .% 3)]
+graph.data.annotations = [AnnotationData(; values = ValuesData(collect(0:10) .% 3, "score"))]
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -70,7 +70,7 @@ graph = series_bars_graph(;
         SeriesData(; values = ValuesData(collect(0:10) .^ 2)),
     ],
 )
-graph.data.annotations = [AnnotationData(; title = "score", values = collect(0:10) .% 3)]
+graph.data.annotations = [AnnotationData(; values = ValuesData(collect(0:10) .% 3, "score"))]
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

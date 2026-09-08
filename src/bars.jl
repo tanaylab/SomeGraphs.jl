@@ -202,9 +202,7 @@ function masked_annotation(
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
 )::AnnotationData
     return AnnotationData(;
-        title = annotation.title,
-        values = masked_values(annotation.values, mask, nothing),
-        hovers = masked_values(annotation.hovers, mask, nothing),
+        values = ValuesData(masked_values(annotation.values.values, mask, nothing), annotation.values.title),
         colors = annotation.colors,
     )
 end
@@ -938,10 +936,14 @@ function push_annotation_traces!(;
     order::Maybe{AbstractVector{<:Integer}},
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::ConfiguredColors
+    annotation_title = annotation_data.values.title
+    annotation_values = annotation_data.values.values
+    @assert annotation_values !== nothing
+
     colors = configured_colors(;
         colors_configuration = annotation_data.colors,
-        colors_title = annotation_data.title,
-        colors_values = annotation_data.values,
+        colors_title = annotation_title,
+        colors_values = annotation_values,
         next_colors_scale_index,
     )
 
@@ -960,7 +962,7 @@ function push_annotation_traces!(;
                 color,
                 value,
                 legend_group,
-                legend_group_title = index == 1 ? annotation_data.title : nothing,
+                legend_group_title = index == 1 ? annotation_title : nothing,
             )
         end
     end
@@ -973,17 +975,10 @@ function push_annotation_traces!(;
         gap_color = missing
     end
 
-    hovers = annotation_data.hovers
-    if hovers === nothing
-        hovers = entries_hovers
-    elseif entries_hovers !== nothing  # UNTESTED
-        hovers = hovers .* "<br>" .* entries_hovers  # UNTESTED
-    end
-
     push_bar_trace!(;  # NOJET
         traces,
         sub_graph,
-        values = expanded_mask !== nothing ? expanded_mask : fill(1.0, length(annotation_data.values)),
+        values = expanded_mask !== nothing ? expanded_mask : fill(1.0, length(annotation_values)),
         value_axis = AxisConfiguration(;
             minimum = 0,
             maximum = 1,
@@ -993,9 +988,9 @@ function push_annotation_traces!(;
         basis_sub_graph,
         values_orientation,
         color = expand_vector(colors.final_colors_values, order, expanded_mask, gap_color),
-        hovers = expand_vector(hovers, order, expanded_mask, ""),
+        hovers = expand_vector(entries_hovers, order, expanded_mask, ""),
         names = expand_vector(names, order, expanded_mask, ""),
-        name = annotation_data.title,
+        name = annotation_title,
         show_in_legend = false,
         implicit_values_range = MaybeRange(),
         colors_scale_index = colors.colors_scale_index,
@@ -1239,7 +1234,7 @@ function bars_layout(;
             plotly_annotations,
             values_sub_graph = sub_graph,
             values_orientation = graph.configuration.values_orientation,
-            title = annotation_data.title,
+            title = annotation_data.values.title,
         )
         set_layout_axis!(  # NOJET
             layout,
@@ -1257,7 +1252,7 @@ function bars_layout(;
                 colors_configuration = annotation_data.colors,
                 scaled_colors_palette = annotation_colors.scaled_colors_palette,
                 range = nothing,
-                annotation_data.title,
+                title = annotation_data.values.title,
                 show_scale = annotation_colors.show_scale,
                 next_colors_scale_offset_index,
                 colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,

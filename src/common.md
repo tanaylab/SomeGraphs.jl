@@ -182,6 +182,8 @@ SomeGraphs.Common.AnnotationData
 SomeGraphs.Common.AnnotationSize
 SomeGraphs.Common.ValuesData
 SomeGraphs.Common.EntitiesData
+SomeGraphs.Common.MatrixData
+SomeGraphs.Common.MatrixEntitiesData
 ```
 
 ## Index
