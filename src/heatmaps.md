@@ -14,6 +14,7 @@ SomeGraphs.Heatmaps.heatmap_graph
 SomeGraphs.Heatmaps.HeatmapGraphData
 SomeGraphs.Heatmaps.HeatmapAxisData
 SomeGraphs.Heatmaps.HeatmapGraphConfiguration
+SomeGraphs.Heatmaps.EntriesConfiguration
 SomeGraphs.Heatmaps.HeatmapAxisConfiguration
 SomeGraphs.Heatmaps.HeatmapReorder
 SomeGraphs.Heatmaps.HeatmapGraphOrder

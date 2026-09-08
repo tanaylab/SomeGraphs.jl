@@ -7,8 +7,8 @@ nested_test("heatmaps") do
 
     nested_test("invalid") do
         nested_test("fixed") do
-            graph.configuration.entries_colors.fixed = "black"
-            @test_throws "ArgumentError: can't specify heatmap graph.configuration.entries_colors.fixed" validate(
+            graph.configuration.entries.colors.fixed = "black"
+            @test_throws "ArgumentError: can't specify heatmap graph.configuration.entries.colors.fixed" validate(
                 ValidationContext(["graph"]),
                 graph,
             )
@@ -72,8 +72,8 @@ nested_test("heatmaps") do
         end
 
         nested_test("categorical") do
-            graph.configuration.entries_colors.palette = Dict("Foo" => "red", "Bar" => "green")
-            @test_throws "ArgumentError: can't specify heatmap categorical graph.configuration.entries_colors.palette" validate(
+            graph.configuration.entries.colors.palette = Dict("Foo" => "red", "Bar" => "green")
+            @test_throws "ArgumentError: can't specify heatmap categorical graph.configuration.entries.colors.palette" validate(
                 ValidationContext(["graph"]),
                 graph,
             )
@@ -430,14 +430,14 @@ nested_test("heatmaps") do
     end
 
     nested_test("log") do
-        graph.configuration.entries_colors.axis.log_scale = Log2Scale
-        graph.configuration.entries_colors.axis.log_regularization = 1
+        graph.configuration.entries.colors.axis.log_scale = Log2Scale
+        graph.configuration.entries.colors.axis.log_regularization = 1
         test_html(graph, "heatmap.log2.html")
         return nothing
     end
 
     nested_test("legend") do
-        graph.configuration.entries_colors.show_legend = true
+        graph.configuration.entries.colors.show_legend = true
         test_html(graph, "heatmap.legend.html")
         return nothing
     end
@@ -496,7 +496,7 @@ nested_test("heatmaps") do
 
         nested_test("legend") do
             graph.data.entries.title = "values"
-            graph.configuration.entries_colors.show_legend = true
+            graph.configuration.entries.colors.show_legend = true
             graph.data.rows.annotations[1].colors.show_legend = true
             graph.data.columns.annotations[1].colors.show_legend = true
             graph.data.rows.names.values = ["X", "Y", "Z"]
@@ -803,7 +803,7 @@ nested_test("heatmaps") do
             end
 
             nested_test("!hidden") do
-                graph.configuration.entries_colors.axis.include_hidden = false
+                graph.configuration.entries.colors.axis.include_hidden = false
                 test_html(graph, "heatmap.mask.cells.!hidden.html")
                 return nothing
             end

@@ -5,6 +5,7 @@ module Heatmaps
 
 export AverageLinkage
 export CompleteLinkage
+export EntriesConfiguration
 export heatmap_graph
 export heatmap_order
 export HeatmapAxisConfiguration
@@ -189,9 +190,35 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
 end
 
 """
+    @kwdef mutable struct EntriesConfiguration <: Validated
+        colors::ColorsConfiguration = ColorsConfiguration()
+    end
+
+Configure the entries of a heatmap. The `colors` map the values of the entries to colors. Due to Plotly's limitations,
+only continuous color palettes are supported.
+"""
+@kwdef mutable struct EntriesConfiguration <: Validated
+    colors::ColorsConfiguration = ColorsConfiguration()
+end
+
+function Validations.validate(context::ValidationContext, configuration::EntriesConfiguration)::Nothing
+    validate_field(context, "colors", configuration.colors)
+
+    if configuration.colors.fixed !== nothing
+        throw(ArgumentError("can't specify heatmap $(location(context)).colors.fixed"))
+    end
+
+    if configuration.colors.palette isa CategoricalColors
+        throw(ArgumentError("can't specify heatmap categorical $(location(context)).colors.palette"))
+    end
+
+    return nothing
+end
+
+"""
     @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
-        entries_colors::ColorsConfiguration = ColorsConfiguration()
+        entries::EntriesConfiguration = EntriesConfiguration()
         rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
         columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
         origin::HeatmapOrigin = HeatmapBottomLeft
@@ -201,10 +228,10 @@ end
 Configure a graph showing a heatmap.
 
 This displays a matrix of values using a rectangle at each position. Due to Plotly's limitations, you still to manually
-tweak the graph size for best results; there's no way to directly control the width and height of the rectangles. In
-addition, the only supported color configurations are using continuous color palettes.
+tweak the graph size for best results; there's no way to directly control the width and height of the rectangles.
 
-The `rows` and `columns` configure each axis (see [`HeatmapAxisConfiguration`](@ref)).
+The `entries` configure the entries (see [`EntriesConfiguration`](@ref)); the `rows` and `columns` configure each axis
+(see [`HeatmapAxisConfiguration`](@ref)).
 
 The `final_order` caches the computed order of the rows and the columns; access it through the graph's `order` (e.g.,
 for generating other graphs in an identical order). It is computed once, whether the graph's figure is generated or its
@@ -220,7 +247,7 @@ order is asked for first.
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
-    entries_colors::ColorsConfiguration = ColorsConfiguration()
+    entries::EntriesConfiguration = EntriesConfiguration()
     rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
@@ -229,17 +256,9 @@ end
 
 function Validations.validate(context::ValidationContext, configuration::HeatmapGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
-    validate_field(context, "entries_colors", configuration.entries_colors)
+    validate_field(context, "entries", configuration.entries)
     validate_field(context, "rows", configuration.rows)
     validate_field(context, "columns", configuration.columns)
-
-    if configuration.entries_colors.fixed !== nothing
-        throw(ArgumentError("can't specify heatmap $(location(context)).entries_colors.fixed"))
-    end
-
-    if configuration.entries_colors.palette isa CategoricalColors
-        throw(ArgumentError("can't specify heatmap categorical $(location(context)).entries_colors.palette"))
-    end
 
     if configuration.rows.reorder == SameOrder && configuration.columns.reorder == SameOrder
         throw(ArgumentError(chomp("""
@@ -355,7 +374,7 @@ colors must be continuous. The `entries` values are required; their title is the
 hold the hovers and mask of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its
 row and of its column. Hidden cells are drawn as gaps; their values are still part of the data (they must be valid, they
 take part in the clustering, and in the range of the colors scale unless `include_hidden` is disabled in the
-`entries_colors.axis`). At least one cell must be shown.
+`entries.colors.axis` of the configuration). At least one cell must be shown.
 
 The `rows` and `columns` hold the data of each axis (see [`HeatmapAxisData`](@ref)).
 
@@ -458,8 +477,8 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
     validate_colors(
         ValidationContext(["graph.data.entries.values"]),
         values,
-        ValidationContext(["graph.configuration.entries_colors"]),
-        graph.configuration.entries_colors,
+        ValidationContext(["graph.configuration.entries.colors"]),
+        graph.configuration.entries.colors,
     )
 
     validate_axis_sizes(;
@@ -685,8 +704,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     next_colors_scale_index = [1]
     cells_mask = graph.data.cells.mask
     colors = configured_colors(;
-        colors_configuration = graph.configuration.entries_colors,
-        colors_title = prefer_data(graph.data.entries.title, graph.configuration.entries_colors.title),
+        colors_configuration = graph.configuration.entries.colors,
+        colors_title = prefer_data(graph.data.entries.title, graph.configuration.entries.colors.title),
         colors_values = entries_values(graph),
         next_colors_scale_index,
         mask = cells_mask,
@@ -810,7 +829,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         traces,
         names = nothing,
         basis_sub_graph = columns_sub_graph,
-        value_axis = graph.configuration.entries_colors.axis,
+        value_axis = graph.configuration.entries.colors.axis,
         values_orientation = VerticalValues,
         next_colors_scale_index,
         has_legend_only_traces,
@@ -826,7 +845,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         traces,
         names = nothing,
         basis_sub_graph = rows_sub_graph,
-        value_axis = graph.configuration.entries_colors.axis,
+        value_axis = graph.configuration.entries.colors.axis,
         values_orientation = HorizontalValues,
         next_colors_scale_index,
         has_legend_only_traces,
@@ -1827,7 +1846,7 @@ function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph
         ),
         HeatmapGraphConfiguration(;
             figure = graph.configuration.figure,
-            entries_colors = graph.configuration.entries_colors,
+            entries = graph.configuration.entries,
             rows = graph.configuration.columns,
             columns = graph.configuration.rows,
             origin = graph.configuration.origin,
