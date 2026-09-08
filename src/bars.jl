@@ -3,6 +3,7 @@ Graphs for showing bars.
 """
 module Bars
 
+export BarsConfiguration
 export BarsGraph
 export BarsGraphConfiguration
 export BarsGraphData
@@ -23,22 +24,44 @@ using PlotlyBase
 import ..Validations.Maybe
 
 """
+    @kwdef mutable struct BarsConfiguration <: Validated
+        gap::Real = 0.02
+    end
+
+Configure the bars of a bars graph. The `gap` is added between the bars, and is in the usual inconvenient units of
+fractions of the total graph size.
+"""
+@kwdef mutable struct BarsConfiguration <: Validated
+    gap::Real = 0.02
+end
+
+function Validations.validate(context::ValidationContext, configuration::BarsConfiguration)::Nothing
+    validate_in(context, "gap") do
+        validate_is_at_least(context, configuration.gap, 0)
+        return validate_is_below(context, configuration.gap, 1)
+    end
+
+    return nothing
+end
+
+"""
     @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         value_bands::BandsConfiguration = BandsConfiguration()
         values_orientation::ValuesOrientation = VerticalValues
-        bars_colors::ColorsConfiguration = ColorsConfiguration()
-        bars_gap::Real = 0.02,
-        bars_annotations::AnnotationSize = AnnotationSize()
+        colors::ColorsConfiguration = ColorsConfiguration()
+        bars::BarsConfiguration = BarsConfiguration()
+        annotations::AnnotationSize = AnnotationSize()
     end
 
 Configure a graph for showing a single series of bars.
 
 By default the values are the `y` axis (`VerticalValues`). You can flip the axes using the `values_orientation`. You can
-specify bands for this axis using `value_bands`. The `bars_gap` is added between the graps, and is in the usual
-inconvenient units of fractions of the total graph size. The `bars_colors` is used to control the color of the bars (if
-not specified, chosen automatically by Plotly), in combination with the data bar colors (if any).
+specify bands for this axis using `value_bands`. The `bars` configure the bars themselves (see
+[`BarsConfiguration`](@ref)). The `colors` is used to control the color of the bars (if not specified, chosen
+automatically by Plotly), in combination with the data bar colors (if any). The `annotations` are the sizes of the
+annotations shown next to the bars.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
 bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
@@ -49,28 +72,24 @@ this. A log scale never reaches zero, so there a bar is measured from the smalle
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     value_bands::BandsConfiguration = BandsConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
-    bars_colors::ColorsConfiguration = ColorsConfiguration()
-    bars_gap::Real = 0.02
-    bars_annotations::AnnotationSize = AnnotationSize()
+    colors::ColorsConfiguration = ColorsConfiguration()
+    bars::BarsConfiguration = BarsConfiguration()
+    annotations::AnnotationSize = AnnotationSize()
 end
 
 function Validations.validate(context::ValidationContext, configuration::BarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
     validate_field(context, "value_bands", configuration.value_bands)
-    validate_field(context, "bars_annotations", configuration.bars_annotations)
-    validate_field(context, "bars_colors", configuration.bars_colors)
+    validate_field(context, "colors", configuration.colors)
+    validate_field(context, "bars", configuration.bars)
+    validate_field(context, "annotations", configuration.annotations)
 
-    validate_in(context, "bars_gap") do
-        validate_is_at_least(context, configuration.bars_gap, 0)
-        return validate_is_below(context, configuration.bars_gap, 1)
-    end
-
-    if configuration.bars_colors.show_legend && configuration.bars_colors.palette isa CategoricalColors
+    if configuration.colors.show_legend && configuration.colors.palette isa CategoricalColors
         throw(
             ArgumentError(
-                "can't specify $(location(context)).bars_colors.show_legend\n" *
-                "for a categorical $(location(context)).bars_colors.palette",
+                "can't specify $(location(context)).colors.show_legend\n" *
+                "for a categorical $(location(context)).colors.palette",
             ),
         )
     end
@@ -175,8 +194,8 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
     validate_colors(
         ValidationContext(["graph.data.colors.values"]),
         graph.data.colors.values,
-        ValidationContext(["graph.configuration.bars_colors"]),
-        graph.configuration.bars_colors,
+        ValidationContext(["graph.configuration.colors"]),
+        graph.configuration.colors,
         graph.data.bars.mask,
     )
 
@@ -189,7 +208,7 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
 
     validate_axis_sizes(;
         axis_name = "value",
-        annotation_size = graph.configuration.bars_annotations,
+        annotation_size = graph.configuration.annotations,
         n_annotations = length(graph.data.annotations),
     )
 
@@ -215,8 +234,8 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
-        colors_configuration = graph.configuration.bars_colors,
-        colors_title = prefer_data(graph.data.colors.title, graph.configuration.bars_colors.title),
+        colors_configuration = graph.configuration.colors,
+        colors_title = prefer_data(graph.data.colors.title, graph.configuration.colors.title),
         colors_values = graph.data.colors.values,
         next_colors_scale_index,
         mask,
@@ -229,7 +248,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
             n_graphs = 1,
             graphs_gap = nothing,
             n_annotations = length(graph.data.annotations),
-            annotation_size = graph.configuration.bars_annotations,
+            annotation_size = graph.configuration.annotations,
         ),
         values = masked_values(values, mask, nothing),
         value_axis = graph.configuration.value_axis,
@@ -262,7 +281,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         next_colors_scale_index,
         has_legend_only_traces,
         annotations_data = graph.data.annotations,
-        annotation_size = graph.configuration.bars_annotations,
+        annotation_size = graph.configuration.annotations,
         entries_hovers = graph.data.bars.hovers,
         mask,
         order = mask === nothing ? nothing : findall(mask),
@@ -287,8 +306,8 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         values_orientation::ValuesOrientation = VerticalValues
-        bars_gap::Maybe{Real} = nothing
-        bars_annotations::AnnotationSize = AnnotationSize(),
+        bars::BarsConfiguration = BarsConfiguration()
+        annotations::AnnotationSize = AnnotationSize()
         series_gap::Maybe{Real} = nothing
         stacking::Maybe{Stacking} = nothing
         mirrored::Bool = false
@@ -300,7 +319,7 @@ This expands on [`BarsGraphConfiguration`](@ref) by adding optional `stacking` f
 series on top of each other. Alternatively, specifying a `series_gap` will plot each series in its own separate
 sub-graph. The `series_gap` is specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1
 then the gaps will be the same size as the graphs. If neither is specified, then the bars will be shown in groups
-(adjacent to each other) with the `bars_gap` between the groups.
+(adjacent to each other) with the `bars.gap` between the groups. The colors of the bars are those of their series.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
 bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
@@ -316,8 +335,8 @@ Without a `series_gap` all the pairs share the same two value axes and are shown
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     values_orientation::ValuesOrientation = VerticalValues
-    bars_gap::Real = 0.02
-    bars_annotations::AnnotationSize = AnnotationSize()
+    bars::BarsConfiguration = BarsConfiguration()
+    annotations::AnnotationSize = AnnotationSize()
     series_gap::Maybe{Real} = nothing
     stacking::Maybe{Stacking} = nothing
     mirrored::Bool = false
@@ -326,12 +345,8 @@ end
 function Validations.validate(context::ValidationContext, configuration::SeriesBarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
-    validate_field(context, "bars_annotations", configuration.bars_annotations)
-
-    validate_in(context, "bars_gap") do
-        validate_is_at_least(context, configuration.bars_gap, 0)
-        return validate_is_below(context, configuration.bars_gap, 1)
-    end
+    validate_field(context, "bars", configuration.bars)
+    validate_field(context, "annotations", configuration.annotations)
 
     validate_in(context, "series_gap") do
         validate_is_at_least(context, configuration.series_gap, 0)
@@ -552,7 +567,7 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         axis_name = "value",
         graphs_gap = graph.configuration.series_gap,
         n_graphs = n_series,
-        annotation_size = graph.configuration.bars_annotations,
+        annotation_size = graph.configuration.annotations,
         n_annotations = length(graph.data.annotations),
     )
 
@@ -703,7 +718,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                 graphs_gap = value_axes_gap(graph.configuration),
                 mirrored = graph.configuration.mirrored,
                 n_annotations = length(graph.data.annotations),
-                annotation_size = graph.configuration.bars_annotations,
+                annotation_size = graph.configuration.annotations,
             ),
             name = series.name,
             values,
@@ -829,7 +844,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         next_colors_scale_index,
         has_legend_only_traces,
         annotations_data = graph.data.annotations,
-        annotation_size = graph.configuration.bars_annotations,
+        annotation_size = graph.configuration.annotations,
         entries_hovers = graph.data.bars.hovers,
         mask = shared_mask,
         order = shared_mask === nothing ? nothing : findall(shared_mask),
@@ -1182,9 +1197,9 @@ function bars_layout(;
         @assert false
     end
 
-    layout["bargap"] = graph.configuration.bars_gap
+    layout["bargap"] = graph.configuration.bars.gap
 
-    annotation_size = graph.configuration.bars_annotations
+    annotation_size = graph.configuration.annotations
 
     if specific_scaled_ranges === nothing
         axis_index = 1 + n_annotations

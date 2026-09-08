@@ -3,12 +3,12 @@ nested_test("bars") do
 
     nested_test("invalid") do
         nested_test("legend") do
-            graph.configuration.bars_colors.show_legend = true
-            graph.configuration.bars_colors.palette = Dict(["Foo" => "red"])
+            graph.configuration.colors.show_legend = true
+            graph.configuration.colors.palette = Dict(["Foo" => "red"])
             graph.data.colors.values = ["Foo", "Foo", "Foo", "Foo"]
             @test_throws chomp("""
-                               ArgumentError: can't specify graph.configuration.bars_colors.show_legend
-                               for a categorical graph.configuration.bars_colors.palette
+                               ArgumentError: can't specify graph.configuration.colors.show_legend
+                               for a categorical graph.configuration.colors.palette
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
@@ -40,7 +40,7 @@ nested_test("bars") do
             graph.data.bars.mask = [true, true, false, false]
             graph.data.colors.values = [0, 1, 2, 3]
             graph.configuration.value_axis.include_hidden = false
-            graph.configuration.bars_colors.axis.include_hidden = false
+            graph.configuration.colors.axis.include_hidden = false
             graph.data.annotations[1].colors.axis.include_hidden = false
             test_html(graph, "bars.mask.!hidden.html")
             return nothing
@@ -85,7 +85,7 @@ nested_test("bars") do
                     end
 
                     nested_test("legend") do
-                        graph.configuration.bars_colors.show_legend = true
+                        graph.configuration.colors.show_legend = true
                         graph.data.colors.title = "Colors"
                         test_html(graph, "bars.$(orientation_name).colors.continuous.legend.html")
                         return nothing
@@ -94,7 +94,7 @@ nested_test("bars") do
 
                 nested_test("categorical") do
                     graph.data.colors.values = ["Foo", "Bar", "Baz", "Bar"]
-                    graph.configuration.bars_colors.palette = Dict(["Foo" => "red", "Bar" => "green", "Baz" => "blue"])
+                    graph.configuration.colors.palette = Dict(["Foo" => "red", "Bar" => "green", "Baz" => "blue"])
 
                     test_html(graph, "bars.$(orientation_name).colors.categorical.html")
                     return nothing
@@ -102,7 +102,7 @@ nested_test("bars") do
             end
 
             nested_test("!gap") do
-                graph.configuration.bars_gap = 0
+                graph.configuration.bars.gap = 0
                 test_html(graph, "bars.$(orientation_name).!gap.html")
                 return nothing
             end
@@ -310,8 +310,8 @@ nested_test("series_bars") do
 
             nested_test("size") do
                 graph.configuration.series_gap = 0.1
-                graph.configuration.bars_annotations.size = 0.9
-                graph.configuration.bars_annotations.gap = 0.8
+                graph.configuration.annotations.size = 0.9
+                graph.configuration.annotations.gap = 0.8
                 @test_throws chomp("""
                                    ArgumentError: no space left in the value axis
                                    number of graphs: 2

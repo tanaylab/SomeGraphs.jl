@@ -13,6 +13,7 @@ SomeGraphs.Bars.BarsGraph
 SomeGraphs.Bars.bars_graph
 SomeGraphs.Bars.BarsGraphData
 SomeGraphs.Bars.BarsGraphConfiguration
+SomeGraphs.Bars.BarsConfiguration
 ```
 
 **Examples:**

@@ -292,9 +292,9 @@ end
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     value_bands::BandsConfiguration = BandsConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
-    bars_colors::ColorsConfiguration = ColorsConfiguration()
-    bars_gap::Real = 0.02,
-    bars_annotations::AnnotationSize = AnnotationSize()
+    colors::ColorsConfiguration = ColorsConfiguration()
+    bars::BarsConfiguration = BarsConfiguration()
+    annotations::AnnotationSize = AnnotationSize()
 end
 </code>
 </pre>
@@ -309,10 +309,16 @@ end
 </code>. You can specify bands for this axis using 
 <code>value_bands
 </code>. The 
-<code>bars_gap
-</code> is added between the graps, and is in the usual inconvenient units of fractions of the total graph size. The 
-<code>bars_colors
-</code> is used to control the color of the bars (if not specified, chosen automatically by Plotly), in combination with the data bar colors (if any).
+<code>bars
+</code> configure the bars themselves (see 
+<a href="bars.html#SomeGraphs.Bars.BarsConfiguration">
+<code>BarsConfiguration
+</code>
+</a>). The 
+<code>colors
+</code> is used to control the color of the bars (if not specified, chosen automatically by Plotly), in combination with the data bar colors (if any). The 
+<code>annotations
+</code> are the sizes of the annotations shown next to the bars.
 </p>
 <p>The 
 <code>value_axis
@@ -321,6 +327,32 @@ end
 </code> (or 
 <code>maximum
 </code>) overrides this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Bars.BarsConfiguration">
+<a class="docstring-binding" href="#SomeGraphs.Bars.BarsConfiguration">
+<code>SomeGraphs.Bars.BarsConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct BarsConfiguration &lt;: Validated
+    gap::Real = 0.02
+end
+</code>
+</pre>
+<p>Configure the bars of a bars graph. The 
+<code>gap
+</code> is added between the bars, and is in the usual inconvenient units of fractions of the total graph size.
 </p>
 </div>
 </section>
@@ -339,12 +371,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='AuOiWPRsiZ' class='' style=';'>
+<div id='nXBjyQ6pwp' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("AuOiWPRsiZ")
+    const PLOT = document.getElementById("nXBjyQ6pwp")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -366,12 +398,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='HFArDq2b3j' class='' style=';'>
+<div id='mp9bBxzL55' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("HFArDq2b3j")
+    const PLOT = document.getElementById("mp9bBxzL55")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","x":0}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -555,8 +587,8 @@ end
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     values_orientation::ValuesOrientation = VerticalValues
-    bars_gap::Maybe{Real} = nothing
-    bars_annotations::AnnotationSize = AnnotationSize(),
+    bars::BarsConfiguration = BarsConfiguration()
+    annotations::AnnotationSize = AnnotationSize()
     series_gap::Maybe{Real} = nothing
     stacking::Maybe{Stacking} = nothing
     mirrored::Bool = false
@@ -576,8 +608,8 @@ end
 </code> will plot each series in its own separate sub-graph. The 
 <code>series_gap
 </code> is specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the graphs. If neither is specified, then the bars will be shown in groups (adjacent to each other) with the 
-<code>bars_gap
-</code> between the groups.
+<code>bars.gap
+</code> between the groups. The colors of the bars are those of their series.
 </p>
 <p>The 
 <code>value_axis
@@ -619,12 +651,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZDV7Ch1dnL' class='' style=';'>
+<div id='xx7l1AW0cS' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZDV7Ch1dnL")
+    const PLOT = document.getElementById("xx7l1AW0cS")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -651,12 +683,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='JgG65zKTV2' class='' style=';'>
+<div id='oeUJr8uzBd' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("JgG65zKTV2")
+    const PLOT = document.getElementById("oeUJr8uzBd")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","x":0}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -680,6 +712,12 @@ to_documenter(graph.figure)
 <li>
 <a href="bars.html#SomeGraphs.Bars">
 <code>SomeGraphs.Bars
+</code>
+</a>
+</li>
+<li>
+<a href="bars.html#SomeGraphs.Bars.BarsConfiguration">
+<code>SomeGraphs.Bars.BarsConfiguration
 </code>
 </a>
 </li>
