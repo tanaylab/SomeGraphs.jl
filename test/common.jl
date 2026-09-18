@@ -113,19 +113,19 @@ nested_test("common") do
     nested_test("values_data") do
         nested_test("()") do
             values_data = VectorValuesData()
-            @test values_data.values === nothing
+            @test values_data.vector === nothing
             @test values_data.title === nothing
         end
 
         nested_test("values") do
             values_data = VectorValuesData([1, 2])
-            @test values_data.values == [1, 2]
+            @test values_data.vector == [1, 2]
             @test values_data.title === nothing
         end
 
         nested_test("title") do
             values_data = VectorValuesData(["a", "b"], "Names")
-            @test values_data.values == ["a", "b"]
+            @test values_data.vector == ["a", "b"]
             @test values_data.title == "Names"
         end
     end

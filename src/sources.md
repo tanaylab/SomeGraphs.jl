@@ -75,7 +75,7 @@ coordinates and to the colors of the points of a graph:
 ```@example
 using SomeGraphs
 function source!(fields::VectorFields, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
-    fields.data.values.values = values
+    fields.data.values.vector = values
     fields.data.values.title = title
     add_hovers!(fields.data.entities, string.(values); title)
     return nothing

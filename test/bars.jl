@@ -5,7 +5,7 @@ nested_test("bars") do
         nested_test("legend") do
             graph.configuration.colors.show_legend = true
             graph.configuration.colors.palette = Dict(["Foo" => "red"])
-            graph.data.colors.values = ["Foo", "Foo", "Foo", "Foo"]
+            graph.data.colors.vector = ["Foo", "Foo", "Foo", "Foo"]
             @test_throws chomp("""
                                ArgumentError: can't specify graph.configuration.colors.show_legend
                                for a categorical graph.configuration.colors.palette
@@ -13,8 +13,8 @@ nested_test("bars") do
         end
 
         nested_test("~names") do
-            graph.data.names.values = [1, 2, 3, 4]
-            @test_throws "ArgumentError: non-string graph.data.names.values" validate(
+            graph.data.names.vector = [1, 2, 3, 4]
+            @test_throws "ArgumentError: non-string graph.data.names.vector" validate(
                 ValidationContext(["graph"]),
                 graph,
             )
@@ -22,16 +22,16 @@ nested_test("bars") do
 
         nested_test("finite") do
             nested_test("values") do
-                graph.data.values.values = Float32[0, NaN, 2, 3]
-                @test_throws "ArgumentError: non-finite graph.data.values.values[2]: NaN" validate(
+                graph.data.values.vector = Float32[0, NaN, 2, 3]
+                @test_throws "ArgumentError: non-finite graph.data.values.vector[2]: NaN" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
             end
 
             nested_test("colors") do
-                graph.data.colors.values = Float32[0, 1, Inf, 3]
-                @test_throws "ArgumentError: non-finite graph.data.colors.values[3]: Inf" validate(
+                graph.data.colors.vector = Float32[0, 1, Inf, 3]
+                @test_throws "ArgumentError: non-finite graph.data.colors.vector[3]: Inf" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
@@ -82,8 +82,8 @@ nested_test("bars") do
 
         @test add_annotation!(graph) == 2
         fields = annotations_fields(graph, 2)
-        fields.data.values.values = [0, 1, 0, 1]
-        @test graph.data.annotations[2].values.values == [0, 1, 0, 1]
+        fields.data.values.vector = [0, 1, 0, 1]
+        @test graph.data.annotations[2].values.vector == [0, 1, 0, 1]
 
         fields = names_fields(graph)
         @test fields.values === graph.data.names
@@ -92,7 +92,7 @@ nested_test("bars") do
     end
 
     nested_test("mask") do
-        graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
+        graph.data.names.vector = ["Foo", "Bar", "Baz", "Vaz"]
         graph.data.annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))]
 
         nested_test("()") do
@@ -103,7 +103,7 @@ nested_test("bars") do
 
         nested_test("!hidden") do
             graph.data.bars.mask = [true, true, false, false]
-            graph.data.colors.values = [0, 1, 2, 3]
+            graph.data.colors.vector = [0, 1, 2, 3]
             graph.configuration.value_axis.include_hidden = false
             graph.configuration.colors.axis.include_hidden = false
             graph.data.annotations[1].colors.axis.include_hidden = false
@@ -122,13 +122,13 @@ nested_test("bars") do
             end
 
             nested_test("names") do
-                graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
+                graph.data.names.vector = ["Foo", "Bar", "Baz", "Vaz"]
                 test_html(graph, "bars.$(orientation_name).names.html")
                 return nothing
             end
 
             nested_test("hovers") do
-                graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
+                graph.data.names.vector = ["Foo", "Bar", "Baz", "Vaz"]
                 graph.data.bars.hovers = ["H: $(index)" for index in 1:4]
                 test_html(graph, "bars.$(orientation_name).hovers.html")
                 return nothing
@@ -136,13 +136,13 @@ nested_test("bars") do
 
             nested_test("colors") do
                 nested_test("named") do
-                    graph.data.colors.values = ["red", "green", "blue", "black"]
+                    graph.data.colors.vector = ["red", "green", "blue", "black"]
                     test_html(graph, "bars.$(orientation_name).colors.named.html")
                     return nothing
                 end
 
                 nested_test("continuous") do
-                    graph.data.colors.values = [0, 1, 2, 3]
+                    graph.data.colors.vector = [0, 1, 2, 3]
 
                     nested_test("()") do
                         test_html(graph, "bars.$(orientation_name).colors.continuous.html")
@@ -158,7 +158,7 @@ nested_test("bars") do
                 end
 
                 nested_test("categorical") do
-                    graph.data.colors.values = ["Foo", "Bar", "Baz", "Bar"]
+                    graph.data.colors.vector = ["Foo", "Bar", "Baz", "Bar"]
                     graph.configuration.colors.palette = Dict(["Foo" => "red", "Bar" => "green", "Baz" => "blue"])
 
                     test_html(graph, "bars.$(orientation_name).colors.categorical.html")
@@ -254,7 +254,7 @@ nested_test("bars") do
                             ),
                         ),
                     ]
-                    graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
+                    graph.data.names.vector = ["Foo", "Bar", "Baz", "Vaz"]
 
                     nested_test("()") do
                         test_html(graph, "bars.$(orientation_name).both.html")
@@ -309,8 +309,8 @@ nested_test("series_bars") do
 
         @test add_annotation!(graph) == 2
         fields = annotations_fields(graph, 2)
-        fields.data.values.values = collect(0:10)
-        @test graph.data.annotations[2].values.values == collect(0:10)
+        fields.data.values.vector = collect(0:10)
+        @test graph.data.annotations[2].values.vector == collect(0:10)
 
         series = SeriesData(; name = "Baz")
         @test add_series!(graph, series) == 3
@@ -321,8 +321,8 @@ nested_test("series_bars") do
 
         @test add_series!(graph) == 4
         fields = series_values_fields(graph, 4)
-        fields.data.values.values = collect(0:10)
-        @test graph.data.series[4].values.values == collect(0:10)
+        fields.data.values.vector = collect(0:10)
+        @test graph.data.series[4].values.vector == collect(0:10)
 
         fields = names_fields(graph)
         @test fields.values === graph.data.names
@@ -331,7 +331,7 @@ nested_test("series_bars") do
     end
 
     nested_test("mask") do
-        graph.data.names.values = "Foo-" .* string.(collect(0:10))
+        graph.data.names.vector = "Foo-" .* string.(collect(0:10))
         graph.data.annotations =
             [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
 
@@ -397,18 +397,18 @@ nested_test("series_bars") do
 
     nested_test("invalid") do
         nested_test("!values") do
-            graph.data.series[1].values.values = Float32[]
-            @test_throws "ArgumentError: empty vector graph.data.series[1].values.values" validate(
+            graph.data.series[1].values.vector = Float32[]
+            @test_throws "ArgumentError: empty vector graph.data.series[1].values.vector" validate(
                 ValidationContext(["graph"]),
                 graph,
             )
         end
 
         nested_test("~values") do
-            graph.data.series[2].values.values = [1, 2, 3]
+            graph.data.series[2].values.vector = [1, 2, 3]
             @test_throws chomp("""
-                               ArgumentError: invalid length of graph.data.series[2].values.values: 3
-                               is different from length of graph.data.series[1].values.values: 11
+                               ArgumentError: invalid length of graph.data.series[2].values.vector: 3
+                               is different from length of graph.data.series[1].values.vector: 11
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
@@ -502,7 +502,7 @@ nested_test("series_bars") do
             graph.configuration.stacking = StackFractions
             foos[1] = -1
             @test_throws chomp("""
-                               ArgumentError: too low scaled graph.data.series[1].values.values[1]: -1.0
+                               ArgumentError: too low scaled graph.data.series[1].values.vector[1]: -1.0
                                is not at least: 0
                                when using graph.configuration.stacking: StackFractions
                                """) validate(ValidationContext(["graph"]), graph)
@@ -542,7 +542,7 @@ nested_test("series_bars") do
 
             nested_test("mirrored") do
                 graph.configuration.mirrored = true
-                graph.data.names.values = "Foo-" .* string.(collect(0:10))
+                graph.data.names.vector = "Foo-" .* string.(collect(0:10))
 
                 nested_test("()") do
                     test_html(graph, "series_bars.$(orientation_name).mirrored.html")
@@ -739,7 +739,7 @@ nested_test("series_bars") do
                                 ),
                             ),
                         ]
-                        graph.data.names.values = "Foo-" .* string.(collect(0:10))
+                        graph.data.names.vector = "Foo-" .* string.(collect(0:10))
                         test_html(graph, "series_bars.$(orientation_name).gap.both.html")
                         return nothing
                     end
@@ -852,7 +852,7 @@ nested_test("series_bars") do
                             ),
                         ),
                     ]
-                    graph.data.names.values = "Foo-" .* string.(collect(0:10))
+                    graph.data.names.vector = "Foo-" .* string.(collect(0:10))
                     test_html(graph, "series_bars.$(orientation_name).both.html")
                     return nothing
                 end
@@ -975,7 +975,7 @@ nested_test("series_bars") do
                                 ),
                             ),
                         ]
-                        graph.data.names.values = "Foo-" .* string.(collect(0:10))
+                        graph.data.names.vector = "Foo-" .* string.(collect(0:10))
                         test_html(graph, "series_bars.values.$(orientation_name).both.html")
                         return nothing
                     end

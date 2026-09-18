@@ -283,7 +283,7 @@ nested_test("distribution") do
     end
 
     nested_test("mask") do
-        n_values = length(graph.data.distribution.values.values)
+        n_values = length(graph.data.distribution.values.vector)
 
         nested_test("()") do
             graph.data.distribution.points.mask = [index % 3 != 0 for index in 1:n_values]
@@ -300,7 +300,7 @@ nested_test("distribution") do
     end
 
     nested_test("hovers") do
-        n_values = length(graph.data.distribution.values.values)
+        n_values = length(graph.data.distribution.values.vector)
         graph.data.distribution.points.hovers = ["V: $(index)" for index in 1:n_values]
 
         nested_test("cumulative") do
@@ -319,20 +319,20 @@ nested_test("distribution") do
 
     nested_test("invalid") do
         nested_test("!values") do
-            graph.data.distribution.values.values = nothing
-            @test_throws "ArgumentError: must specify graph.data.distribution.values.values" graph.figure
+            graph.data.distribution.values.vector = nothing
+            @test_throws "ArgumentError: must specify graph.data.distribution.values.vector" graph.figure
         end
 
         nested_test("~values") do
-            graph.data.distribution.values.values = ["Foo"]
-            @test_throws "ArgumentError: non-numeric graph.data.distribution.values.values" graph.figure
+            graph.data.distribution.values.vector = ["Foo"]
+            @test_throws "ArgumentError: non-numeric graph.data.distribution.values.vector" graph.figure
         end
 
         nested_test("~mask") do
             graph.data.distribution.points.mask = [true, false]
             @test_throws chomp("""
                                ArgumentError: invalid length of graph.data.distribution.points.mask: 2
-                               is different from length of graph.data.distribution.values.values: 274
+                               is different from length of graph.data.distribution.values.vector: 274
                                """) graph.figure
         end
 
@@ -513,8 +513,8 @@ nested_test("distributions") do
         @test distributions_values_fields(graph, 3).data.values === distribution.values
 
         @test add_distribution!(graph) == 4
-        distributions_values_fields(graph, 4).data.values.values = [0, 1]
-        @test graph.data.distributions[4].values.values == [0, 1]
+        distributions_values_fields(graph, 4).data.values.vector = [0, 1]
+        @test graph.data.distributions[4].values.vector == [0, 1]
         return nothing
     end
 
@@ -526,7 +526,7 @@ nested_test("distributions") do
     end
 
     nested_test("mask") do
-        n_values = length(graph.data.distributions[2].values.values)
+        n_values = length(graph.data.distributions[2].values.vector)
 
         nested_test("()") do
             graph.data.distributions[2].points.mask = [index % 3 != 0 for index in 1:n_values]
@@ -544,7 +544,7 @@ nested_test("distributions") do
 
     nested_test("hovers") do
         graph.configuration.distribution.style = CumulativeDistribution
-        n_values = length(graph.data.distributions[2].values.values)
+        n_values = length(graph.data.distributions[2].values.vector)
         graph.data.distributions[1].hover = "Foo"
         graph.data.distributions[2].points.hovers = ["V: $(index)" for index in 1:n_values]
         test_html(graph, "distributions.hovers.html")
@@ -583,8 +583,8 @@ nested_test("distributions") do
         end
 
         nested_test("!values") do
-            empty!(graph.data.distributions[1].values.values)
-            @test_throws "ArgumentError: empty vector graph.data.distributions[1].values.values" graph.figure
+            empty!(graph.data.distributions[1].values.vector)
+            @test_throws "ArgumentError: empty vector graph.data.distributions[1].values.vector" graph.figure
         end
 
         nested_test("~order") do

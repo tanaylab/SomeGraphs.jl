@@ -1543,21 +1543,21 @@ relevant [`AxisConfiguration`](@ref) to display percents.
 
 """
     @kwdef mutable struct VectorValuesData
-        values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
+        vector::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
         title::Maybe{AbstractString} = nothing
     end
 
 A value per entity for one role of a graph (the X coordinates of points, their colors, the names of bars, ...), and
 the title of these values (which becomes the axis title, the colors title, ...). A role that is not in use has no
-`values`. Whether string values are allowed depends on the role.
+`vector`. Whether string values are allowed depends on the role.
 """
 @kwdef mutable struct VectorValuesData
-    values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
+    vector::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
     title::Maybe{AbstractString} = nothing
 end
 
-function VectorValuesData(values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}})::VectorValuesData
-    return VectorValuesData(; values)
+function VectorValuesData(vector::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}})::VectorValuesData
+    return VectorValuesData(; vector)
 end
 
 """
@@ -1579,7 +1579,7 @@ end
 
 """
     @kwdef mutable struct MatrixValuesData
-        values::Maybe{AbstractMatrix{<:Real}} = nothing
+        matrix::Maybe{AbstractMatrix{<:Real}} = nothing
         title::Maybe{AbstractString} = nothing
     end
 
@@ -1587,12 +1587,12 @@ A value per row per column of a graph (the entries of a heatmap), and the title 
 colors title).
 """
 @kwdef mutable struct MatrixValuesData
-    values::Maybe{AbstractMatrix{<:Real}} = nothing
+    matrix::Maybe{AbstractMatrix{<:Real}} = nothing
     title::Maybe{AbstractString} = nothing
 end
 
-function MatrixValuesData(values::AbstractMatrix{<:Real})::MatrixValuesData
-    return MatrixValuesData(; values)
+function MatrixValuesData(matrix::AbstractMatrix{<:Real})::MatrixValuesData
+    return MatrixValuesData(; matrix)
 end
 
 """
@@ -1648,18 +1648,18 @@ function Validations.validate(
         throw(ArgumentError("can't specify $(location(context)).colors.fixed"))
     end
 
-    values = annotation_data.values.values
+    values = annotation_data.values.vector
     if values === nothing
-        throw(ArgumentError("must specify $(location(context)).values.values"))
+        throw(ArgumentError("must specify $(location(context)).values.vector"))
     end
 
-    validate_vector_length(context, "values.values", values, expected_base, expected_length)
-    validate_vector_is_finite(context, "values.values", values)
+    validate_vector_length(context, "values.vector", values, expected_base, expected_length)
+    validate_vector_is_finite(context, "values.vector", values)
 
     # With no palette, the annotation's string values are used as explicit color names; validate them (an invalid color
     # name would otherwise be silently rendered black by Plotly).
     if annotation_data.colors.palette === nothing && values isa AbstractVector{<:AbstractString}
-        validate_vector_entries(context, "values.values", values) do _, color
+        validate_vector_entries(context, "values.vector", values) do _, color
             validate_is_color(context, color)
             return nothing
         end

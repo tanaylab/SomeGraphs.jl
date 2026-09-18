@@ -250,32 +250,32 @@ other category. We therefore compute an overall priority for each category as th
 end
 
 function Validations.validate(context::ValidationContext, data::PointsGraphData)::Nothing
-    validate_numeric_values(context, "x.values", data.x.values; is_required = true)
-    validate_numeric_values(context, "y.values", data.y.values; is_required = true)
-    validate_numeric_values(context, "points.sizes.values", data.points.sizes.values)
-    validate_numeric_values(context, "borders.sizes.values", data.borders.sizes.values)
-    validate_numeric_values(context, "edges.sizes.values", data.edges.sizes.values)
+    validate_numeric_values(context, "x.vector", data.x.vector; is_required = true)
+    validate_numeric_values(context, "y.vector", data.y.vector; is_required = true)
+    validate_numeric_values(context, "points.sizes.vector", data.points.sizes.vector)
+    validate_numeric_values(context, "borders.sizes.vector", data.borders.sizes.vector)
+    validate_numeric_values(context, "edges.sizes.vector", data.edges.sizes.vector)
 
-    xs = data.x.values
+    xs = data.x.vector
     @assert xs !== nothing
-    validate_vector_is_not_empty(context, "x.values", xs)
+    validate_vector_is_not_empty(context, "x.vector", xs)
     n_points = length(xs)
 
-    validate_vector_length(context, "y.values", data.y.values, "x.values", n_points)
+    validate_vector_length(context, "y.vector", data.y.vector, "x.vector", n_points)
 
     points = data.points
-    validate_vector_is_finite(context, "points.colors.values", points.colors.values)
-    validate_vector_length(context, "points.colors.values", points.colors.values, "x.values", n_points)
-    validate_vector_length(context, "points.sizes.values", points.sizes.values, "x.values", n_points)
-    validate_vector_length(context, "points.entities.hovers", points.entities.hovers, "x.values", n_points)
-    validate_vector_length(context, "points.entities.mask", points.entities.mask, "x.values", n_points)
-    validate_vector_length(context, "points.order", points.order, "x.values", n_points)
+    validate_vector_is_finite(context, "points.colors.vector", points.colors.vector)
+    validate_vector_length(context, "points.colors.vector", points.colors.vector, "x.vector", n_points)
+    validate_vector_length(context, "points.sizes.vector", points.sizes.vector, "x.vector", n_points)
+    validate_vector_length(context, "points.entities.hovers", points.entities.hovers, "x.vector", n_points)
+    validate_vector_length(context, "points.entities.mask", points.entities.mask, "x.vector", n_points)
+    validate_vector_length(context, "points.order", points.order, "x.vector", n_points)
 
     borders = data.borders
-    validate_vector_is_finite(context, "borders.colors.values", borders.colors.values)
-    validate_vector_length(context, "borders.colors.values", borders.colors.values, "x.values", n_points)
-    validate_vector_length(context, "borders.sizes.values", borders.sizes.values, "x.values", n_points)
-    validate_vector_length(context, "borders.mask", borders.mask, "x.values", n_points)
+    validate_vector_is_finite(context, "borders.colors.vector", borders.colors.vector)
+    validate_vector_length(context, "borders.colors.vector", borders.colors.vector, "x.vector", n_points)
+    validate_vector_length(context, "borders.sizes.vector", borders.sizes.vector, "x.vector", n_points)
+    validate_vector_length(context, "borders.mask", borders.mask, "x.vector", n_points)
 
     edges = data.edges
     if edges.points === nothing
@@ -283,14 +283,14 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     else
         n_edges = length(edges.points)
     end
-    validate_vector_length(context, "edges.colors.values", edges.colors.values, "edges.points", n_edges)
-    validate_vector_length(context, "edges.sizes.values", edges.sizes.values, "edges.points", n_edges)
+    validate_vector_length(context, "edges.colors.vector", edges.colors.vector, "edges.points", n_edges)
+    validate_vector_length(context, "edges.sizes.vector", edges.sizes.vector, "edges.points", n_edges)
     validate_vector_length(context, "edges.styles", edges.styles, "edges.points", n_edges)
     validate_vector_length(context, "edges.entities.hovers", edges.entities.hovers, "edges.points", n_edges)
     validate_vector_length(context, "edges.entities.mask", edges.entities.mask, "edges.points", n_edges)
     validate_vector_length(context, "edges.order", edges.order, "edges.points", n_edges)
 
-    if edges.colors.values !== nothing && eltype(edges.colors.values) <: Real
+    if edges.colors.vector !== nothing && eltype(edges.colors.vector) <: Real
         throw(ArgumentError("continuous colors for edges are not implemented"))
     end
 
@@ -446,38 +446,38 @@ end
 
 function Common.validate_graph(graph::PointsGraph)::Nothing
     validate_values(
-        ValidationContext(["graph.data.x.values"]),
+        ValidationContext(["graph.data.x.vector"]),
         numeric_values(graph.data.x),
         ValidationContext(["graph.configuration.x_axis"]),
         graph.configuration.x_axis,
     )
 
     validate_values(
-        ValidationContext(["graph.data.y.values"]),
+        ValidationContext(["graph.data.y.vector"]),
         numeric_values(graph.data.y),
         ValidationContext(["graph.configuration.y_axis"]),
         graph.configuration.y_axis,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.points.colors.values"]),
-        graph.data.points.colors.values,
+        ValidationContext(["graph.data.points.colors.vector"]),
+        graph.data.points.colors.vector,
         ValidationContext(["graph.configuration.points.colors"]),
         graph.configuration.points.colors,
         graph.data.points.entities.mask,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.borders.colors.values"]),
-        graph.data.borders.colors.values,
+        ValidationContext(["graph.data.borders.colors.vector"]),
+        graph.data.borders.colors.vector,
         ValidationContext(["graph.configuration.borders.colors"]),
         graph.configuration.borders.colors,
         graph.data.borders.mask,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.edges.colors.values"]),
-        graph.data.edges.colors.values,
+        ValidationContext(["graph.data.edges.colors.vector"]),
+        graph.data.edges.colors.vector,
         ValidationContext(["graph.configuration.edges.colors"]),
         graph.configuration.edges.colors,
         graph.data.edges.entities.mask,
@@ -519,9 +519,9 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
     has_legend = false
     n_colors_scales = 0
     for (colors_configuration, colors_values) in (
-        (graph.configuration.points.colors, graph.data.points.colors.values),
-        (graph.configuration.borders.colors, graph.data.borders.colors.values),
-        (graph.configuration.edges.colors, graph.data.edges.colors.values),
+        (graph.configuration.points.colors, graph.data.points.colors.vector),
+        (graph.configuration.borders.colors, graph.data.borders.colors.vector),
+        (graph.configuration.edges.colors, graph.data.edges.colors.vector),
     )
         if colors_configuration.show_legend
             if colors_configuration.palette isa CategoricalColors || colors_values isa AbstractVector{<:AbstractString}
@@ -639,7 +639,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         legend_group = "Points",
         scatters_configuration = graph.configuration.points,
         colors_title = prefer_data(points.colors.title, graph.configuration.points.colors.title),
-        colors_values = points.colors.values,
+        colors_values = points.colors.vector,
         next_colors_scale_index,
         size_values = numeric_values(points.sizes),
         mask = points.entities.mask,
@@ -651,7 +651,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         legend_group = "Borders",
         scatters_configuration = graph.configuration.borders,
         colors_title = prefer_data(borders.colors.title, graph.configuration.borders.colors.title),
-        colors_values = borders.colors.values,
+        colors_values = borders.colors.vector,
         next_colors_scale_index,
         size_values = numeric_values(borders.sizes),
         mask = borders.mask,
@@ -666,7 +666,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         legend_group = "Edges",
         scatters_configuration = graph.configuration.edges,
         colors_title = prefer_data(graph.data.edges.colors.title, graph.configuration.edges.colors.title),
-        colors_values = graph.data.edges.colors.values,
+        colors_values = graph.data.edges.colors.vector,
         next_colors_scale_index,
         size_values = numeric_values(graph.data.edges.sizes),
         mask = graph.data.edges.entities.mask,
@@ -678,8 +678,8 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         push_edge_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_edges)
     end
 
-    if borders.colors.values !== nothing ||
-       borders.sizes.values !== nothing ||
+    if borders.colors.vector !== nothing ||
+       borders.sizes.vector !== nothing ||
        borders.mask !== nothing ||
        graph.configuration.borders.colors.fixed !== nothing ||
        graph.configuration.borders.sizes.fixed !== nothing
@@ -796,7 +796,7 @@ function push_edge_traces!(;
     edges = graph.data.edges
 
     if configured_edges.colors.show_in_legend
-        edges_names = edges.colors.values
+        edges_names = edges.colors.vector
     else
         edges_names = nothing
     end
@@ -1068,17 +1068,17 @@ are left out of the line.
 end
 
 function Validations.validate(context::ValidationContext, data::LineGraphData)::Nothing
-    validate_numeric_values(context, "x.values", data.x.values; is_required = true)
-    validate_numeric_values(context, "y.values", data.y.values; is_required = true)
+    validate_numeric_values(context, "x.vector", data.x.vector; is_required = true)
+    validate_numeric_values(context, "y.vector", data.y.vector; is_required = true)
 
-    xs = data.x.values
+    xs = data.x.vector
     @assert xs !== nothing
-    validate_vector_is_not_empty(context, "x.values", xs)
+    validate_vector_is_not_empty(context, "x.vector", xs)
     n_points = length(xs)
 
-    validate_vector_length(context, "y.values", data.y.values, "x.values", n_points)
-    validate_vector_length(context, "points.hovers", data.points.hovers, "x.values", n_points)
-    validate_vector_length(context, "points.mask", data.points.mask, "x.values", n_points)
+    validate_vector_length(context, "y.vector", data.y.vector, "x.vector", n_points)
+    validate_vector_length(context, "points.hovers", data.points.hovers, "x.vector", n_points)
+    validate_vector_length(context, "points.mask", data.points.mask, "x.vector", n_points)
 
     return nothing
 end
@@ -1318,17 +1318,17 @@ The `name` is shown in the legend. The `hover` (if any) is prefixed to the hover
 end
 
 function Validations.validate(context::ValidationContext, line::LineData)::Nothing
-    validate_numeric_values(context, "x.values", line.x.values; is_required = true)
-    validate_numeric_values(context, "y.values", line.y.values; is_required = true)
+    validate_numeric_values(context, "x.vector", line.x.vector; is_required = true)
+    validate_numeric_values(context, "y.vector", line.y.vector; is_required = true)
 
-    xs = line.x.values
+    xs = line.x.vector
     @assert xs !== nothing
-    validate_vector_is_not_empty(context, "x.values", xs)
+    validate_vector_is_not_empty(context, "x.vector", xs)
     n_points = length(xs)
 
-    validate_vector_length(context, "y.values", line.y.values, "x.values", n_points)
-    validate_vector_length(context, "points.hovers", line.points.hovers, "x.values", n_points)
-    validate_vector_length(context, "points.mask", line.points.mask, "x.values", n_points)
+    validate_vector_length(context, "y.vector", line.y.vector, "x.vector", n_points)
+    validate_vector_length(context, "points.hovers", line.points.hovers, "x.vector", n_points)
+    validate_vector_length(context, "points.mask", line.points.mask, "x.vector", n_points)
 
     # These color names are used directly as Plotly colors; validate them (an invalid color name would otherwise be
     # silently rendered black by Plotly).
@@ -1472,14 +1472,14 @@ end
 function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
     if graph isa LineGraph
         validate_values(
-            ValidationContext(["graph.data.x.values"]),
+            ValidationContext(["graph.data.x.vector"]),
             numeric_values(graph.data.x),
             ValidationContext(["graph.configuration.x_axis"]),
             graph.configuration.x_axis,
         )
 
         validate_values(
-            ValidationContext(["graph.data.y.values"]),
+            ValidationContext(["graph.data.y.vector"]),
             numeric_values(graph.data.y),
             ValidationContext(["graph.configuration.y_axis"]),
             graph.configuration.y_axis,
@@ -1488,14 +1488,14 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
     elseif graph isa LinesGraph
         for (line_index, line) in enumerate(graph.data.lines)
             validate_values(
-                ValidationContext(["graph.data.lines", line_index, "x.values"]),
+                ValidationContext(["graph.data.lines", line_index, "x.vector"]),
                 numeric_values(line.x),
                 ValidationContext(["graph.configuration.x_axis"]),
                 graph.configuration.x_axis,
             )
 
             ys = numeric_values(line.y)
-            ys_context = ValidationContext(["graph.data.lines", line_index, "y.values"])
+            ys_context = ValidationContext(["graph.data.lines", line_index, "y.vector"])
             validate_values(
                 ys_context,
                 ys,

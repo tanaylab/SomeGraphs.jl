@@ -246,7 +246,7 @@ using SomeGraphs
 graph = distributions_graph(;
     distributions = [
         DistributionData(;
-            values = VectorValuesData(; values = [0, 0, 1, 1, 1, 3], title = "Values title"),
+            values = VectorValuesData(; vector = [0, 0, 1, 1, 1, 3], title = "Values title"),
             name = "Foo",
         ),
         DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), name = "Bar"),

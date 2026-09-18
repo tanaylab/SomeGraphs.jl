@@ -355,15 +355,15 @@ configuration default is used.
 end
 
 function Validations.validate(context::ValidationContext, distribution::DistributionData)::Nothing
-    validate_numeric_values(context, "values.values", distribution.values.values; is_required = true)
+    validate_numeric_values(context, "values.vector", distribution.values.vector; is_required = true)
 
-    values = distribution.values.values
+    values = distribution.values.vector
     @assert values !== nothing
-    validate_vector_is_not_empty(context, "values.values", values)
+    validate_vector_is_not_empty(context, "values.vector", values)
     n_values = length(values)
 
-    validate_vector_length(context, "points.hovers", distribution.points.hovers, "values.values", n_values)
-    validate_vector_length(context, "points.mask", distribution.points.mask, "values.values", n_values)
+    validate_vector_length(context, "points.hovers", distribution.points.hovers, "values.vector", n_values)
+    validate_vector_length(context, "points.mask", distribution.points.mask, "values.vector", n_values)
 
     validate_in(context, "color") do
         validate_is_color(context, distribution.color)
@@ -599,7 +599,7 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
     values = numeric_values(graph.data.distribution.values)
     @assert values !== nothing
     validate_values(
-        ValidationContext(["graph.data.distribution.values.values"]),
+        ValidationContext(["graph.data.distribution.values.vector"]),
         values,
         ValidationContext(["graph.configuration.value_axis"]),
         graph.configuration.value_axis,
@@ -646,7 +646,7 @@ function Common.validate_graph(graph::DistributionsGraph)::Nothing
         values = numeric_values(distribution.values)
         @assert values !== nothing
         validate_values(
-            ValidationContext(["graph.data.distributions", index, "values.values"]),
+            ValidationContext(["graph.data.distributions", index, "values.vector"]),
             values,
             ValidationContext(["graph.configuration.value_axis"]),
             graph.configuration.value_axis,

@@ -872,7 +872,7 @@ end
 The values of a [`VectorValuesData`](@ref) which was validated to be numeric.
 """
 function numeric_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:Real}}
-    values = values_data.values
+    values = values_data.vector
     @assert values === nothing || values isa AbstractVector{<:Real}
     return values
 end
@@ -899,7 +899,7 @@ end
 The values of a [`VectorValuesData`](@ref) which was validated to be strings.
 """
 function string_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:AbstractString}}
-    values = values_data.values
+    values = values_data.vector
     @assert values === nothing || values isa AbstractVector{<:AbstractString}
     return values
 end

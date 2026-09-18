@@ -111,7 +111,7 @@ SomeGraphs.Scatters.points_density
 ```@example
 using SomeGraphs
 graph = points_graph()
-graph.data.x.values = [
+graph.data.x.vector = [
     0.2698393176826803,
     0.21199888259395777,
     -1.1403772919081927,
@@ -133,7 +133,7 @@ graph.data.x.values = [
     1.3005476302710504,
     -0.3156364801379863,
 ]
-graph.data.y.values = [
+graph.data.y.vector = [
     -0.1764741545510277,
     0.5007984744043152,
     -1.0092288051861404,
@@ -155,8 +155,8 @@ graph.data.y.values = [
     0.9034430051864035,
     -0.631083973233279,
 ]
-graph.data.points.colors.values = points_density(graph.data.x.values, graph.data.y.values)
-graph.data.points.order = sortperm(graph.data.points.colors.values)
+graph.data.points.colors.vector = points_density(graph.data.x.vector, graph.data.y.vector)
+graph.data.points.order = sortperm(graph.data.points.colors.vector)
 graph.configuration.points.colors.palette = "Viridis"
 graph.configuration.points.sizes.fixed = 16
 graph.configuration.figure.width = 200

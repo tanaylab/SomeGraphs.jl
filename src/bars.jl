@@ -132,22 +132,22 @@ including the ones that are not `is_shown`.
 end
 
 function Validations.validate(context::ValidationContext, data::BarsGraphData)::Nothing
-    validate_numeric_values(context, "values.values", data.values.values; is_required = true)
-    validate_string_values(context, "names.values", data.names.values)
+    validate_numeric_values(context, "values.vector", data.values.vector; is_required = true)
+    validate_string_values(context, "names.vector", data.names.vector)
 
-    values = data.values.values
+    values = data.values.vector
     @assert values !== nothing
-    validate_vector_is_not_empty(context, "values.values", values)
+    validate_vector_is_not_empty(context, "values.vector", values)
     n_bars = length(values)
 
-    validate_vector_length(context, "names.values", data.names.values, "values.values", n_bars)
-    validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.values", n_bars)
-    validate_vector_length(context, "bars.mask", data.bars.mask, "values.values", n_bars)
-    validate_vector_length(context, "colors.values", data.colors.values, "values.values", n_bars)
-    validate_vector_is_finite(context, "colors.values", data.colors.values)
+    validate_vector_length(context, "names.vector", data.names.vector, "values.vector", n_bars)
+    validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.vector", n_bars)
+    validate_vector_length(context, "bars.mask", data.bars.mask, "values.vector", n_bars)
+    validate_vector_length(context, "colors.vector", data.colors.vector, "values.vector", n_bars)
+    validate_vector_is_finite(context, "colors.vector", data.colors.vector)
 
     validate_vector_entries(context, "annotations", data.annotations) do _, annotation
-        validate(context, annotation, "values.values", n_bars)
+        validate(context, annotation, "values.vector", n_bars)
         return nothing
     end
     validate_vector_length(
@@ -248,15 +248,15 @@ end
 
 function Common.validate_graph(graph::BarsGraph)::Nothing
     validate_values(
-        ValidationContext(["graph.data.values.values"]),
+        ValidationContext(["graph.data.values.vector"]),
         numeric_values(graph.data.values),
         ValidationContext(["graph.configuration.value_axis"]),
         graph.configuration.value_axis,
     )
 
     validate_colors(
-        ValidationContext(["graph.data.colors.values"]),
-        graph.data.colors.values,
+        ValidationContext(["graph.data.colors.vector"]),
+        graph.data.colors.vector,
         ValidationContext(["graph.configuration.colors"]),
         graph.configuration.colors,
         graph.data.bars.mask,
@@ -301,7 +301,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     colors = configured_colors(;
         colors_configuration = graph.configuration.colors,
         colors_title = prefer_data(graph.data.colors.title, graph.configuration.colors.title),
-        colors_values = graph.data.colors.values,
+        colors_values = graph.data.colors.vector,
         next_colors_scale_index,
         mask,
     )
@@ -354,7 +354,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     layout = bars_layout(;
         graph,
-        has_tick_names = graph.data.names.values !== nothing,
+        has_tick_names = graph.data.names.vector !== nothing,
         has_legend = false,
         has_hovers = hovers !== nothing,
         implicit_values_range,
@@ -454,15 +454,15 @@ of a series have the same `color`; a `nothing` means the color is chosen automat
 end
 
 function Validations.validate(context::ValidationContext, series::SeriesData)::Nothing
-    validate_numeric_values(context, "values.values", series.values.values; is_required = true)
+    validate_numeric_values(context, "values.vector", series.values.vector; is_required = true)
 
-    values = series.values.values
+    values = series.values.vector
     @assert values !== nothing
-    validate_vector_is_not_empty(context, "values.values", values)
+    validate_vector_is_not_empty(context, "values.vector", values)
     n_bars = length(values)
 
-    validate_vector_length(context, "bars.hovers", series.bars.hovers, "values.values", n_bars)
-    validate_vector_length(context, "bars.mask", series.bars.mask, "values.values", n_bars)
+    validate_vector_length(context, "bars.hovers", series.bars.hovers, "values.vector", n_bars)
+    validate_vector_length(context, "bars.mask", series.bars.mask, "values.vector", n_bars)
 
     validate_in(context, "color") do
         validate_is_color(context, series.color)
@@ -509,22 +509,22 @@ end
 
 function Validations.validate(context::ValidationContext, data::SeriesBarsGraphData)::Nothing
     validate_vector_is_not_empty(context, "series", data.series)
-    validate_string_values(context, "names.values", data.names.values)
+    validate_string_values(context, "names.vector", data.names.vector)
 
     validate_vector_entries(context, "series", data.series) do _, series
         validate(context, series)
         return nothing
     end
 
-    first_values = data.series[1].values.values
+    first_values = data.series[1].values.vector
     @assert first_values !== nothing
     n_bars = length(first_values)
     for (series_index, series) in enumerate(data.series)
         validate_vector_length(
             context,
-            "series[$(series_index)].values.values",
-            series.values.values,
-            "series[1].values.values",
+            "series[$(series_index)].values.vector",
+            series.values.vector,
+            "series[1].values.vector",
             n_bars,
         )
     end
@@ -534,12 +534,12 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
         throw(ArgumentError("no is_shown $(location(context)).series"))
     end
 
-    validate_vector_length(context, "names.values", data.names.values, "series[1].values.values", n_bars)
-    validate_vector_length(context, "bars.hovers", data.bars.hovers, "series[1].values.values", n_bars)
-    validate_vector_length(context, "bars.mask", data.bars.mask, "series[1].values.values", n_bars)
+    validate_vector_length(context, "names.vector", data.names.vector, "series[1].values.vector", n_bars)
+    validate_vector_length(context, "bars.hovers", data.bars.hovers, "series[1].values.vector", n_bars)
+    validate_vector_length(context, "bars.mask", data.bars.mask, "series[1].values.vector", n_bars)
 
     validate_vector_entries(context, "annotations", data.annotations) do _, annotation
-        validate(context, annotation, "series[1].values.values", n_bars)
+        validate(context, annotation, "series[1].values.vector", n_bars)
         return nothing
     end
     validate_vector_length(
@@ -705,7 +705,7 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
     n_series = length(graph.data.series)
     for (series_index, series) in enumerate(graph.data.series)
         values = numeric_values(series.values)
-        values_context = ValidationContext(["graph.data.series", series_index, "values.values"])
+        values_context = ValidationContext(["graph.data.series", series_index, "values.vector"])
         validate_values(
             values_context,
             values,
@@ -1029,7 +1029,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     layout = bars_layout(;
         graph,
-        has_tick_names = graph.data.names.values !== nothing,
+        has_tick_names = graph.data.names.vector !== nothing,
         has_legend = show_in_legend,
         has_hovers,
         implicit_values_range,
@@ -1165,7 +1165,7 @@ function push_annotation_traces!(;
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
 )::ConfiguredColors
     annotation_title = annotation_data.values.title
-    annotation_values = annotation_data.values.values
+    annotation_values = annotation_data.values.vector
     @assert annotation_values !== nothing
 
     colors = configured_colors(;

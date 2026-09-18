@@ -242,7 +242,7 @@ order is asked for first.
 
     Nothing detects that the cache went stale. Call [`reset_order!`](@ref) if anything it was computed from is changed
     after it was computed - that is, the `reorder`, `linkage` and `metric` of the axes configuration, and the
-    `entries.values` and the `order`, `arrange_by`, `groups` and `subgroups` of the axes data. The groups are easy to
+    `entries.matrix` and the `order`, `arrange_by`, `groups` and `subgroups` of the axes data. The groups are easy to
     forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently
     reuses the order of the first grouping unless the cache is reset in between.
 """
@@ -288,8 +288,8 @@ shown as the tick labels; their title is the axis title. The `entities` hold the
 `annotations` are shown to the side of the axis. If `annotations_order` is specified, they are shown in that order; it
 describes all the annotations, including the ones that are not `is_shown`.
 
-By default, if reordering the entries, this is based on the `entries.values` of the graph. You can override this by
-specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.values` (the rows
+By default, if reordering the entries, this is based on the `entries.matrix` of the graph. You can override this by
+specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.matrix` (the rows
 `arrange_by` must have the same number of rows, and the columns `arrange_by` the same number of columns); the other
 dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows `arrange_by`
 matrix should be in row-major layout, but that's not critical.
@@ -325,10 +325,10 @@ function Validations.validate(
     name::AbstractString,
     n_entries::Integer,
 )::Nothing
-    base = "entries.values.$(name)"
+    base = "entries.matrix.$(name)"
 
-    validate_string_values(context, "$(name).names.values", axis.names.values)
-    validate_vector_length(context, "$(name).names.values", axis.names.values, base, n_entries)
+    validate_string_values(context, "$(name).names.vector", axis.names.vector)
+    validate_vector_length(context, "$(name).names.vector", axis.names.vector, base, n_entries)
 
     validate_vector_length(context, "$(name).entities.hovers", axis.entities.hovers, base, n_entries)
     validate_vector_length(context, "$(name).entities.mask", axis.entities.mask, base, n_entries)
@@ -344,8 +344,8 @@ function Validations.validate(
     validate_vector_length(context, "$(name).order", order, base, n_entries)
 
     for (field, values_data) in (("groups", axis.groups), ("subgroups", axis.subgroups))
-        validate_vector_length(context, "$(name).$(field).values", values_data.values, base, n_entries)
-        validate_vector_is_finite(context, "$(name).$(field).values", values_data.values)
+        validate_vector_length(context, "$(name).$(field).vector", values_data.vector, base, n_entries)
+        validate_vector_is_finite(context, "$(name).$(field).vector", values_data.vector)
         if values_data.title !== nothing
             throw(ArgumentError("can't specify heatmap $(location(context)).$(name).$(field).title"))
         end
@@ -354,10 +354,10 @@ function Validations.validate(
     # The subgroups of an axis are a second, finer level of grouping, so they only make sense together with the groups.
     # A subgroup is nested in its group, so the same subgroup in two different groups is two different subgroups;
     # there's no need for the subgroups to be unique.
-    if axis.subgroups.values !== nothing && axis.groups.values === nothing
+    if axis.subgroups.vector !== nothing && axis.groups.vector === nothing
         throw(
             ArgumentError(
-                "can't specify heatmap $(location(context)).$(name).subgroups.values without $(name).groups.values",
+                "can't specify heatmap $(location(context)).$(name).subgroups.vector without $(name).groups.vector",
             ),
         )
     end
@@ -438,14 +438,14 @@ All other combinations are invalid. Note:
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing
-    values = data.entries.values
+    values = data.entries.matrix
     if values === nothing
-        throw(ArgumentError("must specify $(location(context)).entries.values"))
+        throw(ArgumentError("must specify $(location(context)).entries.matrix"))
     end
     n_rows, n_columns = size(values)
 
-    validate_matrix_is_finite(context, "entries.values", values)
-    validate_matrix_size(context, "cells.hovers", data.cells.hovers, "entries.values", size(values))
+    validate_matrix_is_finite(context, "entries.matrix", values)
+    validate_matrix_size(context, "cells.hovers", data.cells.hovers, "entries.matrix", size(values))
 
     validate(context, data.rows, "rows", n_rows)
     validate(context, data.columns, "columns", n_columns)
@@ -489,7 +489,7 @@ end
 
 # The entries values of a validated heatmap graph.
 function entries_values(graph::HeatmapGraph)::AbstractMatrix{<:Real}
-    values = graph.data.entries.values
+    values = graph.data.entries.matrix
     @assert values !== nothing
     return values
 end
@@ -608,7 +608,7 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
     values = entries_values(graph)
 
     validate_colors(
-        ValidationContext(["graph.data.entries.values"]),
+        ValidationContext(["graph.data.entries.matrix"]),
         values,
         ValidationContext(["graph.configuration.entries.colors"]),
         graph.configuration.entries.colors,
@@ -808,20 +808,20 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
             @assert false
         end
 
-        if !is_using_groups && axis_data.groups.values !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name).groups.values"))
+        if !is_using_groups && axis_data.groups.vector !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name).groups.vector"))
         end
 
         ## Unlike the groups, the subgroups have their own gap, so they are of use if either the axis is clustered (they
         ## constrain the clustering) or they are gapped.
-        if !is_clustered && axis_configuration.subgroups_gap === nothing && axis_data.subgroups.values !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name).subgroups.values"))
+        if !is_clustered && axis_configuration.subgroups_gap === nothing && axis_data.subgroups.vector !== nothing
+            throw(ArgumentError("no effect for specified graph.data.$(name).subgroups.vector"))
         end
 
-        if axis_configuration.subgroups_gap !== nothing && axis_data.subgroups.values === nothing
+        if axis_configuration.subgroups_gap !== nothing && axis_data.subgroups.vector === nothing
             throw(ArgumentError(chomp("""
                                       can't specify heatmap graph.configuration.$(name).subgroups_gap
-                                      without graph.data.$(name).subgroups.values
+                                      without graph.data.$(name).subgroups.vector
                                       """)))
         end
     end
@@ -891,16 +891,16 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     expanded_rows_mask = compute_expansion_mask(
         rows_order,
-        graph.data.rows.groups.values,
+        graph.data.rows.groups.vector,
         graph.configuration.rows.groups_gap,
-        graph.data.rows.subgroups.values,
+        graph.data.rows.subgroups.vector,
         graph.configuration.rows.subgroups_gap,
     )
     expanded_columns_mask = compute_expansion_mask(
         columns_order,
-        graph.data.columns.groups.values,
+        graph.data.columns.groups.vector,
         graph.configuration.columns.groups_gap,
-        graph.data.columns.subgroups.values,
+        graph.data.columns.subgroups.vector,
         graph.configuration.columns.subgroups_gap,
     )
 
@@ -1045,7 +1045,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     set_layout_axis!(
         layout,
         plotly_axis("y", yaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows.names.values !== nothing);
+        AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows.names.vector !== nothing);
         title = prefer_data(graph.data.rows.names.title, graph.configuration.rows.title),
         ticks_values = expanded_rows_names === nothing ? nothing : collect(1:n_expanded_rows),
         ticks_labels = expanded_rows_names,
@@ -1068,7 +1068,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     set_layout_axis!(
         layout,
         plotly_axis("x", xaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns.names.values !== nothing);
+        AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns.names.vector !== nothing);
         title = prefer_data(graph.data.columns.names.title, graph.configuration.columns.title),
         ticks_values = expanded_columns_names === nothing ? nothing : collect(1:n_expanded_columns),
         ticks_labels = expanded_columns_names,
@@ -1237,8 +1237,8 @@ function shown_axis_data(
 
     return HeatmapAxisData(;
         order,
-        groups = VectorValuesData(; values = masked_values(axis.groups.values, mask, nothing)),
-        subgroups = VectorValuesData(; values = masked_values(axis.subgroups.values, mask, nothing)),
+        groups = VectorValuesData(; vector = masked_values(axis.groups.vector, mask, nothing)),
+        subgroups = VectorValuesData(; vector = masked_values(axis.subgroups.vector, mask, nothing)),
         arrange_by,
     )
 end
@@ -1388,8 +1388,8 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
     data_columns_order, data_columns_hclust = finalize_order(;
         data_order = graph.data.columns.order,
         data_arrange_by = data_columns_arrange_by,
-        data_groups = graph.data.columns.groups.values,
-        data_subgroups = graph.data.columns.subgroups.values,
+        data_groups = graph.data.columns.groups.vector,
+        data_subgroups = graph.data.columns.subgroups.vector,
         slant_order = slant_columns_order,
         configuration_reorder = graph.configuration.columns.reorder,
         configuration_dendogram_size = graph.configuration.columns.dendogram_size,
@@ -1400,8 +1400,8 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
     data_rows_order, data_rows_hclust = finalize_order(;
         data_order = graph.data.rows.order,
         data_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1)),
-        data_groups = graph.data.rows.groups.values,
-        data_subgroups = graph.data.rows.subgroups.values,
+        data_groups = graph.data.rows.groups.vector,
+        data_subgroups = graph.data.rows.subgroups.vector,
         slant_order = slant_rows_order,
         configuration_reorder = graph.configuration.rows.reorder,
         configuration_dendogram_size = graph.configuration.rows.dendogram_size,
@@ -1448,7 +1448,7 @@ the graph will reuse it, and vice versa.
 Use this to list the entries in the order they are shown:
 
 ```julia
-ordered_rows_names = graph.data.rows.names.values[graph.order.rows_order]
+ordered_rows_names = graph.data.rows.names.vector[graph.order.rows_order]
 ```
 
 Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its
@@ -1962,7 +1962,7 @@ function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph
         HeatmapGraphData(;
             figure_title = graph.data.figure_title,
             entries = MatrixValuesData(;
-                values = entries.values === nothing ? nothing : transpose(entries.values),
+                matrix = entries.matrix === nothing ? nothing : transpose(entries.matrix),
                 title = entries.title,
             ),
             cells = MatrixEntitiesData(;
@@ -1983,7 +1983,7 @@ end
 
 function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph
     data = graph.data
-    data.entries.values = data.entries.values === nothing ? nothing : transpose(data.entries.values)
+    data.entries.matrix = data.entries.matrix === nothing ? nothing : transpose(data.entries.matrix)
     data.cells.hovers = data.cells.hovers === nothing ? nothing : PermutedDimsArray(data.cells.hovers, (2, 1))  # NOJET
     data.rows, data.columns = data.columns, data.rows
     for axis in (data.rows, data.columns)
