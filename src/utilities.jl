@@ -131,6 +131,17 @@ function validate_graph_bands(
 
     context = ValidationContext(["graph.configuration", field])
 
+    for (offset_field, offset) in (
+        ("low_offset", bands_data.low_offset),
+        ("middle_offset", bands_data.middle_offset),
+        ("high_offset", bands_data.high_offset),
+    )
+        validate_in(context, offset_field) do
+            validate_is_finite(context, offset)
+            return nothing
+        end
+    end
+
     validate_is_range(context, "low_offset", bands_data.low_offset, "middle_offset", bands_data.middle_offset)
 
     validate_is_range(context, "middle_offset", bands_data.middle_offset, "high_offset", bands_data.high_offset)
@@ -833,7 +844,8 @@ end
         is_required::Bool = false,
     )::Nothing
 
-Validate that the `values` of a [`ValuesData`](@ref) `field` are numeric (if specified, or at all if `is_required`).
+Validate that the `values` of a [`VectorValuesData`](@ref) `field` are numeric and finite (if specified, or at all if
+`is_required`).
 """
 function validate_numeric_values(
     context::ValidationContext,
@@ -847,16 +859,18 @@ function validate_numeric_values(
         end
     elseif !(eltype(values) <: Real)
         throw(ArgumentError("non-numeric $(location(context)).$(field)"))
+    else
+        validate_vector_is_finite(context, field, values)
     end
     return nothing
 end
 
 """
-    numeric_values(values_data::ValuesData)::Maybe{AbstractVector{<:Real}}
+    numeric_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:Real}}
 
-The values of a [`ValuesData`](@ref) which was validated to be numeric.
+The values of a [`VectorValuesData`](@ref) which was validated to be numeric.
 """
-function numeric_values(values_data::ValuesData)::Maybe{AbstractVector{<:Real}}
+function numeric_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:Real}}
     values = values_data.values
     @assert values === nothing || values isa AbstractVector{<:Real}
     return values
@@ -865,7 +879,7 @@ end
 """
     validate_string_values(context::ValidationContext, field::AbstractString, values::Maybe{AbstractVector})::Nothing
 
-Validate that the `values` of a [`ValuesData`](@ref) `field` are strings (if specified).
+Validate that the `values` of a [`VectorValuesData`](@ref) `field` are strings (if specified).
 """
 function validate_string_values(
     context::ValidationContext,
@@ -879,11 +893,11 @@ function validate_string_values(
 end
 
 """
-    string_values(values_data::ValuesData)::Maybe{AbstractVector{<:AbstractString}}
+    string_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:AbstractString}}
 
-The values of a [`ValuesData`](@ref) which was validated to be strings.
+The values of a [`VectorValuesData`](@ref) which was validated to be strings.
 """
-function string_values(values_data::ValuesData)::Maybe{AbstractVector{<:AbstractString}}
+function string_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:AbstractString}}
     values = values_data.values
     @assert values === nothing || values isa AbstractVector{<:AbstractString}
     return values
@@ -894,7 +908,7 @@ end
         context::ValidationContext,
         field::AbstractString,
         role::AbstractString,
-        values_datas::AbstractVector{ValuesData},
+        values_datas::AbstractVector{VectorValuesData},
     )::Maybe{AbstractString}
 
 The title shared by the `values_datas` of the `role` of the entries of a `field` (e.g., the `x` of each of the `lines`):
@@ -904,7 +918,7 @@ function shared_values_title(
     context::ValidationContext,
     field::AbstractString,
     role::AbstractString,
-    values_datas::AbstractVector{ValuesData},
+    values_datas::AbstractVector{VectorValuesData},
 )::Maybe{AbstractString}
     title = nothing
     title_index = 0
@@ -986,6 +1000,9 @@ function scale_size_values(
 
     axis_configuration = sizes_configuration.axis
     ranged_values = range_values(axis_configuration, values, mask)
+
+    # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
+    @assert all(isfinite, ranged_values) "non-finite value in the sizes range"  # NOJET
 
     if axis_configuration.minimum !== nothing
         minimum_value = axis_configuration.minimum
@@ -1665,6 +1682,8 @@ function collect_range!(
 )::Nothing
     if values !== nothing
         for value in values
+            # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
+            @assert value === nothing || isfinite(value) "non-finite value in a computed range: $(value)"
             if range.minimum === nothing || (value !== nothing && value < range.minimum)
                 range.minimum = value
             end
@@ -2107,6 +2126,8 @@ function configured_colors(;
             ]
         else
             ranged_values = range_values(colors_configuration.axis, final_colors_values, mask)
+            # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
+            @assert all(isfinite, ranged_values) "non-finite value in the colors range"
             implicit_scaled_colors_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
             final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
         end

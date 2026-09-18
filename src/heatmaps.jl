@@ -273,11 +273,11 @@ end
 
 """
     @kwdef mutable struct HeatmapAxisData
-        names::ValuesData = ValuesData()
-        entities::EntitiesData = EntitiesData()
+        names::VectorValuesData = VectorValuesData()
+        entities::VectorEntitiesData = VectorEntitiesData()
         order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-        groups::ValuesData = ValuesData()
-        subgroups::ValuesData = ValuesData()
+        groups::VectorValuesData = VectorValuesData()
+        subgroups::VectorValuesData = VectorValuesData()
         arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
     end
@@ -299,17 +299,17 @@ If `groups` values (numbers or strings, one per entry) are specified, then a gap
 different groups. Groups can also be used to constrain the computed clustering. The `subgroups` are a second, finer
 level of grouping nested in the groups. Neither has a title.
 
-Hidden entries (see the mask of [`EntitiesData`](@ref)) are not drawn, but they are still part of the data: the
+Hidden entries (see the mask of [`VectorEntitiesData`](@ref)) are not drawn, but they are still part of the data: the
 clustering sees them, and the `order` (a permutation or a tree) always describes all the entries, hidden ones included.
 This way the order computed for one graph (see [`heatmap_order`](@ref)) can be given to another graph of the same data,
 whether or not the two hide the same entries. At least one entry must be shown.
 """
 @kwdef mutable struct HeatmapAxisData
-    names::ValuesData = ValuesData()
-    entities::EntitiesData = EntitiesData()
+    names::VectorValuesData = VectorValuesData()
+    entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    groups::ValuesData = ValuesData()
-    subgroups::ValuesData = ValuesData()
+    groups::VectorValuesData = VectorValuesData()
+    subgroups::VectorValuesData = VectorValuesData()
     arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
@@ -342,6 +342,7 @@ function Validations.validate(
 
     for (field, values_data) in (("groups", axis.groups), ("subgroups", axis.subgroups))
         validate_vector_length(context, "$(name).$(field).values", values_data.values, base, n_entries)
+        validate_vector_is_finite(context, "$(name).$(field).values", values_data.values)
         if values_data.title !== nothing
             throw(ArgumentError("can't specify heatmap $(location(context)).$(name).$(field).title"))
         end
@@ -359,6 +360,7 @@ function Validations.validate(
     end
 
     validate_matrix_dimension(context, "$(name).arrange_by", axis.arrange_by, name == "rows" ? 1 : 2, base, n_entries)
+    validate_matrix_is_finite(context, "$(name).arrange_by", axis.arrange_by)
 
     validate_vector_entries(context, "$(name).annotations", axis.annotations) do _, annotation
         validate(context, annotation, base, n_entries)
@@ -371,7 +373,7 @@ end
 """
     @kwdef mutable struct HeatmapGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        entries::MatrixData = MatrixData()
+        entries::MatrixValuesData = MatrixValuesData()
         cells::MatrixEntitiesData = MatrixEntitiesData()
         rows::HeatmapAxisData = HeatmapAxisData()
         columns::HeatmapAxisData = HeatmapAxisData()
@@ -381,10 +383,8 @@ The data for a graph showing a heatmap (matrix) of entries.
 
 This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation,
 colors must be continuous. The `entries` values are required; their title is the title of the colors scale. The `cells`
-hold the hovers and mask of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its
-row and of its column. Hidden cells are drawn as gaps; their values are still part of the data (they must be valid, they
-take part in the clustering, and in the range of the colors scale unless `include_hidden` is disabled in the
-`entries.colors.axis` of the configuration). At least one cell must be shown.
+hold the hovers of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its row and
+of its column.
 
 The `rows` and `columns` hold the data of each axis (see [`HeatmapAxisData`](@ref)).
 
@@ -420,7 +420,7 @@ All other combinations are invalid. Note:
 """
 @kwdef mutable struct HeatmapGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    entries::MatrixData = MatrixData()
+    entries::MatrixValuesData = MatrixValuesData()
     cells::MatrixEntitiesData = MatrixEntitiesData()
     rows::HeatmapAxisData = HeatmapAxisData()
     columns::HeatmapAxisData = HeatmapAxisData()
@@ -433,11 +433,8 @@ function Validations.validate(context::ValidationContext, data::HeatmapGraphData
     end
     n_rows, n_columns = size(values)
 
+    validate_matrix_is_finite(context, "entries.values", values)
     validate_matrix_size(context, "cells.hovers", data.cells.hovers, "entries.values", size(values))
-    validate_matrix_size(context, "cells.mask", data.cells.mask, "entries.values", size(values))
-    if data.cells.mask !== nothing && !any(data.cells.mask)
-        throw(ArgumentError("all cells hidden by $(location(context)).cells.mask"))
-    end
 
     validate(context, data.rows, "rows", n_rows)
     validate(context, data.columns, "columns", n_columns)
@@ -453,7 +450,7 @@ HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
 """
     function heatmap_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        entries::MatrixData = MatrixData(),
+        entries::MatrixValuesData = MatrixValuesData(),
         cells::MatrixEntitiesData = MatrixEntitiesData(),
         rows::HeatmapAxisData = HeatmapAxisData(),
         columns::HeatmapAxisData = HeatmapAxisData(),
@@ -465,7 +462,7 @@ Create a [`HeatmapGraph`](@ref) by initializing only the [`HeatmapGraphData`](@r
 """
 function heatmap_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    entries::MatrixData = MatrixData(),
+    entries::MatrixValuesData = MatrixValuesData(),
     cells::MatrixEntitiesData = MatrixEntitiesData(),
     rows::HeatmapAxisData = HeatmapAxisData(),
     columns::HeatmapAxisData = HeatmapAxisData(),
@@ -815,13 +812,11 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     traces = Vector{GenericTrace}()
 
     next_colors_scale_index = [1]
-    cells_mask = graph.data.cells.mask
     colors = configured_colors(;
         colors_configuration = graph.configuration.entries.colors,
         colors_title = prefer_data(graph.data.entries.title, graph.configuration.entries.colors.title),
         colors_values = entries_values(graph),
         next_colors_scale_index,
-        mask = cells_mask,
     )
 
     final_order = heatmap_order(graph)
@@ -841,12 +836,6 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     )
 
     reordered_values = colors.final_colors_values[rows_order, columns_order]
-    if cells_mask !== nothing
-        # Hidden cells are `missing` (serialized as JSON `null`) rather than `NaN`: Plotly renders both as blank, but the
-        # JSON writer used by `to_html` rejects `NaN`.
-        reordered_values = Matrix{Union{eltype(reordered_values), Missing}}(reordered_values)
-        reordered_values[.!cells_mask[rows_order, columns_order]] .= missing
-    end
 
     n_rows_annotations = length(graph.data.rows.annotations)
     n_columns_annotations = length(graph.data.columns.annotations)
@@ -1223,8 +1212,8 @@ function shown_axis_data(
 
     return HeatmapAxisData(;
         order,
-        groups = ValuesData(; values = masked_values(axis.groups.values, mask, nothing)),
-        subgroups = ValuesData(; values = masked_values(axis.subgroups.values, mask, nothing)),
+        groups = VectorValuesData(; values = masked_values(axis.groups.values, mask, nothing)),
+        subgroups = VectorValuesData(; values = masked_values(axis.subgroups.values, mask, nothing)),
         arrange_by,
     )
 end
@@ -1283,7 +1272,7 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
     values = entries_values(graph)
     clustered_graph = HeatmapGraph(
         HeatmapGraphData(;
-            entries = MatrixData(
+            entries = MatrixValuesData(
                 values[rows_mask === nothing ? (:) : rows_mask, columns_mask === nothing ? (:) : columns_mask],
             ),
             rows = rows_mask === nothing ? graph.data.rows : shown_axis_data(graph.data.rows, rows_mask, 1),
@@ -1946,13 +1935,12 @@ function Common.flip_axes(graph::HeatmapGraph)::HeatmapGraph
     return HeatmapGraph(  # NOJET
         HeatmapGraphData(;
             figure_title = graph.data.figure_title,
-            entries = MatrixData(;
+            entries = MatrixValuesData(;
                 values = entries.values === nothing ? nothing : transpose(entries.values),
                 title = entries.title,
             ),
             cells = MatrixEntitiesData(;
                 hovers = cells.hovers === nothing ? nothing : PermutedDimsArray(cells.hovers, (2, 1)),
-                mask = cells.mask === nothing ? nothing : transpose(cells.mask),
             ),
             rows = flipped_axis_data(graph.data.columns),
             columns = flipped_axis_data(graph.data.rows),
@@ -1971,7 +1959,6 @@ function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph
     data = graph.data
     data.entries.values = data.entries.values === nothing ? nothing : transpose(data.entries.values)
     data.cells.hovers = data.cells.hovers === nothing ? nothing : PermutedDimsArray(data.cells.hovers, (2, 1))  # NOJET
-    data.cells.mask = data.cells.mask === nothing ? nothing : transpose(data.cells.mask)
     data.rows, data.columns = data.columns, data.rows
     for axis in (data.rows, data.columns)
         if axis.arrange_by !== nothing

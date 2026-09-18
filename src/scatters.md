@@ -25,7 +25,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -34,7 +34,7 @@ Flip axes (non-mutating):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 flipped = flip_axes(graph)
 using PlotlyDocumenter
 to_documenter(flipped.figure)
@@ -44,7 +44,7 @@ Flip axes (in-place):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 flip_axes!(graph)
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -54,7 +54,7 @@ Borders:
 
 ```@example
 using SomeGraphs
-graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.borders.colors.fixed = "black"
 graph.configuration.borders.sizes.fixed = 1
 using PlotlyDocumenter
@@ -66,8 +66,8 @@ Edges:
 ```@example
 using SomeGraphs
 graph = points_graph(;
-    x = ValuesData(collect(0:10) .* 10),
-    y = ValuesData(collect(0:10) .^ 2),
+    x = VectorValuesData(collect(0:10) .* 10),
+    y = VectorValuesData(collect(0:10) .^ 2),
     edges = EdgesData(; points = [(1, 8), (2, 9), (3, 10), (4, 11)]),
 )
 using PlotlyDocumenter
@@ -78,7 +78,7 @@ Diagonal bands (linear scales):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.diagonal_bands.low.offset = -25
 graph.configuration.diagonal_bands.middle.offset = 0
 graph.configuration.diagonal_bands.high.offset = +25
@@ -90,7 +90,7 @@ Diagonal bands (log scales):
 
 ```@example
 using SomeGraphs
-graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.x_axis.log_scale = Log10Scale
 graph.configuration.y_axis.log_scale = Log10Scale
 graph.configuration.x_axis.log_regularization = 1
@@ -182,7 +182,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -191,7 +191,7 @@ With points:
 
 ```@example
 using SomeGraphs
-graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.show_points = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -201,7 +201,7 @@ Filled:
 
 ```@example
 using SomeGraphs
-graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -223,8 +223,8 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = lines_graph(;
     lines = [
-        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
-        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+        LineData(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2)),
+        LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
     ],
 )
 using PlotlyDocumenter
@@ -237,8 +237,8 @@ Filled:
 using SomeGraphs
 graph = lines_graph(;
     lines = [
-        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
-        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+        LineData(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2)),
+        LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
     ],
 )
 graph.configuration.line.is_filled = true
@@ -252,8 +252,8 @@ Stacked:
 using SomeGraphs
 graph = lines_graph(;
     lines = [
-        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
-        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+        LineData(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2)),
+        LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
     ],
 )
 graph.configuration.line.is_filled = true
@@ -268,8 +268,8 @@ Fractions:
 using SomeGraphs
 graph = lines_graph(;
     lines = [
-        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
-        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+        LineData(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2)),
+        LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
     ],
 )
 graph.configuration.line.is_filled = true
@@ -284,8 +284,8 @@ Percents:
 using SomeGraphs
 graph = lines_graph(;
     lines = [
-        LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
-        LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+        LineData(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2)),
+        LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
     ],
 )
 graph.configuration.line.is_filled = true

@@ -294,8 +294,8 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct DistributionData
-    values::ValuesData = ValuesData()
-    points::EntitiesData = EntitiesData()
+    values::VectorValuesData = VectorValuesData()
+    points::VectorEntitiesData = VectorEntitiesData()
     name::Maybe{AbstractString} = nothing
     hover::Maybe{AbstractString} = nothing
     is_shown::Bool = true
@@ -339,17 +339,17 @@ end
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ESLJXlBA5L' class='' style=';'>
+<div id='iqtCMPYbj9' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ESLJXlBA5L")
+    const PLOT = document.getElementById("iqtCMPYbj9")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -365,7 +365,7 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.data.figure_title = &quot;Figure title&quot;
 graph.data.distribution.values.title = &quot;Values axis&quot;
 graph.data.distribution.name = &quot;Distribution name&quot;
@@ -373,12 +373,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='aRm3OvGMIW' class='' style=';'>
+<div id='7vKgBNUS6r' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("aRm3OvGMIW")
+    const PLOT = document.getElementById("7vKgBNUS6r")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Distribution name","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03],"title":"Values axis"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"title":"Figure title","yaxis":{"showticklabels":false,"title":"Distribution name"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -394,18 +394,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.data.distribution.color = &quot;red&quot;
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='MhH9DcKBLW' class='' style=';'>
+<div id='CrpdskGJdD' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("MhH9DcKBLW")
+    const PLOT = document.getElementById("CrpdskGJdD")
     const plot_obj = {"data": [{"side":"positive","line":{"color":"red"},"fillcolor":"FF000080","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -522,18 +522,18 @@ end
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.values_orientation = VerticalValues
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='w0xfSSHzw8' class='' style=';'>
+<div id='xevyGxwV4z' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("w0xfSSHzw8")
+    const PLOT = document.getElementById("xevyGxwV4z")
     const plot_obj = {"data": [{"y":[0.0,0.0,1.0,1.0,1.0,3.0],"type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"v","side":"positive"}], "layout": {"showlegend":false,"xaxis":{"showticklabels":false},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -601,18 +601,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = ViolinDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='aBBwDleTIO' class='' style=';'>
+<div id='LVj0PrcZsz' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("aBBwDleTIO")
+    const PLOT = document.getElementById("LVj0PrcZsz")
     const plot_obj = {"data": [{"type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -628,18 +628,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = BoxDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='pC20rFkbwA' class='' style=';'>
+<div id='fPC22o4DKB' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("pC20rFkbwA")
+    const PLOT = document.getElementById("fPC22o4DKB")
     const plot_obj = {"data": [{"boxpoints":false,"type":"box","name":"Trace","box":{"visible":true},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -655,18 +655,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = BoxOutliersDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='npJoQ1aI0t' class='' style=';'>
+<div id='wquiVy5VWd' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("npJoQ1aI0t")
+    const PLOT = document.getElementById("wquiVy5VWd")
     const plot_obj = {"data": [{"boxpoints":"outliers","type":"box","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -682,18 +682,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CurveBoxDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='sMF9oLSx3F' class='' style=';'>
+<div id='jVFFDuQSdo' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("sMF9oLSx3F")
+    const PLOT = document.getElementById("jVFFDuQSdo")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":true},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -709,18 +709,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = ViolinBoxDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='vzDqgNSt5c' class='' style=';'>
+<div id='cdDY5kcAci' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("vzDqgNSt5c")
+    const PLOT = document.getElementById("cdDY5kcAci")
     const plot_obj = {"data": [{"type":"violin","name":"Trace","box":{"visible":true},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -736,18 +736,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = HistogramDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ycOzRDX6Oj' class='' style=';'>
+<div id='MYZKxO1z6J' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ycOzRDX6Oj")
+    const PLOT = document.getElementById("MYZKxO1z6J")
     const plot_obj = {"data": [{"type":"histogram","name":"Trace","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -763,18 +763,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.line.color = &quot;red&quot;
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='GpAmxaTP0D' class='' style=';'>
+<div id='whRyOvlWjs' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("GpAmxaTP0D")
+    const PLOT = document.getElementById("whRyOvlWjs")
     const plot_obj = {"data": [{"side":"positive","line":{"color":"red"},"fillcolor":"FF000080","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -790,19 +790,19 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.line.width = 4
 graph.configuration.distribution.line.is_filled = false
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='mvxfMSSVT1' class='' style=';'>
+<div id='w7LRlLKZFX' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("mvxfMSSVT1")
+    const PLOT = document.getElementById("w7LRlLKZFX")
     const plot_obj = {"data": [{"side":"positive","line":{"width":4},"type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -818,18 +818,18 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_bands.middle.offset = 2
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='fJbeH9sIo1' class='' style=';'>
+<div id='Qbs507eBh9' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("fJbeH9sIo1")
+    const PLOT = document.getElementById("Qbs507eBh9")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"shapes":[{"line":{"color":null,"dash":null},"x0":2.0,"type":"line","y0":0,"y1":1,"yref":"y domain","xref":"x","x1":2.0}],"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -849,19 +849,19 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZQSS5u7Gnt' class='' style=';'>
+<div id='OG7v8tpDAO' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZQSS5u7Gnt")
+    const PLOT = document.getElementById("OG7v8tpDAO")
     const plot_obj = {"data": [{"mode":"lines","y":[1.0,2.0,3.0,5.0,6.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,7.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -877,7 +877,7 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.normalize = true
@@ -885,12 +885,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='0YKVgsNC79' class='' style=';'>
+<div id='JMahysY9BT' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("0YKVgsNC79")
+    const PLOT = document.getElementById("JMahysY9BT")
     const plot_obj = {"data": [{"mode":"lines","y":[0.16666667,0.33333334,0.5,0.8333333,1.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -906,7 +906,7 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.normalize = true
@@ -915,12 +915,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='GoJC1VJTBm' class='' style=';'>
+<div id='yAQ2gyvV2v' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("GoJC1VJTBm")
+    const PLOT = document.getElementById("yAQ2gyvV2v")
     const plot_obj = {"data": [{"mode":"lines","y":[16.666666,33.333332,50.0,83.333336,100.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,101.0],"ticksuffix":"<sub>%</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -936,7 +936,7 @@ to_documenter(graph.figure)
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.cumulative_descending = true
@@ -944,12 +944,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='gz5daJX8i1' class='' style=';'>
+<div id='tz23vtXd85' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("gz5daJX8i1")
+    const PLOT = document.getElementById("tz23vtXd85")
     const plot_obj = {"data": [{"mode":"lines","y":[6.0,5.0,4.0,2.0,1.0],"type":"scatter","name":"Trace","fill":"tozeroy","x":[0.0,0.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.0,7.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1090,20 +1090,20 @@ end
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='5oDeDumRcf' class='' style=';'>
+<div id='y1HcGW2lQT' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("5oDeDumRcf")
+    const PLOT = document.getElementById("y1HcGW2lQT")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false,"domain":[0.0,0.475]},"yaxis2":{"showticklabels":false,"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1177,8 +1177,11 @@ end
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData(; values = [0, 0, 1, 1, 1, 3], title = &quot;Values title&quot;), name = &quot;Foo&quot;),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1]), name = &quot;Bar&quot;),
+        DistributionData(;
+            values = VectorValuesData(; values = [0, 0, 1, 1, 1, 3], title = &quot;Values title&quot;),
+            name = &quot;Foo&quot;,
+        ),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), name = &quot;Bar&quot;),
     ],
     figure_title = &quot;Figure title&quot;,
 )
@@ -1186,12 +1189,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='nR3IfbyTut' class='' style=';'>
+<div id='pzEA4pkcLo' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nR3IfbyTut")
+    const PLOT = document.getElementById("pzEA4pkcLo")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"name":"Foo","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"name":"Bar","yaxis":"y2","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04],"title":"Values title"},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"yaxis":{"showticklabels":false,"domain":[0.0,0.475]},"yaxis2":{"showticklabels":false,"domain":[0.525,1.0]},"annotations":[{"x":0,"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"Foo","xref":"x domain","automargin":true,"textangle":-90},{"x":0,"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y2 domain","showarrow":false,"text":"Bar","xref":"x domain","automargin":true,"textangle":-90}],"title":"Figure title","plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1209,8 +1212,8 @@ to_documenter(graph.figure)
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 graph.configuration.distributions_gap = 0.05
@@ -1218,12 +1221,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='lTvUsgrEka' class='' style=';'>
+<div id='IfKTw2YcFw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("lTvUsgrEka")
+    const PLOT = document.getElementById("IfKTw2YcFw")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","type":"violin","y0":0.0,"yaxis":"y2","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false,"domain":[0.0,0.475]},"yaxis2":{"showticklabels":false,"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1241,8 +1244,8 @@ to_documenter(graph.figure)
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 graph.configuration.distributions_gap = nothing
@@ -1250,12 +1253,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FlpCaruQZY' class='' style=';'>
+<div id='EvQeuAJZtN' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FlpCaruQZY")
+    const PLOT = document.getElementById("EvQeuAJZtN")
     const plot_obj = {"data": [{"side":"positive","xaxis":"x","scalegroup":"Distributions","y":["Y","Y","Y","Y","Y","Y"],"type":"violin","yaxis":"y","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","xaxis":"x","scalegroup":"Distributions","y":["Y","Y","Y","Y","Y","Y"],"type":"violin","yaxis":"y","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1273,8 +1276,8 @@ to_documenter(graph.figure)
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3]), name = &quot;Foo&quot;),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1]), name = &quot;Bar&quot;),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3]), name = &quot;Foo&quot;),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), name = &quot;Bar&quot;),
     ],
 )
 graph.configuration.distributions_gap = nothing
@@ -1282,12 +1285,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='SyVO8ZGGZG' class='' style=';'>
+<div id='Nrb0YET1dr' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("SyVO8ZGGZG")
+    const PLOT = document.getElementById("Nrb0YET1dr")
     const plot_obj = {"data": [{"side":"positive","xaxis":"x","scalegroup":"Distributions","name":"Foo","yaxis":"y","orientation":"h","y":["Y","Y","Y","Y","Y","Y"],"type":"violin","box":{"visible":false},"spanmode":"hard","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","xaxis":"x","scalegroup":"Distributions","name":"Bar","yaxis":"y","orientation":"h","y":["Y","Y","Y","Y","Y","Y"],"type":"violin","box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":true,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0,"itemdoubleclick":false},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1305,20 +1308,20 @@ to_documenter(graph.figure)
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3]), color = &quot;red&quot;),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1]), color = &quot;green&quot;),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3]), color = &quot;red&quot;),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), color = &quot;green&quot;),
     ],
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='VRnceNHtCJ' class='' style=';'>
+<div id='0HxTbK9txU' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("VRnceNHtCJ")
+    const PLOT = document.getElementById("0HxTbK9txU")
     const plot_obj = {"data": [{"side":"positive","scalegroup":"Distributions","fillcolor":"FF000080","line":{"color":"red"},"type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]},{"side":"positive","scalegroup":"Distributions","fillcolor":"00800080","yaxis":"y2","orientation":"h","line":{"color":"green"},"type":"violin","y0":0.0,"box":{"visible":false},"spanmode":"hard","x":[4.0,4.0,3.0,3.0,3.0,1.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false,"domain":[0.0,0.475]},"yaxis2":{"showticklabels":false,"domain":[0.525,1.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1336,8 +1339,8 @@ to_documenter(graph.figure)
 <code class="language-julia hljs">using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 graph.configuration.distribution.values_orientation = VerticalValues
@@ -1347,12 +1350,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XowNe7ANal' class='' style=';'>
+<div id='6TzeDfMLj9' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XowNe7ANal")
+    const PLOT = document.getElementById("6TzeDfMLj9")
     const plot_obj = {"data": [{"scalegroup":"Distributions","boxpoints":"outliers","x0":0.0,"fillcolor":"FF000080","line":{"color":"red"},"y":[0.0,0.0,1.0,1.0,1.0,3.0],"type":"box","box":{"visible":false},"spanmode":"hard","orientation":"v"},{"xaxis":"x2","scalegroup":"Distributions","x0":0.0,"fillcolor":"FF000080","orientation":"v","boxpoints":"outliers","line":{"color":"red"},"y":[4.0,4.0,3.0,3.0,3.0,1.0],"type":"box","box":{"visible":false},"spanmode":"hard"}], "layout": {"showlegend":false,"xaxis":{"showticklabels":false,"domain":[0.0,0.475]},"paper_bgcolor":"white","xaxis2":{"showticklabels":false,"domain":[0.525,1.0]},"template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.04,4.04]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

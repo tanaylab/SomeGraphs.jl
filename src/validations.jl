@@ -25,12 +25,15 @@ export validate_is_at_least
 export validate_is_at_most
 export validate_is_below
 export validate_is_color
+export validate_is_finite
 export validate_is_range
 export validate_matrix_dimension
 export validate_matrix_entries
+export validate_matrix_is_finite
 export validate_matrix_is_not_empty
 export validate_matrix_size
 export validate_vector_entries
+export validate_vector_is_finite
 export validate_vector_is_not_empty
 export validate_vector_length
 
@@ -212,6 +215,19 @@ function validate_is_below(context::ValidationContext, value::Maybe{Real}, maxim
 end
 
 """
+    validate_is_finite(context::ValidationContext, value::Maybe{Real})::Nothing
+
+Validate that a `value` is neither `NaN` nor infinite (if it is specified). Such a value would poison whatever is
+computed from it (an axis range, a colors scale, a clustering).
+"""
+function validate_is_finite(context::ValidationContext, value::Maybe{Real})::Nothing
+    if value !== nothing && !isfinite(value)
+        throw(ArgumentError("non-finite $(location(context)): $(value)"))
+    end
+    return nothing
+end
+
+"""
     validate_is_color(context::ValidationContext, color::Maybe{AbstractString})::Nothing
 
 Validate that a `color` is a valid color name (if it is specified).
@@ -358,6 +374,34 @@ function validate_vector_entries(  # UNTESTED
 end
 
 """
+    validate_vector_is_finite(
+        context::ValidationContext,
+        field::AbstractString,
+        vector::Maybe{AbstractVector}
+    )::Nothing
+
+Validate that no entry of a `field` containing a `vector` is `NaN` or infinite. A vector which does not hold real
+numbers is accepted as-is.
+"""
+function validate_vector_is_finite(
+    context::ValidationContext,
+    field::AbstractString,
+    vector::Maybe{AbstractVector},
+)::Nothing
+    if vector isa AbstractVector{<:Real}
+        index = findfirst(!isfinite, vector)  # NOJET
+        if index !== nothing
+            validate_in(context, field) do
+                return validate_in(context, index) do
+                    return validate_is_finite(context, vector[index])
+                end
+            end
+        end
+    end
+    return nothing
+end
+
+"""
     validate_matrix_is_not_empty(
         context::ValidationContext,
         field::AbstractString,
@@ -464,6 +508,36 @@ function validate_matrix_entries(
                         validate_in(context, column_index) do
                             return validation(row_index, column_index, matrix[row_index, column_index])
                         end
+                    end
+                end
+            end
+        end
+    end
+    return nothing
+end
+
+"""
+    validate_matrix_is_finite(
+        context::ValidationContext,
+        field::AbstractString,
+        matrix::Maybe{AbstractMatrix}
+    )::Nothing
+
+Validate that no entry of a `field` containing a `matrix` is `NaN` or infinite. A matrix which does not hold real
+numbers is accepted as-is.
+"""
+function validate_matrix_is_finite(
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::Maybe{AbstractMatrix},
+)::Nothing
+    if matrix isa AbstractMatrix{<:Real}
+        position = findfirst(!isfinite, matrix)  # NOJET
+        if position !== nothing
+            validate_in(context, field) do
+                return validate_in(context, position[1]) do
+                    return validate_in(context, position[2]) do
+                        return validate_is_finite(context, matrix[position])
                     end
                 end
             end

@@ -19,7 +19,6 @@ export ContinuousColors
 export DashDotLine
 export DashLine
 export DotLine
-export EntitiesData
 export FigureConfiguration
 export Graph
 export HorizontalValues
@@ -29,8 +28,8 @@ export Log10Scale
 export Log2Scale
 export LogScale
 export MarginsConfiguration
-export MatrixData
 export MatrixEntitiesData
+export MatrixValuesData
 export NAMED_COLOR_SCALES
 export PlotlyFigure
 export SizesConfiguration
@@ -38,8 +37,9 @@ export SolidLine
 export StackFractions
 export StackValues
 export Stacking
-export ValuesData
 export ValuesOrientation
+export VectorEntitiesData
+export VectorValuesData
 export VerticalValues
 export categorical_palette
 export flip_axes
@@ -294,13 +294,16 @@ end
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
     validate_field(context, "margins", figure_configuration.margins)
     validate_in(context, "width") do
+        validate_is_finite(context, figure_configuration.width)
         validate_is_above(context, figure_configuration.width, 0)
         return nothing
     end
     validate_in(context, "height") do
+        validate_is_finite(context, figure_configuration.height)
         validate_is_above(context, figure_configuration.height, 0)
         return nothing
     end
+    validate_vector_is_finite(context, "colors_scale_offsets", figure_configuration.colors_scale_offsets)
     validate_in(context, "background_color") do
         validate_is_color(context, figure_configuration.background_color)
         return nothing
@@ -347,7 +350,7 @@ Supported log scales (when log scaling is enabled):
     end
 
 Generic configuration for a graph axis. Everything is optional; by default, the `minimum` and `maximum` are computed
-automatically from the data. Entities hidden by a mask (see [`EntitiesData`](@ref)) still take part in this computation,
+automatically from the data. Entities hidden by a mask (see [`VectorEntitiesData`](@ref)) still take part in this computation,
 so hiding some of them does not move the axis. Set `include_hidden` to `false` to compute the range from the shown
 entities only.
 
@@ -388,15 +391,28 @@ set, so you can override this in the data.
 end
 
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
+    for (field, value) in (
+        ("minimum", axis_configuration.minimum),
+        ("maximum", axis_configuration.maximum),
+        ("log_regularization", axis_configuration.log_regularization),
+    )
+        validate_in(context, field) do
+            validate_is_finite(context, value)
+            return nothing
+        end
+    end
+
     validate_is_range(context, "minimum", axis_configuration.minimum, "maximum", axis_configuration.maximum)
 
     validate_in(context, "expand_fraction") do
+        validate_is_finite(context, axis_configuration.expand_fraction)
         validate_is_at_least(context, axis_configuration.expand_fraction, 0)
         return nothing
     end
 
     if axis_configuration.ticks_angle !== nothing
         validate_in(context, "ticks_angle") do
+            validate_is_finite(context, axis_configuration.ticks_angle)
             validate_is_at_least(context, axis_configuration.ticks_angle, -90)
             validate_is_at_most(context, axis_configuration.ticks_angle, 90)
             return nothing
@@ -510,11 +526,12 @@ function Validations.validate(  # UNTESTED
     band_configuration::BandConfiguration,
     axis_configuration::Maybe{AxisConfiguration} = nothing,
 )::Nothing
-    if axis_configuration !== nothing && axis_configuration.log_scale !== nothing
-        validate_in(context, "offset") do
+    validate_in(context, "offset") do
+        validate_is_finite(context, band_configuration.offset)
+        if axis_configuration !== nothing && axis_configuration.log_scale !== nothing
             validate_is_above(context, band_configuration.offset, 0)
-            return nothing
         end
+        return nothing
     end
 
     validate_field(context, "line", band_configuration.line)
@@ -1299,6 +1316,7 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
 
     if sizes_configuration.fixed !== nothing
         validate_in(context, "fixed") do
+            validate_is_finite(context, sizes_configuration.fixed)
             return validate_is_above(context, sizes_configuration.fixed, 0)
         end
 
@@ -1313,11 +1331,13 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
         return nothing
     else
         validate_in(context, "smallest") do
+            validate_is_finite(context, sizes_configuration.smallest)
             validate_is_above(context, sizes_configuration.smallest, 0)
             return nothing
         end
 
         validate_in(context, "span") do
+            validate_is_finite(context, sizes_configuration.span)
             validate_is_above(context, sizes_configuration.span, 0)
             return nothing
         end
@@ -1522,7 +1542,7 @@ relevant [`AxisConfiguration`](@ref) to display percents.
 @enum Stacking StackValues StackFractions
 
 """
-    @kwdef mutable struct ValuesData
+    @kwdef mutable struct VectorValuesData
         values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
         title::Maybe{AbstractString} = nothing
     end
@@ -1531,17 +1551,17 @@ A value per entity for one role of a graph (the X coordinates of points, their c
 the title of these values (which becomes the axis title, the colors title, ...). A role that is not in use has no
 `values`. Whether string values are allowed depends on the role.
 """
-@kwdef mutable struct ValuesData
+@kwdef mutable struct VectorValuesData
     values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}} = nothing
     title::Maybe{AbstractString} = nothing
 end
 
-function ValuesData(values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}})::ValuesData
-    return ValuesData(; values)
+function VectorValuesData(values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}})::VectorValuesData
+    return VectorValuesData(; values)
 end
 
 """
-    @kwdef mutable struct EntitiesData
+    @kwdef mutable struct VectorEntitiesData
         hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
     end
@@ -1552,13 +1572,13 @@ The mask hides an arbitrary subset of the entities. Hidden entities are still pa
 whatever is computed from it (axis ranges, clustering), unless the relevant configuration says otherwise (see
 `include_hidden` in [`AxisConfiguration`](@ref)). They are just not drawn.
 """
-@kwdef mutable struct EntitiesData
+@kwdef mutable struct VectorEntitiesData
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
 end
 
 """
-    @kwdef mutable struct MatrixData
+    @kwdef mutable struct MatrixValuesData
         values::Maybe{AbstractMatrix{<:Real}} = nothing
         title::Maybe{AbstractString} = nothing
     end
@@ -1566,33 +1586,33 @@ end
 A value per row per column of a graph (the entries of a heatmap), and the title of these values (which becomes the
 colors title).
 """
-@kwdef mutable struct MatrixData
+@kwdef mutable struct MatrixValuesData
     values::Maybe{AbstractMatrix{<:Real}} = nothing
     title::Maybe{AbstractString} = nothing
 end
 
-function MatrixData(values::AbstractMatrix{<:Real})::MatrixData
-    return MatrixData(; values)
+function MatrixValuesData(values::AbstractMatrix{<:Real})::MatrixValuesData
+    return MatrixValuesData(; values)
 end
 
 """
     @kwdef mutable struct MatrixEntitiesData
         hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
-        mask::Maybe{Union{AbstractMatrix{Bool}, BitMatrix}} = nothing
     end
 
-The hovers and mask of the entities of a graph which are arranged in rows and columns (the cells of a heatmap). Hovers
-are only shown in interactive graphs (or when saving an HTML file). The mask hides an arbitrary subset of the entities,
-as in [`EntitiesData`](@ref).
+The hovers of the entities of a graph which are arranged in rows and columns (the cells of a heatmap). Hovers are only
+shown in interactive graphs (or when saving an HTML file).
+
+There's no mask here, unlike [`VectorEntitiesData`](@ref). A cell always occupies the slot of its row and its column, so
+there's nothing to hide; to drop a cell, hide its whole row or column.
 """
 @kwdef mutable struct MatrixEntitiesData
     hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
-    mask::Maybe{Union{AbstractMatrix{Bool}, BitMatrix}} = nothing
 end
 
 """
     @kwdef mutable struct AnnotationData <: Validated
-        values::ValuesData = ValuesData()
+        values::VectorValuesData = VectorValuesData()
         colors::ColorsConfiguration = ColorsConfiguration()
     end
 
@@ -1609,7 +1629,7 @@ tightly coupled with the data.
     at most two color scales in a graph, because "reasons".
 """
 @kwdef mutable struct AnnotationData <: Validated
-    values::ValuesData = ValuesData()
+    values::VectorValuesData = VectorValuesData()
     colors::ColorsConfiguration = ColorsConfiguration()
 end
 
@@ -1631,6 +1651,7 @@ function Validations.validate(
     end
 
     validate_vector_length(context, "values.values", values, expected_base, expected_length)
+    validate_vector_is_finite(context, "values.values", values)
 
     # With no palette, the annotation's string values are used as explicit color names; validate them (an invalid color
     # name would otherwise be silently rendered black by Plotly).

@@ -1,5 +1,5 @@
 nested_test("points") do
-    graph = points_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+    graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 
     nested_test("invalid") do
         context = ValidationContext(["graph"])
@@ -12,6 +12,29 @@ nested_test("points") do
         nested_test("~values") do
             graph.data.points.sizes.values = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
             @test_throws "ArgumentError: non-numeric graph.data.points.sizes.values" validate(context, graph)
+        end
+
+        nested_test("finite") do
+            nested_test("x") do
+                graph.data.x.values = Float32[0, 1, 2, 3, 4, NaN, 6, 7, 8, 9, 10]
+                @test_throws "ArgumentError: non-finite graph.data.x.values[6]: NaN" validate(context, graph)
+            end
+
+            nested_test("colors") do
+                graph.data.points.colors.values = Float32[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, Inf]
+                @test_throws "ArgumentError: non-finite graph.data.points.colors.values[11]: Inf" validate(
+                    context,
+                    graph,
+                )
+            end
+
+            nested_test("sizes") do
+                graph.data.points.sizes.values = Float32[-Inf, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                @test_throws "ArgumentError: non-finite graph.data.points.sizes.values[1]: -Inf" validate(
+                    context,
+                    graph,
+                )
+            end
         end
 
         nested_test("diagonal") do
@@ -698,7 +721,7 @@ nested_test("points") do
 end
 
 nested_test("line") do
-    graph = line_graph(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2))
+    graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 
     nested_test("invalid") do
         context = ValidationContext(["graph"])
@@ -855,8 +878,8 @@ end
 nested_test("lines") do
     graph = lines_graph(;
         lines = [
-            LineData(; x = ValuesData(collect(0:10) .* 10), y = ValuesData(collect(0:10) .^ 2)),
-            LineData(; x = ValuesData([0, 90]), y = ValuesData([50, 0])),
+            LineData(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2)),
+            LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
         ],
     )
 

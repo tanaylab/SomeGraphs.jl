@@ -1,5 +1,5 @@
 nested_test("heatmaps") do
-    graph = heatmap_graph(; entries = MatrixData([
+    graph = heatmap_graph(; entries = MatrixValuesData([
         0 1 2 3;
         7 6 5 4;
         8 9 10 11;
@@ -12,7 +12,7 @@ nested_test("heatmaps") do
         @test fields.configuration.axis === graph.configuration.entries.colors.axis
         @test fields.configuration.colors === graph.configuration.entries.colors
 
-        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0], "score"))
+        annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0], "score"))
         @test add_rows_annotation!(graph, annotation) == 1
         @test graph.data.rows.annotations[1] === annotation
         fields = rows_annotations_fields(graph, 1)
@@ -24,7 +24,7 @@ nested_test("heatmaps") do
         rows_annotations_fields(graph, 2).data.values.values = [0, 1, 0]
         @test graph.data.rows.annotations[2].values.values == [0, 1, 0]
 
-        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))
+        annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))
         @test add_columns_annotation!(graph, annotation) == 1
         @test graph.data.columns.annotations[1] === annotation
         fields = columns_annotations_fields(graph, 1)
@@ -86,7 +86,7 @@ nested_test("heatmaps") do
             end
 
             nested_test("missing") do
-                graph = heatmap_graph(; entries = MatrixData([
+                graph = heatmap_graph(; entries = MatrixValuesData([
                     0 1 2;
                     7 6 5;
                     8 9 10;
@@ -125,7 +125,7 @@ nested_test("heatmaps") do
         end
 
         nested_test("annotation") do
-            push!(graph.data.rows.annotations, AnnotationData(; values = ValuesData(["red", "green", "Oobleck"])))
+            push!(graph.data.rows.annotations, AnnotationData(; values = VectorValuesData(["red", "green", "Oobleck"])))
             @test_throws "ArgumentError: invalid graph.data.rows.annotations[1].values.values[3]: Oobleck" validate(
                 ValidationContext(["graph"]),
                 graph,
@@ -172,21 +172,47 @@ nested_test("heatmaps") do
                                    is different from length of graph.data.entries.values.rows: 3
                                    """) validate(ValidationContext(["graph"]), graph)
             end
+        end
 
-            nested_test("!cells") do
-                graph.data.cells.mask = falses(3, 4)
-                @test_throws "ArgumentError: all cells hidden by graph.data.cells.mask" validate(
+        nested_test("~cells") do
+            graph.data.cells.hovers = fill("H", 2, 2)
+            @test_throws chomp("""
+                               ArgumentError: invalid size of graph.data.cells.hovers: (2, 2)
+                               is different from size of graph.data.entries.values: (3, 4)
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("finite") do
+            nested_test("entries") do
+                graph.data.entries.values = Float32[0 1 2 3; 7 6 NaN 4; 8 9 10 11]
+                @test_throws "ArgumentError: non-finite graph.data.entries.values[2, 3]: NaN" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
             end
 
-            nested_test("~cells") do
-                graph.data.cells.mask = trues(2, 2)
-                @test_throws chomp("""
-                                   ArgumentError: invalid size of graph.data.cells.mask: (2, 2)
-                                   is different from size of graph.data.entries.values: (3, 4)
-                                   """) validate(ValidationContext(["graph"]), graph)
+            nested_test("arrange_by") do
+                graph.data.rows.arrange_by = Float32[0 1; 2 Inf; 4 5]
+                @test_throws "ArgumentError: non-finite graph.data.rows.arrange_by[2, 2]: Inf" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("groups") do
+                graph.data.rows.groups.values = Float32[1, 1, NaN]
+                @test_throws "ArgumentError: non-finite graph.data.rows.groups.values[3]: NaN" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("annotation") do
+                graph.data.rows.annotations = [AnnotationData(; values = VectorValuesData(Float32[1, -Inf, 0]))]
+                @test_throws "ArgumentError: non-finite graph.data.rows.annotations[1].values.values[2]: -Inf" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
             end
         end
 
@@ -490,13 +516,13 @@ nested_test("heatmaps") do
     nested_test("annotations") do
         graph.data.rows.annotations = [
             AnnotationData(;
-                values = ValuesData(["yes", "maybe", "no"], "is"),
+                values = VectorValuesData(["yes", "maybe", "no"], "is"),
                 colors = ColorsConfiguration(;
                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                 ),
             ),
         ]
-        graph.data.columns.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+        graph.data.columns.annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))]
 
         nested_test("()") do
             test_html(graph, "heatmap.annotations.html")
@@ -682,7 +708,7 @@ nested_test("heatmaps") do
     end
 
     nested_test("same") do
-        graph = heatmap_graph(; entries = MatrixData([
+        graph = heatmap_graph(; entries = MatrixValuesData([
             0 1 2;
             7 6 5;
             8 9 10;
@@ -724,10 +750,10 @@ nested_test("heatmaps") do
             "YA" "YB" "YC" "YD";
             "ZA" "ZB" "ZC" "ZD";
         ]
-        graph.data.rows.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0], "score"))]
+        graph.data.rows.annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0], "score"))]
         graph.data.columns.annotations = [
             AnnotationData(;
-                values = ValuesData(["yes", "maybe", "no", "yes"], "is"),
+                values = VectorValuesData(["yes", "maybe", "no", "yes"], "is"),
                 colors = ColorsConfiguration(;
                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                 ),
@@ -806,7 +832,7 @@ nested_test("heatmaps") do
                 @test sort(graph.order.columns_order) == 1:4
                 @test graph.order.columns_hclust.order == graph.order.columns_order
 
-                other_graph = heatmap_graph(; entries = MatrixData(graph.data.entries.values))
+                other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.values))
                 other_graph.data.columns.order = graph.order.columns_hclust
                 @test other_graph.order.columns_order == graph.order.columns_order
                 return nothing
@@ -827,29 +853,10 @@ nested_test("heatmaps") do
                 @test graph.order.columns_order[end] == 2
                 @test graph.order.columns_hclust.order == graph.order.columns_order
 
-                other_graph = heatmap_graph(; entries = MatrixData(graph.data.entries.values))
+                other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.values))
                 other_graph.data.columns.entities.mask = graph.data.columns.entities.mask
                 other_graph.data.columns.order = graph.order.columns_hclust
                 @test other_graph.order.columns_order == graph.order.columns_order
-                return nothing
-            end
-        end
-
-        nested_test("cells") do
-            graph.data.cells.mask = [
-                false true true true;
-                true true true true;
-                true true true false;
-            ]
-
-            nested_test("()") do
-                test_html(graph, "heatmap.mask.cells.html")
-                return nothing
-            end
-
-            nested_test("!hidden") do
-                graph.configuration.entries.colors.axis.include_hidden = false
-                test_html(graph, "heatmap.mask.cells.!hidden.html")
                 return nothing
             end
         end
@@ -963,7 +970,7 @@ nested_test("heatmaps") do
             @test graph.order.columns_hclust !== nothing
 
             nested_test("vector") do
-                other_graph = heatmap_graph(; entries = MatrixData(graph.data.entries.values))
+                other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.values))
                 other_graph.data.columns.order = graph.order.columns_order
                 @test other_graph.order.columns_order == graph.order.columns_order
                 @test other_graph.json == graph.json
@@ -971,7 +978,7 @@ nested_test("heatmaps") do
             end
 
             nested_test("hclust") do
-                other_graph = heatmap_graph(; entries = MatrixData(reverse(graph.data.entries.values; dims = 1)))
+                other_graph = heatmap_graph(; entries = MatrixValuesData(reverse(graph.data.entries.values; dims = 1)))
                 other_graph.data.columns.order = graph.order.columns_hclust
                 @test other_graph.order.columns_order == graph.order.columns_order
                 return nothing
@@ -986,7 +993,7 @@ nested_test("heatmaps") do
                 @test graph.order.columns_order == columns_order
                 @test graph.order.rows_order == 1:3
 
-                other_graph = heatmap_graph(; entries = MatrixData(graph.data.entries.values))
+                other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.values))
                 other_graph.data.columns.order = columns_order
                 other_graph.configuration.origin = HeatmapTopLeft
                 @test other_graph.json == graph.json
@@ -1022,7 +1029,7 @@ nested_test("heatmaps") do
         subgroups = repeat(1:6; inner = 2)
         groups = [subgroup <= 3 ? 2 : 1 for subgroup in subgroups]
 
-        graph = heatmap_graph(; entries = MatrixData(vcat(values, values .* 2)))
+        graph = heatmap_graph(; entries = MatrixValuesData(vcat(values, values .* 2)))
         graph.data.columns.groups.values = groups
         graph.data.columns.subgroups.values = ["S$(subgroup)" for subgroup in subgroups]
         graph.configuration.columns.reorder = OptimalHclust

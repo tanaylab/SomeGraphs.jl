@@ -21,7 +21,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -30,7 +30,7 @@ Titles:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.data.figure_title = "Figure title"
 graph.data.distribution.values.title = "Values axis"
 graph.data.distribution.name = "Distribution name"
@@ -42,7 +42,7 @@ Color (if it is more of a data than a configuration parameter):
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.data.distribution.color = "red"
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -59,7 +59,7 @@ Change orientation:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.values_orientation = VerticalValues
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -75,7 +75,7 @@ Violin:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = ViolinDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -85,7 +85,7 @@ Box:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = BoxDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -95,7 +95,7 @@ Box with outliers:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = BoxOutliersDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -105,7 +105,7 @@ Curve and Box:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CurveBoxDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -115,7 +115,7 @@ Violin and Box:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = ViolinBoxDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -125,7 +125,7 @@ Histogram:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = HistogramDistribution
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -135,7 +135,7 @@ Color (if it is more of a configuration parameter than data):
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.line.color = "red"
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -145,7 +145,7 @@ Line width and disable fill:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.line.width = 4
 graph.configuration.distribution.line.is_filled = false
 using PlotlyDocumenter
@@ -156,7 +156,7 @@ Bands (if the offset is more of a configuration parameter than data):
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_bands.middle.offset = 2
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -169,7 +169,7 @@ second axis is in actual units (by default, counts). This opens up additional co
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 using PlotlyDocumenter
@@ -180,7 +180,7 @@ Fractions:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.normalize = true
@@ -192,7 +192,7 @@ Percents:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.normalize = true
@@ -205,7 +205,7 @@ Descending:
 
 ```@example
 using SomeGraphs
-graph = distribution_graph(; distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])))
+graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.cumulative_descending = true
@@ -227,8 +227,8 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 using PlotlyDocumenter
@@ -245,8 +245,11 @@ Titles:
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData(; values = [0, 0, 1, 1, 1, 3], title = "Values title"), name = "Foo"),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1]), name = "Bar"),
+        DistributionData(;
+            values = VectorValuesData(; values = [0, 0, 1, 1, 1, 3], title = "Values title"),
+            name = "Foo",
+        ),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), name = "Bar"),
     ],
     figure_title = "Figure title",
 )
@@ -260,8 +263,8 @@ Size of gap between distributions:
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 graph.configuration.distributions_gap = 0.05
@@ -275,8 +278,8 @@ Overlay the distributions:
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 graph.configuration.distributions_gap = nothing
@@ -290,8 +293,8 @@ Overlay the distributions with a legend:
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3]), name = "Foo"),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1]), name = "Bar"),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3]), name = "Foo"),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), name = "Bar"),
     ],
 )
 graph.configuration.distributions_gap = nothing
@@ -305,8 +308,8 @@ Colors (if they are part of the data):
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3]), color = "red"),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1]), color = "green"),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3]), color = "red"),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1]), color = "green"),
     ],
 )
 using PlotlyDocumenter
@@ -319,8 +322,8 @@ You can also apply any of the distribution and/or value axis configuration optio
 using SomeGraphs
 graph = distributions_graph(;
     distributions = [
-        DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
-        DistributionData(; values = ValuesData([4, 4, 3, 3, 3, 1])),
+        DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+        DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
 graph.configuration.distribution.values_orientation = VerticalValues

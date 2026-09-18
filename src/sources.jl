@@ -67,18 +67,18 @@ import ..Validations.Maybe
 
 """
     add_hovers!(
-        entities::Union{EntitiesData, MatrixEntitiesData},
+        entities::Union{VectorEntitiesData, MatrixEntitiesData},
         hovers::AbstractArray{<:AbstractString};
         [title::Maybe{AbstractString} = nothing]
     )::Nothing
 
-Add a line to the hover of each of the `entities`: the `hovers` entry of the entity (a vector for [`EntitiesData`](@ref),
+Add a line to the hover of each of the `entities`: the `hovers` entry of the entity (a vector for [`VectorEntitiesData`](@ref),
 a matrix for [`MatrixEntitiesData`](@ref)), prefixed by the `title` (if any) as `title: hover`. The lines of several
 calls are joined by `<br>`, in the order of the calls. All the `hovers` given to the same entities must be of the same
 size.
 """
 function add_hovers!(
-    entities::Union{EntitiesData, MatrixEntitiesData},
+    entities::Union{VectorEntitiesData, MatrixEntitiesData},
     hovers::AbstractArray{<:AbstractString};
     title::Maybe{AbstractString} = nothing,
 )::Nothing
@@ -106,12 +106,12 @@ end
 
 """
     struct VectorDataFields
-        values::ValuesData
-        entities::EntitiesData
+        values::VectorValuesData
+        entities::VectorEntitiesData
     end
 
-The data half of a data source view (see [`VectorFields`](@ref)): the [`ValuesData`](@ref) of one role of a graph (the
-X coordinates of its points, their colors, ...) and the [`EntitiesData`](@ref) of the entities these values belong to.
+The data half of a data source view (see [`VectorFields`](@ref)): the [`VectorValuesData`](@ref) of one role of a graph (the
+X coordinates of its points, their colors, ...) and the [`VectorEntitiesData`](@ref) of the entities these values belong to.
 Both are the graph's own objects, so writing into them changes the graph. Several roles of the same entities (say, the
 X, Y, colors and sizes of points) share one `entities`, so hovers added through any of them are seen by all.
 
@@ -120,21 +120,21 @@ A source which only writes values, a title and hovers takes a `VectorDataFields`
 the groups of the rows of a heatmap), so such a source applies to all of them alike.
 """
 struct VectorDataFields
-    values::ValuesData
-    entities::EntitiesData
+    values::VectorValuesData
+    entities::VectorEntitiesData
 end
 
 """
     struct MatrixDataFields
-        values::MatrixData
+        values::MatrixValuesData
         entities::MatrixEntitiesData
     end
 
-The data half of a [`MatrixFields`](@ref) data source view: the [`MatrixData`](@ref) of the entries of a graph (a
+The data half of a [`MatrixFields`](@ref) data source view: the [`MatrixValuesData`](@ref) of the entries of a graph (a
 heatmap) and the [`MatrixEntitiesData`](@ref) of its cells.
 """
 struct MatrixDataFields
-    values::MatrixData
+    values::MatrixValuesData
     entities::MatrixEntitiesData
 end
 
@@ -231,7 +231,7 @@ AxisFields = VectorFields{AxisConfigurationFields}
 ColorsFields = VectorFields{ColorsConfigurationFields}
 SizesFields = VectorFields{SizesConfigurationFields}
 
-function VectorFields(values::ValuesData, entities::EntitiesData, configuration::Any)::VectorFields
+function VectorFields(values::VectorValuesData, entities::VectorEntitiesData, configuration::Any)::VectorFields
     return VectorFields(VectorDataFields(values, entities), configuration)
 end
 
@@ -249,7 +249,7 @@ struct MatrixFields
     configuration::MatrixConfigurationFields
 end
 
-function MatrixFields(values::MatrixData, entities::MatrixEntitiesData, colors::ColorsConfiguration)::MatrixFields
+function MatrixFields(values::MatrixValuesData, entities::MatrixEntitiesData, colors::ColorsConfiguration)::MatrixFields
     return MatrixFields(MatrixDataFields(values, entities), MatrixConfigurationFields(colors))
 end
 

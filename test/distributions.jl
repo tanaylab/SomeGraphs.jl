@@ -251,7 +251,7 @@ end
 nested_test("distribution") do
     graph = distribution_graph(;
         distribution = DistributionData(;
-            values = ValuesData([
+            values = VectorValuesData([
             #! format: off
             79, 54, 74, 62, 85, 55, 88, 85, 51, 85, 54, 84, 78, 47, 83, 52, 62, 84, 52, 79, 51, 47, 78, 69, 74, 83,
             55, 76, 78, 79, 73, 77, 66, 80, 74, 52, 48, 80, 59, 90, 80, 58, 84, 58, 73, 83, 64, 53, 82, 59, 75, 90,
@@ -481,10 +481,10 @@ nested_test("distributions") do
     graph = distributions_graph(;
         distributions = [
             #! format: off
-            DistributionData(; values = ValuesData([
+            DistributionData(; values = VectorValuesData([
                 0.75, 5.25, 5.5, 6, 6.2, 6.6, 6.80, 7.0, 7.2, 7.5, 7.5, 7.75, 8.15, 8.15, 8.65, 8.93, 9.2, 9.5, 10,
                 10.25, 11.5, 12, 16, 20.90, 22.3, 23.25,
-            ])), DistributionData(; values = ValuesData([
+            ])), DistributionData(; values = VectorValuesData([
                 79, 54, 74, 62, 85, 55, 88, 85, 51, 85, 54, 84, 78, 47, 83, 52, 62, 84, 52, 79, 51, 47, 78, 69, 74,
                 83, 55, 76, 78, 79, 73, 77, 66, 80, 74, 52, 48, 80, 59, 90, 80, 58, 84, 58, 73, 83, 64, 53, 82, 59,
                 75, 90, 54, 80, 54, 83, 71, 64, 77, 81, 59, 84, 48, 82, 60, 92, 78, 78, 65, 73, 82, 56, 79, 71, 62,

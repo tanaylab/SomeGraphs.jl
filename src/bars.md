@@ -22,7 +22,7 @@ Default (serves as a baseline to compare with when modifying options):
 
 ```@example
 using SomeGraphs
-graph = bars_graph(; values = ValuesData(collect(0:10) .* 10))
+graph = bars_graph(; values = VectorValuesData(collect(0:10) .* 10))
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -31,8 +31,8 @@ Annotations:
 
 ```@example
 using SomeGraphs
-graph = bars_graph(; values = ValuesData(collect(0:10) .* 10))
-graph.data.annotations = [AnnotationData(; values = ValuesData(collect(0:10) .% 3, "score"))]
+graph = bars_graph(; values = VectorValuesData(collect(0:10) .* 10))
+graph.data.annotations = [AnnotationData(; values = VectorValuesData(collect(0:10) .% 3, "score"))]
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -53,8 +53,8 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = series_bars_graph(;
     series = [
-        SeriesData(; values = ValuesData(collect(0:10) .* 5)),
-        SeriesData(; values = ValuesData(collect(0:10) .^ 2)),
+        SeriesData(; values = VectorValuesData(collect(0:10) .* 5)),
+        SeriesData(; values = VectorValuesData(collect(0:10) .^ 2)),
     ],
 )
 using PlotlyDocumenter
@@ -67,11 +67,11 @@ Annotations:
 using SomeGraphs
 graph = series_bars_graph(;
     series = [
-        SeriesData(; values = ValuesData(collect(0:10) .* 5)),
-        SeriesData(; values = ValuesData(collect(0:10) .^ 2)),
+        SeriesData(; values = VectorValuesData(collect(0:10) .* 5)),
+        SeriesData(; values = VectorValuesData(collect(0:10) .^ 2)),
     ],
 )
-graph.data.annotations = [AnnotationData(; values = ValuesData(collect(0:10) .% 3, "score"))]
+graph.data.annotations = [AnnotationData(; values = VectorValuesData(collect(0:10) .% 3, "score"))]
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

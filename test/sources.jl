@@ -1,7 +1,7 @@
 nested_test("sources") do
     nested_test("hovers") do
         nested_test("vector") do
-            entities = EntitiesData()
+            entities = VectorEntitiesData()
             add_hovers!(entities, ["a", "b"])
             @test entities.hovers == ["a", "b"]
             add_hovers!(entities, ["1", "2"]; title = "N")

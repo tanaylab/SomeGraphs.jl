@@ -59,6 +59,14 @@ nested_test("validations") do
                                is not below high limit foo.maximum: 1
                                """) validate_is_range(context, "minimum", 1, "maximum", 1)
         end
+
+        nested_test("finite") do
+            validate_is_finite(context, nothing)
+            validate_is_finite(context, 0)
+            @test_throws "ArgumentError: non-finite foo: NaN" validate_is_finite(context, NaN)
+            @test_throws "ArgumentError: non-finite foo: Inf" validate_is_finite(context, Inf)
+            @test_throws "ArgumentError: non-finite foo: -Inf" validate_is_finite(context, -Inf)
+        end
     end
 
     nested_test("color") do
@@ -117,6 +125,12 @@ nested_test("validations") do
             @test_throws "ArgumentError: empty vector foo.bar" validate_vector_is_not_empty(context, "bar", vector)
         end
 
+        nested_test("finite") do
+            validate_vector_is_finite(context, "bar", vector)
+            validate_vector_is_finite(context, "bar", ["x", "y"])
+            @test_throws "ArgumentError: non-finite foo.bar[2]: Inf" validate_vector_is_finite(context, "bar", [0, Inf])
+        end
+
         nested_test("entries") do
             validate_vector_entries(context, "bar", vector) do index, value
                 return validate_is_at_most(context, value, 1)
@@ -166,6 +180,16 @@ nested_test("validations") do
                 context,
                 "bar",
                 matrix,
+            )
+        end
+
+        nested_test("finite") do
+            validate_matrix_is_finite(context, "bar", matrix)
+            validate_matrix_is_finite(context, "bar", ["x" "y"; "z" "w"])
+            @test_throws "ArgumentError: non-finite foo.bar[2, 3]: NaN" validate_matrix_is_finite(
+                context,
+                "bar",
+                [5 4 3; 2 1 NaN],
             )
         end
 

@@ -138,9 +138,9 @@ end
 
 """
     @kwdef mutable struct PointsData
-        colors::ValuesData = ValuesData()
-        sizes::ValuesData = ValuesData()
-        entities::EntitiesData = EntitiesData()
+        colors::VectorValuesData = VectorValuesData()
+        sizes::VectorValuesData = VectorValuesData()
+        entities::VectorEntitiesData = VectorEntitiesData()
         order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
@@ -149,16 +149,16 @@ hovers and mask of the points (`entities`), and the `order` the points are drawn
 [`PointsGraphConfiguration`](@ref).
 """
 @kwdef mutable struct PointsData
-    colors::ValuesData = ValuesData()
-    sizes::ValuesData = ValuesData()
-    entities::EntitiesData = EntitiesData()
+    colors::VectorValuesData = VectorValuesData()
+    sizes::VectorValuesData = VectorValuesData()
+    entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 """
     @kwdef mutable struct BordersData
-        colors::ValuesData = ValuesData()
-        sizes::ValuesData = ValuesData()
+        colors::VectorValuesData = VectorValuesData()
+        sizes::VectorValuesData = VectorValuesData()
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
     end
 
@@ -167,18 +167,18 @@ the borders. Borders share the hovers and order of the points. It mirrors the `b
 [`PointsGraphConfiguration`](@ref).
 """
 @kwdef mutable struct BordersData
-    colors::ValuesData = ValuesData()
-    sizes::ValuesData = ValuesData()
+    colors::VectorValuesData = VectorValuesData()
+    sizes::VectorValuesData = VectorValuesData()
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
 end
 
 """
     @kwdef mutable struct EdgesData
         points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing
-        colors::ValuesData = ValuesData()
-        sizes::ValuesData = ValuesData()
+        colors::VectorValuesData = VectorValuesData()
+        sizes::VectorValuesData = VectorValuesData()
         styles::Maybe{AbstractVector{LineStyle}} = nothing
-        entities::EntitiesData = EntitiesData()
+        entities::VectorEntitiesData = VectorEntitiesData()
         order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
@@ -193,18 +193,18 @@ The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `point
 """
 @kwdef mutable struct EdgesData
     points::Maybe{AbstractVector{<:Tuple{Integer, Integer}}} = nothing
-    colors::ValuesData = ValuesData()
-    sizes::ValuesData = ValuesData()
+    colors::VectorValuesData = VectorValuesData()
+    sizes::VectorValuesData = VectorValuesData()
     styles::Maybe{AbstractVector{LineStyle}} = nothing
-    entities::EntitiesData = EntitiesData()
+    entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 """
     @kwdef mutable struct PointsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        x::ValuesData = ValuesData()
-        y::ValuesData = ValuesData()
+        x::VectorValuesData = VectorValuesData()
+        y::VectorValuesData = VectorValuesData()
         points::PointsData = PointsData()
         borders::BordersData = BordersData()
         edges::EdgesData = EdgesData()
@@ -228,7 +228,8 @@ The `edges` draw straight lines between pairs of points; see [`EdgesData`](@ref)
 The masks of the points, borders and edges allow disabling an arbitrary subset of them. This is often more convenient
 than excluding the data from the arrays. This is also useful for defining points which are only used to draw edges
 between them and aren't drawn as actual points. The properties of excluded entities, other than their coordinates, are
-ignored (e.g., the colors of masked points need not be valid color names).
+ignored (e.g., the colors of masked points need not be valid color names). Numeric values are the exception: they must
+be finite whether the entity is drawn or not.
 
 If the points and/or edges `order` is specified, we reorder the points and/or edges accordingly. This allows
 controlling which points and/or edges will appear on top of the others. Due to Plotly limitations, when using
@@ -238,8 +239,8 @@ other category. We therefore compute an overall priority for each category as th
 """
 @kwdef mutable struct PointsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    x::ValuesData = ValuesData()
-    y::ValuesData = ValuesData()
+    x::VectorValuesData = VectorValuesData()
+    y::VectorValuesData = VectorValuesData()
     points::PointsData = PointsData()
     borders::BordersData = BordersData()
     edges::EdgesData = EdgesData()
@@ -263,6 +264,7 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     validate_vector_length(context, "y.values", data.y.values, "x.values", n_points)
 
     points = data.points
+    validate_vector_is_finite(context, "points.colors.values", points.colors.values)
     validate_vector_length(context, "points.colors.values", points.colors.values, "x.values", n_points)
     validate_vector_length(context, "points.sizes.values", points.sizes.values, "x.values", n_points)
     validate_vector_length(context, "points.entities.hovers", points.entities.hovers, "x.values", n_points)
@@ -270,6 +272,7 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     validate_vector_length(context, "points.order", points.order, "x.values", n_points)
 
     borders = data.borders
+    validate_vector_is_finite(context, "borders.colors.values", borders.colors.values)
     validate_vector_length(context, "borders.colors.values", borders.colors.values, "x.values", n_points)
     validate_vector_length(context, "borders.sizes.values", borders.sizes.values, "x.values", n_points)
     validate_vector_length(context, "borders.mask", borders.mask, "x.values", n_points)
@@ -313,8 +316,8 @@ PointsGraph = Graph{PointsGraphData, PointsGraphConfiguration}
 """
     function points_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        x::ValuesData = ValuesData(),
-        y::ValuesData = ValuesData(),
+        x::VectorValuesData = VectorValuesData(),
+        y::VectorValuesData = VectorValuesData(),
         points::PointsData = PointsData(),
         borders::BordersData = BordersData(),
         edges::EdgesData = EdgesData(),
@@ -329,8 +332,8 @@ Create a [`PointsGraph`](@ref) by initializing only the [`PointsGraphData`](@ref
 """
 function points_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    x::ValuesData = ValuesData(),
-    y::ValuesData = ValuesData(),
+    x::VectorValuesData = VectorValuesData(),
+    y::VectorValuesData = VectorValuesData(),
     points::PointsData = PointsData(),
     borders::BordersData = BordersData(),
     edges::EdgesData = EdgesData(),
@@ -1040,9 +1043,9 @@ end
 """
     @kwdef mutable struct LineGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        x::ValuesData = ValuesData()
-        y::ValuesData = ValuesData()
-        points::EntitiesData = EntitiesData()
+        x::VectorValuesData = VectorValuesData()
+        y::VectorValuesData = VectorValuesData()
+        points::VectorEntitiesData = VectorEntitiesData()
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
         diagonal_bands::BandsData = BandsData()
@@ -1056,9 +1059,9 @@ are left out of the line.
 """
 @kwdef mutable struct LineGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    x::ValuesData = ValuesData()
-    y::ValuesData = ValuesData()
-    points::EntitiesData = EntitiesData()
+    x::VectorValuesData = VectorValuesData()
+    y::VectorValuesData = VectorValuesData()
+    points::VectorEntitiesData = VectorEntitiesData()
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
@@ -1088,9 +1091,9 @@ LineGraph = Graph{LineGraphData, LineGraphConfiguration}
 """
     function line_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        x::ValuesData = ValuesData(),
-        y::ValuesData = ValuesData(),
-        points::EntitiesData = EntitiesData(),
+        x::VectorValuesData = VectorValuesData(),
+        y::VectorValuesData = VectorValuesData(),
+        points::VectorEntitiesData = VectorEntitiesData(),
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
         diagonal_bands::BandsData = BandsData(),
@@ -1102,9 +1105,9 @@ Create a [`LineGraph`](@ref) by initializing only the [`LineGraphData`](@ref) fi
 """
 function line_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    x::ValuesData = ValuesData(),
-    y::ValuesData = ValuesData(),
-    points::EntitiesData = EntitiesData(),
+    x::VectorValuesData = VectorValuesData(),
+    y::VectorValuesData = VectorValuesData(),
+    points::VectorEntitiesData = VectorEntitiesData(),
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
@@ -1281,9 +1284,9 @@ end
 
 """
     @kwdef mutable struct LineData
-        x::ValuesData = ValuesData()
-        y::ValuesData = ValuesData()
-        points::EntitiesData = EntitiesData()
+        x::VectorValuesData = VectorValuesData()
+        y::VectorValuesData = VectorValuesData()
+        points::VectorEntitiesData = VectorEntitiesData()
         name::Maybe{AbstractString} = nothing
         hover::Maybe{AbstractString} = nothing
         is_shown::Bool = true
@@ -1301,9 +1304,9 @@ The `name` is shown in the legend. The `hover` (if any) is prefixed to the hover
 [`LinesGraphConfiguration`](@ref) for this line; a `nothing` means the configuration default is used.
 """
 @kwdef mutable struct LineData
-    x::ValuesData = ValuesData()
-    y::ValuesData = ValuesData()
-    points::EntitiesData = EntitiesData()
+    x::VectorValuesData = VectorValuesData()
+    y::VectorValuesData = VectorValuesData()
+    points::VectorEntitiesData = VectorEntitiesData()
     name::Maybe{AbstractString} = nothing
     hover::Maybe{AbstractString} = nothing
     is_shown::Bool = true

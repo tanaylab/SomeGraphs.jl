@@ -101,10 +101,10 @@ end
 """
     @kwdef mutable struct BarsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
-        values::ValuesData = ValuesData()
-        names::ValuesData = ValuesData()
-        bars::EntitiesData = EntitiesData()
-        colors::ValuesData = ValuesData()
+        values::VectorValuesData = VectorValuesData()
+        names::VectorValuesData = VectorValuesData()
+        bars::VectorEntitiesData = VectorEntitiesData()
+        colors::VectorValuesData = VectorValuesData()
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
         value_bands::BandsData = BandsData()
     end
@@ -118,10 +118,10 @@ color); their title is the legend title. You can even add annotations to the bar
 """
 @kwdef mutable struct BarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    values::ValuesData = ValuesData()
-    names::ValuesData = ValuesData()
-    bars::EntitiesData = EntitiesData()
-    colors::ValuesData = ValuesData()
+    values::VectorValuesData = VectorValuesData()
+    names::VectorValuesData = VectorValuesData()
+    bars::VectorEntitiesData = VectorEntitiesData()
+    colors::VectorValuesData = VectorValuesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     value_bands::BandsData = BandsData()
 end
@@ -139,6 +139,7 @@ function Validations.validate(context::ValidationContext, data::BarsGraphData)::
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.values", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "values.values", n_bars)
     validate_vector_length(context, "colors.values", data.colors.values, "values.values", n_bars)
+    validate_vector_is_finite(context, "colors.values", data.colors.values)
 
     validate_vector_entries(context, "annotations", data.annotations) do _, annotation
         validate(context, annotation, "values.values", n_bars)
@@ -156,10 +157,10 @@ BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
 """
     function bars_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
-        values::ValuesData = ValuesData(),
-        names::ValuesData = ValuesData(),
-        bars::EntitiesData = EntitiesData(),
-        colors::ValuesData = ValuesData(),
+        values::VectorValuesData = VectorValuesData(),
+        names::VectorValuesData = VectorValuesData(),
+        bars::VectorEntitiesData = VectorEntitiesData(),
+        colors::VectorValuesData = VectorValuesData(),
         annotations::AbstractVector{AnnotationData} = AnnotationData[],
         value_bands::BandsData = BandsData(),
         configuration::BarsGraphConfiguration = BarsGraphConfiguration()]
@@ -170,10 +171,10 @@ Create a [`BarsGraph`](@ref) by initializing only the [`BarsGraphData`](@ref) fi
 """
 function bars_graph(;
     figure_title::Maybe{AbstractString} = nothing,
-    values::ValuesData = ValuesData(),
-    names::ValuesData = ValuesData(),
-    bars::EntitiesData = EntitiesData(),
-    colors::ValuesData = ValuesData(),
+    values::VectorValuesData = VectorValuesData(),
+    names::VectorValuesData = VectorValuesData(),
+    bars::VectorEntitiesData = VectorEntitiesData(),
+    colors::VectorValuesData = VectorValuesData(),
     annotations::AbstractVector{AnnotationData} = AnnotationData[],
     value_bands::BandsData = BandsData(),
     configuration::BarsGraphConfiguration = BarsGraphConfiguration(),
@@ -413,8 +414,8 @@ end
 
 """
     @kwdef mutable struct SeriesData
-        values::ValuesData = ValuesData()
-        bars::EntitiesData = EntitiesData()
+        values::VectorValuesData = VectorValuesData()
+        bars::VectorEntitiesData = VectorEntitiesData()
         name::Maybe{AbstractString} = nothing
         hover::Maybe{AbstractString} = nothing
         color::Maybe{AbstractString} = nothing
@@ -427,8 +428,8 @@ prefixed to the hover of each bar of the series. All the bars of a series have t
 color is chosen automatically by Plotly.
 """
 @kwdef mutable struct SeriesData
-    values::ValuesData = ValuesData()
-    bars::EntitiesData = EntitiesData()
+    values::VectorValuesData = VectorValuesData()
+    bars::VectorEntitiesData = VectorEntitiesData()
     name::Maybe{AbstractString} = nothing
     hover::Maybe{AbstractString} = nothing
     color::Maybe{AbstractString} = nothing
@@ -457,8 +458,8 @@ end
     @kwdef mutable struct SeriesBarsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         series::AbstractVector{SeriesData} = SeriesData[]
-        names::ValuesData = ValuesData()
-        bars::EntitiesData = EntitiesData()
+        names::VectorValuesData = VectorValuesData()
+        bars::VectorEntitiesData = VectorEntitiesData()
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
     end
 
@@ -475,8 +476,8 @@ in the series, skipping whichever is not specified.
 @kwdef mutable struct SeriesBarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     series::AbstractVector{SeriesData} = SeriesData[]
-    names::ValuesData = ValuesData()
-    bars::EntitiesData = EntitiesData()
+    names::VectorValuesData = VectorValuesData()
+    bars::VectorEntitiesData = VectorEntitiesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
 
@@ -525,8 +526,8 @@ SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
     function series_bars_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         series::AbstractVector{SeriesData} = SeriesData[],
-        names::ValuesData = ValuesData(),
-        bars::EntitiesData = EntitiesData(),
+        names::VectorValuesData = VectorValuesData(),
+        bars::VectorEntitiesData = VectorEntitiesData(),
         annotations::AbstractVector{AnnotationData} = AnnotationData[],
         configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration()]
     )::SeriesBarsGraph
@@ -537,8 +538,8 @@ Create a [`SeriesBarsGraph`](@ref) by initializing only the [`SeriesBarsGraphDat
 function series_bars_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     series::AbstractVector{SeriesData} = SeriesData[],
-    names::ValuesData = ValuesData(),
-    bars::EntitiesData = EntitiesData(),
+    names::VectorValuesData = VectorValuesData(),
+    bars::VectorEntitiesData = VectorEntitiesData(),
     annotations::AbstractVector{AnnotationData} = AnnotationData[],
     configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration(),
 )::SeriesBarsGraph

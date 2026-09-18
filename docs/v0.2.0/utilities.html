@@ -607,12 +607,12 @@ end
 <p>Validate that the 
 <code>values
 </code> of a 
-<a href="common.html#SomeGraphs.Common.ValuesData">
-<code>ValuesData
+<a href="common.html#SomeGraphs.Common.VectorValuesData">
+<code>VectorValuesData
 </code>
 </a> 
 <code>field
-</code> are numeric (if specified, or at all if 
+</code> are numeric and finite (if specified, or at all if 
 <code>is_required
 </code>).
 </p>
@@ -633,12 +633,12 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">numeric_values(values_data::ValuesData)::Maybe{AbstractVector{&lt;:Real}}
+<code class="language-julia hljs">numeric_values(values_data::VectorValuesData)::Maybe{AbstractVector{&lt;:Real}}
 </code>
 </pre>
 <p>The values of a 
-<a href="common.html#SomeGraphs.Common.ValuesData">
-<code>ValuesData
+<a href="common.html#SomeGraphs.Common.VectorValuesData">
+<code>VectorValuesData
 </code>
 </a> which was validated to be numeric.
 </p>
@@ -665,8 +665,8 @@ end
 <p>Validate that the 
 <code>values
 </code> of a 
-<a href="common.html#SomeGraphs.Common.ValuesData">
-<code>ValuesData
+<a href="common.html#SomeGraphs.Common.VectorValuesData">
+<code>VectorValuesData
 </code>
 </a> 
 <code>field
@@ -689,12 +689,12 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">string_values(values_data::ValuesData)::Maybe{AbstractVector{&lt;:AbstractString}}
+<code class="language-julia hljs">string_values(values_data::VectorValuesData)::Maybe{AbstractVector{&lt;:AbstractString}}
 </code>
 </pre>
 <p>The values of a 
-<a href="common.html#SomeGraphs.Common.ValuesData">
-<code>ValuesData
+<a href="common.html#SomeGraphs.Common.VectorValuesData">
+<code>VectorValuesData
 </code>
 </a> which was validated to be strings.
 </p>
@@ -719,7 +719,7 @@ end
     context::ValidationContext,
     field::AbstractString,
     role::AbstractString,
-    values_datas::AbstractVector{ValuesData},
+    values_datas::AbstractVector{VectorValuesData},
 )::Maybe{AbstractString}
 </code>
 </pre>

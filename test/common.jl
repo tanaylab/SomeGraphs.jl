@@ -47,7 +47,7 @@ nested_test("common") do
 
     nested_test("json") do
         graph = distribution_graph(;
-            distribution = DistributionData(; values = ValuesData([0, 0, 1, 1, 1, 3])),
+            distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
             figure_title = "json title",
         )
         json = graph.json
@@ -112,19 +112,19 @@ nested_test("common") do
 
     nested_test("values_data") do
         nested_test("()") do
-            values_data = ValuesData()
+            values_data = VectorValuesData()
             @test values_data.values === nothing
             @test values_data.title === nothing
         end
 
         nested_test("values") do
-            values_data = ValuesData([1, 2])
+            values_data = VectorValuesData([1, 2])
             @test values_data.values == [1, 2]
             @test values_data.title === nothing
         end
 
         nested_test("title") do
-            values_data = ValuesData(["a", "b"], "Names")
+            values_data = VectorValuesData(["a", "b"], "Names")
             @test values_data.values == ["a", "b"]
             @test values_data.title == "Names"
         end

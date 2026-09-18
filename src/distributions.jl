@@ -328,8 +328,8 @@ end
 
 """
     @kwdef mutable struct DistributionData
-        values::ValuesData = ValuesData()
-        points::EntitiesData = EntitiesData()
+        values::VectorValuesData = VectorValuesData()
+        points::VectorEntitiesData = VectorEntitiesData()
         name::Maybe{AbstractString} = nothing
         hover::Maybe{AbstractString} = nothing
         is_shown::Bool = true
@@ -346,8 +346,8 @@ of a multiple distributions graph. The `color` overrides the configuration for t
 configuration default is used.
 """
 @kwdef mutable struct DistributionData
-    values::ValuesData = ValuesData()
-    points::EntitiesData = EntitiesData()
+    values::VectorValuesData = VectorValuesData()
+    points::VectorEntitiesData = VectorEntitiesData()
     name::Maybe{AbstractString} = nothing
     hover::Maybe{AbstractString} = nothing
     is_shown::Bool = true

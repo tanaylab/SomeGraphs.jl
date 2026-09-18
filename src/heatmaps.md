@@ -31,14 +31,14 @@ Default (serves as a baseline to compare with when modifying options):
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData(["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; names = ValuesData(["X", "Y", "Z"])),
+    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
+    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -49,14 +49,14 @@ Flip axes (non-mutating):
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData(["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; names = ValuesData(["X", "Y", "Z"])),
+    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
+    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
@@ -68,14 +68,14 @@ Flip axes (in-place):
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData(["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; names = ValuesData(["X", "Y", "Z"])),
+    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
+    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
 )
 flip_axes!(graph)
 using PlotlyDocumenter
@@ -87,21 +87,21 @@ Annotations:
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = ValuesData(["A", "B", "C", "D"]),
-        annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))],
+        names = VectorValuesData(["A", "B", "C", "D"]),
+        annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
     ),
     columns = HeatmapAxisData(;
-        names = ValuesData(["X", "Y", "Z"]),
+        names = VectorValuesData(["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
-                values = ValuesData(["yes", "maybe", "no"], "is_special"),
+                values = VectorValuesData(["yes", "maybe", "no"], "is_special"),
                 colors = ColorsConfiguration(;
                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                 ),
@@ -118,21 +118,21 @@ Dendograms:
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = ValuesData(["A", "B", "C", "D"]),
-        annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))],
+        names = VectorValuesData(["A", "B", "C", "D"]),
+        annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
     ),
     columns = HeatmapAxisData(;
-        names = ValuesData(["X", "Y", "Z"]),
+        names = VectorValuesData(["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
-                values = ValuesData(["yes", "maybe", "no"], "is_special"),
+                values = VectorValuesData(["yes", "maybe", "no"], "is_special"),
                 colors = ColorsConfiguration(;
                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                 ),
@@ -153,28 +153,28 @@ Gaps:
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = ValuesData(["A", "B", "C", "D"]),
-        annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))],
-        groups = ValuesData([1, 1, 2, 2]),
+        names = VectorValuesData(["A", "B", "C", "D"]),
+        annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
+        groups = VectorValuesData([1, 1, 2, 2]),
     ),
     columns = HeatmapAxisData(;
-        names = ValuesData(["X", "Y", "Z"]),
+        names = VectorValuesData(["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
-                values = ValuesData(["yes", "maybe", "no"], "is_special"),
+                values = VectorValuesData(["yes", "maybe", "no"], "is_special"),
                 colors = ColorsConfiguration(;
                     palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                 ),
             ),
         ],
-        groups = ValuesData(["L", "M", "M"]),
+        groups = VectorValuesData(["L", "M", "M"]),
     ),
 )
 graph.configuration.rows.reorder = OptimalHclust
@@ -192,17 +192,17 @@ inside its group:
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5 2 4 1;
         3 2 4 3 3 2;
         2 3 3 4 2 3;
         1 4 2 5 1 4;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData(["A", "B", "C", "D"])),
+    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
     columns = HeatmapAxisData(;
-        names = ValuesData(["U", "V", "W", "X", "Y", "Z"]),
-        groups = ValuesData([1, 1, 1, 2, 2, 2]),
-        subgroups = ValuesData(["P", "Q", "P", "R", "R", "S"]),
+        names = VectorValuesData(["U", "V", "W", "X", "Y", "Z"]),
+        groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
+        subgroups = VectorValuesData(["P", "Q", "P", "R", "R", "S"]),
     ),
 )
 graph.configuration.columns.reorder = OptimalHclust
@@ -211,29 +211,23 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
-Hide some rows and cells. The hidden ones are still part of the data, so they still count in the colors scale (unless
+Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless
 `include_hidden` is disabled in its axis):
 
 ```@example
 using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    cells = MatrixEntitiesData(; mask = [
-        true true false;
-        true true true;
-        true true true;
-        false true true;
-    ]),
     rows = HeatmapAxisData(;
-        names = ValuesData(["A", "B", "C", "D"]),
-        entities = EntitiesData(; mask = [true, false, true, true]),
+        names = VectorValuesData(["A", "B", "C", "D"]),
+        entities = VectorEntitiesData(; mask = [true, false, true, true]),
     ),
-    columns = HeatmapAxisData(; names = ValuesData(["X", "Y", "Z"])),
+    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)

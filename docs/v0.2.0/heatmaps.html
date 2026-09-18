@@ -206,7 +206,7 @@
 <pre>
 <code class="language-julia hljs">function heatmap_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
-    entries::MatrixData = MatrixData(),
+    entries::MatrixValuesData = MatrixValuesData(),
     cells::MatrixEntitiesData = MatrixEntitiesData(),
     rows::HeatmapAxisData = HeatmapAxisData(),
     columns::HeatmapAxisData = HeatmapAxisData(),
@@ -247,7 +247,7 @@
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct HeatmapGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
-    entries::MatrixData = MatrixData()
+    entries::MatrixValuesData = MatrixValuesData()
     cells::MatrixEntitiesData = MatrixEntitiesData()
     rows::HeatmapAxisData = HeatmapAxisData()
     columns::HeatmapAxisData = HeatmapAxisData()
@@ -260,11 +260,7 @@ end
 <code>entries
 </code> values are required; their title is the title of the colors scale. The 
 <code>cells
-</code> hold the hovers and mask of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its row and of its column. Hidden cells are drawn as gaps; their values are still part of the data (they must be valid, they take part in the clustering, and in the range of the colors scale unless 
-<code>include_hidden
-</code> is disabled in the 
-<code>entries.colors.axis
-</code> of the configuration). At least one cell must be shown.
+</code> hold the hovers of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its row and of its column.
 </p>
 <p>The 
 <code>rows
@@ -1004,11 +1000,11 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct HeatmapAxisData
-    names::ValuesData = ValuesData()
-    entities::EntitiesData = EntitiesData()
+    names::VectorValuesData = VectorValuesData()
+    entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
-    groups::ValuesData = ValuesData()
-    subgroups::ValuesData = ValuesData()
+    groups::VectorValuesData = VectorValuesData()
+    subgroups::VectorValuesData = VectorValuesData()
     arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
 end
@@ -1053,8 +1049,8 @@ end
 </code> are a second, finer level of grouping nested in the groups. Neither has a title.
 </p>
 <p>Hidden entries (see the mask of 
-<a href="common.html#SomeGraphs.Common.EntitiesData">
-<code>EntitiesData
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
 </code>
 </a>) are not drawn, but they are still part of the data: the clustering sees them, and the 
 <code>order
@@ -1532,25 +1528,25 @@ other_graph.configuration.columns.dendogram_size = 0.1
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XFFFc39EgF' class='' style=';'>
+<div id='9l3mtFTR61' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XFFFc39EgF")
+    const PLOT = document.getElementById("9l3mtFTR61")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1567,26 +1563,26 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='YybXlFLuj1' class='' style=';'>
+<div id='rXoSZHrESx' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YybXlFLuj1")
+    const PLOT = document.getElementById("rXoSZHrESx")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1603,26 +1599,26 @@ to_documenter(flipped.figure)
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 flip_axes!(graph)
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='2gYa0Ie0Ia' class='' style=';'>
+<div id='lrXtKyTkff' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("2gYa0Ie0Ia")
+    const PLOT = document.getElementById("lrXtKyTkff")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1639,21 +1635,21 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
-        annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
+        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
     ),
     columns = HeatmapAxisData(;
-        names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
-                values = ValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
+                values = VectorValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
                 colors = ColorsConfiguration(;
                     palette = Dict(&quot;yes&quot; =&gt; &quot;black&quot;, &quot;maybe&quot; =&gt; &quot;darkgray&quot;, &quot;no&quot; =&gt; &quot;lightgray&quot;),
                 ),
@@ -1665,12 +1661,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='cdnk8B84K3' class='' style=';'>
+<div id='CNt6nzc9lY' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("cdnk8B84K3")
+    const PLOT = document.getElementById("CNt6nzc9lY")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1687,21 +1683,21 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
-        annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
+        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
     ),
     columns = HeatmapAxisData(;
-        names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
-                values = ValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
+                values = VectorValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
                 colors = ColorsConfiguration(;
                     palette = Dict(&quot;yes&quot; =&gt; &quot;black&quot;, &quot;maybe&quot; =&gt; &quot;darkgray&quot;, &quot;no&quot; =&gt; &quot;lightgray&quot;),
                 ),
@@ -1717,12 +1713,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XDhjk9GsBr' class='' style=';'>
+<div id='PQG8j9pWZ5' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XDhjk9GsBr")
+    const PLOT = document.getElementById("PQG8j9pWZ5")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,5.2915025],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1739,28 +1735,28 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
-        annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
-        groups = ValuesData([1, 1, 2, 2]),
+        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
+        groups = VectorValuesData([1, 1, 2, 2]),
     ),
     columns = HeatmapAxisData(;
-        names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
-                values = ValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
+                values = VectorValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
                 colors = ColorsConfiguration(;
                     palette = Dict(&quot;yes&quot; =&gt; &quot;black&quot;, &quot;maybe&quot; =&gt; &quot;darkgray&quot;, &quot;no&quot; =&gt; &quot;lightgray&quot;),
                 ),
             ),
         ],
-        groups = ValuesData([&quot;L&quot;, &quot;M&quot;, &quot;M&quot;]),
+        groups = VectorValuesData([&quot;L&quot;, &quot;M&quot;, &quot;M&quot;]),
     ),
 )
 graph.configuration.rows.reorder = OptimalHclust
@@ -1771,12 +1767,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='h2da81IE0d' class='' style=';'>
+<div id='Ae0GdZutUx' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("h2da81IE0d")
+    const PLOT = document.getElementById("Ae0GdZutUx")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1793,17 +1789,17 @@ to_documenter(graph.figure)
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5 2 4 1;
         3 2 4 3 3 2;
         2 3 3 4 2 3;
         1 4 2 5 1 4;
     ]),
-    rows = HeatmapAxisData(; names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
     columns = HeatmapAxisData(;
-        names = ValuesData([&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
-        groups = ValuesData([1, 1, 1, 2, 2, 2]),
-        subgroups = ValuesData([&quot;P&quot;, &quot;Q&quot;, &quot;P&quot;, &quot;R&quot;, &quot;R&quot;, &quot;S&quot;]),
+        names = VectorValuesData([&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
+        subgroups = VectorValuesData([&quot;P&quot;, &quot;Q&quot;, &quot;P&quot;, &quot;R&quot;, &quot;R&quot;, &quot;S&quot;]),
     ),
 )
 graph.configuration.columns.reorder = OptimalHclust
@@ -1812,12 +1808,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='NLZosCbxJ9' class='' style=';'>
+<div id='ZPSiEot7YB' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("NLZosCbxJ9")
+    const PLOT = document.getElementById("ZPSiEot7YB")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[2.0,3.0,4.0,5.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5,6,7,8,9]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5,6,7,8,9],"range":[0.5,9.5],"ticktext":["W","U","","V","","Z","","X","Y"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1829,42 +1825,36 @@ to_documenter(graph.figure)
 
 </script>
 
-<p>Hide some rows and cells. The hidden ones are still part of the data, so they still count in the colors scale (unless 
+<p>Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless 
 <code>include_hidden
 </code> is disabled in its axis):
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
-    entries = MatrixData([
+    entries = MatrixValuesData([
         4 1 5;
         3 2 4;
         2 3 3;
         1 4 2;
     ]),
-    cells = MatrixEntitiesData(; mask = [
-        true true false;
-        true true true;
-        true true true;
-        false true true;
-    ]),
     rows = HeatmapAxisData(;
-        names = ValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
-        entities = EntitiesData(; mask = [true, false, true, true]),
+        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        entities = VectorEntitiesData(; mask = [true, false, true, true]),
     ),
-    columns = HeatmapAxisData(; names = ValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='IPaGTw0vbI' class='' style=';'>
+<div id='lqqrTpKOBA' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("IPaGTw0vbI")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,2.0,null],[1.0,3.0,4.0],[null,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["A","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("lqqrTpKOBA")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,2.0,1.0],[1.0,3.0,4.0],[5.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["A","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%

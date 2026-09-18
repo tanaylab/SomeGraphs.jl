@@ -1,5 +1,5 @@
 nested_test("bars") do
-    graph = bars_graph(; values = ValuesData(collect(0:3) .- 1))
+    graph = bars_graph(; values = VectorValuesData(collect(0:3) .- 1))
 
     nested_test("invalid") do
         nested_test("legend") do
@@ -18,6 +18,40 @@ nested_test("bars") do
                 ValidationContext(["graph"]),
                 graph,
             )
+        end
+
+        nested_test("finite") do
+            nested_test("values") do
+                graph.data.values.values = Float32[0, NaN, 2, 3]
+                @test_throws "ArgumentError: non-finite graph.data.values.values[2]: NaN" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("colors") do
+                graph.data.colors.values = Float32[0, 1, Inf, 3]
+                @test_throws "ArgumentError: non-finite graph.data.colors.values[3]: Inf" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("band") do
+                graph.data.value_bands.middle_offset = NaN
+                @test_throws "ArgumentError: non-finite graph.configuration.value_bands.middle_offset: NaN" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
+
+            nested_test("axis") do
+                graph.configuration.value_axis.minimum = -Inf
+                @test_throws "ArgumentError: non-finite graph.configuration.value_axis.minimum: -Inf" validate(
+                    ValidationContext(["graph"]),
+                    graph,
+                )
+            end
         end
     end
 
@@ -38,7 +72,7 @@ nested_test("bars") do
         @test fields.configuration.axis === graph.configuration.colors.axis
         @test fields.configuration.colors === graph.configuration.colors
 
-        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))
+        annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))
         @test add_annotation!(graph, annotation) == 1
         @test graph.data.annotations[1] === annotation
         fields = annotations_fields(graph, 1)
@@ -59,7 +93,7 @@ nested_test("bars") do
 
     nested_test("mask") do
         graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
-        graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+        graph.data.annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))]
 
         nested_test("()") do
             graph.data.bars.mask = [true, false, true, true]
@@ -174,7 +208,7 @@ nested_test("bars") do
 
             nested_test("annotations") do
                 nested_test("continuous") do
-                    graph.data.annotations = [AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score"))]
+                    graph.data.annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))]
 
                     nested_test("()") do
                         test_html(graph, "bars.$(orientation_name).continuous.html")
@@ -191,7 +225,7 @@ nested_test("bars") do
                 nested_test("categorical") do
                     graph.data.annotations = [
                         AnnotationData(;
-                            values = ValuesData(["yes", "maybe", "no", "yes"], "is"),
+                            values = VectorValuesData(["yes", "maybe", "no", "yes"], "is"),
                             colors = ColorsConfiguration(;
                                 palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                             ),
@@ -212,9 +246,9 @@ nested_test("bars") do
 
                 nested_test("both") do
                     graph.data.annotations = [
-                        AnnotationData(; values = ValuesData([1, 0.5, 0, 1], "score")),
+                        AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score")),
                         AnnotationData(;
-                            values = ValuesData(["yes", "maybe", "no", "yes"], "is"),
+                            values = VectorValuesData(["yes", "maybe", "no", "yes"], "is"),
                             colors = ColorsConfiguration(;
                                 palette = Dict("yes" => "black", "maybe" => "darkgray", "no" => "lightgray"),
                             ),
@@ -232,8 +266,9 @@ end
 nested_test("series_bars") do
     foos = collect(0:10) .* 5
     bars = collect(0:10) .^ 2
-    graph =
-        series_bars_graph(; series = [SeriesData(; values = ValuesData(foos)), SeriesData(; values = ValuesData(bars))])
+    graph = series_bars_graph(;
+        series = [SeriesData(; values = VectorValuesData(foos)), SeriesData(; values = VectorValuesData(bars))],
+    )
 
     nested_test("nothing") do
         graph.data.series[1].name = "Foo"
@@ -249,7 +284,7 @@ nested_test("series_bars") do
         @test fields.data.entities === graph.data.series[2].bars
         @test fields.configuration.axis === graph.configuration.value_axis
 
-        annotation = AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))
+        annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))
         @test add_annotation!(graph, annotation) == 1
         @test graph.data.annotations[1] === annotation
         fields = annotations_fields(graph, 1)
@@ -283,7 +318,7 @@ nested_test("series_bars") do
     nested_test("mask") do
         graph.data.names.values = "Foo-" .* string.(collect(0:10))
         graph.data.annotations =
-            [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+            [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
 
         nested_test("bars") do
             graph.data.bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
@@ -366,7 +401,7 @@ nested_test("series_bars") do
 
         nested_test("annotations") do
             graph.data.annotations =
-                [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+                [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
 
             nested_test("fixed") do
                 graph.data.annotations[1].colors.fixed = "black"
@@ -404,7 +439,7 @@ nested_test("series_bars") do
         end
 
         nested_test("mirrored") do
-            push!(graph.data.series, SeriesData(; values = ValuesData(reverse(foos))))
+            push!(graph.data.series, SeriesData(; values = VectorValuesData(reverse(foos))))
             graph.configuration.mirrored = true
             @test_throws chomp("""
                                ArgumentError: odd number of graph.data.series: 3
@@ -446,18 +481,21 @@ nested_test("series_bars") do
 
                 # The two sides are the only two sub-graphs, so the annotations are the spine between them.
                 nested_test("annotations") do
-                    graph.data.annotations =
-                        [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+                    graph.data.annotations = [
+                        AnnotationData(;
+                            values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                        ),
+                    ]
                     test_html(graph, "series_bars.$(orientation_name).mirrored.annotations.html")
                     return nothing
                 end
 
                 nested_test("pairs") do
                     graph.data.series = [
-                        SeriesData(; values = ValuesData(foos)),
-                        SeriesData(; values = ValuesData(bars)),
-                        SeriesData(; values = ValuesData(reverse(foos))),
-                        SeriesData(; values = ValuesData(reverse(bars))),
+                        SeriesData(; values = VectorValuesData(foos)),
+                        SeriesData(; values = VectorValuesData(bars)),
+                        SeriesData(; values = VectorValuesData(reverse(foos))),
+                        SeriesData(; values = VectorValuesData(reverse(bars))),
                     ]
 
                     nested_test("()") do
@@ -468,7 +506,9 @@ nested_test("series_bars") do
                     # Both pairs still share the two sides, so there is still a single spine to annotate.
                     nested_test("annotations") do
                         graph.data.annotations = [
-                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
+                            AnnotationData(;
+                                values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                            ),
                         ]
                         test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.annotations.html")
                         return nothing
@@ -486,7 +526,7 @@ nested_test("series_bars") do
                         nested_test("annotations") do
                             graph.data.annotations = [
                                 AnnotationData(;
-                                    values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                                    values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
                                 ),
                             ]
                             test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.annotations.html")
@@ -526,7 +566,9 @@ nested_test("series_bars") do
                 nested_test("annotations") do
                     nested_test("continuous") do
                         graph.data.annotations = [
-                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
+                            AnnotationData(;
+                                values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                            ),
                         ]
 
                         nested_test("()") do
@@ -544,7 +586,7 @@ nested_test("series_bars") do
                     nested_test("categorical") do
                         graph.data.annotations = [
                             AnnotationData(;
-                                values = ValuesData(
+                                values = VectorValuesData(
                                     [
                                         "yes",
                                         "maybe",
@@ -580,9 +622,11 @@ nested_test("series_bars") do
 
                     nested_test("both") do
                         graph.data.annotations = [
-                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
                             AnnotationData(;
-                                values = ValuesData(
+                                values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                            ),
+                            AnnotationData(;
+                                values = VectorValuesData(
                                     [
                                         "yes",
                                         "maybe",
@@ -658,8 +702,11 @@ nested_test("series_bars") do
 
             nested_test("annotations") do
                 nested_test("continuous") do
-                    graph.data.annotations =
-                        [AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+                    graph.data.annotations = [
+                        AnnotationData(;
+                            values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                        ),
+                    ]
 
                     nested_test("()") do
                         test_html(graph, "series_bars.$(orientation_name).continuous.html")
@@ -676,7 +723,7 @@ nested_test("series_bars") do
                 nested_test("categorical") do
                     graph.data.annotations = [
                         AnnotationData(;
-                            values = ValuesData(
+                            values = VectorValuesData(
                                 ["yes", "maybe", "no", "maybe", "yes", "maybe", "no", "maybe", "yes", "maybe", "no"],
                                 "is",
                             ),
@@ -700,9 +747,11 @@ nested_test("series_bars") do
 
                 nested_test("both") do
                     graph.data.annotations = [
-                        AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
                         AnnotationData(;
-                            values = ValuesData(
+                            values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                        ),
+                        AnnotationData(;
+                            values = VectorValuesData(
                                 ["yes", "maybe", "no", "maybe", "yes", "maybe", "no", "maybe", "yes", "maybe", "no"],
                                 "is",
                             ),
@@ -753,7 +802,9 @@ nested_test("series_bars") do
 
                     nested_test("continuous") do
                         graph.data.annotations = [
-                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
+                            AnnotationData(;
+                                values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                            ),
                         ]
 
                         nested_test("()") do
@@ -771,7 +822,7 @@ nested_test("series_bars") do
                     nested_test("categorical") do
                         graph.data.annotations = [
                             AnnotationData(;
-                                values = ValuesData(
+                                values = VectorValuesData(
                                     [
                                         "yes",
                                         "maybe",
@@ -807,9 +858,11 @@ nested_test("series_bars") do
 
                     nested_test("both") do
                         graph.data.annotations = [
-                            AnnotationData(; values = ValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score")),
                             AnnotationData(;
-                                values = ValuesData(
+                                values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"),
+                            ),
+                            AnnotationData(;
+                                values = VectorValuesData(
                                     [
                                         "yes",
                                         "maybe",

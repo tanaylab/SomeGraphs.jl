@@ -485,6 +485,32 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Validations.validate_is_finite">
+<a class="docstring-binding" href="#SomeGraphs.Validations.validate_is_finite">
+<code>SomeGraphs.Validations.validate_is_finite
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_is_finite(context::ValidationContext, value::Maybe{Real})::Nothing
+</code>
+</pre>
+<p>Validate that a 
+<code>value
+</code> is neither 
+<code>NaN
+</code> nor infinite (if it is specified). Such a value would poison whatever is computed from it (an axis range, a colors scale, a clustering).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Validations.validate_vector_is_not_empty">
 <a class="docstring-binding" href="#SomeGraphs.Validations.validate_vector_is_not_empty">
 <code>SomeGraphs.Validations.validate_vector_is_not_empty
@@ -508,6 +534,38 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </code> containing a 
 <code>vector
 </code> has at least one entry.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Validations.validate_vector_is_finite">
+<a class="docstring-binding" href="#SomeGraphs.Validations.validate_vector_is_finite">
+<code>SomeGraphs.Validations.validate_vector_is_finite
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_vector_is_finite(
+    context::ValidationContext,
+    field::AbstractString,
+    vector::Maybe{AbstractVector}
+)::Nothing
+</code>
+</pre>
+<p>Validate that no entry of a 
+<code>field
+</code> containing a 
+<code>vector
+</code> is 
+<code>NaN
+</code> or infinite. A vector which does not hold real numbers is accepted as-is.
 </p>
 </div>
 </section>
@@ -612,6 +670,38 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </code> containing a 
 <code>matrix
 </code> has at least one entry.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Validations.validate_matrix_is_finite">
+<a class="docstring-binding" href="#SomeGraphs.Validations.validate_matrix_is_finite">
+<code>SomeGraphs.Validations.validate_matrix_is_finite
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">validate_matrix_is_finite(
+    context::ValidationContext,
+    field::AbstractString,
+    matrix::Maybe{AbstractMatrix}
+)::Nothing
+</code>
+</pre>
+<p>Validate that no entry of a 
+<code>field
+</code> containing a 
+<code>matrix
+</code> is 
+<code>NaN
+</code> or infinite. A matrix which does not hold real numbers is accepted as-is.
 </p>
 </div>
 </section>
@@ -885,6 +975,12 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </a>
 </li>
 <li>
+<a href="validations.html#SomeGraphs.Validations.validate_is_finite">
+<code>SomeGraphs.Validations.validate_is_finite
+</code>
+</a>
+</li>
+<li>
 <a href="validations.html#SomeGraphs.Validations.validate_is_range">
 <code>SomeGraphs.Validations.validate_is_range
 </code>
@@ -903,6 +999,12 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 </a>
 </li>
 <li>
+<a href="validations.html#SomeGraphs.Validations.validate_matrix_is_finite">
+<code>SomeGraphs.Validations.validate_matrix_is_finite
+</code>
+</a>
+</li>
+<li>
 <a href="validations.html#SomeGraphs.Validations.validate_matrix_is_not_empty">
 <code>SomeGraphs.Validations.validate_matrix_is_not_empty
 </code>
@@ -917,6 +1019,12 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 <li>
 <a href="validations.html#SomeGraphs.Validations.validate_vector_entries">
 <code>SomeGraphs.Validations.validate_vector_entries
+</code>
+</a>
+</li>
+<li>
+<a href="validations.html#SomeGraphs.Validations.validate_vector_is_finite">
+<code>SomeGraphs.Validations.validate_vector_is_finite
 </code>
 </a>
 </li>
