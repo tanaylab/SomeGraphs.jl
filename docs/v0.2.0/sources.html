@@ -428,6 +428,8 @@ end
 <code class="language-julia hljs">struct MatrixDataFields
     values::MatrixValuesData
     entities::MatrixEntitiesData
+    rows_entities::VectorEntitiesData
+    columns_entities::VectorEntitiesData
 end
 </code>
 </pre>
@@ -439,11 +441,21 @@ end
 <a href="common.html#SomeGraphs.Common.MatrixValuesData">
 <code>MatrixValuesData
 </code>
-</a> of the entries of a graph (a heatmap) and the 
+</a> of the entries of a graph (a heatmap), the 
 <a href="common.html#SomeGraphs.Common.MatrixEntitiesData">
 <code>MatrixEntitiesData
 </code>
-</a> of its cells.
+</a> of its cells, and the 
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
+</code>
+</a> of each of its two axes. All are the graph&#39;s own objects, so writing into them changes the graph.
+</p>
+<p>A matrix source knows the two axes its data is indexed by, so it can add hovers to all three: one per cell, one per row and one per column. The axis entities are the same ones the row and column views hand out (
+<code>rows_names_fields
+</code>, 
+<code>rows_annotations_fields
+</code>, ...), so hovers added through either path are seen by both.
 </p>
 </div>
 </section>
@@ -1258,12 +1270,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XiJBoTanT2' class='' style=';'>
+<div id='CkdwQR9KBN' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XiJBoTanT2")
+    const PLOT = document.getElementById("CkdwQR9KBN")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10

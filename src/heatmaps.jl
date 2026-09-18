@@ -481,10 +481,17 @@ end
 """
     entries_fields(graph::HeatmapGraph)::MatrixFields
 
-The entries of the heatmap, colored by the `entries.colors`.
+The entries of the heatmap, colored by the `entries.colors`. This also gives access to the entities of the rows and of
+the columns, so a source can add hovers per cell, per row and per column.
 """
 function Sources.entries_fields(graph::HeatmapGraph)::MatrixFields
-    return MatrixFields(graph.data.entries, graph.data.cells, graph.configuration.entries.colors)
+    return MatrixFields(
+        graph.data.entries,
+        graph.data.cells,
+        graph.data.rows.entities,
+        graph.data.columns.entities,
+        graph.configuration.entries.colors,
+    )
 end
 
 """

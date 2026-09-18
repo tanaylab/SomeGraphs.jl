@@ -9,6 +9,8 @@ nested_test("heatmaps") do
         fields = entries_fields(graph)
         @test fields.data.values === graph.data.entries
         @test fields.data.entities === graph.data.cells
+        @test fields.data.rows_entities === graph.data.rows.entities
+        @test fields.data.columns_entities === graph.data.columns.entities
         @test fields.configuration.axis === graph.configuration.entries.colors.axis
         @test fields.configuration.colors === graph.configuration.entries.colors
 

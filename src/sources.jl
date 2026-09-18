@@ -128,14 +128,23 @@ end
     struct MatrixDataFields
         values::MatrixValuesData
         entities::MatrixEntitiesData
+        rows_entities::VectorEntitiesData
+        columns_entities::VectorEntitiesData
     end
 
 The data half of a [`MatrixFields`](@ref) data source view: the [`MatrixValuesData`](@ref) of the entries of a graph (a
-heatmap) and the [`MatrixEntitiesData`](@ref) of its cells.
+heatmap), the [`MatrixEntitiesData`](@ref) of its cells, and the [`VectorEntitiesData`](@ref) of each of its two axes.
+All are the graph's own objects, so writing into them changes the graph.
+
+A matrix source knows the two axes its data is indexed by, so it can add hovers to all three: one per cell, one per row
+and one per column. The axis entities are the same ones the row and column views hand out (`rows_names_fields`,
+`rows_annotations_fields`, ...), so hovers added through either path are seen by both.
 """
 struct MatrixDataFields
     values::MatrixValuesData
     entities::MatrixEntitiesData
+    rows_entities::VectorEntitiesData
+    columns_entities::VectorEntitiesData
 end
 
 """
@@ -249,8 +258,17 @@ struct MatrixFields
     configuration::MatrixConfigurationFields
 end
 
-function MatrixFields(values::MatrixValuesData, entities::MatrixEntitiesData, colors::ColorsConfiguration)::MatrixFields
-    return MatrixFields(MatrixDataFields(values, entities), MatrixConfigurationFields(colors))
+function MatrixFields(
+    values::MatrixValuesData,
+    entities::MatrixEntitiesData,
+    rows_entities::VectorEntitiesData,
+    columns_entities::VectorEntitiesData,
+    colors::ColorsConfiguration,
+)::MatrixFields
+    return MatrixFields(
+        MatrixDataFields(values, entities, rows_entities, columns_entities),
+        MatrixConfigurationFields(colors),
+    )
 end
 
 """
