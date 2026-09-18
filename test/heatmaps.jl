@@ -134,6 +134,15 @@ nested_test("heatmaps") do
             )
         end
 
+        nested_test("~annotations_order") do
+            push!(graph.data.rows.annotations, AnnotationData(; values = VectorValuesData([1, 0.5, 0])))
+            graph.data.rows.annotations_order = [1, 2]
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.rows.annotations_order: 2
+                               is different from length of graph.data.rows.annotations: 1
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
         nested_test("!annotation") do
             push!(graph.data.rows.annotations, AnnotationData())
             @test_throws "ArgumentError: must specify graph.data.rows.annotations[1].values.values" validate(
@@ -536,6 +545,27 @@ nested_test("heatmaps") do
             graph.data.rows.annotations[1].colors.show_legend = true
             test_html(graph, "heatmap.annotations.automatic.html")
             return nothing
+        end
+
+        nested_test("arrangement") do
+            push!(graph.data.columns.annotations, AnnotationData(; values = VectorValuesData([0, 1, 1, 0], "mark")))
+
+            nested_test("()") do
+                test_html(graph, "heatmap.annotations.arrangement.html")
+                return nothing
+            end
+
+            nested_test("order") do
+                graph.data.columns.annotations_order = [2, 1]
+                test_html(graph, "heatmap.annotations.arrangement.order.html")
+                return nothing
+            end
+
+            nested_test("is_shown") do
+                graph.data.columns.annotations[1].is_shown = false
+                test_html(graph, "heatmap.annotations.arrangement.is_shown.html")
+                return nothing
+            end
         end
 
         nested_test("dendogram") do

@@ -106,6 +106,7 @@ end
         bars::VectorEntitiesData = VectorEntitiesData()
         colors::VectorValuesData = VectorValuesData()
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
+        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
         value_bands::BandsData = BandsData()
     end
 
@@ -115,6 +116,9 @@ The `values` are required and numeric, one per bar; their title is the value axi
 are strings, one per bar, shown as the bar axis ticks; their title is the bar axis title. The `bars` hold the hovers and
 mask of the bars; masked bars are left out of the graph. The `colors` are optional (typically all bars have the same
 color); their title is the legend title. You can even add annotations to the bars.
+
+If `annotations_order` is specified, the annotations are shown in that order. It describes all the annotations,
+including the ones that are not `is_shown`.
 """
 @kwdef mutable struct BarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -123,6 +127,7 @@ color); their title is the legend title. You can even add annotations to the bar
     bars::VectorEntitiesData = VectorEntitiesData()
     colors::VectorValuesData = VectorValuesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
+    annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
     value_bands::BandsData = BandsData()
 end
 
@@ -145,6 +150,13 @@ function Validations.validate(context::ValidationContext, data::BarsGraphData)::
         validate(context, annotation, "values.values", n_bars)
         return nothing
     end
+    validate_vector_length(
+        context,
+        "annotations_order",
+        data.annotations_order,
+        "annotations",
+        length(data.annotations),
+    )
 
     return nothing
 end
@@ -162,6 +174,7 @@ BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
         bars::VectorEntitiesData = VectorEntitiesData(),
         colors::VectorValuesData = VectorValuesData(),
         annotations::AbstractVector{AnnotationData} = AnnotationData[],
+        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing,
         value_bands::BandsData = BandsData(),
         configuration::BarsGraphConfiguration = BarsGraphConfiguration()]
     )::BarsGraph
@@ -176,11 +189,12 @@ function bars_graph(;
     bars::VectorEntitiesData = VectorEntitiesData(),
     colors::VectorValuesData = VectorValuesData(),
     annotations::AbstractVector{AnnotationData} = AnnotationData[],
+    annotations_order::Maybe{AbstractVector{<:Integer}} = nothing,
     value_bands::BandsData = BandsData(),
     configuration::BarsGraphConfiguration = BarsGraphConfiguration(),
 )::BarsGraph
     return BarsGraph(
-        BarsGraphData(; figure_title, values, names, bars, colors, annotations, value_bands),
+        BarsGraphData(; figure_title, values, names, bars, colors, annotations, annotations_order, value_bands),
         configuration,
     )
 end
@@ -258,7 +272,7 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
     validate_axis_sizes(;
         axis_name = "value",
         annotation_size = graph.configuration.annotations,
-        n_annotations = length(graph.data.annotations),
+        n_annotations = length(displayed_annotations(graph.data.annotations, graph.data.annotations_order)),
     )
 
     return nothing
@@ -268,6 +282,8 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
     traces = Vector{GenericTrace}()
+
+    annotations_data = displayed_annotations(graph.data.annotations, graph.data.annotations_order)
 
     implicit_values_range = MaybeRange()
 
@@ -296,7 +312,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
             index = 1,
             n_graphs = 1,
             graphs_gap = nothing,
-            n_annotations = length(graph.data.annotations),
+            n_annotations = length(annotations_data),
             annotation_size = graph.configuration.annotations,
         ),
         values = masked_values(values, mask, nothing),
@@ -329,7 +345,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         values_orientation = graph.configuration.values_orientation,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.annotations,
+        annotations_data,
         annotation_size = graph.configuration.annotations,
         entries_hovers = graph.data.bars.hovers,
         mask,
@@ -464,6 +480,7 @@ end
         names::VectorValuesData = VectorValuesData()
         bars::VectorEntitiesData = VectorEntitiesData()
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
+        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
 The data for a graph of multiple series of bars, a [`SeriesData`](@ref) per series.
@@ -487,6 +504,7 @@ in the series, skipping whichever is not specified.
     names::VectorValuesData = VectorValuesData()
     bars::VectorEntitiesData = VectorEntitiesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
+    annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 function Validations.validate(context::ValidationContext, data::SeriesBarsGraphData)::Nothing
@@ -524,6 +542,13 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
         validate(context, annotation, "series[1].values.values", n_bars)
         return nothing
     end
+    validate_vector_length(
+        context,
+        "annotations_order",
+        data.annotations_order,
+        "annotations",
+        length(data.annotations),
+    )
 
     shared_values_title(context, "series", "values", [series.values for series in data.series])
 
@@ -543,6 +568,7 @@ SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
         names::VectorValuesData = VectorValuesData(),
         bars::VectorEntitiesData = VectorEntitiesData(),
         annotations::AbstractVector{AnnotationData} = AnnotationData[],
+        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing,
         configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration()]
     )::SeriesBarsGraph
 
@@ -556,9 +582,13 @@ function series_bars_graph(;
     names::VectorValuesData = VectorValuesData(),
     bars::VectorEntitiesData = VectorEntitiesData(),
     annotations::AbstractVector{AnnotationData} = AnnotationData[],
+    annotations_order::Maybe{AbstractVector{<:Integer}} = nothing,
     configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration(),
 )::SeriesBarsGraph
-    return SeriesBarsGraph(SeriesBarsGraphData(; figure_title, series, order, names, bars, annotations), configuration)
+    return SeriesBarsGraph(
+        SeriesBarsGraphData(; figure_title, series, order, names, bars, annotations, annotations_order),
+        configuration,
+    )
 end
 
 # How the series of a graph are laid out: the indices of the series which are actually drawn, in the order they are
@@ -734,7 +764,7 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         graphs_gap = graph.configuration.series_gap,
         n_graphs = arrangement.n_axes,
         annotation_size = graph.configuration.annotations,
-        n_annotations = length(graph.data.annotations),
+        n_annotations = length(displayed_annotations(graph.data.annotations, graph.data.annotations_order)),
     )
 
     return nothing
@@ -805,6 +835,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     arrangement = series_arrangement(graph)
     series_indices = arrangement.series_indices
     n_series = length(series_indices)
+    annotations_data = displayed_annotations(graph.data.annotations, graph.data.annotations_order)
     first_values = numeric_values(graph.data.series[1].values)
     @assert first_values !== nothing
     n_bars = length(first_values)
@@ -864,7 +895,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                 n_graphs = n_axes,
                 graphs_gap = value_axes_gap(graph.configuration),
                 mirrored = graph.configuration.mirrored,
-                n_annotations = length(graph.data.annotations),
+                n_annotations = length(annotations_data),
                 annotation_size = graph.configuration.annotations,
             ),
             name = series.name,
@@ -989,7 +1020,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         mirrored = graph.configuration.mirrored,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.annotations,
+        annotations_data,
         annotation_size = graph.configuration.annotations,
         entries_hovers = graph.data.bars.hovers,
         mask = shared_mask,
@@ -1437,8 +1468,9 @@ function bars_layout(;
     end
 
     layout["annotations"] = plotly_annotations = []
+    annotations_data = displayed_annotations(graph.data.annotations, graph.data.annotations_order)
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
-        annotation_data = graph.data.annotations[annotation_index]
+        annotation_data = annotations_data[annotation_index]
         sub_graph =
             SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
         push_plotly_annotation!(;

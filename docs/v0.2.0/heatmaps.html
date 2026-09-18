@@ -1,18 +1,1005 @@
+
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Heatmaps · SomeGraphs.jl v0.2.0</title><meta name="title" content="Heatmaps · SomeGraphs.jl v0.2.0"/><meta property="og:title" content="Heatmaps · SomeGraphs.jl v0.2.0"/><meta property="twitter:title" content="Heatmaps · SomeGraphs.jl v0.2.0"/><meta name="description" content="Documentation for SomeGraphs.jl v0.2.0."/><meta property="og:description" content="Documentation for SomeGraphs.jl v0.2.0."/><meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.2.0."/><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="search_index.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script><link href="assets/table.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="index.html">SomeGraphs.jl v0.2.0</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="index.html">SomeGraphs</a></li><li><a class="tocitem" href="validations.html">Validations</a></li><li><a class="tocitem" href="common.html">Common</a></li><li><a class="tocitem" href="distributions.html">Distributions</a></li><li><a class="tocitem" href="scatters.html">Scatter Plots</a></li><li><a class="tocitem" href="bars.html">Bar Plots</a></li><li class="is-active"><a class="tocitem" href="heatmaps.html">Heatmaps</a><ul class="internal"><li><a class="tocitem" href="#Index"><span>Index</span></a></li></ul></li><li><a class="tocitem" href="utilities.html">Utilities</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href="heatmaps.html">Heatmaps</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href="heatmaps.html">Heatmaps</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Heatmaps"><a class="docs-heading-anchor" href="#Heatmaps">Heatmaps</a><a id="Heatmaps-1"></a><a class="docs-heading-anchor-permalink" href="#Heatmaps" title="Permalink"></a></h1><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps"><a class="docstring-binding" href="#SomeGraphs.Heatmaps"><code>SomeGraphs.Heatmaps</code></a> — <span class="docstring-category">Module</span></summary><section><div><p>Graphs for showing a 2D matrix.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapGraph"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraph"><code>SomeGraphs.Heatmaps.HeatmapGraph</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>A graph showing a heatmap. See <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>HeatmapGraphData</code></a> and <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>HeatmapGraphConfiguration</code></a>.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.heatmap_graph"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_graph"><code>SomeGraphs.Heatmaps.heatmap_graph</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">function heatmap_graph(;
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Heatmaps · SomeGraphs.jl v0.2.0
+</title>
+<meta name="title" content="Heatmaps · SomeGraphs.jl v0.2.0"/>
+<meta property="og:title" content="Heatmaps · SomeGraphs.jl v0.2.0"/>
+<meta property="twitter:title" content="Heatmaps · SomeGraphs.jl v0.2.0"/>
+<meta name="description" content="Documentation for SomeGraphs.jl v0.2.0."/>
+<meta property="og:description" content="Documentation for SomeGraphs.jl v0.2.0."/>
+<meta property="twitter:description" content="Documentation for SomeGraphs.jl v0.2.0."/>
+<script data-outdated-warner src="assets/warner.js">
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/>
+<script>documenterBaseURL="."
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js">
+</script>
+<script src="search_index.js">
+</script>
+<script src="siteinfo.js">
+</script>
+<script src="../versions.js">
+</script>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/>
+<link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/>
+<script src="assets/themeswap.js">
+</script>
+<link href="assets/table.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="documenter">
+<nav class="docs-sidebar">
+<div class="docs-package-name">
+<span class="docs-autofit">
+<a href="index.html">SomeGraphs.jl v0.2.0
+</a>
+</span>
+</div>
+<button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)
+</button>
+<ul class="docs-menu">
+<li>
+<a class="tocitem" href="index.html">SomeGraphs
+</a>
+</li>
+<li>
+<a class="tocitem" href="validations.html">Validations
+</a>
+</li>
+<li>
+<a class="tocitem" href="common.html">Common
+</a>
+</li>
+<li>
+<a class="tocitem" href="distributions.html">Distributions
+</a>
+</li>
+<li>
+<a class="tocitem" href="scatters.html">Scatter Plots
+</a>
+</li>
+<li>
+<a class="tocitem" href="bars.html">Bar Plots
+</a>
+</li>
+<li class="is-active">
+<a class="tocitem" href="heatmaps.html">Heatmaps
+</a>
+<ul class="internal">
+<li>
+<a class="tocitem" href="#Index">
+<span>Index
+</span>
+</a>
+</li>
+</ul>
+</li>
+<li>
+<a class="tocitem" href="utilities.html">Utilities
+</a>
+</li>
+</ul>
+<div class="docs-version-selector field has-addons">
+<div class="control">
+<span class="docs-label button is-static is-size-7">Version
+</span>
+</div>
+<div class="docs-selector control is-expanded">
+<div class="select is-fullwidth is-size-7">
+<select id="documenter-version-selector">
+</select>
+</div>
+</div>
+</div>
+</nav>
+<div class="docs-main">
+<header class="docs-navbar">
+<a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#">
+</a>
+<nav class="breadcrumb">
+<ul class="is-hidden-mobile">
+<li class="is-active">
+<a href="heatmaps.html">Heatmaps
+</a>
+</li>
+</ul>
+<ul class="is-hidden-tablet">
+<li class="is-active">
+<a href="heatmaps.html">Heatmaps
+</a>
+</li>
+</ul>
+</nav>
+<div class="docs-right">
+<a class="docs-navbar-link" href="https://github.com/tanaylab/SomeGraphs.jl/blob/main{path}?plain=1#L{line}" title="View the repository on GitHub">
+<span class="docs-icon fa-brands">
+</span>
+<span class="docs-label is-hidden-touch">GitHub
+</span>
+</a>
+<a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings">
+</a>
+<a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings">
+</a>
+</div>
+</header>
+<article class="content" id="documenter-page">
+<h1 id="Heatmaps">
+<a class="docs-heading-anchor" href="#Heatmaps">Heatmaps
+</a>
+<a id="Heatmaps-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Heatmaps" title="Permalink">
+</a>
+</h1>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps">
+<code>SomeGraphs.Heatmaps
+</code>
+</a> — 
+<span class="docstring-category">Module
+</span>
+</summary>
+<section>
+<div>
+<p>Graphs for showing a 2D matrix.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraph">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraph">
+<code>SomeGraphs.Heatmaps.HeatmapGraph
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A graph showing a heatmap. See 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>HeatmapGraphData
+</code>
+</a> and 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>HeatmapGraphConfiguration
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.heatmap_graph">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_graph">
+<code>SomeGraphs.Heatmaps.heatmap_graph
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">function heatmap_graph(;
     [figure_title::Maybe{AbstractString} = nothing,
     entries::MatrixValuesData = MatrixValuesData(),
     cells::MatrixEntitiesData = MatrixEntitiesData(),
     rows::HeatmapAxisData = HeatmapAxisData(),
     columns::HeatmapAxisData = HeatmapAxisData(),
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
-)::HeatmapGraph</code></pre><p>Create a <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph"><code>HeatmapGraph</code></a> by initializing only the <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>HeatmapGraphData</code></a> fields (with an optional <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>HeatmapGraphConfiguration</code></a>).</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapGraphData"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphData"><code>SomeGraphs.Heatmaps.HeatmapGraphData</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">@kwdef mutable struct HeatmapGraphData &lt;: AbstractGraphData
+)::HeatmapGraph
+</code>
+</pre>
+<p>Create a 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph">
+<code>HeatmapGraph
+</code>
+</a> by initializing only the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>HeatmapGraphData
+</code>
+</a> fields (with an optional 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>HeatmapGraphConfiguration
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphData">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>SomeGraphs.Heatmaps.HeatmapGraphData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct HeatmapGraphData &lt;: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     entries::MatrixValuesData = MatrixValuesData()
     cells::MatrixEntitiesData = MatrixEntitiesData()
     rows::HeatmapAxisData = HeatmapAxisData()
     columns::HeatmapAxisData = HeatmapAxisData()
-end</code></pre><p>The data for a graph showing a heatmap (matrix) of entries.</p><p>This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation, colors must be continuous. The <code>entries</code> values are required; their title is the title of the colors scale. The <code>cells</code> hold the hovers of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its row and of its column.</p><p>The <code>rows</code> and <code>columns</code> hold the data of each axis (see <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData"><code>HeatmapAxisData</code></a>).</p><p>Valid combinations of the fields controlling order and clustering are:</p><table><tr><th style="text-align: left">data <code>order</code></th><th style="text-align: left">data <code>arrange_by</code></th><th style="text-align: left">data <code>groups</code></th><th style="text-align: left">config <code>reorder</code></th><th style="text-align: left">config <code>dendogram_size</code></th><th style="text-align: left">config <code>linkage</code></th><th style="text-align: left">config <code>metric</code></th><th style="text-align: left">result tree</th><th style="text-align: left">result order</th><th style="text-align: left">notes</th></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Not computed</td><td style="text-align: left">Original data order</td><td style="text-align: left">Do not cluster, use the original data order (default)</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>ehclust</code> of original order with <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left">Original data order</td><td style="text-align: left">Cluster, preserving the original order</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>SameOrder</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Same as other axis</td><td style="text-align: left">Same as other axis</td><td style="text-align: left">Square matrices only</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>OptimalHclust</code>/ <code>RCompatibleHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>hclust</code> with <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left"><code>hclust</code> with <code>reorder</code></td><td style="text-align: left">Cluster using <code>linkage</code> and branch <code>reorder</code></td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left">Any</td><td style="text-align: left"><code>OptimalHclust</code>/ <code>RCompatibleHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>ehclust</code> with <code>groups</code> and <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left"><code>hclust</code> with <code>groups</code> and <code>reorder</code></td><td style="text-align: left">Cluster using <code>groups</code>, <code>linkage</code> and branch <code>reorder</code></td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>SlantedHclust</code>/ <code>SlantedPreSquaredHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>hclust</code> with <code>linkage</code> or <code>WardLinkage</code>, then <code>reorder_hclust</code> by <code>slanted_orders</code></td><td style="text-align: left"><code>reorder_hclust</code> by <code>slanted_orders</code></td><td style="text-align: left">Cluster, then slant preserving the tree</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left">Any</td><td style="text-align: left"><code>SlantedHclust</code>/ <code>SlantedPreSquaredHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>hclust</code> with <code>groups</code> and <code>linkage</code> or <code>WardLinkage</code>, then <code>reorder_hclust</code> by <code>slanted_orders</code></td><td style="text-align: left"><code>reorder_hclust</code> by <code>slanted_orders</code></td><td style="text-align: left">Cluster using <code>groups</code>, then slant preserving the tree</td></tr><tr><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>SlantedOrder</code>/ <code>SlantedPreSquaredOrder</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>ehclust</code> of <code>slanted_orders</code> with <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left"><code>slanted_orders</code></td><td style="text-align: left">Slant, then cluster preserving the slanted order</td></tr><tr><td style="text-align: left"><code>Hclust</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>Hclust</code> tree</td><td style="text-align: left"><code>Hclust</code> order</td><td style="text-align: left">Force a specific tree and order on the data</td></tr><tr><td style="text-align: left"><code>Hclust</code></td><td style="text-align: left"><code>nothing</code>/ <code>AbstractMatrix{&lt;:Real}</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>SlantedHclust</code>/ <code>SlantedPreSquaredHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>reorder_hclust</code> by <code>slanted_orders</code></td><td style="text-align: left"><code>reorder_hclust</code> by <code>slanted_orders</code></td><td style="text-align: left">Slant, preserving a given tree</td></tr><tr><td style="text-align: left"><code>AbstractVector{&lt;:Integer}</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Not computed</td><td style="text-align: left"><code>order</code> permutation</td><td style="text-align: left">Do not cluster, use the specified order</td></tr><tr><td style="text-align: left"><code>AbstractVector{&lt;:Integer}</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">ignored</td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>ehclust</code> of <code>order</code> with <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left"><code>order</code> permutation</td><td style="text-align: left">Cluster, preserving the specified order</td></tr><tr><td style="text-align: left"><code>AbstractVector{&lt;:Integer}</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left"><code>ReorderHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>hclust</code> with <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left"><code>reorder_hclust</code> by data <code>order</code></td><td style="text-align: left">Cluster, then reorder branches to be close to <code>order</code></td></tr><tr><td style="text-align: left"><code>AbstractVector{&lt;:Integer}</code></td><td style="text-align: left"><code>nothing</code></td><td style="text-align: left">Any</td><td style="text-align: left"><code>ReorderHclust</code></td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>nothing</code>/ Any</td><td style="text-align: left"><code>ehclust</code> with <code>groups</code> and <code>linkage</code> or <code>WardLinkage</code></td><td style="text-align: left"><code>reorder_hclust</code> by data <code>order</code></td><td style="text-align: left">Cluster, then reorder branches to be close to <code>order</code></td></tr></table><p>All other combinations are invalid. Note:</p><ul><li><p>When calling <code>hclust</code> and/or <code>ehclust</code> and/or <code>slanted_orders</code>, then specifying <code>arrange_by</code> will use it instead of the displayed data matrix.</p></li><li><p>When calling <code>hclust</code> and/or <code>ehclust</code>, then specifying a <code>metric</code> will be used instead of <code>Euclidean</code> to compute the distances matrix.</p></li><li><p>Specifying <code>groups</code> only impacts the tree and order when computing a new clustering without other order constraints. They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.</p></li></ul></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapAxisData"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapAxisData"><code>SomeGraphs.Heatmaps.HeatmapAxisData</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">@kwdef mutable struct HeatmapAxisData
+end
+</code>
+</pre>
+<p>The data for a graph showing a heatmap (matrix) of entries.
+</p>
+<p>This is shown as a 2D image where each matrix entry is a small rectangle with some color. Due to Plotly limitation, colors must be continuous. The 
+<code>entries
+</code> values are required; their title is the title of the colors scale. The 
+<code>cells
+</code> hold the hovers of the entries. The hover for each rectangle is a combination of the hovers of the cell, of its row and of its column.
+</p>
+<p>The 
+<code>rows
+</code> and 
+<code>columns
+</code> hold the data of each axis (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
+<code>HeatmapAxisData
+</code>
+</a>).
+</p>
+<p>Valid combinations of the fields controlling order and clustering are:
+</p>
+<table>
+<tr>
+<th style="text-align: left">data 
+<code>order
+</code>
+</th>
+<th style="text-align: left">data 
+<code>arrange_by
+</code>
+</th>
+<th style="text-align: left">data 
+<code>groups
+</code>
+</th>
+<th style="text-align: left">config 
+<code>reorder
+</code>
+</th>
+<th style="text-align: left">config 
+<code>dendogram_size
+</code>
+</th>
+<th style="text-align: left">config 
+<code>linkage
+</code>
+</th>
+<th style="text-align: left">config 
+<code>metric
+</code>
+</th>
+<th style="text-align: left">result tree
+</th>
+<th style="text-align: left">result order
+</th>
+<th style="text-align: left">notes
+</th>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Not computed
+</td>
+<td style="text-align: left">Original data order
+</td>
+<td style="text-align: left">Do not cluster, use the original data order (default)
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> of original order with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">Original data order
+</td>
+<td style="text-align: left">Cluster, preserving the original order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>SameOrder
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Same as other axis
+</td>
+<td style="text-align: left">Same as other axis
+</td>
+<td style="text-align: left">Square matrices only
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>OptimalHclust
+</code>/ 
+<code>RCompatibleHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>reorder
+</code>
+</td>
+<td style="text-align: left">Cluster using 
+<code>linkage
+</code> and branch 
+<code>reorder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>OptimalHclust
+</code>/ 
+<code>RCompatibleHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> with 
+<code>groups
+</code> and 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>groups
+</code> and 
+<code>reorder
+</code>
+</td>
+<td style="text-align: left">Cluster using 
+<code>groups
+</code>, 
+<code>linkage
+</code> and branch 
+<code>reorder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>SlantedHclust
+</code>/ 
+<code>SlantedPreSquaredHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>, then 
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Cluster, then slant preserving the tree
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>SlantedHclust
+</code>/ 
+<code>SlantedPreSquaredHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>groups
+</code> and 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>, then 
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Cluster using 
+<code>groups
+</code>, then slant preserving the tree
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>SlantedOrder
+</code>/ 
+<code>SlantedPreSquaredOrder
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> of 
+<code>slanted_orders
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Slant, then cluster preserving the slanted order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>Hclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>Hclust
+</code> tree
+</td>
+<td style="text-align: left">
+<code>Hclust
+</code> order
+</td>
+<td style="text-align: left">Force a specific tree and order on the data
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>Hclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ 
+<code>AbstractMatrix{&lt;:Real}
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>SlantedHclust
+</code>/ 
+<code>SlantedPreSquaredHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by 
+<code>slanted_orders
+</code>
+</td>
+<td style="text-align: left">Slant, preserving a given tree
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Not computed
+</td>
+<td style="text-align: left">
+<code>order
+</code> permutation
+</td>
+<td style="text-align: left">Do not cluster, use the specified order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">ignored
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> of 
+<code>order
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>order
+</code> permutation
+</td>
+<td style="text-align: left">Cluster, preserving the specified order
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>ReorderHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>hclust
+</code> with 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by data 
+<code>order
+</code>
+</td>
+<td style="text-align: left">Cluster, then reorder branches to be close to 
+<code>order
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">
+<code>AbstractVector{&lt;:Integer}
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">
+<code>ReorderHclust
+</code>
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>nothing
+</code>/ Any
+</td>
+<td style="text-align: left">
+<code>ehclust
+</code> with 
+<code>groups
+</code> and 
+<code>linkage
+</code> or 
+<code>WardLinkage
+</code>
+</td>
+<td style="text-align: left">
+<code>reorder_hclust
+</code> by data 
+<code>order
+</code>
+</td>
+<td style="text-align: left">Cluster, then reorder branches to be close to 
+<code>order
+</code>
+</td>
+</tr>
+</table>
+<p>All other combinations are invalid. Note:
+</p>
+<ul>
+<li>
+<p>When calling 
+<code>hclust
+</code> and/or 
+<code>ehclust
+</code> and/or 
+<code>slanted_orders
+</code>, then specifying 
+<code>arrange_by
+</code> will use it instead of the displayed data matrix.
+</p>
+</li>
+<li>
+<p>When calling 
+<code>hclust
+</code> and/or 
+<code>ehclust
+</code>, then specifying a 
+<code>metric
+</code> will be used instead of 
+<code>Euclidean
+</code> to compute the distances matrix.
+</p>
+</li>
+<li>
+<p>Specifying 
+<code>groups
+</code> only impacts the tree and order when computing a new clustering without other order constraints. They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.
+</p>
+</li>
+</ul>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapAxisData">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapAxisData">
+<code>SomeGraphs.Heatmaps.HeatmapAxisData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct HeatmapAxisData
     names::VectorValuesData = VectorValuesData()
     entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
@@ -20,16 +1007,191 @@ end</code></pre><p>The data for a graph showing a heatmap (matrix) of entries.</
     subgroups::VectorValuesData = VectorValuesData()
     arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
-end</code></pre><p>The data of one axis (the rows or the columns) of a <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>HeatmapGraphData</code></a>. The <code>names</code> are strings, one per entry, shown as the tick labels; their title is the axis title. The <code>entities</code> hold the hovers and mask of the entries. The <code>annotations</code> are shown to the side of the axis.</p><p>By default, if reordering the entries, this is based on the <code>entries.values</code> of the graph. You can override this by specifying an <code>arrange_by</code> matrix. Only the reordered dimension needs to match the <code>entries.values</code> (the rows <code>arrange_by</code> must have the same number of rows, and the columns <code>arrange_by</code> the same number of columns); the other dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows <code>arrange_by</code> matrix should be in row-major layout, but that&#39;s not critical.</p><p>Alternatively you can force the order of the entries by specifying the <code>order</code> permutation. You can also specify an <code>Hclust</code> object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.</p><p>If <code>groups</code> values (numbers or strings, one per entry) are specified, then a gap can be added between entries of different groups. Groups can also be used to constrain the computed clustering. The <code>subgroups</code> are a second, finer level of grouping nested in the groups. Neither has a title.</p><p>Hidden entries (see the mask of <a href="common.html#SomeGraphs.Common.VectorEntitiesData"><code>VectorEntitiesData</code></a>) are not drawn, but they are still part of the data: the clustering sees them, and the <code>order</code> (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see <a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order"><code>heatmap_order</code></a>) can be given to another graph of the same data, whether or not the two hide the same entries. At least one entry must be shown.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">@kwdef mutable struct HeatmapGraphConfiguration &lt;: AbstractGraphConfiguration
+    annotations_order::Maybe{AbstractVector{&lt;:Integer}} = nothing
+end
+</code>
+</pre>
+<p>The data of one axis (the rows or the columns) of a 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>HeatmapGraphData
+</code>
+</a>. The 
+<code>names
+</code> are strings, one per entry, shown as the tick labels; their title is the axis title. The 
+<code>entities
+</code> hold the hovers and mask of the entries. The 
+<code>annotations
+</code> are shown to the side of the axis. If 
+<code>annotations_order
+</code> is specified, they are shown in that order; it describes all the annotations, including the ones that are not 
+<code>is_shown
+</code>.
+</p>
+<p>By default, if reordering the entries, this is based on the 
+<code>entries.values
+</code> of the graph. You can override this by specifying an 
+<code>arrange_by
+</code> matrix. Only the reordered dimension needs to match the 
+<code>entries.values
+</code> (the rows 
+<code>arrange_by
+</code> must have the same number of rows, and the columns 
+<code>arrange_by
+</code> the same number of columns); the other dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows 
+<code>arrange_by
+</code> matrix should be in row-major layout, but that&#39;s not critical.
+</p>
+<p>Alternatively you can force the order of the entries by specifying the 
+<code>order
+</code> permutation. You can also specify an 
+<code>Hclust
+</code> object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
+</p>
+<p>If 
+<code>groups
+</code> values (numbers or strings, one per entry) are specified, then a gap can be added between entries of different groups. Groups can also be used to constrain the computed clustering. The 
+<code>subgroups
+</code> are a second, finer level of grouping nested in the groups. Neither has a title.
+</p>
+<p>Hidden entries (see the mask of 
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
+</code>
+</a>) are not drawn, but they are still part of the data: the clustering sees them, and the 
+<code>order
+</code> (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>heatmap_order
+</code>
+</a>) can be given to another graph of the same data, whether or not the two hide the same entries. At least one entry must be shown.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct HeatmapGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     entries::EntriesConfiguration = EntriesConfiguration()
     rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
     final_order::Maybe{HeatmapGraphOrder} = nothing
-end</code></pre><p>Configure a graph showing a heatmap.</p><p>This displays a matrix of values using a rectangle at each position. Due to Plotly&#39;s limitations, you still to manually tweak the graph size for best results; there&#39;s no way to directly control the width and height of the rectangles.</p><p>The <code>entries</code> configure the entries (see <a href="heatmaps.html#SomeGraphs.Heatmaps.EntriesConfiguration"><code>EntriesConfiguration</code></a>); the <code>rows</code> and <code>columns</code> configure each axis (see <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration"><code>HeatmapAxisConfiguration</code></a>).</p><p>The <code>final_order</code> caches the computed order of the rows and the columns; access it through the graph&#39;s <code>order</code> (e.g., for generating other graphs in an identical order). It is computed once, whether the graph&#39;s figure is generated or its order is asked for first.</p><div class="admonition is-info" id="Note-d1c3bbfd2f4e6d74"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-d1c3bbfd2f4e6d74" title="Permalink"></a></header><div class="admonition-body"><p>Nothing detects that the cache went stale. Call <a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!"><code>reset_order!</code></a> if anything it was computed from is changed after it was computed - that is, the <code>reorder</code>, <code>linkage</code> and <code>metric</code> of the axes configuration, and the <code>entries.values</code> and the <code>order</code>, <code>arrange_by</code>, <code>groups</code> and <code>subgroups</code> of the axes data. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order of the first grouping unless the cache is reset in between.</p></div></div></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.EntriesConfiguration"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.EntriesConfiguration"><code>SomeGraphs.Heatmaps.EntriesConfiguration</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">@kwdef mutable struct EntriesConfiguration &lt;: Validated
+end
+</code>
+</pre>
+<p>Configure a graph showing a heatmap.
+</p>
+<p>This displays a matrix of values using a rectangle at each position. Due to Plotly&#39;s limitations, you still to manually tweak the graph size for best results; there&#39;s no way to directly control the width and height of the rectangles.
+</p>
+<p>The 
+<code>entries
+</code> configure the entries (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.EntriesConfiguration">
+<code>EntriesConfiguration
+</code>
+</a>); the 
+<code>rows
+</code> and 
+<code>columns
+</code> configure each axis (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
+<code>HeatmapAxisConfiguration
+</code>
+</a>).
+</p>
+<p>The 
+<code>final_order
+</code> caches the computed order of the rows and the columns; access it through the graph&#39;s 
+<code>order
+</code> (e.g., for generating other graphs in an identical order). It is computed once, whether the graph&#39;s figure is generated or its order is asked for first.
+</p>
+<div class="admonition is-info" id="Note-d1c3bbfd2f4e6d74">
+<header class="admonition-header">Note
+<a class="admonition-anchor" href="#Note-d1c3bbfd2f4e6d74" title="Permalink">
+</a>
+</header>
+<div class="admonition-body">
+<p>Nothing detects that the cache went stale. Call 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!">
+<code>reset_order!
+</code>
+</a> if anything it was computed from is changed after it was computed - that is, the 
+<code>reorder
+</code>, 
+<code>linkage
+</code> and 
+<code>metric
+</code> of the axes configuration, and the 
+<code>entries.values
+</code> and the 
+<code>order
+</code>, 
+<code>arrange_by
+</code>, 
+<code>groups
+</code> and 
+<code>subgroups
+</code> of the axes data. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order of the first grouping unless the cache is reset in between.
+</p>
+</div>
+</div>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.EntriesConfiguration">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.EntriesConfiguration">
+<code>SomeGraphs.Heatmaps.EntriesConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct EntriesConfiguration &lt;: Validated
     colors::ColorsConfiguration = ColorsConfiguration()
-end</code></pre><p>Configure the entries of a heatmap. The <code>colors</code> map the values of the entries to colors. Due to Plotly&#39;s limitations, only continuous color palettes are supported.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapAxisConfiguration"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapAxisConfiguration"><code>SomeGraphs.Heatmaps.HeatmapAxisConfiguration</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">@kwdef mutable struct HeatmapAxisConfiguration &lt;: Validated
+end
+</code>
+</pre>
+<p>Configure the entries of a heatmap. The 
+<code>colors
+</code> map the values of the entries to colors. Due to Plotly&#39;s limitations, only continuous color palettes are supported.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapAxisConfiguration
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct HeatmapAxisConfiguration &lt;: Validated
     title::Maybe{AbstractString} = nothing
     annotations::AnnotationSize = AnnotationSize()
     reorder::Maybe{HeatmapReorder} = nothing
@@ -40,16 +1202,336 @@ end</code></pre><p>Configure the entries of a heatmap. The <code>colors</code> m
     subgroups_gap::Maybe{Integer} = nothing
     dendogram_size::Maybe{Real} = nothing
     dendogram_line::LineConfiguration = LineConfiguration()
-end</code></pre><p>Configure one axis (the rows or the columns) of a heatmap. The <code>title</code> is the title of the axis. The <code>annotations</code> are the sizes of the annotations shown to the side of the axis.</p><p>You can use <code>reorder</code> to reorder the entries of the axis. When specifying <code>linkage</code>, by default, the clustering uses the <code>Euclidean</code> distance metric. You can override this by specifying the <code>metric</code>.</p><p>By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not move the rest. Set <code>include_hidden</code> to <code>false</code> to cluster the shown entries only. Either way the resulting order and tree (see <a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order"><code>heatmap_order</code></a>) describe all the entries; when the hidden ones were left out of the clustering, they come last, joined to the root of the tree. This has no effect on an <code>Hclust</code> given in the data, which is used as is.</p><p>If groups are specified for the entries in the <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData"><code>HeatmapAxisData</code></a>, they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). The <code>groups_gap</code> is the number of fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of <code>nothing</code> will not be shown.</p><p>If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is contiguous, and within it each subgroup is contiguous. Their <code>subgroups_gap</code> works the same way, and defaults to <code>nothing</code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.</p><p>Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the subgroups inside each of them.</p><p>If you specify <code>dendogram_size</code>, then you should either specify linkage (for computing a clustering) or must specify <code>Hclust</code> order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.</p><p>If a dendogram tree is shown, the <code>dendogram_line</code> can be used to control it. The default color is black. The <code>is_filled</code> field shouldn&#39;t be set as it has no meaning here.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapReorder"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapReorder"><code>SomeGraphs.Heatmaps.HeatmapReorder</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>Specify how to reorder the rows and/or columns.</p><ul><li><code>OptimalHclust</code> orders <code>hclust</code> branches using the (better) Bar-Joseph method.</li><li><code>RCompatibleHclust</code> orders <code>hclust</code> branches in the same (bad) way that <code>R</code> does.</li><li><code>ReorderHclust</code> reorders <code>hclust</code> branches to be as close as possible to a given order (using <code>reorder_hclust</code>).</li><li><code>SlantedHclust</code> and <code>SlantedPreSquaredHclust</code> orders <code>hclust</code> branches using <code>Slanter</code> (using <code>slanted_orders</code> and <code>reorder_hclust</code>).</li><li><code>SlantedOrder</code> and <code>SlantedPreSquaredOrder</code> uses <code>slanted_orders</code> (if a tree is needed, uses <code>ehclust</code> to create a tree preserving this order).</li><li><code>SameOrder</code> orders the rows/columns in the same way as the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.</li></ul></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapGraphOrder"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphOrder"><code>SomeGraphs.Heatmaps.HeatmapGraphOrder</code></a> — <span class="docstring-category">Type</span></summary><section><div><pre><code class="language-julia hljs">struct HeatmapGraphOrder
+end
+</code>
+</pre>
+<p>Configure one axis (the rows or the columns) of a heatmap. The 
+<code>title
+</code> is the title of the axis. The 
+<code>annotations
+</code> are the sizes of the annotations shown to the side of the axis.
+</p>
+<p>You can use 
+<code>reorder
+</code> to reorder the entries of the axis. When specifying 
+<code>linkage
+</code>, by default, the clustering uses the 
+<code>Euclidean
+</code> distance metric. You can override this by specifying the 
+<code>metric
+</code>.
+</p>
+<p>By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not move the rest. Set 
+<code>include_hidden
+</code> to 
+<code>false
+</code> to cluster the shown entries only. Either way the resulting order and tree (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>heatmap_order
+</code>
+</a>) describe all the entries; when the hidden ones were left out of the clustering, they come last, joined to the root of the tree. This has no effect on an 
+<code>Hclust
+</code> given in the data, which is used as is.
+</p>
+<p>If groups are specified for the entries in the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
+<code>HeatmapAxisData
+</code>
+</a>, they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). The 
+<code>groups_gap
+</code> is the number of fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of 
+<code>nothing
+</code> will not be shown.
+</p>
+<p>If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is contiguous, and within it each subgroup is contiguous. Their 
+<code>subgroups_gap
+</code> works the same way, and defaults to 
+<code>nothing
+</code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+</p>
+<p>Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the subgroups inside each of them.
+</p>
+<p>If you specify 
+<code>dendogram_size
+</code>, then you should either specify linkage (for computing a clustering) or must specify 
+<code>Hclust
+</code> order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
+</p>
+<p>If a dendogram tree is shown, the 
+<code>dendogram_line
+</code> can be used to control it. The default color is black. The 
+<code>is_filled
+</code> field shouldn&#39;t be set as it has no meaning here.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapReorder">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapReorder">
+<code>SomeGraphs.Heatmaps.HeatmapReorder
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Specify how to reorder the rows and/or columns.
+</p>
+<ul>
+<li>
+<code>OptimalHclust
+</code> orders 
+<code>hclust
+</code> branches using the (better) Bar-Joseph method.
+</li>
+<li>
+<code>RCompatibleHclust
+</code> orders 
+<code>hclust
+</code> branches in the same (bad) way that 
+<code>R
+</code> does.
+</li>
+<li>
+<code>ReorderHclust
+</code> reorders 
+<code>hclust
+</code> branches to be as close as possible to a given order (using 
+<code>reorder_hclust
+</code>).
+</li>
+<li>
+<code>SlantedHclust
+</code> and 
+<code>SlantedPreSquaredHclust
+</code> orders 
+<code>hclust
+</code> branches using 
+<code>Slanter
+</code> (using 
+<code>slanted_orders
+</code> and 
+<code>reorder_hclust
+</code>).
+</li>
+<li>
+<code>SlantedOrder
+</code> and 
+<code>SlantedPreSquaredOrder
+</code> uses 
+<code>slanted_orders
+</code> (if a tree is needed, uses 
+<code>ehclust
+</code> to create a tree preserving this order).
+</li>
+<li>
+<code>SameOrder
+</code> orders the rows/columns in the same way as the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
+</li>
+</ul>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>SomeGraphs.Heatmaps.HeatmapGraphOrder
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct HeatmapGraphOrder
     rows_order::AbstractVector{&lt;:Integer}
     rows_hclust::Maybe{Hclust}
     columns_order::AbstractVector{&lt;:Integer}
     columns_hclust::Maybe{Hclust}
-end</code></pre><p>The computed final order and clustering of the rows and the columns of a heatmap graph, as returned by <a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order"><code>heatmap_order</code></a>.</p><ul><li><code>rows_order</code> is the order of the rows of the data, that is, the index of the original row shown at each position. This is always a permutation of <code>1:n_rows</code>, which for an axis that isn&#39;t reordered at all is the identity.</li><li><code>rows_hclust</code> is the tree the rows were clustered by, or <code>nothing</code> if they weren&#39;t clustered (they were left alone, given an explicit order, or slanted without a tree).</li><li><code>columns_order</code> and <code>columns_hclust</code> are the same for the columns.</li></ul><p>These describe the order of the data, not the order it is displayed in; applying the <code>origin</code> is up to whoever shows the graph, as is skipping the hidden rows and columns (the order and the tree include them).</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.heatmap_order"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_order"><code>SomeGraphs.Heatmaps.heatmap_order</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder</code></pre><p>Return the <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder"><code>HeatmapGraphOrder</code></a> of a heatmap <code>graph</code>, that is, the final order of its rows and columns and the trees they were clustered by, without rendering it.</p><p>You can just write <code>graph.order</code> instead of <code>heatmap_order(graph)</code>. Either way the order is only computed once; showing the graph will reuse it, and vice versa.</p><p>Use this to list the entries in the order they are shown:</p><pre><code class="language-julia hljs">ordered_rows_names = graph.data.rows.names.values[graph.order.rows_order]</code></pre><p>Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its order (and, if they use the same groups, they will also have the same gaps):</p><pre><code class="language-julia hljs">graph.configuration.columns.reorder = OptimalHclust
-other_graph.data.columns.order = graph.order.columns_order</code></pre><p>If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order <em>and</em> draws the same tree above each of them (this only makes sense if the graphs share the same columns, as the tree refers to the original column indices):</p><pre><code class="language-julia hljs">graph.configuration.columns.reorder = OptimalHclust
+end
+</code>
+</pre>
+<p>The computed final order and clustering of the rows and the columns of a heatmap graph, as returned by 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>heatmap_order
+</code>
+</a>.
+</p>
+<ul>
+<li>
+<code>rows_order
+</code> is the order of the rows of the data, that is, the index of the original row shown at each position. This is always a permutation of 
+<code>1:n_rows
+</code>, which for an axis that isn&#39;t reordered at all is the identity.
+</li>
+<li>
+<code>rows_hclust
+</code> is the tree the rows were clustered by, or 
+<code>nothing
+</code> if they weren&#39;t clustered (they were left alone, given an explicit order, or slanted without a tree).
+</li>
+<li>
+<code>columns_order
+</code> and 
+<code>columns_hclust
+</code> are the same for the columns.
+</li>
+</ul>
+<p>These describe the order of the data, not the order it is displayed in; applying the 
+<code>origin
+</code> is up to whoever shows the graph, as is skipping the hidden rows and columns (the order and the tree include them).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.heatmap_order">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_order">
+<code>SomeGraphs.Heatmaps.heatmap_order
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+</code>
+</pre>
+<p>Return the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>HeatmapGraphOrder
+</code>
+</a> of a heatmap 
+<code>graph
+</code>, that is, the final order of its rows and columns and the trees they were clustered by, without rendering it.
+</p>
+<p>You can just write 
+<code>graph.order
+</code> instead of 
+<code>heatmap_order(graph)
+</code>. Either way the order is only computed once; showing the graph will reuse it, and vice versa.
+</p>
+<p>Use this to list the entries in the order they are shown:
+</p>
+<pre>
+<code class="language-julia hljs">ordered_rows_names = graph.data.rows.names.values[graph.order.rows_order]
+</code>
+</pre>
+<p>Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its order (and, if they use the same groups, they will also have the same gaps):
+</p>
+<pre>
+<code class="language-julia hljs">graph.configuration.columns.reorder = OptimalHclust
+other_graph.data.columns.order = graph.order.columns_order
+</code>
+</pre>
+<p>If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order 
+<em>and
+</em> draws the same tree above each of them (this only makes sense if the graphs share the same columns, as the tree refers to the original column indices):
+</p>
+<pre>
+<code class="language-julia hljs">graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.columns.dendogram_size = 0.1
 other_graph.data.columns.order = graph.order.columns_hclust
-other_graph.configuration.columns.dendogram_size = 0.1</code></pre></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.reset_order!"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.reset_order!"><code>SomeGraphs.Heatmaps.reset_order!</code></a> — <span class="docstring-category">Function</span></summary><section><div><pre><code class="language-julia hljs">reset_order!(graph::HeatmapGraph)::Nothing</code></pre><p>Forget the <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder"><code>HeatmapGraphOrder</code></a> cached in the graph&#39;s <code>final_order</code>, so that asking for the graph&#39;s <code>order</code> (or showing it) will compute it again. Call this after changing anything the order was computed from.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapLinkage"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapLinkage"><code>SomeGraphs.Heatmaps.HeatmapLinkage</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>Specify the linkage to use when performing hierarchical clustering (<code>hclust</code> / <code>ehclust</code>). The default is <code>WardLinkage</code>.</p></div></section></details></article><article><details class="docstring" open="true"><summary id="SomeGraphs.Heatmaps.HeatmapOrigin"><a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapOrigin"><code>SomeGraphs.Heatmaps.HeatmapOrigin</code></a> — <span class="docstring-category">Type</span></summary><section><div><p>Specify where the origin (row 1 column 1) should be displayed. The Plotly default is <code>HeatmapBottomLeft</code>.</p></div></section></details></article><p><strong>Examples:</strong></p><p>Default (serves as a baseline to compare with when modifying options):</p><pre><code class="language-julia hljs">using SomeGraphs
+other_graph.configuration.columns.dendogram_size = 0.1
+</code>
+</pre>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.reset_order!">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.reset_order!">
+<code>SomeGraphs.Heatmaps.reset_order!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">reset_order!(graph::HeatmapGraph)::Nothing
+</code>
+</pre>
+<p>Forget the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>HeatmapGraphOrder
+</code>
+</a> cached in the graph&#39;s 
+<code>final_order
+</code>, so that asking for the graph&#39;s 
+<code>order
+</code> (or showing it) will compute it again. Call this after changing anything the order was computed from.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapLinkage">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapLinkage">
+<code>SomeGraphs.Heatmaps.HeatmapLinkage
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Specify the linkage to use when performing hierarchical clustering (
+<code>hclust
+</code> / 
+<code>ehclust
+</code>). The default is 
+<code>WardLinkage
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.HeatmapOrigin">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapOrigin">
+<code>SomeGraphs.Heatmaps.HeatmapOrigin
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Specify where the origin (row 1 column 1) should be displayed. The Plotly default is 
+<code>HeatmapBottomLeft
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<p>
+<strong>Examples:
+</strong>
+</p>
+<p>Default (serves as a baseline to compare with when modifying options):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -61,10 +1543,15 @@ graph = heatmap_graph(;
     columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='QXoE4ui1xf' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='4PKg8AWrhH' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QXoE4ui1xf")
+    const PLOT = document.getElementById("4PKg8AWrhH")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -73,8 +1560,13 @@ to_documenter(graph.figure)</code></pre><div id='QXoE4ui1xf' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Flip axes (non-mutating):</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Flip axes (non-mutating):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -87,10 +1579,15 @@ graph = heatmap_graph(;
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
-to_documenter(flipped.figure)</code></pre><div id='YKGsmGTcTG' class='' style=';'></div>
+to_documenter(flipped.figure)
+</code>
+</pre>
+<div id='KEMxJ31OxR' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YKGsmGTcTG")
+    const PLOT = document.getElementById("KEMxJ31OxR")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -99,8 +1596,13 @@ to_documenter(flipped.figure)</code></pre><div id='YKGsmGTcTG' class='' style=';
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Flip axes (in-place):</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Flip axes (in-place):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -113,10 +1615,15 @@ graph = heatmap_graph(;
 )
 flip_axes!(graph)
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='saroIILY9o' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='VGCLE5Y99F' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("saroIILY9o")
+    const PLOT = document.getElementById("VGCLE5Y99F")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -125,8 +1632,13 @@ to_documenter(graph.figure)</code></pre><div id='saroIILY9o' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Annotations:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Annotations:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -151,10 +1663,15 @@ graph = heatmap_graph(;
     ),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='W5LanwFZyu' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='DxubJKiTOk' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("W5LanwFZyu")
+    const PLOT = document.getElementById("DxubJKiTOk")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -163,8 +1680,13 @@ to_documenter(graph.figure)</code></pre><div id='W5LanwFZyu' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Dendograms:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Dendograms:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -193,10 +1715,15 @@ graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='7VGkBKRJ7M' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='dR2JAg83kh' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("7VGkBKRJ7M")
+    const PLOT = document.getElementById("dR2JAg83kh")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,5.2915025],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -205,8 +1732,13 @@ to_documenter(graph.figure)</code></pre><div id='7VGkBKRJ7M' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Gaps:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Gaps:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -237,10 +1769,15 @@ graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='HtBzI4KbvB' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='C7OTil2dT1' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("HtBzI4KbvB")
+    const PLOT = document.getElementById("C7OTil2dT1")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -249,8 +1786,13 @@ to_documenter(graph.figure)</code></pre><div id='HtBzI4KbvB' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Subgroups (a 2nd level of grouping nested in the groups). The groups are numbered, so they are shown in the order of their numbers; the subgroups are named, so they are placed by the clustering, but each of them is still contiguous inside its group:</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Subgroups (a 2nd level of grouping nested in the groups). The groups are numbered, so they are shown in the order of their numbers; the subgroups are named, so they are placed by the clustering, but each of them is still contiguous inside its group:
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5 2 4 1;
@@ -268,10 +1810,15 @@ graph = heatmap_graph(;
 graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.columns.subgroups_gap = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='A3uKUjyTPB' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='EUGZNJi0Eq' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("A3uKUjyTPB")
+    const PLOT = document.getElementById("EUGZNJi0Eq")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[2.0,3.0,4.0,5.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5,6,7,8,9]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5,6,7,8,9],"range":[0.5,9.5],"ticktext":["W","U","","V","","Z","","X","Y"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -280,8 +1827,15 @@ to_documenter(graph.figure)</code></pre><div id='A3uKUjyTPB' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<p>Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless <code>include_hidden</code> is disabled in its axis):</p><pre><code class="language-julia hljs">using SomeGraphs
+
+<p>Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless 
+<code>include_hidden
+</code> is disabled in its axis):
+</p>
+<pre>
+<code class="language-julia hljs">using SomeGraphs
 graph = heatmap_graph(;
     entries = MatrixValuesData([
         4 1 5;
@@ -296,10 +1850,15 @@ graph = heatmap_graph(;
     columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)</code></pre><div id='rz67oLKMgh' class='' style=';'></div>
+to_documenter(graph.figure)
+</code>
+</pre>
+<div id='5IvAll9gyi' class='' style=';'>
+</div>
+
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("rz67oLKMgh")
+    const PLOT = document.getElementById("5IvAll9gyi")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,2.0,1.0],[1.0,3.0,4.0],[5.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["A","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -308,5 +1867,162 @@ to_documenter(graph.figure)</code></pre><div id='rz67oLKMgh' class='' style=';'>
     
     // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
     PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+
 </script>
-<h2 id="Index"><a class="docs-heading-anchor" href="#Index">Index</a><a id="Index-1"></a><a class="docs-heading-anchor-permalink" href="#Index" title="Permalink"></a></h2><ul><li><a href="heatmaps.html#SomeGraphs.Heatmaps"><code>SomeGraphs.Heatmaps</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.EntriesConfiguration"><code>SomeGraphs.Heatmaps.EntriesConfiguration</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration"><code>SomeGraphs.Heatmaps.HeatmapAxisConfiguration</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData"><code>SomeGraphs.Heatmaps.HeatmapAxisData</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph"><code>SomeGraphs.Heatmaps.HeatmapGraph</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration"><code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData"><code>SomeGraphs.Heatmaps.HeatmapGraphData</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder"><code>SomeGraphs.Heatmaps.HeatmapGraphOrder</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapLinkage"><code>SomeGraphs.Heatmaps.HeatmapLinkage</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapOrigin"><code>SomeGraphs.Heatmaps.HeatmapOrigin</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapReorder"><code>SomeGraphs.Heatmaps.HeatmapReorder</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_graph"><code>SomeGraphs.Heatmaps.heatmap_graph</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order"><code>SomeGraphs.Heatmaps.heatmap_order</code></a></li><li><a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!"><code>SomeGraphs.Heatmaps.reset_order!</code></a></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="bars.html">« Bar Plots</a><a class="docs-footer-nextpage" href="utilities.html">Utilities »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 18 September 2026 14:46">Friday 18 September 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+
+<h2 id="Index">
+<a class="docs-heading-anchor" href="#Index">Index
+</a>
+<a id="Index-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Index" title="Permalink">
+</a>
+</h2>
+<ul>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps">
+<code>SomeGraphs.Heatmaps
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.EntriesConfiguration">
+<code>SomeGraphs.Heatmaps.EntriesConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapAxisConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
+<code>SomeGraphs.Heatmaps.HeatmapAxisData
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraph">
+<code>SomeGraphs.Heatmaps.HeatmapGraph
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
+<code>SomeGraphs.Heatmaps.HeatmapGraphData
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
+<code>SomeGraphs.Heatmaps.HeatmapGraphOrder
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapLinkage">
+<code>SomeGraphs.Heatmaps.HeatmapLinkage
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapOrigin">
+<code>SomeGraphs.Heatmaps.HeatmapOrigin
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapReorder">
+<code>SomeGraphs.Heatmaps.HeatmapReorder
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_graph">
+<code>SomeGraphs.Heatmaps.heatmap_graph
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>SomeGraphs.Heatmaps.heatmap_order
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!">
+<code>SomeGraphs.Heatmaps.reset_order!
+</code>
+</a>
+</li>
+</ul>
+</article>
+<nav class="docs-footer">
+<a class="docs-footer-prevpage" href="bars.html">« Bar Plots
+</a>
+<a class="docs-footer-nextpage" href="utilities.html">Utilities »
+</a>
+<div class="flexbox-break">
+</div>
+<p class="footer-message">Powered by 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> and the 
+<a href="https://julialang.org/">Julia Programming Language
+</a>.
+</p>
+</nav>
+</div>
+<div class="modal" id="documenter-settings">
+<div class="modal-background">
+</div>
+<div class="modal-card">
+<header class="modal-card-head">
+<p class="modal-card-title">Settings
+</p>
+<button class="delete">
+</button>
+</header>
+<section class="modal-card-body">
+<p>
+<label class="label">Theme
+</label>
+<div class="select">
+<select id="documenter-themepicker">
+<option value="auto">Automatic (OS)
+</option>
+<option value="documenter-light">documenter-light
+</option>
+<option value="documenter-dark">documenter-dark
+</option>
+<option value="catppuccin-latte">catppuccin-latte
+</option>
+<option value="catppuccin-frappe">catppuccin-frappe
+</option>
+<option value="catppuccin-macchiato">catppuccin-macchiato
+</option>
+<option value="catppuccin-mocha">catppuccin-mocha
+</option>
+</select>
+</div>
+</p>
+<hr/>
+<p>This document was generated with 
+<a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
+</a> version 1.17.0. Using Julia version 1.12.6.
+</p>
+</section>
+<footer class="modal-card-foot">
+</footer>
+</div>
+</div>
+</div>
+</body>
+</html>

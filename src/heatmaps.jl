@@ -280,11 +280,13 @@ end
         subgroups::VectorValuesData = VectorValuesData()
         arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
+        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
 The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `names` are strings, one per entry,
 shown as the tick labels; their title is the axis title. The `entities` hold the hovers and mask of the entries. The
-`annotations` are shown to the side of the axis.
+`annotations` are shown to the side of the axis. If `annotations_order` is specified, they are shown in that order; it
+describes all the annotations, including the ones that are not `is_shown`.
 
 By default, if reordering the entries, this is based on the `entries.values` of the graph. You can override this by
 specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.values` (the rows
@@ -312,6 +314,7 @@ whether or not the two hide the same entries. At least one entry must be shown.
     subgroups::VectorValuesData = VectorValuesData()
     arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
+    annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 # Validate the data of the `name` (rows or columns) axis of a heatmap with `n_entries`. The context is that of the whole
@@ -361,6 +364,14 @@ function Validations.validate(
 
     validate_matrix_dimension(context, "$(name).arrange_by", axis.arrange_by, name == "rows" ? 1 : 2, base, n_entries)
     validate_matrix_is_finite(context, "$(name).arrange_by", axis.arrange_by)
+
+    validate_vector_length(
+        context,
+        "$(name).annotations_order",
+        axis.annotations_order,
+        "$(name).annotations",
+        length(axis.annotations),
+    )
 
     validate_vector_entries(context, "$(name).annotations", axis.annotations) do _, annotation
         validate(context, annotation, base, n_entries)
@@ -469,6 +480,11 @@ function heatmap_graph(;
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration(),
 )::HeatmapGraph
     return HeatmapGraph(HeatmapGraphData(; figure_title, entries, cells, rows, columns), configuration)
+end
+
+# The annotations of an axis which are actually drawn, in the order they are drawn in.
+function axis_annotations(axis::HeatmapAxisData)::AbstractVector{AnnotationData}
+    return displayed_annotations(axis.annotations, axis.annotations_order)
 end
 
 # The entries values of a validated heatmap graph.
@@ -601,14 +617,14 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
     validate_axis_sizes(;
         axis_name = "columns",
         annotation_size = graph.configuration.columns.annotations,
-        n_annotations = length(graph.data.columns.annotations),
+        n_annotations = length(axis_annotations(graph.data.columns)),
         dendogram_size = graph.configuration.rows.dendogram_size,
     )
 
     validate_axis_sizes(;
         axis_name = "rows",
         annotation_size = graph.configuration.rows.annotations,
-        n_annotations = length(graph.data.rows.annotations),
+        n_annotations = length(axis_annotations(graph.data.rows)),
         dendogram_size = graph.configuration.columns.dendogram_size,
     )
 
@@ -844,8 +860,10 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     reordered_values = colors.final_colors_values[rows_order, columns_order]
 
-    n_rows_annotations = length(graph.data.rows.annotations)
-    n_columns_annotations = length(graph.data.columns.annotations)
+    rows_annotations_data = axis_annotations(graph.data.rows)
+    columns_annotations_data = axis_annotations(graph.data.columns)
+    n_rows_annotations = length(rows_annotations_data)
+    n_columns_annotations = length(columns_annotations_data)
 
     columns_sub_graph = SubGraph(;
         index = 1,
@@ -942,7 +960,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = VerticalValues,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.columns.annotations,
+        annotations_data = columns_annotations_data,
         annotation_size = graph.configuration.columns.annotations,
         entries_hovers = graph.data.columns.entities.hovers,
         mask = columns_mask,
@@ -958,7 +976,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = HorizontalValues,
         next_colors_scale_index,
         has_legend_only_traces,
-        annotations_data = graph.data.rows.annotations,
+        annotations_data = rows_annotations_data,
         annotation_size = graph.configuration.rows.annotations,
         entries_hovers = graph.data.rows.entities.hovers,
         mask = rows_mask,
@@ -1097,7 +1115,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         (
             "y",
             VerticalValues,
-            graph.data.columns.annotations,
+            columns_annotations_data,
             columns_annotations_colors,
             graph.configuration.columns.annotations,
             graph.configuration.columns.dendogram_size,
@@ -1106,7 +1124,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         (
             "x",
             HorizontalValues,
-            graph.data.rows.annotations,
+            rows_annotations_data,
             rows_annotations_colors,
             graph.configuration.rows.annotations,
             graph.configuration.rows.dendogram_size,
@@ -1933,6 +1951,7 @@ function flipped_axis_data(axis::HeatmapAxisData)::HeatmapAxisData
         subgroups = axis.subgroups,
         arrange_by = axis.arrange_by === nothing ? nothing : transpose(axis.arrange_by),
         annotations = axis.annotations,
+        annotations_order = axis.annotations_order,
     )
 end
 

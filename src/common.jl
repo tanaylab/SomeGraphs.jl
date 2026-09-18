@@ -1614,11 +1614,13 @@ end
     @kwdef mutable struct AnnotationData <: Validated
         values::VectorValuesData = VectorValuesData()
         colors::ColorsConfiguration = ColorsConfiguration()
+        is_shown::Bool = true
     end
 
 An annotation to attach to an axis. This applies to discrete axes (bars axis for a [`BarsGraph`](@ref
 SomeGraphs.Bars.BarsGraph) or the rows and/or columns of a `HeatmapGraph`). The `values` are required, one per entry of
-the axis; their title is the title of the annotation. Hovering an annotation shows the hovers of the axis entries.
+the axis; their title is the title of the annotation. Hovering an annotation shows the hovers of the axis entries. An
+annotation which is not `is_shown` is left out of the graph, and gives up its place in the row of annotations.
 
 The `colors` configuration is part of the data, because the color of annotations (in particular, categorical ones) is
 tightly coupled with the data.
@@ -1631,6 +1633,7 @@ tightly coupled with the data.
 @kwdef mutable struct AnnotationData <: Validated
     values::VectorValuesData = VectorValuesData()
     colors::ColorsConfiguration = ColorsConfiguration()
+    is_shown::Bool = true
 end
 
 function Validations.validate(

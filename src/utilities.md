@@ -20,6 +20,7 @@ SomeGraphs.Utilities.validate_string_values
 SomeGraphs.Utilities.string_values
 SomeGraphs.Utilities.shared_values_title
 SomeGraphs.Utilities.masked_values
+SomeGraphs.Utilities.displayed_annotations
 SomeGraphs.Utilities.scale_axis_value
 SomeGraphs.Utilities.scale_axis_values
 SomeGraphs.Utilities.scale_size_values

@@ -255,8 +255,23 @@ nested_test("bars") do
                         ),
                     ]
                     graph.data.names.values = ["Foo", "Bar", "Baz", "Vaz"]
-                    test_html(graph, "bars.$(orientation_name).both.html")
-                    return nothing
+
+                    nested_test("()") do
+                        test_html(graph, "bars.$(orientation_name).both.html")
+                        return nothing
+                    end
+
+                    nested_test("order") do
+                        graph.data.annotations_order = [2, 1]
+                        test_html(graph, "bars.$(orientation_name).both.order.html")
+                        return nothing
+                    end
+
+                    nested_test("is_shown") do
+                        graph.data.annotations[1].is_shown = false
+                        test_html(graph, "bars.$(orientation_name).both.is_shown.html")
+                        return nothing
+                    end
                 end
             end
         end
@@ -456,6 +471,14 @@ nested_test("series_bars") do
                     ValidationContext(["graph"]),
                     graph,
                 )
+            end
+
+            nested_test("~order") do
+                graph.data.annotations_order = [1, 2]
+                @test_throws chomp("""
+                                   ArgumentError: invalid length of graph.data.annotations_order: 2
+                                   is different from length of graph.data.annotations: 1
+                                   """) validate(ValidationContext(["graph"]), graph)
             end
 
             nested_test("size") do

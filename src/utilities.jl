@@ -10,6 +10,7 @@ export collect_hidden_range!
 export collect_range!
 export configured_colors
 export ConfiguredColors
+export displayed_annotations
 export fill_color
 export final_scaled_range
 export MaybeRange
@@ -1666,6 +1667,22 @@ function prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configu
     else
         return data_values[index]
     end
+end
+
+"""
+    displayed_annotations(
+        annotations::AbstractVector{AnnotationData},
+        order::Maybe{AbstractVector{<:Integer}},
+    )::AbstractVector{AnnotationData}
+
+The annotations which are actually drawn, in the order they are drawn in: reordered by the `order`, leaving out the
+ones that are not `is_shown`. A hidden annotation gives up its place, so the rest of the row closes up.
+"""
+function displayed_annotations(
+    annotations::AbstractVector{AnnotationData},
+    order::Maybe{AbstractVector{<:Integer}},
+)::AbstractVector{AnnotationData}
+    return [annotations[index] for index in prefer_data(order, 1:length(annotations)) if annotations[index].is_shown]
 end
 
 """
