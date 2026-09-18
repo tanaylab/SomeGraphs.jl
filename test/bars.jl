@@ -347,6 +347,39 @@ nested_test("series_bars") do
         end
     end
 
+    nested_test("arrangement") do
+        graph.data.series[1].name = "Foo"
+        graph.data.series[2].name = "Bar"
+
+        nested_test("order") do
+            graph.data.order = [2, 1]
+            test_html(graph, "series_bars.order.html")
+            return nothing
+        end
+
+        nested_test("is_shown") do
+            graph.data.series[1].is_shown = false
+            test_html(graph, "series_bars.is_shown.html")
+            return nothing
+        end
+
+        nested_test("stacked") do
+            graph.configuration.stacking = StackValues
+
+            nested_test("order") do
+                graph.data.order = [2, 1]
+                test_html(graph, "series_bars.stacked.order.html")
+                return nothing
+            end
+
+            nested_test("is_shown") do
+                graph.data.series[1].is_shown = false
+                test_html(graph, "series_bars.stacked.is_shown.html")
+                return nothing
+            end
+        end
+    end
+
     nested_test("invalid") do
         nested_test("!values") do
             graph.data.series[1].values.values = Float32[]
@@ -397,6 +430,20 @@ nested_test("series_bars") do
                                ArgumentError: can't specify both graph.configuration.stacking
                                and graph.configuration.series_gap
                                """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("~order") do
+            graph.data.order = [1]
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.order: 1
+                               is different from length of graph.data.series: 2
+                               """) validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("!is_shown") do
+            graph.data.series[1].is_shown = false
+            graph.data.series[2].is_shown = false
+            @test_throws "ArgumentError: no is_shown graph.data.series" validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("annotations") do
@@ -530,6 +577,28 @@ nested_test("series_bars") do
                                 ),
                             ]
                             test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.annotations.html")
+                            return nothing
+                        end
+
+                        # One side of the 1st pair is hidden, so that pair keeps both its axes with one side empty.
+                        nested_test("is_shown") do
+                            graph.data.series[2].is_shown = false
+                            test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.is_shown.html")
+                            return nothing
+                        end
+
+                        # Neither side of the 2nd pair is shown, so that pair gives up both its axes.
+                        nested_test("!is_shown") do
+                            graph.data.series[3].is_shown = false
+                            graph.data.series[4].is_shown = false
+                            test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.!is_shown.html")
+                            return nothing
+                        end
+
+                        # The order pairs the 1st series with the 3rd and the 2nd with the 4th.
+                        nested_test("order") do
+                            graph.data.order = [1, 3, 2, 4]
+                            test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.order.html")
                             return nothing
                         end
                     end
