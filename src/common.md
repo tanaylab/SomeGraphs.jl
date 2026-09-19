@@ -12,6 +12,7 @@ SomeGraphs.Common
 SomeGraphs.Common.Graph
 SomeGraphs.Common.AbstractGraphConfiguration
 SomeGraphs.Common.AbstractGraphData
+SomeGraphs.Common.AbstractPartData
 SomeGraphs.Common.PlotlyFigure
 SomeGraphs.Common.save_graph
 SomeGraphs.Common.flip_axes

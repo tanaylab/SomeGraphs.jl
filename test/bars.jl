@@ -313,20 +313,40 @@ nested_test("series_bars") do
         @test graph.data.annotations[2].values.vector == collect(0:10)
 
         series = SeriesData(; name = "Baz")
-        @test add_series!(graph, series) == 3
+        part = add_series!(graph, series)
+        @test part.index == 3
+        @test part.data === series
         @test graph.data.series[3] === series
         fields = series_values_fields(graph, 3)
         @test fields.data.values === series.values
         @test fields.data.entities === series.bars
 
-        @test add_series!(graph) == 4
-        fields = series_values_fields(graph, 4)
-        fields.data.values.vector = collect(0:10)
+        part = add_series!(graph)
+        @test part.index == 4
+        part.data.values.vector = collect(0:10)
         @test graph.data.series[4].values.vector == collect(0:10)
 
         fields = names_fields(graph)
         @test fields.values === graph.data.names
         @test fields.entities === graph.data.bars
+
+        part = series_fields(graph, 2)
+        @test part.graph === graph
+        @test part.data === graph.data.series[2]
+        @test part.index == 2
+
+        # A series of bars calls its entities `bars`, and the view offers them as `entities` all the same.
+        @test part.entities === graph.data.series[2].bars
+        @test part.bars === graph.data.series[2].bars
+
+        @test part.values.data.values === graph.data.series[2].values
+        @test part.values.data.entities === graph.data.series[2].bars
+        @test part.values.configuration.axis === graph.configuration.value_axis
+
+        part.name = "Foo"
+        part.is_shown = false
+        @test graph.data.series[2].name == "Foo"
+        @test !graph.data.series[2].is_shown
         return nothing
     end
 

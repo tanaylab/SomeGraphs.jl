@@ -508,13 +508,44 @@ nested_test("distributions") do
         @test fields.configuration.axis === graph.configuration.value_axis
 
         distribution = DistributionData(; name = "Baz")
-        @test add_distribution!(graph, distribution) == 3
+        part = add_distribution!(graph, distribution)
+        @test part.index == 3
+        @test part.data === distribution
         @test graph.data.distributions[3] === distribution
         @test distributions_values_fields(graph, 3).data.values === distribution.values
 
-        @test add_distribution!(graph) == 4
-        distributions_values_fields(graph, 4).data.values.vector = [0, 1]
+        part = add_distribution!(graph)
+        @test part.index == 4
+        part.data.values.vector = [0, 1]
         @test graph.data.distributions[4].values.vector == [0, 1]
+        return nothing
+    end
+
+    nested_test("part") do
+        part = distribution_fields(graph, 2)
+        @test part.graph === graph
+        @test part.data === graph.data.distributions[2]
+        @test part.index == 2
+
+        # The entities are offered as `entities` whatever the part calls them.
+        @test part.entities === graph.data.distributions[2].points
+        @test part.points === graph.data.distributions[2].points
+
+        # A role pairs the values and entities of the part with the axis they are shown along.
+        @test part.values.data.values === graph.data.distributions[2].values
+        @test part.values.data.entities === graph.data.distributions[2].points
+        @test part.values.configuration.axis === graph.configuration.value_axis
+
+        part.name = "Foo"
+        part.is_shown = false
+        @test graph.data.distributions[2].name == "Foo"
+        @test !graph.data.distributions[2].is_shown
+
+        @test_throws "ArgumentError: can't set index of a PartFields" part.index = 1
+        @test_throws chomp("""
+                           ArgumentError: can't set the values role of a PartFields
+                           set its .data.values instead
+                           """) part.values = 1
         return nothing
     end
 

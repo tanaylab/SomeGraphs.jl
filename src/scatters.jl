@@ -1283,7 +1283,7 @@ function Validations.validate(
 end
 
 """
-    @kwdef mutable struct LineData
+    @kwdef mutable struct LineData <: AbstractPartData
         x::VectorValuesData = VectorValuesData()
         y::VectorValuesData = VectorValuesData()
         points::VectorEntitiesData = VectorEntitiesData()
@@ -1303,7 +1303,7 @@ The `name` is shown in the legend. The `hover` (if any) is prefixed to the hover
 `is_shown` is left out of the graph. The `color`, `width`, `style`, `points_size` and `points_color` override the
 [`LinesGraphConfiguration`](@ref) for this line; a `nothing` means the configuration default is used.
 """
-@kwdef mutable struct LineData
+@kwdef mutable struct LineData <: AbstractPartData
     x::VectorValuesData = VectorValuesData()
     y::VectorValuesData = VectorValuesData()
     points::VectorEntitiesData = VectorEntitiesData()
@@ -1459,14 +1459,33 @@ function Sources.y_fields(graph::LinesGraph, index::Integer)::AxisFields
     return VectorFields(line.y, line.points, AxisConfigurationFields(graph.configuration.y_axis))
 end
 
-"""
-    add_line!(graph::LinesGraph, [line::LineData = LineData()])::Int
+Sources.entities_field(::LineData)::Symbol = :points
 
-Append a `line` and return its index.
+function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:x})::AxisFields
+    return x_fields(part.graph, part.index)
+end
+
+function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:y})::AxisFields
+    return y_fields(part.graph, part.index)
+end
+
 """
-function Sources.add_line!(graph::LinesGraph, line::LineData = LineData())::Int
+    line_fields(graph::LinesGraph, index::Integer)::PartFields
+
+The view of the `index` line (see [`PartFields`](@ref)).
+"""
+function Sources.line_fields(graph::LinesGraph, index::Integer)::PartFields
+    return PartFields(graph, graph.data.lines[index], index)
+end
+
+"""
+    add_line!(graph::LinesGraph, [line::LineData = LineData()])::PartFields
+
+Append a `line` and return its view (see [`PartFields`](@ref)).
+"""
+function Sources.add_line!(graph::LinesGraph, line::LineData = LineData())::PartFields
     push!(graph.data.lines, line)
-    return length(graph.data.lines)
+    return PartFields(graph, line, length(graph.data.lines))
 end
 
 function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing

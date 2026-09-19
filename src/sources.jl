@@ -24,6 +24,7 @@ export ColorsFields
 export MatrixConfigurationFields
 export MatrixDataFields
 export MatrixFields
+export PartFields
 export SizesConfigurationFields
 export SizesFields
 export VectorDataFields
@@ -43,11 +44,13 @@ export columns_annotations_fields
 export columns_groups_fields
 export columns_names_fields
 export columns_subgroups_fields
+export distribution_fields
 export distribution_values_fields
 export distributions_values_fields
 export edges_colors_fields
 export edges_sizes_fields
 export entries_fields
+export line_fields
 export names_fields
 export points_colors_fields
 export points_sizes_fields
@@ -55,6 +58,7 @@ export rows_annotations_fields
 export rows_groups_fields
 export rows_names_fields
 export rows_subgroups_fields
+export series_fields
 export series_values_fields
 export values_fields
 export x_fields
@@ -244,6 +248,90 @@ function VectorFields(values::VectorValuesData, entities::VectorEntitiesData, co
     return VectorFields(VectorDataFields(values, entities), configuration)
 end
 
+# The name of the field of a part which holds its `VectorEntitiesData` (`:bars` for a series of bars, `:points` for a
+# line or a distribution). This is what lets a `PartFields` offer them all as `entities`. Each kind of part implements
+# it in its own module.
+function entities_field end
+
+"""
+    struct PartFields{GraphType, PartType <: AbstractPartData}
+        graph::GraphType
+        data::PartType
+        index::Int
+    end
+
+The data source view of one part of a graph built from several (a series of bars, a line, a distribution). Everything is
+reached through a property of the view, and writing one writes the part itself, so `part.name = "Foo"` names the part in
+the graph.
+
+The point of the view is that a source need not know which kind of part it fills. The scalars every part has (`name`,
+`hover`, `is_shown`, `color`) are always spelled the same, and the entities of the part are always `entities`, whatever
+the part calls them. A property no part of this kind has is an error, so `width` reaches a line but not a distribution.
+
+The values of a part are shown in roles: `values` for a series of bars or a distribution, `x` and `y` for a line. Each
+role is a [`VectorFields`](@ref), which is what a source filling a role expects. Writing a role is an error.
+
+The view therefore offers three ways in, each for a different job:
+
+  - `data` is the part itself, for writing its values directly (`part.data.values.vector = ...`) and for asking which
+    part this is (`part.data === graph.data.distributions[2]`).
+  - `entities` is the part's [`VectorEntitiesData`](@ref), for adding hovers, under one name whatever the part calls it.
+  - A role is the part's values and entities paired with the configuration of the axis they are shown along, for handing
+    the whole role to a source which fills both.
+
+These overlap, and deliberately so. A role has to carry the values and the entities, because that is what a
+[`VectorFields`](@ref) is, so `part.values.data.values` and `part.data.values` are the same object by two paths, as are
+`part.values.data.entities` and `part.entities`. Reach for the short paths when writing values or hovers yourself, and
+for the role when passing it on; going through a role to reach a value works but is the long way round.
+
+This is also the only reason the view holds the `graph`. A role needs the axis configuration, which lives on the graph
+and is shared by every part, unlike the part's own fields. Whatever else you reach through `graph` is shared the same
+way.
+
+The `index` is the position of the part in the graph, for filling the graph's `order`.
+"""
+struct PartFields{GraphType, PartType <: AbstractPartData}
+    graph::GraphType
+    data::PartType
+    index::Int
+end
+
+# The roles a part shows its values in. A part has either one `values` role (a series of bars, a distribution) or an `x`
+# and a `y` role (a line), never both.
+const PART_ROLES = (:x, :y, :values)
+
+# Build the data source view of one role of a part. Each kind of part implements this for the roles it has, since only
+# it knows which axis of the graph its values are shown along. Asking a part for a role it does not have lands here.
+function part_role_fields(part::PartFields, ::Val{role})::VectorFields where {role}
+    return throw(ArgumentError("no $(role) role for $(typeof(getfield(part, :data)))"))
+end
+
+function Base.getproperty(part::PartFields, name::Symbol)
+    if name in (:graph, :data, :index)
+        return getfield(part, name)
+    elseif name in PART_ROLES
+        return part_role_fields(part, Val(name))
+    end
+    data = getfield(part, :data)
+    return getproperty(data, name === :entities ? entities_field(data) : name)
+end
+
+function Base.setproperty!(part::PartFields, name::Symbol, value::Any)::Any
+    if name in (:graph, :data, :index)
+        throw(ArgumentError("can't set $(name) of a PartFields"))
+    elseif name in PART_ROLES
+        throw(ArgumentError("can't set the $(name) role of a PartFields\nset its .data.$(name) instead"))
+    end
+    data = getfield(part, :data)
+    return setproperty!(data, name === :entities ? entities_field(data) : name, value)
+end
+
+function Base.propertynames(part::PartFields, private::Bool = false)::Tuple
+    data = getfield(part, :data)
+    names = Tuple(name === entities_field(data) ? :entities : name for name in propertynames(data, private))
+    return (:graph, :data, :index, names...)
+end
+
 """
     struct MatrixFields
         data::MatrixDataFields
@@ -374,6 +462,27 @@ function distribution_values_fields end
 The data source view of the values of one distribution of a graph, given the `index` of the distribution.
 """
 function distributions_values_fields end
+
+"""
+    distribution_fields(graph, index::Integer)::PartFields
+
+The data source view of one distribution of a graph, given the `index` of the distribution (see [`PartFields`](@ref)).
+"""
+function distribution_fields end
+
+"""
+    line_fields(graph, index::Integer)::PartFields
+
+The data source view of one line of a graph, given the `index` of the line (see [`PartFields`](@ref)).
+"""
+function line_fields end
+
+"""
+    series_fields(graph, index::Integer)::PartFields
+
+The data source view of one series of bars of a graph, given the `index` of the series (see [`PartFields`](@ref)).
+"""
+function series_fields end
 
 """
     entries_fields(graph)::MatrixFields

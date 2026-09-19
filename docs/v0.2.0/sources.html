@@ -498,6 +498,108 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.PartFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.PartFields">
+<code>SomeGraphs.Sources.PartFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct PartFields{GraphType, PartType &lt;: AbstractPartData}
+    graph::GraphType
+    data::PartType
+    index::Int
+end
+</code>
+</pre>
+<p>The data source view of one part of a graph built from several (a series of bars, a line, a distribution). Everything is reached through a property of the view, and writing one writes the part itself, so 
+<code>part.name = &quot;Foo&quot;
+</code> names the part in the graph.
+</p>
+<p>The point of the view is that a source need not know which kind of part it fills. The scalars every part has (
+<code>name
+</code>, 
+<code>hover
+</code>, 
+<code>is_shown
+</code>, 
+<code>color
+</code>) are always spelled the same, and the entities of the part are always 
+<code>entities
+</code>, whatever the part calls them. A property no part of this kind has is an error, so 
+<code>width
+</code> reaches a line but not a distribution.
+</p>
+<p>The values of a part are shown in roles: 
+<code>values
+</code> for a series of bars or a distribution, 
+<code>x
+</code> and 
+<code>y
+</code> for a line. Each role is a 
+<a href="sources.html#SomeGraphs.Sources.VectorFields">
+<code>VectorFields
+</code>
+</a>, which is what a source filling a role expects. Writing a role is an error.
+</p>
+<p>The view therefore offers three ways in, each for a different job:
+</p>
+<ul>
+<li>
+<code>data
+</code> is the part itself, for writing its values directly (
+<code>part.data.values.vector = ...
+</code>) and for asking which part this is (
+<code>part.data === graph.data.distributions[2]
+</code>).
+</li>
+<li>
+<code>entities
+</code> is the part&#39;s 
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
+</code>
+</a>, for adding hovers, under one name whatever the part calls it.
+</li>
+<li>A role is the part&#39;s values and entities paired with the configuration of the axis they are shown along, for handing the whole role to a source which fills both.
+</li>
+</ul>
+<p>These overlap, and deliberately so. A role has to carry the values and the entities, because that is what a 
+<a href="sources.html#SomeGraphs.Sources.VectorFields">
+<code>VectorFields
+</code>
+</a> is, so 
+<code>part.values.data.values
+</code> and 
+<code>part.data.values
+</code> are the same object by two paths, as are 
+<code>part.values.data.entities
+</code> and 
+<code>part.entities
+</code>. Reach for the short paths when writing values or hovers yourself, and for the role when passing it on; going through a role to reach a value works but is the long way round.
+</p>
+<p>This is also the only reason the view holds the 
+<code>graph
+</code>. A role needs the axis configuration, which lives on the graph and is shared by every part, unlike the part&#39;s own fields. Whatever else you reach through 
+<code>graph
+</code> is shared the same way.
+</p>
+<p>The 
+<code>index
+</code> is the position of the part in the graph, for filling the graph&#39;s 
+<code>order
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.add_hovers!">
 <a class="docstring-binding" href="#SomeGraphs.Sources.add_hovers!">
 <code>SomeGraphs.Sources.add_hovers!
@@ -796,6 +898,34 @@ y_fields(graph, index::Integer)::AxisFields
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.series_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.series_fields">
+<code>SomeGraphs.Sources.series_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">series_fields(graph, index::Integer)::PartFields
+</code>
+</pre>
+<p>The data source view of one series of bars of a graph, given the 
+<code>index
+</code> of the series (see 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.annotations_fields">
 <a class="docstring-binding" href="#SomeGraphs.Sources.annotations_fields">
 <code>SomeGraphs.Sources.annotations_fields
@@ -859,6 +989,62 @@ y_fields(graph, index::Integer)::AxisFields
 <p>The data source view of the values of one distribution of a graph, given the 
 <code>index
 </code> of the distribution.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.distribution_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.distribution_fields">
+<code>SomeGraphs.Sources.distribution_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distribution_fields(graph, index::Integer)::PartFields
+</code>
+</pre>
+<p>The data source view of one distribution of a graph, given the 
+<code>index
+</code> of the distribution (see 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.line_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.line_fields">
+<code>SomeGraphs.Sources.line_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">line_fields(graph, index::Integer)::PartFields
+</code>
+</pre>
+<p>The data source view of one line of a graph, given the 
+<code>index
+</code> of the line (see 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>).
 </p>
 </div>
 </section>
@@ -1270,12 +1456,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='dBqgpZEcam' class='' style=';'>
+<div id='z8C5mB3rcc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("dBqgpZEcam")
+    const PLOT = document.getElementById("z8C5mB3rcc")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1353,6 +1539,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.MatrixFields">
 <code>SomeGraphs.Sources.MatrixFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>SomeGraphs.Sources.PartFields
 </code>
 </a>
 </li>
@@ -1465,6 +1657,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.distribution_fields">
+<code>SomeGraphs.Sources.distribution_fields
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.distribution_values_fields">
 <code>SomeGraphs.Sources.distribution_values_fields
 </code>
@@ -1491,6 +1689,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.entries_fields">
 <code>SomeGraphs.Sources.entries_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.line_fields">
+<code>SomeGraphs.Sources.line_fields
 </code>
 </a>
 </li>
@@ -1533,6 +1737,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.rows_subgroups_fields">
 <code>SomeGraphs.Sources.rows_subgroups_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.series_fields">
+<code>SomeGraphs.Sources.series_fields
 </code>
 </a>
 </li>

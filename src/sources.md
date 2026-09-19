@@ -23,6 +23,7 @@ SomeGraphs.Sources.SizesConfigurationFields
 SomeGraphs.Sources.MatrixFields
 SomeGraphs.Sources.MatrixDataFields
 SomeGraphs.Sources.MatrixConfigurationFields
+SomeGraphs.Sources.PartFields
 SomeGraphs.Sources.add_hovers!
 ```
 
@@ -40,9 +41,12 @@ SomeGraphs.Sources.edges_sizes_fields
 SomeGraphs.Sources.values_fields
 SomeGraphs.Sources.colors_fields
 SomeGraphs.Sources.series_values_fields
+SomeGraphs.Sources.series_fields
 SomeGraphs.Sources.annotations_fields
 SomeGraphs.Sources.distribution_values_fields
 SomeGraphs.Sources.distributions_values_fields
+SomeGraphs.Sources.distribution_fields
+SomeGraphs.Sources.line_fields
 SomeGraphs.Sources.entries_fields
 SomeGraphs.Sources.rows_annotations_fields
 SomeGraphs.Sources.columns_annotations_fields

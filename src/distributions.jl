@@ -327,7 +327,7 @@ function Validations.validate(
 end
 
 """
-    @kwdef mutable struct DistributionData
+    @kwdef mutable struct DistributionData <: AbstractPartData
         values::VectorValuesData = VectorValuesData()
         points::VectorEntitiesData = VectorEntitiesData()
         name::Maybe{AbstractString} = nothing
@@ -345,7 +345,7 @@ distributions graph) as the cross-series name or the legend entry. A distributio
 of a multiple distributions graph. The `color` overrides the configuration for this distribution; a `nothing` means the
 configuration default is used.
 """
-@kwdef mutable struct DistributionData
+@kwdef mutable struct DistributionData <: AbstractPartData
     values::VectorValuesData = VectorValuesData()
     points::VectorEntitiesData = VectorEntitiesData()
     name::Maybe{AbstractString} = nothing
@@ -617,6 +617,8 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
     return nothing
 end
 
+Sources.entities_field(::DistributionData)::Symbol = :points
+
 """
     distributions_values_fields(graph::DistributionsGraph, index::Integer)::AxisFields
 
@@ -631,14 +633,30 @@ function Sources.distributions_values_fields(graph::DistributionsGraph, index::I
     )
 end
 
-"""
-    add_distribution!(graph::DistributionsGraph, [distribution::DistributionData = DistributionData()])::Int
+function Sources.part_role_fields(part::PartFields{DistributionsGraph, DistributionData}, ::Val{:values})::AxisFields
+    return distributions_values_fields(part.graph, part.index)
+end
 
-Append a `distribution` and return its index.
 """
-function Sources.add_distribution!(graph::DistributionsGraph, distribution::DistributionData = DistributionData())::Int
+    distribution_fields(graph::DistributionsGraph, index::Integer)::PartFields
+
+The view of the `index` distribution (see [`PartFields`](@ref)).
+"""
+function Sources.distribution_fields(graph::DistributionsGraph, index::Integer)::PartFields
+    return PartFields(graph, graph.data.distributions[index], index)
+end
+
+"""
+    add_distribution!(graph::DistributionsGraph, [distribution::DistributionData = DistributionData()])::PartFields
+
+Append a `distribution` and return its view (see [`PartFields`](@ref)).
+"""
+function Sources.add_distribution!(
+    graph::DistributionsGraph,
+    distribution::DistributionData = DistributionData(),
+)::PartFields
     push!(graph.data.distributions, distribution)
-    return length(graph.data.distributions)
+    return PartFields(graph, distribution, length(graph.data.distributions))
 end
 
 function Common.validate_graph(graph::DistributionsGraph)::Nothing

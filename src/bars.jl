@@ -429,7 +429,7 @@ function Validations.validate(context::ValidationContext, configuration::SeriesB
 end
 
 """
-    @kwdef mutable struct SeriesData
+    @kwdef mutable struct SeriesData <: AbstractPartData
         values::VectorValuesData = VectorValuesData()
         bars::VectorEntitiesData = VectorEntitiesData()
         name::Maybe{AbstractString} = nothing
@@ -444,7 +444,7 @@ value axis title shared by all the series. The `bars` hold the hovers and mask o
 prefixed to the hover of each bar of the series. A series which is not `is_shown` is left out of the graph. All the bars
 of a series have the same `color`; a `nothing` means the color is chosen automatically by Plotly.
 """
-@kwdef mutable struct SeriesData
+@kwdef mutable struct SeriesData <: AbstractPartData
     values::VectorValuesData = VectorValuesData()
     bars::VectorEntitiesData = VectorEntitiesData()
     name::Maybe{AbstractString} = nothing
@@ -662,14 +662,29 @@ function Sources.series_values_fields(graph::SeriesBarsGraph, index::Integer)::A
     return VectorFields(series.values, series.bars, AxisConfigurationFields(graph.configuration.value_axis))
 end
 
-"""
-    add_series!(graph::SeriesBarsGraph, [series::SeriesData = SeriesData()])::Int
+Sources.entities_field(::SeriesData)::Symbol = :bars
 
-Append a `series` of bars and return its index.
+function Sources.part_role_fields(part::PartFields{SeriesBarsGraph, SeriesData}, ::Val{:values})::AxisFields
+    return series_values_fields(part.graph, part.index)
+end
+
 """
-function Sources.add_series!(graph::SeriesBarsGraph, series::SeriesData = SeriesData())::Int
+    series_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
+
+The view of the `index` series of bars (see [`PartFields`](@ref)).
+"""
+function Sources.series_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
+    return PartFields(graph, graph.data.series[index], index)
+end
+
+"""
+    add_series!(graph::SeriesBarsGraph, [series::SeriesData = SeriesData()])::PartFields
+
+Append a `series` of bars and return its view (see [`PartFields`](@ref)).
+"""
+function Sources.add_series!(graph::SeriesBarsGraph, series::SeriesData = SeriesData())::PartFields
     push!(graph.data.series, series)
-    return length(graph.data.series)
+    return PartFields(graph, series, length(graph.data.series))
 end
 
 """

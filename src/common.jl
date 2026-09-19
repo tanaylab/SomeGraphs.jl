@@ -5,6 +5,7 @@ module Common
 
 export AbstractGraphConfiguration
 export AbstractGraphData
+export AbstractPartData
 export AnnotationData
 export AnnotationSize
 export AutomaticColors
@@ -83,6 +84,14 @@ multiple similar graphs. In some cases (e.g., colors) you can specify a default 
 specific entities in the data.
 """
 abstract type AbstractGraphData <: Validated end
+
+"""
+One of the several parts a graph can be built from: a series of bars, a line, a distribution. Every part has its own
+`name` (shown in the legend), a `hover` prefixed to the hover of each of its entries, an `is_shown` which leaves it out
+of the graph, and a `color`. It also holds the entities of its entries, under whatever name fits it (the `bars` of a
+series of bars, the `points` of a line).
+"""
+abstract type AbstractPartData end
 
 """
 The type of a figure we can display. This is a combination of some [`AbstractGraphData`](@ref) and

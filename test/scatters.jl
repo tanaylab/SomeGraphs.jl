@@ -968,14 +968,46 @@ nested_test("lines") do
         @test fields.configuration.axis === graph.configuration.y_axis
 
         line = LineData(; name = "Baz")
-        @test add_line!(graph, line) == 3
+        part = add_line!(graph, line)
+        @test part.index == 3
+        @test part.data === line
         @test graph.data.lines[3] === line
         @test x_fields(graph, 3).data.values === line.x
         @test y_fields(graph, 3).data.values === line.y
 
-        @test add_line!(graph) == 4
-        x_fields(graph, 4).data.values.vector = [0, 1]
+        part = add_line!(graph)
+        @test part.index == 4
+        part.data.x.vector = [0, 1]
         @test graph.data.lines[4].x.vector == [0, 1]
+        return nothing
+    end
+
+    nested_test("part") do
+        part = line_fields(graph, 2)
+        @test part.graph === graph
+        @test part.data === graph.data.lines[2]
+        @test part.index == 2
+
+        # The entities are offered as `entities` whatever the part calls them.
+        @test part.entities === graph.data.lines[2].points
+        @test part.points === graph.data.lines[2].points
+
+        # A line shows its values in two roles, each along its own axis.
+        @test part.x.data.values === graph.data.lines[2].x
+        @test part.x.data.entities === graph.data.lines[2].points
+        @test part.x.configuration.axis === graph.configuration.x_axis
+        @test part.y.data.values === graph.data.lines[2].y
+        @test part.y.configuration.axis === graph.configuration.y_axis
+
+        part.name = "Foo"
+        part.width = 4
+        @test graph.data.lines[2].name == "Foo"
+        @test graph.data.lines[2].width == 4
+
+        @test_throws chomp("""
+                           ArgumentError: can't set the x role of a PartFields
+                           set its .data.x instead
+                           """) part.x = 1
         return nothing
     end
 
