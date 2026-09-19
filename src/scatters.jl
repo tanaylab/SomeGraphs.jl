@@ -349,29 +349,29 @@ function points_graph(;
 end
 
 """
-    x_fields(graph::PointsGraph)::AxisFields
+    x_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
 
 The X coordinates of the points, along the `x_axis`.
 """
-function Sources.x_fields(graph::PointsGraph)::AxisFields
+function Sources.x_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
     return VectorFields(graph.data.x, graph.data.points.entities, AxisConfigurationFields(graph.configuration.x_axis))
 end
 
 """
-    y_fields(graph::PointsGraph)::AxisFields
+    y_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
 
 The Y coordinates of the points, along the `y_axis`.
 """
-function Sources.y_fields(graph::PointsGraph)::AxisFields
+function Sources.y_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
     return VectorFields(graph.data.y, graph.data.points.entities, AxisConfigurationFields(graph.configuration.y_axis))
 end
 
 """
-    points_colors_fields(graph::PointsGraph)::ColorsFields
+    points_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
 
 The colors of the points.
 """
-function Sources.points_colors_fields(graph::PointsGraph)::ColorsFields
+function Sources.points_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
     return VectorFields(
         graph.data.points.colors,
         graph.data.points.entities,
@@ -380,11 +380,11 @@ function Sources.points_colors_fields(graph::PointsGraph)::ColorsFields
 end
 
 """
-    points_sizes_fields(graph::PointsGraph)::SizesFields
+    points_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
 
 The sizes of the points.
 """
-function Sources.points_sizes_fields(graph::PointsGraph)::SizesFields
+function Sources.points_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
     return VectorFields(
         graph.data.points.sizes,
         graph.data.points.entities,
@@ -393,11 +393,11 @@ function Sources.points_sizes_fields(graph::PointsGraph)::SizesFields
 end
 
 """
-    borders_colors_fields(graph::PointsGraph)::ColorsFields
+    borders_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
 
 The colors of the borders of the points, which share the entities of the points.
 """
-function Sources.borders_colors_fields(graph::PointsGraph)::ColorsFields
+function Sources.borders_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
     return VectorFields(
         graph.data.borders.colors,
         graph.data.points.entities,
@@ -406,11 +406,11 @@ function Sources.borders_colors_fields(graph::PointsGraph)::ColorsFields
 end
 
 """
-    borders_sizes_fields(graph::PointsGraph)::SizesFields
+    borders_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
 
 The sizes of the borders of the points, which share the entities of the points.
 """
-function Sources.borders_sizes_fields(graph::PointsGraph)::SizesFields
+function Sources.borders_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
     return VectorFields(
         graph.data.borders.sizes,
         graph.data.points.entities,
@@ -419,11 +419,11 @@ function Sources.borders_sizes_fields(graph::PointsGraph)::SizesFields
 end
 
 """
-    edges_colors_fields(graph::PointsGraph)::ColorsFields
+    edges_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
 
 The colors of the edges.
 """
-function Sources.edges_colors_fields(graph::PointsGraph)::ColorsFields
+function Sources.edges_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
     return VectorFields(
         graph.data.edges.colors,
         graph.data.edges.entities,
@@ -432,11 +432,11 @@ function Sources.edges_colors_fields(graph::PointsGraph)::ColorsFields
 end
 
 """
-    edges_sizes_fields(graph::PointsGraph)::SizesFields
+    edges_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
 
 The sizes (widths) of the edges.
 """
-function Sources.edges_sizes_fields(graph::PointsGraph)::SizesFields
+function Sources.edges_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
     return VectorFields(
         graph.data.edges.sizes,
         graph.data.edges.entities,
@@ -1422,59 +1422,59 @@ function lines_graph(;
 end
 
 """
-    x_fields(graph::LineGraph)::AxisFields
+    x_axis_vector_fields(graph::LineGraph)::AxisVectorFields
 
 The X coordinates of the points of the line, along the `x_axis`.
 """
-function Sources.x_fields(graph::LineGraph)::AxisFields
+function Sources.x_axis_vector_fields(graph::LineGraph)::AxisVectorFields
     return VectorFields(graph.data.x, graph.data.points, AxisConfigurationFields(graph.configuration.x_axis))
 end
 
 """
-    y_fields(graph::LineGraph)::AxisFields
+    y_axis_vector_fields(graph::LineGraph)::AxisVectorFields
 
 The Y coordinates of the points of the line, along the `y_axis`.
 """
-function Sources.y_fields(graph::LineGraph)::AxisFields
+function Sources.y_axis_vector_fields(graph::LineGraph)::AxisVectorFields
     return VectorFields(graph.data.y, graph.data.points, AxisConfigurationFields(graph.configuration.y_axis))
 end
 
 """
-    x_fields(graph::LinesGraph, index::Integer)::AxisFields
+    x_axis_vector_fields(graph::LinesGraph, index::Integer)::AxisVectorFields
 
 The X coordinates of the points of the `index` line, along the (shared) `x_axis`.
 """
-function Sources.x_fields(graph::LinesGraph, index::Integer)::AxisFields
+function Sources.x_axis_vector_fields(graph::LinesGraph, index::Integer)::AxisVectorFields
     line = graph.data.lines[index]
     return VectorFields(line.x, line.points, AxisConfigurationFields(graph.configuration.x_axis))
 end
 
 """
-    y_fields(graph::LinesGraph, index::Integer)::AxisFields
+    y_axis_vector_fields(graph::LinesGraph, index::Integer)::AxisVectorFields
 
 The Y coordinates of the points of the `index` line, along the (shared) `y_axis`.
 """
-function Sources.y_fields(graph::LinesGraph, index::Integer)::AxisFields
+function Sources.y_axis_vector_fields(graph::LinesGraph, index::Integer)::AxisVectorFields
     line = graph.data.lines[index]
     return VectorFields(line.y, line.points, AxisConfigurationFields(graph.configuration.y_axis))
 end
 
 Sources.entities_field(::LineData)::Symbol = :points
 
-function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:x})::AxisFields
-    return x_fields(part.graph, part.index)
+function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:x})::AxisVectorFields
+    return x_axis_vector_fields(part.graph, part.index)
 end
 
-function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:y})::AxisFields
-    return y_fields(part.graph, part.index)
+function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:y})::AxisVectorFields
+    return y_axis_vector_fields(part.graph, part.index)
 end
 
 """
-    line_fields(graph::LinesGraph, index::Integer)::PartFields
+    line_part_fields(graph::LinesGraph, index::Integer)::PartFields
 
 The view of the `index` line (see [`PartFields`](@ref)).
 """
-function Sources.line_fields(graph::LinesGraph, index::Integer)::PartFields
+function Sources.line_part_fields(graph::LinesGraph, index::Integer)::PartFields
     return PartFields(graph, graph.data.lines[index], index)
 end
 

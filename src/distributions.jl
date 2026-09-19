@@ -582,11 +582,11 @@ function collect_hidden_values_range!(
 end
 
 """
-    distribution_values_fields(graph::DistributionGraph)::AxisFields
+    distribution_axis_vector_fields(graph::DistributionGraph)::AxisVectorFields
 
 The values of the distribution, along the `value_axis`.
 """
-function Sources.distribution_values_fields(graph::DistributionGraph)::AxisFields
+function Sources.distribution_axis_vector_fields(graph::DistributionGraph)::AxisVectorFields
     distribution = graph.data.distribution
     return VectorFields(
         distribution.values,
@@ -620,11 +620,11 @@ end
 Sources.entities_field(::DistributionData)::Symbol = :points
 
 """
-    distributions_values_fields(graph::DistributionsGraph, index::Integer)::AxisFields
+    distributions_axis_vector_fields(graph::DistributionsGraph, index::Integer)::AxisVectorFields
 
 The values of the `index` distribution, along the (shared) `value_axis`.
 """
-function Sources.distributions_values_fields(graph::DistributionsGraph, index::Integer)::AxisFields
+function Sources.distributions_axis_vector_fields(graph::DistributionsGraph, index::Integer)::AxisVectorFields
     distribution = graph.data.distributions[index]
     return VectorFields(
         distribution.values,
@@ -633,16 +633,19 @@ function Sources.distributions_values_fields(graph::DistributionsGraph, index::I
     )
 end
 
-function Sources.part_role_fields(part::PartFields{DistributionsGraph, DistributionData}, ::Val{:values})::AxisFields
-    return distributions_values_fields(part.graph, part.index)
+function Sources.part_role_fields(
+    part::PartFields{DistributionsGraph, DistributionData},
+    ::Val{:values},
+)::AxisVectorFields
+    return distributions_axis_vector_fields(part.graph, part.index)
 end
 
 """
-    distribution_fields(graph::DistributionsGraph, index::Integer)::PartFields
+    distribution_part_fields(graph::DistributionsGraph, index::Integer)::PartFields
 
 The view of the `index` distribution (see [`PartFields`](@ref)).
 """
-function Sources.distribution_fields(graph::DistributionsGraph, index::Integer)::PartFields
+function Sources.distribution_part_fields(graph::DistributionsGraph, index::Integer)::PartFields
     return PartFields(graph, graph.data.distributions[index], index)
 end
 

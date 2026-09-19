@@ -200,38 +200,38 @@ function bars_graph(;
 end
 
 """
-    values_fields(graph::BarsGraph)::AxisFields
+    values_axis_vector_fields(graph::BarsGraph)::AxisVectorFields
 
 The values of the bars, along the `value_axis`.
 """
-function Sources.values_fields(graph::BarsGraph)::AxisFields
+function Sources.values_axis_vector_fields(graph::BarsGraph)::AxisVectorFields
     return VectorFields(graph.data.values, graph.data.bars, AxisConfigurationFields(graph.configuration.value_axis))
 end
 
 """
-    colors_fields(graph::BarsGraph)::ColorsFields
+    colors_vector_fields(graph::BarsGraph)::ColorsVectorFields
 
 The colors of the bars.
 """
-function Sources.colors_fields(graph::BarsGraph)::ColorsFields
+function Sources.colors_vector_fields(graph::BarsGraph)::ColorsVectorFields
     return VectorFields(graph.data.colors, graph.data.bars, ColorsConfigurationFields(graph.configuration.colors))
 end
 
 """
-    names_fields(graph::BarsGraph)::VectorDataFields
+    names_vector_data_fields(graph::BarsGraph)::VectorDataFields
 
 The names of the bars; their title is the title of the bars axis.
 """
-function Sources.names_fields(graph::BarsGraph)::VectorDataFields
+function Sources.names_vector_data_fields(graph::BarsGraph)::VectorDataFields
     return VectorDataFields(graph.data.names, graph.data.bars)
 end
 
 """
-    annotations_fields(graph::BarsGraph, index::Integer)::ColorsFields
+    annotations_colors_vector_fields(graph::BarsGraph, index::Integer)::ColorsVectorFields
 
 The `index` annotation of the bars, which shares the entities of the bars.
 """
-function Sources.annotations_fields(graph::BarsGraph, index::Integer)::ColorsFields
+function Sources.annotations_colors_vector_fields(graph::BarsGraph, index::Integer)::ColorsVectorFields
     annotation = graph.data.annotations[index]
     return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
 end
@@ -652,28 +652,28 @@ function series_value_axis_title(graph::SeriesBarsGraph)::Maybe{AbstractString}
 end
 
 """
-    series_values_fields(graph::SeriesBarsGraph, index::Integer)::AxisFields
+    series_axis_vector_fields(graph::SeriesBarsGraph, index::Integer)::AxisVectorFields
 
 The values of the bars of the `index` series, along the (shared) `value_axis`. The entities are the bars of the series
 alone.
 """
-function Sources.series_values_fields(graph::SeriesBarsGraph, index::Integer)::AxisFields
+function Sources.series_axis_vector_fields(graph::SeriesBarsGraph, index::Integer)::AxisVectorFields
     series = graph.data.series[index]
     return VectorFields(series.values, series.bars, AxisConfigurationFields(graph.configuration.value_axis))
 end
 
 Sources.entities_field(::SeriesData)::Symbol = :bars
 
-function Sources.part_role_fields(part::PartFields{SeriesBarsGraph, SeriesData}, ::Val{:values})::AxisFields
-    return series_values_fields(part.graph, part.index)
+function Sources.part_role_fields(part::PartFields{SeriesBarsGraph, SeriesData}, ::Val{:values})::AxisVectorFields
+    return series_axis_vector_fields(part.graph, part.index)
 end
 
 """
-    series_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
+    series_part_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
 
 The view of the `index` series of bars (see [`PartFields`](@ref)).
 """
-function Sources.series_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
+function Sources.series_part_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
     return PartFields(graph, graph.data.series[index], index)
 end
 
@@ -688,11 +688,11 @@ function Sources.add_series!(graph::SeriesBarsGraph, series::SeriesData = Series
 end
 
 """
-    annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
+    annotations_colors_vector_fields(graph::SeriesBarsGraph, index::Integer)::ColorsVectorFields
 
 The `index` annotation of the bars, which shares the entities of the bars (the ones shared by all the series).
 """
-function Sources.annotations_fields(graph::SeriesBarsGraph, index::Integer)::ColorsFields
+function Sources.annotations_colors_vector_fields(graph::SeriesBarsGraph, index::Integer)::ColorsVectorFields
     annotation = graph.data.annotations[index]
     return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
 end
@@ -708,11 +708,11 @@ function Sources.add_annotation!(graph::SeriesBarsGraph, annotation::AnnotationD
 end
 
 """
-    names_fields(graph::SeriesBarsGraph)::VectorDataFields
+    names_vector_data_fields(graph::SeriesBarsGraph)::VectorDataFields
 
 The names of the bars (shared by all the series); their title is the title of the bars axis.
 """
-function Sources.names_fields(graph::SeriesBarsGraph)::VectorDataFields
+function Sources.names_vector_data_fields(graph::SeriesBarsGraph)::VectorDataFields
     return VectorDataFields(graph.data.names, graph.data.bars)
 end
 

@@ -495,12 +495,12 @@ function entries_values(graph::HeatmapGraph)::AbstractMatrix{<:Real}
 end
 
 """
-    entries_fields(graph::HeatmapGraph)::MatrixFields
+    entries_matrix_fields(graph::HeatmapGraph)::MatrixFields
 
 The entries of the heatmap, colored by the `entries.colors`. This also gives access to the entities of the rows and of
 the columns, so a source can add hovers per cell, per row and per column.
 """
-function Sources.entries_fields(graph::HeatmapGraph)::MatrixFields
+function Sources.entries_matrix_fields(graph::HeatmapGraph)::MatrixFields
     return MatrixFields(
         graph.data.entries,
         graph.data.cells,
@@ -511,11 +511,11 @@ function Sources.entries_fields(graph::HeatmapGraph)::MatrixFields
 end
 
 """
-    rows_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+    rows_annotations_colors_vector_fields(graph::HeatmapGraph, index::Integer)::ColorsVectorFields
 
 The `index` annotation of the rows, which shares the entities of the rows.
 """
-function Sources.rows_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+function Sources.rows_annotations_colors_vector_fields(graph::HeatmapGraph, index::Integer)::ColorsVectorFields
     annotation = graph.data.rows.annotations[index]
     return VectorFields(annotation.values, graph.data.rows.entities, ColorsConfigurationFields(annotation.colors))
 end
@@ -531,11 +531,11 @@ function Sources.add_rows_annotation!(graph::HeatmapGraph, annotation::Annotatio
 end
 
 """
-    columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+    columns_annotations_colors_vector_fields(graph::HeatmapGraph, index::Integer)::ColorsVectorFields
 
 The `index` annotation of the columns, which shares the entities of the columns.
 """
-function Sources.columns_annotations_fields(graph::HeatmapGraph, index::Integer)::ColorsFields
+function Sources.columns_annotations_colors_vector_fields(graph::HeatmapGraph, index::Integer)::ColorsVectorFields
     annotation = graph.data.columns.annotations[index]
     return VectorFields(annotation.values, graph.data.columns.entities, ColorsConfigurationFields(annotation.colors))
 end
@@ -551,56 +551,56 @@ function Sources.add_columns_annotation!(graph::HeatmapGraph, annotation::Annota
 end
 
 """
-    rows_names_fields(graph::HeatmapGraph)::VectorDataFields
+    rows_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
 
 The names of the rows; their title is the title of the rows axis.
 """
-function Sources.rows_names_fields(graph::HeatmapGraph)::VectorDataFields
+function Sources.rows_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
     return VectorDataFields(graph.data.rows.names, graph.data.rows.entities)
 end
 
 """
-    columns_names_fields(graph::HeatmapGraph)::VectorDataFields
+    columns_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
 
 The names of the columns; their title is the title of the columns axis.
 """
-function Sources.columns_names_fields(graph::HeatmapGraph)::VectorDataFields
+function Sources.columns_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
     return VectorDataFields(graph.data.columns.names, graph.data.columns.entities)
 end
 
 """
-    rows_groups_fields(graph::HeatmapGraph)::VectorDataFields
+    rows_groups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
 
 The groups of the rows.
 """
-function Sources.rows_groups_fields(graph::HeatmapGraph)::VectorDataFields
+function Sources.rows_groups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
     return VectorDataFields(graph.data.rows.groups, graph.data.rows.entities)
 end
 
 """
-    rows_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+    rows_subgroups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
 
 The subgroups of the rows.
 """
-function Sources.rows_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+function Sources.rows_subgroups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
     return VectorDataFields(graph.data.rows.subgroups, graph.data.rows.entities)
 end
 
 """
-    columns_groups_fields(graph::HeatmapGraph)::VectorDataFields
+    columns_groups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
 
 The groups of the columns.
 """
-function Sources.columns_groups_fields(graph::HeatmapGraph)::VectorDataFields
+function Sources.columns_groups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
     return VectorDataFields(graph.data.columns.groups, graph.data.columns.entities)
 end
 
 """
-    columns_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+    columns_subgroups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
 
 The subgroups of the columns.
 """
-function Sources.columns_subgroups_fields(graph::HeatmapGraph)::VectorDataFields
+function Sources.columns_subgroups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
     return VectorDataFields(graph.data.columns.subgroups, graph.data.columns.entities)
 end
 

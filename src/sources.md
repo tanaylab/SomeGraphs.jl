@@ -30,33 +30,33 @@ SomeGraphs.Sources.add_hovers!
 The views are obtained from a graph by accessor functions, named by the path of the values in the data of the graph:
 
 ```@docs
-SomeGraphs.Sources.x_fields
-SomeGraphs.Sources.y_fields
-SomeGraphs.Sources.points_colors_fields
-SomeGraphs.Sources.points_sizes_fields
-SomeGraphs.Sources.borders_colors_fields
-SomeGraphs.Sources.borders_sizes_fields
-SomeGraphs.Sources.edges_colors_fields
-SomeGraphs.Sources.edges_sizes_fields
-SomeGraphs.Sources.values_fields
-SomeGraphs.Sources.colors_fields
-SomeGraphs.Sources.series_values_fields
-SomeGraphs.Sources.series_fields
-SomeGraphs.Sources.annotations_fields
-SomeGraphs.Sources.distribution_values_fields
-SomeGraphs.Sources.distributions_values_fields
-SomeGraphs.Sources.distribution_fields
-SomeGraphs.Sources.line_fields
-SomeGraphs.Sources.entries_fields
-SomeGraphs.Sources.rows_annotations_fields
-SomeGraphs.Sources.columns_annotations_fields
-SomeGraphs.Sources.names_fields
-SomeGraphs.Sources.rows_names_fields
-SomeGraphs.Sources.columns_names_fields
-SomeGraphs.Sources.rows_groups_fields
-SomeGraphs.Sources.rows_subgroups_fields
-SomeGraphs.Sources.columns_groups_fields
-SomeGraphs.Sources.columns_subgroups_fields
+SomeGraphs.Sources.x_axis_vector_fields
+SomeGraphs.Sources.y_axis_vector_fields
+SomeGraphs.Sources.points_colors_vector_fields
+SomeGraphs.Sources.points_sizes_vector_fields
+SomeGraphs.Sources.borders_colors_vector_fields
+SomeGraphs.Sources.borders_sizes_vector_fields
+SomeGraphs.Sources.edges_colors_vector_fields
+SomeGraphs.Sources.edges_sizes_vector_fields
+SomeGraphs.Sources.values_axis_vector_fields
+SomeGraphs.Sources.colors_vector_fields
+SomeGraphs.Sources.series_axis_vector_fields
+SomeGraphs.Sources.series_part_fields
+SomeGraphs.Sources.annotations_colors_vector_fields
+SomeGraphs.Sources.distribution_axis_vector_fields
+SomeGraphs.Sources.distributions_axis_vector_fields
+SomeGraphs.Sources.distribution_part_fields
+SomeGraphs.Sources.line_part_fields
+SomeGraphs.Sources.entries_matrix_fields
+SomeGraphs.Sources.rows_annotations_colors_vector_fields
+SomeGraphs.Sources.columns_annotations_colors_vector_fields
+SomeGraphs.Sources.names_vector_data_fields
+SomeGraphs.Sources.rows_names_vector_data_fields
+SomeGraphs.Sources.columns_names_vector_data_fields
+SomeGraphs.Sources.rows_groups_vector_data_fields
+SomeGraphs.Sources.rows_subgroups_vector_data_fields
+SomeGraphs.Sources.columns_groups_vector_data_fields
+SomeGraphs.Sources.columns_subgroups_vector_data_fields
 ```
 
 A view of one entry of a vector of structures (a series, a line, a distribution, an annotation) needs the entry to
@@ -85,9 +85,9 @@ function source!(fields::VectorFields, values::AbstractVector{<:Real}, title::Ab
     return nothing
 end
 graph = points_graph()
-source!(x_fields(graph), collect(0:10) .* 10, "X")
-source!(y_fields(graph), collect(0:10) .^ 2, "Y")
-source!(points_colors_fields(graph), collect(0:10), "Color")
+source!(x_axis_vector_fields(graph), collect(0:10) .* 10, "X")
+source!(y_axis_vector_fields(graph), collect(0:10) .^ 2, "Y")
+source!(points_colors_vector_fields(graph), collect(0:10), "Color")
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

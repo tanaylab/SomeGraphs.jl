@@ -61,12 +61,12 @@ nested_test("bars") do
     end
 
     nested_test("fields") do
-        fields = values_fields(graph)
+        fields = values_axis_vector_fields(graph)
         @test fields.data.values === graph.data.values
         @test fields.data.entities === graph.data.bars
         @test fields.configuration.axis === graph.configuration.value_axis
 
-        fields = colors_fields(graph)
+        fields = colors_vector_fields(graph)
         @test fields.data.values === graph.data.colors
         @test fields.data.entities === graph.data.bars
         @test fields.configuration.axis === graph.configuration.colors.axis
@@ -75,17 +75,17 @@ nested_test("bars") do
         annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))
         @test add_annotation!(graph, annotation) == 1
         @test graph.data.annotations[1] === annotation
-        fields = annotations_fields(graph, 1)
+        fields = annotations_colors_vector_fields(graph, 1)
         @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.bars
         @test fields.configuration.colors === annotation.colors
 
         @test add_annotation!(graph) == 2
-        fields = annotations_fields(graph, 2)
+        fields = annotations_colors_vector_fields(graph, 2)
         fields.data.values.vector = [0, 1, 0, 1]
         @test graph.data.annotations[2].values.vector == [0, 1, 0, 1]
 
-        fields = names_fields(graph)
+        fields = names_vector_data_fields(graph)
         @test fields.values === graph.data.names
         @test fields.entities === graph.data.bars
         return nothing
@@ -294,7 +294,7 @@ nested_test("series_bars") do
     end
 
     nested_test("fields") do
-        fields = series_values_fields(graph, 2)
+        fields = series_axis_vector_fields(graph, 2)
         @test fields.data.values === graph.data.series[2].values
         @test fields.data.entities === graph.data.series[2].bars
         @test fields.configuration.axis === graph.configuration.value_axis
@@ -302,13 +302,13 @@ nested_test("series_bars") do
         annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))
         @test add_annotation!(graph, annotation) == 1
         @test graph.data.annotations[1] === annotation
-        fields = annotations_fields(graph, 1)
+        fields = annotations_colors_vector_fields(graph, 1)
         @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.bars
         @test fields.configuration.colors === annotation.colors
 
         @test add_annotation!(graph) == 2
-        fields = annotations_fields(graph, 2)
+        fields = annotations_colors_vector_fields(graph, 2)
         fields.data.values.vector = collect(0:10)
         @test graph.data.annotations[2].values.vector == collect(0:10)
 
@@ -317,7 +317,7 @@ nested_test("series_bars") do
         @test part.index == 3
         @test part.data === series
         @test graph.data.series[3] === series
-        fields = series_values_fields(graph, 3)
+        fields = series_axis_vector_fields(graph, 3)
         @test fields.data.values === series.values
         @test fields.data.entities === series.bars
 
@@ -326,11 +326,11 @@ nested_test("series_bars") do
         part.data.values.vector = collect(0:10)
         @test graph.data.series[4].values.vector == collect(0:10)
 
-        fields = names_fields(graph)
+        fields = names_vector_data_fields(graph)
         @test fields.values === graph.data.names
         @test fields.entities === graph.data.bars
 
-        part = series_fields(graph, 2)
+        part = series_part_fields(graph, 2)
         @test part.graph === graph
         @test part.data === graph.data.series[2]
         @test part.index == 2

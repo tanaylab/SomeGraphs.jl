@@ -18,15 +18,15 @@ entry is appended by `add_series!` and its siblings, which return the index the 
 module Sources
 
 export AxisConfigurationFields
-export AxisFields
+export AxisVectorFields
 export ColorsConfigurationFields
-export ColorsFields
+export ColorsVectorFields
 export MatrixConfigurationFields
 export MatrixDataFields
 export MatrixFields
 export PartFields
 export SizesConfigurationFields
-export SizesFields
+export SizesVectorFields
 export VectorDataFields
 export VectorFields
 export add_annotation!
@@ -36,33 +36,33 @@ export add_hovers!
 export add_line!
 export add_rows_annotation!
 export add_series!
-export annotations_fields
-export borders_colors_fields
-export borders_sizes_fields
-export colors_fields
-export columns_annotations_fields
-export columns_groups_fields
-export columns_names_fields
-export columns_subgroups_fields
-export distribution_fields
-export distribution_values_fields
-export distributions_values_fields
-export edges_colors_fields
-export edges_sizes_fields
-export entries_fields
-export line_fields
-export names_fields
-export points_colors_fields
-export points_sizes_fields
-export rows_annotations_fields
-export rows_groups_fields
-export rows_names_fields
-export rows_subgroups_fields
-export series_fields
-export series_values_fields
-export values_fields
-export x_fields
-export y_fields
+export annotations_colors_vector_fields
+export borders_colors_vector_fields
+export borders_sizes_vector_fields
+export colors_vector_fields
+export columns_annotations_colors_vector_fields
+export columns_groups_vector_data_fields
+export columns_names_vector_data_fields
+export columns_subgroups_vector_data_fields
+export distribution_axis_vector_fields
+export distribution_part_fields
+export distributions_axis_vector_fields
+export edges_colors_vector_fields
+export edges_sizes_vector_fields
+export entries_matrix_fields
+export line_part_fields
+export names_vector_data_fields
+export points_colors_vector_fields
+export points_sizes_vector_fields
+export rows_annotations_colors_vector_fields
+export rows_groups_vector_data_fields
+export rows_names_vector_data_fields
+export rows_subgroups_vector_data_fields
+export series_axis_vector_fields
+export series_part_fields
+export values_axis_vector_fields
+export x_axis_vector_fields
+export y_axis_vector_fields
 
 using ..Common
 using ..Validations
@@ -141,8 +141,8 @@ heatmap), the [`MatrixEntitiesData`](@ref) of its cells, and the [`VectorEntitie
 All are the graph's own objects, so writing into them changes the graph.
 
 A matrix source knows the two axes its data is indexed by, so it can add hovers to all three: one per cell, one per row
-and one per column. The axis entities are the same ones the row and column views hand out (`rows_names_fields`,
-`rows_annotations_fields`, ...), so hovers added through either path are seen by both.
+and one per column. The axis entities are the same ones the row and column views hand out (`rows_names_vector_data_fields`,
+`rows_annotations_colors_vector_fields`, ...), so hovers added through either path are seen by both.
 """
 struct MatrixDataFields
     values::MatrixValuesData
@@ -156,7 +156,7 @@ end
         axis::AxisConfiguration
     end
 
-The configuration half of an `AxisFields` data source view (see [`VectorFields`](@ref)): the
+The configuration half of an `AxisVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`AxisConfiguration`](@ref) the values are shown along.
 """
 struct AxisConfigurationFields
@@ -169,7 +169,7 @@ end
         colors::ColorsConfiguration
     end
 
-The configuration half of a `ColorsFields` data source view (see [`VectorFields`](@ref)): the
+The configuration half of a `ColorsVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`ColorsConfiguration`](@ref) the values are colored by, and its `axis`.
 """
 struct ColorsConfigurationFields
@@ -187,7 +187,7 @@ end
         sizes::SizesConfiguration
     end
 
-The configuration half of a `SizesFields` data source view (see [`VectorFields`](@ref)): the
+The configuration half of a `SizesVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`SizesConfiguration`](@ref) the values are sized by, and its `axis`.
 """
 struct SizesConfigurationFields
@@ -223,26 +223,26 @@ end
         configuration::Configuration
     end
 
-    AxisFields = VectorFields{AxisConfigurationFields}
-    ColorsFields = VectorFields{ColorsConfigurationFields}
-    SizesFields = VectorFields{SizesConfigurationFields}
+    AxisVectorFields = VectorFields{AxisConfigurationFields}
+    ColorsVectorFields = VectorFields{ColorsConfigurationFields}
+    SizesVectorFields = VectorFields{SizesConfigurationFields}
 
 A data source view of one role of a graph whose entities are a vector: the `data` (a [`VectorDataFields`](@ref)) and
 the `configuration` (whose `axis` is an [`AxisConfiguration`](@ref), whatever else it holds). A function writing into
 such a view fills the role from some source of data, and works the same on the X coordinates of points, the values of
-bars, the colors of either, and so on. The views are `AxisFields` for values shown along an axis, `ColorsFields` for
-values shown as colors (see [`ColorsConfigurationFields`](@ref)) and `SizesFields` for values shown as sizes (see
-[`SizesConfigurationFields`](@ref)). They are obtained from a graph by the accessor functions (`x_fields`,
-`colors_fields`, ...), whose names follow the path of the values in the data of the graph.
+bars, the colors of either, and so on. The views are `AxisVectorFields` for values shown along an axis, `ColorsVectorFields` for
+values shown as colors (see [`ColorsConfigurationFields`](@ref)) and `SizesVectorFields` for values shown as sizes (see
+[`SizesConfigurationFields`](@ref)). They are obtained from a graph by the accessor functions (`x_axis_vector_fields`,
+`colors_vector_fields`, ...), whose names follow the path of the values in the data of the graph.
 """
 struct VectorFields{Configuration}
     data::VectorDataFields
     configuration::Configuration
 end
 
-AxisFields = VectorFields{AxisConfigurationFields}
-ColorsFields = VectorFields{ColorsConfigurationFields}
-SizesFields = VectorFields{SizesConfigurationFields}
+AxisVectorFields = VectorFields{AxisConfigurationFields}
+ColorsVectorFields = VectorFields{ColorsConfigurationFields}
+SizesVectorFields = VectorFields{SizesConfigurationFields}
 
 function VectorFields(values::VectorValuesData, entities::VectorEntitiesData, configuration::Any)::VectorFields
     return VectorFields(VectorDataFields(values, entities), configuration)
@@ -360,207 +360,207 @@ function MatrixFields(
 end
 
 """
-    x_fields(graph)::AxisFields
-    x_fields(graph, index::Integer)::AxisFields
+    x_axis_vector_fields(graph)::AxisVectorFields
+    x_axis_vector_fields(graph, index::Integer)::AxisVectorFields
 
 The data source view of the X coordinates of a graph (of its points; of the points of one of its lines, given the
 `index` of the line).
 """
-function x_fields end
+function x_axis_vector_fields end
 
 """
-    y_fields(graph)::AxisFields
-    y_fields(graph, index::Integer)::AxisFields
+    y_axis_vector_fields(graph)::AxisVectorFields
+    y_axis_vector_fields(graph, index::Integer)::AxisVectorFields
 
 The data source view of the Y coordinates of a graph (of its points; of the points of one of its lines, given the
 `index` of the line).
 """
-function y_fields end
+function y_axis_vector_fields end
 
 """
-    points_colors_fields(graph)::ColorsFields
+    points_colors_vector_fields(graph)::ColorsVectorFields
 
 The data source view of the colors of the points of a graph.
 """
-function points_colors_fields end
+function points_colors_vector_fields end
 
 """
-    points_sizes_fields(graph)::SizesFields
+    points_sizes_vector_fields(graph)::SizesVectorFields
 
 The data source view of the sizes of the points of a graph.
 """
-function points_sizes_fields end
+function points_sizes_vector_fields end
 
 """
-    borders_colors_fields(graph)::ColorsFields
+    borders_colors_vector_fields(graph)::ColorsVectorFields
 
 The data source view of the colors of the borders of the points of a graph. The borders share the entities of the
 points.
 """
-function borders_colors_fields end
+function borders_colors_vector_fields end
 
 """
-    borders_sizes_fields(graph)::SizesFields
+    borders_sizes_vector_fields(graph)::SizesVectorFields
 
 The data source view of the sizes of the borders of the points of a graph. The borders share the entities of the points.
 """
-function borders_sizes_fields end
+function borders_sizes_vector_fields end
 
 """
-    edges_colors_fields(graph)::ColorsFields
+    edges_colors_vector_fields(graph)::ColorsVectorFields
 
 The data source view of the colors of the edges of a graph.
 """
-function edges_colors_fields end
+function edges_colors_vector_fields end
 
 """
-    edges_sizes_fields(graph)::SizesFields
+    edges_sizes_vector_fields(graph)::SizesVectorFields
 
 The data source view of the sizes (widths) of the edges of a graph.
 """
-function edges_sizes_fields end
+function edges_sizes_vector_fields end
 
 """
-    values_fields(graph)::AxisFields
+    values_axis_vector_fields(graph)::AxisVectorFields
 
 The data source view of the values of a graph (of its bars).
 """
-function values_fields end
+function values_axis_vector_fields end
 
 """
-    colors_fields(graph)::ColorsFields
+    colors_vector_fields(graph)::ColorsVectorFields
 
 The data source view of the colors of a graph (of its bars).
 """
-function colors_fields end
+function colors_vector_fields end
 
 """
-    series_values_fields(graph, index::Integer)::AxisFields
+    series_axis_vector_fields(graph, index::Integer)::AxisVectorFields
 
 The data source view of the values of one series of a graph, given the `index` of the series.
 """
-function series_values_fields end
+function series_axis_vector_fields end
 
 """
-    annotations_fields(graph, index::Integer)::ColorsFields
+    annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
 
 The data source view of one annotation of a graph, given the `index` of the annotation. The annotation shares the
 entities of the axis it annotates (the bars).
 """
-function annotations_fields end
+function annotations_colors_vector_fields end
 
 """
-    distribution_values_fields(graph)::AxisFields
+    distribution_axis_vector_fields(graph)::AxisVectorFields
 
 The data source view of the values of the distribution of a graph.
 """
-function distribution_values_fields end
+function distribution_axis_vector_fields end
 
 """
-    distributions_values_fields(graph, index::Integer)::AxisFields
+    distributions_axis_vector_fields(graph, index::Integer)::AxisVectorFields
 
 The data source view of the values of one distribution of a graph, given the `index` of the distribution.
 """
-function distributions_values_fields end
+function distributions_axis_vector_fields end
 
 """
-    distribution_fields(graph, index::Integer)::PartFields
+    distribution_part_fields(graph, index::Integer)::PartFields
 
 The data source view of one distribution of a graph, given the `index` of the distribution (see [`PartFields`](@ref)).
 """
-function distribution_fields end
+function distribution_part_fields end
 
 """
-    line_fields(graph, index::Integer)::PartFields
+    line_part_fields(graph, index::Integer)::PartFields
 
 The data source view of one line of a graph, given the `index` of the line (see [`PartFields`](@ref)).
 """
-function line_fields end
+function line_part_fields end
 
 """
-    series_fields(graph, index::Integer)::PartFields
+    series_part_fields(graph, index::Integer)::PartFields
 
 The data source view of one series of bars of a graph, given the `index` of the series (see [`PartFields`](@ref)).
 """
-function series_fields end
+function series_part_fields end
 
 """
-    entries_fields(graph)::MatrixFields
+    entries_matrix_fields(graph)::MatrixFields
 
 The data source view of the entries of a graph (of a heatmap).
 """
-function entries_fields end
+function entries_matrix_fields end
 
 """
-    rows_annotations_fields(graph, index::Integer)::ColorsFields
+    rows_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
 
 The data source view of one annotation of the rows of a graph, given the `index` of the annotation. The annotation
 shares the entities of the rows.
 """
-function rows_annotations_fields end
+function rows_annotations_colors_vector_fields end
 
 """
-    columns_annotations_fields(graph, index::Integer)::ColorsFields
+    columns_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
 
 The data source view of one annotation of the columns of a graph, given the `index` of the annotation. The annotation
 shares the entities of the columns.
 """
-function columns_annotations_fields end
+function columns_annotations_colors_vector_fields end
 
 """
-    names_fields(graph)::VectorDataFields
+    names_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the names of the entities of a graph (of its bars); their title is the title of the axis of the
 entities.
 """
-function names_fields end
+function names_vector_data_fields end
 
 """
-    rows_names_fields(graph)::VectorDataFields
+    rows_names_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the names of the rows of a graph; their title is the title of the rows axis.
 """
-function rows_names_fields end
+function rows_names_vector_data_fields end
 
 """
-    columns_names_fields(graph)::VectorDataFields
+    columns_names_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the names of the columns of a graph; their title is the title of the columns axis.
 """
-function columns_names_fields end
+function columns_names_vector_data_fields end
 
 """
-    rows_groups_fields(graph)::VectorDataFields
+    rows_groups_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the groups of the rows of a graph. The groups have no title.
 """
-function rows_groups_fields end
+function rows_groups_vector_data_fields end
 
 """
-    rows_subgroups_fields(graph)::VectorDataFields
+    rows_subgroups_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the subgroups of the rows of a graph. The subgroups have no title.
 """
-function rows_subgroups_fields end
+function rows_subgroups_vector_data_fields end
 
 """
-    columns_groups_fields(graph)::VectorDataFields
+    columns_groups_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the groups of the columns of a graph. The groups have no title.
 """
-function columns_groups_fields end
+function columns_groups_vector_data_fields end
 
 """
-    columns_subgroups_fields(graph)::VectorDataFields
+    columns_subgroups_vector_data_fields(graph)::VectorDataFields
 
 The data source view of the subgroups of the columns of a graph. The subgroups have no title.
 """
-function columns_subgroups_fields end
+function columns_subgroups_vector_data_fields end
 
 """
     add_series!(graph, [series::SeriesData = SeriesData()])::Int
 
-Append a series to a graph (of series of bars) and return its index (for `series_values_fields`). Whatever the `series`
+Append a series to a graph (of series of bars) and return its index (for `series_axis_vector_fields`). Whatever the `series`
 leaves at its defaults can be set later, through the view or directly.
 """
 function add_series! end
@@ -568,7 +568,7 @@ function add_series! end
 """
     add_line!(graph, [line::LineData = LineData()])::Int
 
-Append a line to a graph (of lines) and return its index (for `x_fields` and `y_fields`). Whatever the `line` leaves
+Append a line to a graph (of lines) and return its index (for `x_axis_vector_fields` and `y_axis_vector_fields`). Whatever the `line` leaves
 at its defaults can be set later, through the views or directly.
 """
 function add_line! end
@@ -576,7 +576,7 @@ function add_line! end
 """
     add_distribution!(graph, [distribution::DistributionData = DistributionData()])::Int
 
-Append a distribution to a graph (of distributions) and return its index (for `distributions_values_fields`). Whatever
+Append a distribution to a graph (of distributions) and return its index (for `distributions_axis_vector_fields`). Whatever
 the `distribution` leaves at its defaults can be set later, through the view or directly.
 """
 function add_distribution! end
@@ -584,7 +584,7 @@ function add_distribution! end
 """
     add_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
 
-Append an annotation to the entities of a graph (the bars) and return its index (for `annotations_fields`). Whatever
+Append an annotation to the entities of a graph (the bars) and return its index (for `annotations_colors_vector_fields`). Whatever
 the `annotation` leaves at its defaults can be set later, through the view.
 """
 function add_annotation! end
@@ -592,7 +592,7 @@ function add_annotation! end
 """
     add_rows_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
 
-Append an annotation to the rows of a graph and return its index (for `rows_annotations_fields`). Whatever the
+Append an annotation to the rows of a graph and return its index (for `rows_annotations_colors_vector_fields`). Whatever the
 `annotation` leaves at its defaults can be set later, through the view.
 """
 function add_rows_annotation! end
@@ -600,7 +600,7 @@ function add_rows_annotation! end
 """
     add_columns_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
 
-Append an annotation to the columns of a graph and return its index (for `columns_annotations_fields`). Whatever the
+Append an annotation to the columns of a graph and return its index (for `columns_annotations_colors_vector_fields`). Whatever the
 `annotation` leaves at its defaults can be set later, through the view.
 """
 function add_columns_annotation! end

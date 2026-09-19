@@ -99,51 +99,51 @@ nested_test("points") do
     end
 
     nested_test("fields") do
-        fields = x_fields(graph)
+        fields = x_axis_vector_fields(graph)
         @test fields.data.values === graph.data.x
         @test fields.data.entities === graph.data.points.entities
         @test fields.configuration.axis === graph.configuration.x_axis
 
-        fields = y_fields(graph)
+        fields = y_axis_vector_fields(graph)
         @test fields.data.values === graph.data.y
         @test fields.data.entities === graph.data.points.entities
         @test fields.configuration.axis === graph.configuration.y_axis
 
-        fields = points_colors_fields(graph)
+        fields = points_colors_vector_fields(graph)
         @test fields.data.values === graph.data.points.colors
         @test fields.data.entities === graph.data.points.entities
         @test fields.configuration.axis === graph.configuration.points.colors.axis
         @test fields.configuration.colors === graph.configuration.points.colors
 
-        fields = points_sizes_fields(graph)
+        fields = points_sizes_vector_fields(graph)
         @test fields.data.values === graph.data.points.sizes
         @test fields.data.entities === graph.data.points.entities
         @test fields.configuration.axis === graph.configuration.points.sizes.axis
         @test fields.configuration.sizes === graph.configuration.points.sizes
 
-        fields = borders_colors_fields(graph)
+        fields = borders_colors_vector_fields(graph)
         @test fields.data.values === graph.data.borders.colors
         @test fields.data.entities === graph.data.points.entities
         @test fields.configuration.colors === graph.configuration.borders.colors
 
-        fields = borders_sizes_fields(graph)
+        fields = borders_sizes_vector_fields(graph)
         @test fields.data.values === graph.data.borders.sizes
         @test fields.data.entities === graph.data.points.entities
         @test fields.configuration.sizes === graph.configuration.borders.sizes
 
-        fields = edges_colors_fields(graph)
+        fields = edges_colors_vector_fields(graph)
         @test fields.data.values === graph.data.edges.colors
         @test fields.data.entities === graph.data.edges.entities
         @test fields.configuration.colors === graph.configuration.edges.colors
 
-        fields = edges_sizes_fields(graph)
+        fields = edges_sizes_vector_fields(graph)
         @test fields.data.values === graph.data.edges.sizes
         @test fields.data.entities === graph.data.edges.entities
         @test fields.configuration.sizes === graph.configuration.edges.sizes
 
         # Hovers added through one view of the points are seen through all of them.
-        add_hovers!(x_fields(graph).data.entities, string.(1:11); title = "X")
-        @test points_colors_fields(graph).data.entities.hovers == "X: " .* string.(1:11)
+        add_hovers!(x_axis_vector_fields(graph).data.entities, string.(1:11); title = "X")
+        @test points_colors_vector_fields(graph).data.entities.hovers == "X: " .* string.(1:11)
         return nothing
     end
 
@@ -794,12 +794,12 @@ nested_test("line") do
     end
 
     nested_test("fields") do
-        fields = x_fields(graph)
+        fields = x_axis_vector_fields(graph)
         @test fields.data.values === graph.data.x
         @test fields.data.entities === graph.data.points
         @test fields.configuration.axis === graph.configuration.x_axis
 
-        fields = y_fields(graph)
+        fields = y_axis_vector_fields(graph)
         @test fields.data.values === graph.data.y
         @test fields.data.entities === graph.data.points
         @test fields.configuration.axis === graph.configuration.y_axis
@@ -957,12 +957,12 @@ nested_test("lines") do
     end
 
     nested_test("fields") do
-        fields = x_fields(graph, 2)
+        fields = x_axis_vector_fields(graph, 2)
         @test fields.data.values === graph.data.lines[2].x
         @test fields.data.entities === graph.data.lines[2].points
         @test fields.configuration.axis === graph.configuration.x_axis
 
-        fields = y_fields(graph, 2)
+        fields = y_axis_vector_fields(graph, 2)
         @test fields.data.values === graph.data.lines[2].y
         @test fields.data.entities === graph.data.lines[2].points
         @test fields.configuration.axis === graph.configuration.y_axis
@@ -972,8 +972,8 @@ nested_test("lines") do
         @test part.index == 3
         @test part.data === line
         @test graph.data.lines[3] === line
-        @test x_fields(graph, 3).data.values === line.x
-        @test y_fields(graph, 3).data.values === line.y
+        @test x_axis_vector_fields(graph, 3).data.values === line.x
+        @test y_axis_vector_fields(graph, 3).data.values === line.y
 
         part = add_line!(graph)
         @test part.index == 4
@@ -983,7 +983,7 @@ nested_test("lines") do
     end
 
     nested_test("part") do
-        part = line_fields(graph, 2)
+        part = line_part_fields(graph, 2)
         @test part.graph === graph
         @test part.data === graph.data.lines[2]
         @test part.index == 2

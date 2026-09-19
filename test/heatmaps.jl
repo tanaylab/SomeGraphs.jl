@@ -6,7 +6,7 @@ nested_test("heatmaps") do
     ]))
 
     nested_test("fields") do
-        fields = entries_fields(graph)
+        fields = entries_matrix_fields(graph)
         @test fields.data.values === graph.data.entries
         @test fields.data.entities === graph.data.cells
         @test fields.data.rows_entities === graph.data.rows.entities
@@ -17,34 +17,34 @@ nested_test("heatmaps") do
         annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0], "score"))
         @test add_rows_annotation!(graph, annotation) == 1
         @test graph.data.rows.annotations[1] === annotation
-        fields = rows_annotations_fields(graph, 1)
+        fields = rows_annotations_colors_vector_fields(graph, 1)
         @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.rows.entities
         @test fields.configuration.colors === annotation.colors
 
         @test add_rows_annotation!(graph) == 2
-        rows_annotations_fields(graph, 2).data.values.vector = [0, 1, 0]
+        rows_annotations_colors_vector_fields(graph, 2).data.values.vector = [0, 1, 0]
         @test graph.data.rows.annotations[2].values.vector == [0, 1, 0]
 
         annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))
         @test add_columns_annotation!(graph, annotation) == 1
         @test graph.data.columns.annotations[1] === annotation
-        fields = columns_annotations_fields(graph, 1)
+        fields = columns_annotations_colors_vector_fields(graph, 1)
         @test fields.data.values === annotation.values
         @test fields.data.entities === graph.data.columns.entities
         @test fields.configuration.colors === annotation.colors
 
         @test add_columns_annotation!(graph) == 2
-        columns_annotations_fields(graph, 2).data.values.vector = [0, 1, 0, 1]
+        columns_annotations_colors_vector_fields(graph, 2).data.values.vector = [0, 1, 0, 1]
         @test graph.data.columns.annotations[2].values.vector == [0, 1, 0, 1]
 
         for (fields, values, entities) in (
-            (rows_names_fields(graph), graph.data.rows.names, graph.data.rows.entities),
-            (columns_names_fields(graph), graph.data.columns.names, graph.data.columns.entities),
-            (rows_groups_fields(graph), graph.data.rows.groups, graph.data.rows.entities),
-            (rows_subgroups_fields(graph), graph.data.rows.subgroups, graph.data.rows.entities),
-            (columns_groups_fields(graph), graph.data.columns.groups, graph.data.columns.entities),
-            (columns_subgroups_fields(graph), graph.data.columns.subgroups, graph.data.columns.entities),
+            (rows_names_vector_data_fields(graph), graph.data.rows.names, graph.data.rows.entities),
+            (columns_names_vector_data_fields(graph), graph.data.columns.names, graph.data.columns.entities),
+            (rows_groups_vector_data_fields(graph), graph.data.rows.groups, graph.data.rows.entities),
+            (rows_subgroups_vector_data_fields(graph), graph.data.rows.subgroups, graph.data.rows.entities),
+            (columns_groups_vector_data_fields(graph), graph.data.columns.groups, graph.data.columns.entities),
+            (columns_subgroups_vector_data_fields(graph), graph.data.columns.subgroups, graph.data.columns.entities),
         )
             @test fields.values === values
             @test fields.entities === entities
