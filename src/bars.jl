@@ -674,7 +674,8 @@ end
 The view of the `index` series of bars (see [`PartFields`](@ref)).
 """
 function Sources.series_part_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
-    return PartFields(graph, graph.data.series[index], index)
+    series::SeriesData = graph.data.series[index]
+    return PartFields(graph, Int(index), series)
 end
 
 """
@@ -684,7 +685,8 @@ Append a `series` of bars and return its view (see [`PartFields`](@ref)).
 """
 function Sources.add_series!(graph::SeriesBarsGraph, series::SeriesData = SeriesData())::PartFields
     push!(graph.data.series, series)
-    return PartFields(graph, series, length(graph.data.series))
+    n_series::Int = length(graph.data.series)
+    return PartFields(graph, n_series, series)
 end
 
 """

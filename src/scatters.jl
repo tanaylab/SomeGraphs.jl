@@ -1475,7 +1475,8 @@ end
 The view of the `index` line (see [`PartFields`](@ref)).
 """
 function Sources.line_part_fields(graph::LinesGraph, index::Integer)::PartFields
-    return PartFields(graph, graph.data.lines[index], index)
+    line::LineData = graph.data.lines[index]
+    return PartFields(graph, Int(index), line)
 end
 
 """
@@ -1485,7 +1486,8 @@ Append a `line` and return its view (see [`PartFields`](@ref)).
 """
 function Sources.add_line!(graph::LinesGraph, line::LineData = LineData())::PartFields
     push!(graph.data.lines, line)
-    return PartFields(graph, line, length(graph.data.lines))
+    n_lines::Int = length(graph.data.lines)
+    return PartFields(graph, n_lines, line)
 end
 
 function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing

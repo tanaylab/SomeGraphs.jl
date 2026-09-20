@@ -17,6 +17,8 @@ entry is appended by `add_series!` and its siblings, which return the index the 
 """
 module Sources
 
+export AbstractFields
+export AbstractConfigurationFields
 export AxisConfigurationFields
 export AxisVectorFields
 export ColorsConfigurationFields
@@ -152,19 +154,25 @@ struct MatrixDataFields
 end
 
 """
-    struct AxisConfigurationFields
+Abstract interface for the configuration half of `AbstractFields`. All concrete types have an `axis::AxisConfiguration`
+field, most have additional fields as appropriate for the specific configuration.
+"""
+abstract type AbstractConfigurationFields end
+
+"""
+    struct AxisConfigurationFields <: AbstractConfigurationFields
         axis::AxisConfiguration
     end
 
 The configuration half of an `AxisVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`AxisConfiguration`](@ref) the values are shown along.
 """
-struct AxisConfigurationFields
+struct AxisConfigurationFields <: AbstractConfigurationFields
     axis::AxisConfiguration
 end
 
 """
-    struct ColorsConfigurationFields
+    struct ColorsConfigurationFields <: AbstractConfigurationFields
         axis::AxisConfiguration
         colors::ColorsConfiguration
     end
@@ -172,7 +180,7 @@ end
 The configuration half of a `ColorsVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`ColorsConfiguration`](@ref) the values are colored by, and its `axis`.
 """
-struct ColorsConfigurationFields
+struct ColorsConfigurationFields <: AbstractConfigurationFields
     axis::AxisConfiguration
     colors::ColorsConfiguration
 end
@@ -182,7 +190,7 @@ function ColorsConfigurationFields(colors::ColorsConfiguration)::ColorsConfigura
 end
 
 """
-    struct SizesConfigurationFields
+    struct SizesConfigurationFields <: AbstractConfigurationFields
         axis::AxisConfiguration
         sizes::SizesConfiguration
     end
@@ -190,7 +198,7 @@ end
 The configuration half of a `SizesVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`SizesConfiguration`](@ref) the values are sized by, and its `axis`.
 """
-struct SizesConfigurationFields
+struct SizesConfigurationFields <: AbstractConfigurationFields
     axis::AxisConfiguration
     sizes::SizesConfiguration
 end
@@ -200,7 +208,7 @@ function SizesConfigurationFields(sizes::SizesConfiguration)::SizesConfiguration
 end
 
 """
-    struct MatrixConfigurationFields
+    struct MatrixConfigurationFields <: AbstractConfigurationFields
         axis::AxisConfiguration
         colors::ColorsConfiguration
     end
@@ -208,7 +216,7 @@ end
 The configuration half of a [`MatrixFields`](@ref) data source view: the [`ColorsConfiguration`](@ref) the entries are
 colored by, and its `axis`.
 """
-struct MatrixConfigurationFields
+struct MatrixConfigurationFields <: AbstractConfigurationFields
     axis::AxisConfiguration
     colors::ColorsConfiguration
 end
@@ -218,7 +226,14 @@ function MatrixConfigurationFields(colors::ColorsConfiguration)::MatrixConfigura
 end
 
 """
-    struct VectorFields{Configuration}
+Abstract interface for a full data source consisting of `data` and a `configuration` fields. The concrete types of each
+depend on the specific graph role. These are views into the graph fields, bundled together to allow a function to
+easily set them in a uniform way regardless of the specific rule they play in the graph.
+"""
+abstract type AbstractFields end
+
+"""
+    struct VectorFields{Configuration} <: AbstractFields
         data::VectorDataFields
         configuration::Configuration
     end
@@ -235,7 +250,7 @@ values shown as colors (see [`ColorsConfigurationFields`](@ref)) and `SizesVecto
 [`SizesConfigurationFields`](@ref)). They are obtained from a graph by the accessor functions (`x_axis_vector_fields`,
 `colors_vector_fields`, ...), whose names follow the path of the values in the data of the graph.
 """
-struct VectorFields{Configuration}
+struct VectorFields{Configuration} <: AbstractFields
     data::VectorDataFields
     configuration::Configuration
 end
@@ -256,47 +271,23 @@ function entities_field end
 """
     struct PartFields{GraphType, PartType <: AbstractPartData}
         graph::GraphType
-        data::PartType
         index::Int
+        data::PartType
     end
 
-The data source view of one part of a graph built from several (a series of bars, a line, a distribution). Everything is
-reached through a property of the view, and writing one writes the part itself, so `part.name = "Foo"` names the part in
-the graph.
-
-The point of the view is that a source need not know which kind of part it fills. The scalars every part has (`name`,
-`hover`, `is_shown`, `color`) are always spelled the same, and the entities of the part are always `entities`, whatever
-the part calls them. A property no part of this kind has is an error, so `width` reaches a line but not a distribution.
-
-The values of a part are shown in roles: `values` for a series of bars or a distribution, `x` and `y` for a line. Each
-role is a [`VectorFields`](@ref), which is what a source filling a role expects. Writing a role is an error.
-
-The view therefore offers three ways in, each for a different job:
-
-  - `data` is the part itself, for writing its values directly (`part.data.values.vector = ...`) and for asking which
-    part this is (`part.data === graph.data.distributions[2]`).
-  - `entities` is the part's [`VectorEntitiesData`](@ref), for adding hovers, under one name whatever the part calls it.
-  - A role is the part's values and entities paired with the configuration of the axis they are shown along, for handing
-    the whole role to a source which fills both.
-
-These overlap, and deliberately so. A role has to carry the values and the entities, because that is what a
-[`VectorFields`](@ref) is, so `part.values.data.values` and `part.data.values` are the same object by two paths, as are
-`part.values.data.entities` and `part.entities`. Reach for the short paths when writing values or hovers yourself, and
-for the role when passing it on; going through a role to reach a value works but is the long way round.
-
-This is also the only reason the view holds the `graph`. A role needs the axis configuration, which lives on the graph
-and is shared by every part, unlike the part's own fields. Whatever else you reach through `graph` is shared the same
-way.
-
-The `index` is the position of the part in the graph, for filling the graph's `order`.
+The data source view of one part of a graph built from several such parts (a series of bars, a line, a distribution).
+This allows a data source to set the part regardless of the role it plays in the graph. Since parts may have multiple
+instances, they are identified by their `index` in the `graph`. Parts are different from simple vector data in that they
+have scalar properties (e.g., name, hover) and may contain multiple vector data (e.g., both x and y coordinates for a
+line part). The part `data` acts as a view that allows accessing the relevant fields depending on the `PartType`.
 """
 struct PartFields{GraphType, PartType <: AbstractPartData}
     graph::GraphType
-    data::PartType
     index::Int
+    data::PartType
 end
 
-# The roles a part shows its values in. A part has either one `values` role (a series of bars, a distribution) or an `x`
+# The roles a part plays in a graph. A part has either one `values` role (a series of bars, a distribution) or an `x`
 # and a `y` role (a line), never both.
 const PART_ROLES = (:x, :y, :values)
 
@@ -333,7 +324,7 @@ function Base.propertynames(part::PartFields, private::Bool = false)::Tuple
 end
 
 """
-    struct MatrixFields
+    struct MatrixFields <: AbstractFields
         data::MatrixDataFields
         configuration::MatrixConfigurationFields
     end
@@ -341,7 +332,7 @@ end
 The data source view of the entries of a graph whose entities are arranged in rows and columns (the entries of a
 heatmap), shown as colors.
 """
-struct MatrixFields
+struct MatrixFields <: AbstractFields
     data::MatrixDataFields
     configuration::MatrixConfigurationFields
 end

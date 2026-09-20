@@ -646,7 +646,8 @@ end
 The view of the `index` distribution (see [`PartFields`](@ref)).
 """
 function Sources.distribution_part_fields(graph::DistributionsGraph, index::Integer)::PartFields
-    return PartFields(graph, graph.data.distributions[index], index)
+    distribution::DistributionData = graph.data.distributions[index]
+    return PartFields(graph, Int(index), distribution)
 end
 
 """
@@ -659,7 +660,8 @@ function Sources.add_distribution!(
     distribution::DistributionData = DistributionData(),
 )::PartFields
     push!(graph.data.distributions, distribution)
-    return PartFields(graph, distribution, length(graph.data.distributions))
+    n_distributions::Int = length(graph.data.distributions)
+    return PartFields(graph, n_distributions, distribution)
 end
 
 function Common.validate_graph(graph::DistributionsGraph)::Nothing

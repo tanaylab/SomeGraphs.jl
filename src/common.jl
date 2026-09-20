@@ -88,8 +88,9 @@ abstract type AbstractGraphData <: Validated end
 """
 One of the several parts a graph can be built from: a series of bars, a line, a distribution. Every part has its own
 `name` (shown in the legend), a `hover` prefixed to the hover of each of its entries, an `is_shown` which leaves it out
-of the graph, and a `color`. It also holds the entities of its entries, under whatever name fits it (the `bars` of a
-series of bars, the `points` of a line).
+of the graph, and a `color`. It also holds the `entities` of its entries (the `bars` of a series of bars, the `points`
+of a line). In addition it holds whatever other data is needed forthe part - `values` or `x` and `y` coordinates,
+`width`, etc.
 """
 abstract type AbstractPartData end
 

@@ -8,11 +8,13 @@ end
 
 ```@docs
 SomeGraphs.Sources
+SomeGraphs.Sources.AbstractFields
+SomeGraphs.Sources.AbstractConfigurationFields
 ```
 
-A data source view bundles the parts of a graph that one source of data fills: the values of one role, the entities they
-belong to, and the configuration they are shown by. A function written against a view works on any graph and any role
-that offers the same kind of view.
+## Vectors
+
+## Types
 
 ```@docs
 SomeGraphs.Sources.VectorFields
@@ -20,36 +22,13 @@ SomeGraphs.Sources.VectorDataFields
 SomeGraphs.Sources.AxisConfigurationFields
 SomeGraphs.Sources.ColorsConfigurationFields
 SomeGraphs.Sources.SizesConfigurationFields
-SomeGraphs.Sources.MatrixFields
-SomeGraphs.Sources.MatrixDataFields
-SomeGraphs.Sources.MatrixConfigurationFields
-SomeGraphs.Sources.PartFields
-SomeGraphs.Sources.add_hovers!
 ```
 
-The views are obtained from a graph by accessor functions, named by the path of the values in the data of the graph:
+### Accessors
+
+#### Vector Data Fields
 
 ```@docs
-SomeGraphs.Sources.x_axis_vector_fields
-SomeGraphs.Sources.y_axis_vector_fields
-SomeGraphs.Sources.points_colors_vector_fields
-SomeGraphs.Sources.points_sizes_vector_fields
-SomeGraphs.Sources.borders_colors_vector_fields
-SomeGraphs.Sources.borders_sizes_vector_fields
-SomeGraphs.Sources.edges_colors_vector_fields
-SomeGraphs.Sources.edges_sizes_vector_fields
-SomeGraphs.Sources.values_axis_vector_fields
-SomeGraphs.Sources.colors_vector_fields
-SomeGraphs.Sources.series_axis_vector_fields
-SomeGraphs.Sources.series_part_fields
-SomeGraphs.Sources.annotations_colors_vector_fields
-SomeGraphs.Sources.distribution_axis_vector_fields
-SomeGraphs.Sources.distributions_axis_vector_fields
-SomeGraphs.Sources.distribution_part_fields
-SomeGraphs.Sources.line_part_fields
-SomeGraphs.Sources.entries_matrix_fields
-SomeGraphs.Sources.rows_annotations_colors_vector_fields
-SomeGraphs.Sources.columns_annotations_colors_vector_fields
 SomeGraphs.Sources.names_vector_data_fields
 SomeGraphs.Sources.rows_names_vector_data_fields
 SomeGraphs.Sources.columns_names_vector_data_fields
@@ -59,8 +38,62 @@ SomeGraphs.Sources.columns_groups_vector_data_fields
 SomeGraphs.Sources.columns_subgroups_vector_data_fields
 ```
 
-A view of one entry of a vector of structures (a series, a line, a distribution, an annotation) needs the entry to
-exist. These append one and return the index the accessors take:
+#### Axis Vector Fields
+
+```@docs
+SomeGraphs.Sources.x_axis_vector_fields
+SomeGraphs.Sources.y_axis_vector_fields
+SomeGraphs.Sources.values_axis_vector_fields
+SomeGraphs.Sources.series_axis_vector_fields
+SomeGraphs.Sources.distribution_axis_vector_fields
+SomeGraphs.Sources.distributions_axis_vector_fields
+```
+
+#### Colors Vector Fields
+
+```@docs
+SomeGraphs.Sources.points_colors_vector_fields
+SomeGraphs.Sources.borders_colors_vector_fields
+SomeGraphs.Sources.edges_colors_vector_fields
+SomeGraphs.Sources.colors_vector_fields
+SomeGraphs.Sources.annotations_colors_vector_fields
+SomeGraphs.Sources.rows_annotations_colors_vector_fields
+SomeGraphs.Sources.columns_annotations_colors_vector_fields
+```
+
+### Sizes Vector Fields
+
+```@docs
+SomeGraphs.Sources.points_sizes_vector_fields
+SomeGraphs.Sources.borders_sizes_vector_fields
+SomeGraphs.Sources.edges_sizes_vector_fields
+```
+
+## Matrices
+
+### Types
+
+```@docs
+SomeGraphs.Sources.MatrixFields
+SomeGraphs.Sources.MatrixDataFields
+SomeGraphs.Sources.MatrixConfigurationFields
+```
+
+### Accessors
+
+```@docs
+SomeGraphs.Sources.entries_matrix_fields
+```
+
+## Parts
+
+### Types
+
+```@docs
+SomeGraphs.Sources.PartFields
+```
+
+### Creators
 
 ```@docs
 SomeGraphs.Sources.add_series!
@@ -69,6 +102,20 @@ SomeGraphs.Sources.add_distribution!
 SomeGraphs.Sources.add_annotation!
 SomeGraphs.Sources.add_rows_annotation!
 SomeGraphs.Sources.add_columns_annotation!
+```
+
+### Accessors
+
+```@docs
+SomeGraphs.Sources.series_part_fields
+SomeGraphs.Sources.distribution_part_fields
+SomeGraphs.Sources.line_part_fields
+```
+
+## Hovers
+
+```@docs
+SomeGraphs.Sources.add_hovers!
 ```
 
 **Example:**

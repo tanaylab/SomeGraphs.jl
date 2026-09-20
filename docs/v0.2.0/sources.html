@@ -169,8 +169,66 @@
 </section>
 </details>
 </article>
-<p>A data source view bundles the parts of a graph that one source of data fills: the values of one role, the entities they belong to, and the configuration they are shown by. A function written against a view works on any graph and any role that offers the same kind of view.
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AbstractFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AbstractFields">
+<code>SomeGraphs.Sources.AbstractFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Abstract interface for a full data source consisting of 
+<code>data
+</code> and a 
+<code>configuration
+</code> fields. The concrete types of each depend on the specific graph role. These are views into the graph fields, bundled together to allow a function to easily set them in a uniform way regardless of the specific rule they play in the graph.
 </p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AbstractConfigurationFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AbstractConfigurationFields">
+<code>SomeGraphs.Sources.AbstractConfigurationFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Abstract interface for the configuration half of 
+<code>AbstractFields
+</code>. All concrete types have an 
+<code>axis::AxisConfiguration
+</code> field, most have additional fields as appropriate for the specific configuration.
+</p>
+</div>
+</section>
+</details>
+</article>
+<h2 id="Vectors">
+<a class="docs-heading-anchor" href="#Vectors">Vectors
+</a>
+<a id="Vectors-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Vectors" title="Permalink">
+</a>
+</h2>
+<h2 id="Types">
+<a class="docs-heading-anchor" href="#Types">Types
+</a>
+<a id="Types-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Types" title="Permalink">
+</a>
+</h2>
 <article>
 <details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.VectorFields">
@@ -184,7 +242,7 @@
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">struct VectorFields{Configuration}
+<code class="language-julia hljs">struct VectorFields{Configuration} &lt;: AbstractFields
     data::VectorDataFields
     configuration::Configuration
 end
@@ -292,7 +350,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">struct AxisConfigurationFields
+<code class="language-julia hljs">struct AxisConfigurationFields &lt;: AbstractConfigurationFields
     axis::AxisConfiguration
 end
 </code>
@@ -326,7 +384,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">struct ColorsConfigurationFields
+<code class="language-julia hljs">struct ColorsConfigurationFields &lt;: AbstractConfigurationFields
     axis::AxisConfiguration
     colors::ColorsConfiguration
 end
@@ -363,7 +421,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">struct SizesConfigurationFields
+<code class="language-julia hljs">struct SizesConfigurationFields &lt;: AbstractConfigurationFields
     axis::AxisConfiguration
     sizes::SizesConfiguration
 end
@@ -387,739 +445,22 @@ end
 </section>
 </details>
 </article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.MatrixFields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixFields">
-<code>SomeGraphs.Sources.MatrixFields
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">struct MatrixFields
-    data::MatrixDataFields
-    configuration::MatrixConfigurationFields
-end
-</code>
-</pre>
-<p>The data source view of the entries of a graph whose entities are arranged in rows and columns (the entries of a heatmap), shown as colors.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.MatrixDataFields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixDataFields">
-<code>SomeGraphs.Sources.MatrixDataFields
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">struct MatrixDataFields
-    values::MatrixValuesData
-    entities::MatrixEntitiesData
-    rows_entities::VectorEntitiesData
-    columns_entities::VectorEntitiesData
-end
-</code>
-</pre>
-<p>The data half of a 
-<a href="sources.html#SomeGraphs.Sources.MatrixFields">
-<code>MatrixFields
-</code>
-</a> data source view: the 
-<a href="common.html#SomeGraphs.Common.MatrixValuesData">
-<code>MatrixValuesData
-</code>
-</a> of the entries of a graph (a heatmap), the 
-<a href="common.html#SomeGraphs.Common.MatrixEntitiesData">
-<code>MatrixEntitiesData
-</code>
-</a> of its cells, and the 
-<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
-<code>VectorEntitiesData
-</code>
-</a> of each of its two axes. All are the graph&#39;s own objects, so writing into them changes the graph.
-</p>
-<p>A matrix source knows the two axes its data is indexed by, so it can add hovers to all three: one per cell, one per row and one per column. The axis entities are the same ones the row and column views hand out (
-<code>rows_names_vector_data_fields
-</code>, 
-<code>rows_annotations_colors_vector_fields
-</code>, ...), so hovers added through either path are seen by both.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.MatrixConfigurationFields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixConfigurationFields">
-<code>SomeGraphs.Sources.MatrixConfigurationFields
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">struct MatrixConfigurationFields
-    axis::AxisConfiguration
-    colors::ColorsConfiguration
-end
-</code>
-</pre>
-<p>The configuration half of a 
-<a href="sources.html#SomeGraphs.Sources.MatrixFields">
-<code>MatrixFields
-</code>
-</a> data source view: the 
-<a href="common.html#SomeGraphs.Common.ColorsConfiguration">
-<code>ColorsConfiguration
-</code>
-</a> the entries are colored by, and its 
-<code>axis
-</code>.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.PartFields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.PartFields">
-<code>SomeGraphs.Sources.PartFields
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">struct PartFields{GraphType, PartType &lt;: AbstractPartData}
-    graph::GraphType
-    data::PartType
-    index::Int
-end
-</code>
-</pre>
-<p>The data source view of one part of a graph built from several (a series of bars, a line, a distribution). Everything is reached through a property of the view, and writing one writes the part itself, so 
-<code>part.name = &quot;Foo&quot;
-</code> names the part in the graph.
-</p>
-<p>The point of the view is that a source need not know which kind of part it fills. The scalars every part has (
-<code>name
-</code>, 
-<code>hover
-</code>, 
-<code>is_shown
-</code>, 
-<code>color
-</code>) are always spelled the same, and the entities of the part are always 
-<code>entities
-</code>, whatever the part calls them. A property no part of this kind has is an error, so 
-<code>width
-</code> reaches a line but not a distribution.
-</p>
-<p>The values of a part are shown in roles: 
-<code>values
-</code> for a series of bars or a distribution, 
-<code>x
-</code> and 
-<code>y
-</code> for a line. Each role is a 
-<a href="sources.html#SomeGraphs.Sources.VectorFields">
-<code>VectorFields
-</code>
-</a>, which is what a source filling a role expects. Writing a role is an error.
-</p>
-<p>The view therefore offers three ways in, each for a different job:
-</p>
-<ul>
-<li>
-<code>data
-</code> is the part itself, for writing its values directly (
-<code>part.data.values.vector = ...
-</code>) and for asking which part this is (
-<code>part.data === graph.data.distributions[2]
-</code>).
-</li>
-<li>
-<code>entities
-</code> is the part&#39;s 
-<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
-<code>VectorEntitiesData
-</code>
-</a>, for adding hovers, under one name whatever the part calls it.
-</li>
-<li>A role is the part&#39;s values and entities paired with the configuration of the axis they are shown along, for handing the whole role to a source which fills both.
-</li>
-</ul>
-<p>These overlap, and deliberately so. A role has to carry the values and the entities, because that is what a 
-<a href="sources.html#SomeGraphs.Sources.VectorFields">
-<code>VectorFields
-</code>
-</a> is, so 
-<code>part.values.data.values
-</code> and 
-<code>part.data.values
-</code> are the same object by two paths, as are 
-<code>part.values.data.entities
-</code> and 
-<code>part.entities
-</code>. Reach for the short paths when writing values or hovers yourself, and for the role when passing it on; going through a role to reach a value works but is the long way round.
-</p>
-<p>This is also the only reason the view holds the 
-<code>graph
-</code>. A role needs the axis configuration, which lives on the graph and is shared by every part, unlike the part&#39;s own fields. Whatever else you reach through 
-<code>graph
-</code> is shared the same way.
-</p>
-<p>The 
-<code>index
-</code> is the position of the part in the graph, for filling the graph&#39;s 
-<code>order
-</code>.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.add_hovers!">
-<a class="docstring-binding" href="#SomeGraphs.Sources.add_hovers!">
-<code>SomeGraphs.Sources.add_hovers!
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">add_hovers!(
-    entities::Union{VectorEntitiesData, MatrixEntitiesData},
-    hovers::AbstractArray{&lt;:AbstractString};
-    [title::Maybe{AbstractString} = nothing]
-)::Nothing
-</code>
-</pre>
-<p>Add a line to the hover of each of the 
-<code>entities
-</code>: the 
-<code>hovers
-</code> entry of the entity (a vector for 
-<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
-<code>VectorEntitiesData
-</code>
-</a>, a matrix for 
-<a href="common.html#SomeGraphs.Common.MatrixEntitiesData">
-<code>MatrixEntitiesData
-</code>
-</a>), prefixed by the 
-<code>title
-</code> (if any) as 
-<code>title: hover
-</code>. The lines of several calls are joined by 
-<code>&lt;br&gt;
-</code>, in the order of the calls. All the 
-<code>hovers
-</code> given to the same entities must be of the same size.
-</p>
-</div>
-</section>
-</details>
-</article>
-<p>The views are obtained from a graph by accessor functions, named by the path of the values in the data of the graph:
-</p>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.x_axis_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.x_axis_vector_fields">
-<code>SomeGraphs.Sources.x_axis_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">x_axis_vector_fields(graph)::AxisVectorFields
-x_axis_vector_fields(graph, index::Integer)::AxisVectorFields
-</code>
-</pre>
-<p>The data source view of the X coordinates of a graph (of its points; of the points of one of its lines, given the 
-<code>index
-</code> of the line).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.y_axis_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.y_axis_vector_fields">
-<code>SomeGraphs.Sources.y_axis_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">y_axis_vector_fields(graph)::AxisVectorFields
-y_axis_vector_fields(graph, index::Integer)::AxisVectorFields
-</code>
-</pre>
-<p>The data source view of the Y coordinates of a graph (of its points; of the points of one of its lines, given the 
-<code>index
-</code> of the line).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.points_colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.points_colors_vector_fields">
-<code>SomeGraphs.Sources.points_colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">points_colors_vector_fields(graph)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of the colors of the points of a graph.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.points_sizes_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.points_sizes_vector_fields">
-<code>SomeGraphs.Sources.points_sizes_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">points_sizes_vector_fields(graph)::SizesVectorFields
-</code>
-</pre>
-<p>The data source view of the sizes of the points of a graph.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.borders_colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.borders_colors_vector_fields">
-<code>SomeGraphs.Sources.borders_colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">borders_colors_vector_fields(graph)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of the colors of the borders of the points of a graph. The borders share the entities of the points.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.borders_sizes_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.borders_sizes_vector_fields">
-<code>SomeGraphs.Sources.borders_sizes_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">borders_sizes_vector_fields(graph)::SizesVectorFields
-</code>
-</pre>
-<p>The data source view of the sizes of the borders of the points of a graph. The borders share the entities of the points.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.edges_colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.edges_colors_vector_fields">
-<code>SomeGraphs.Sources.edges_colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">edges_colors_vector_fields(graph)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of the colors of the edges of a graph.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.edges_sizes_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.edges_sizes_vector_fields">
-<code>SomeGraphs.Sources.edges_sizes_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">edges_sizes_vector_fields(graph)::SizesVectorFields
-</code>
-</pre>
-<p>The data source view of the sizes (widths) of the edges of a graph.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.values_axis_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.values_axis_vector_fields">
-<code>SomeGraphs.Sources.values_axis_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">values_axis_vector_fields(graph)::AxisVectorFields
-</code>
-</pre>
-<p>The data source view of the values of a graph (of its bars).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.colors_vector_fields">
-<code>SomeGraphs.Sources.colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">colors_vector_fields(graph)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of the colors of a graph (of its bars).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.series_axis_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.series_axis_vector_fields">
-<code>SomeGraphs.Sources.series_axis_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">series_axis_vector_fields(graph, index::Integer)::AxisVectorFields
-</code>
-</pre>
-<p>The data source view of the values of one series of a graph, given the 
-<code>index
-</code> of the series.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.series_part_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.series_part_fields">
-<code>SomeGraphs.Sources.series_part_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">series_part_fields(graph, index::Integer)::PartFields
-</code>
-</pre>
-<p>The data source view of one series of bars of a graph, given the 
-<code>index
-</code> of the series (see 
-<a href="sources.html#SomeGraphs.Sources.PartFields">
-<code>PartFields
-</code>
-</a>).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.annotations_colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.annotations_colors_vector_fields">
-<code>SomeGraphs.Sources.annotations_colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of one annotation of a graph, given the 
-<code>index
-</code> of the annotation. The annotation shares the entities of the axis it annotates (the bars).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.distribution_axis_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.distribution_axis_vector_fields">
-<code>SomeGraphs.Sources.distribution_axis_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">distribution_axis_vector_fields(graph)::AxisVectorFields
-</code>
-</pre>
-<p>The data source view of the values of the distribution of a graph.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.distributions_axis_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.distributions_axis_vector_fields">
-<code>SomeGraphs.Sources.distributions_axis_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">distributions_axis_vector_fields(graph, index::Integer)::AxisVectorFields
-</code>
-</pre>
-<p>The data source view of the values of one distribution of a graph, given the 
-<code>index
-</code> of the distribution.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.distribution_part_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.distribution_part_fields">
-<code>SomeGraphs.Sources.distribution_part_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">distribution_part_fields(graph, index::Integer)::PartFields
-</code>
-</pre>
-<p>The data source view of one distribution of a graph, given the 
-<code>index
-</code> of the distribution (see 
-<a href="sources.html#SomeGraphs.Sources.PartFields">
-<code>PartFields
-</code>
-</a>).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.line_part_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.line_part_fields">
-<code>SomeGraphs.Sources.line_part_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">line_part_fields(graph, index::Integer)::PartFields
-</code>
-</pre>
-<p>The data source view of one line of a graph, given the 
-<code>index
-</code> of the line (see 
-<a href="sources.html#SomeGraphs.Sources.PartFields">
-<code>PartFields
-</code>
-</a>).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.entries_matrix_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.entries_matrix_fields">
-<code>SomeGraphs.Sources.entries_matrix_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">entries_matrix_fields(graph)::MatrixFields
-</code>
-</pre>
-<p>The data source view of the entries of a graph (of a heatmap).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.rows_annotations_colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.rows_annotations_colors_vector_fields">
-<code>SomeGraphs.Sources.rows_annotations_colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">rows_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of one annotation of the rows of a graph, given the 
-<code>index
-</code> of the annotation. The annotation shares the entities of the rows.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.columns_annotations_colors_vector_fields">
-<a class="docstring-binding" href="#SomeGraphs.Sources.columns_annotations_colors_vector_fields">
-<code>SomeGraphs.Sources.columns_annotations_colors_vector_fields
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">columns_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
-</code>
-</pre>
-<p>The data source view of one annotation of the columns of a graph, given the 
-<code>index
-</code> of the annotation. The annotation shares the entities of the columns.
-</p>
-</div>
-</section>
-</details>
-</article>
+<h3 id="Accessors">
+<a class="docs-heading-anchor" href="#Accessors">Accessors
+</a>
+<a id="Accessors-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Accessors" title="Permalink">
+</a>
+</h3>
+<h4 id="Vector-Data-Fields">
+<a class="docs-heading-anchor" href="#Vector-Data-Fields">Vector Data Fields
+</a>
+<a id="Vector-Data-Fields-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Vector-Data-Fields" title="Permalink">
+</a>
+</h4>
 <article>
 <details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.names_vector_data_fields">
@@ -1274,8 +615,605 @@ y_axis_vector_fields(graph, index::Integer)::AxisVectorFields
 </section>
 </details>
 </article>
-<p>A view of one entry of a vector of structures (a series, a line, a distribution, an annotation) needs the entry to exist. These append one and return the index the accessors take:
+<h4 id="Axis-Vector-Fields">
+<a class="docs-heading-anchor" href="#Axis-Vector-Fields">Axis Vector Fields
+</a>
+<a id="Axis-Vector-Fields-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Axis-Vector-Fields" title="Permalink">
+</a>
+</h4>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.x_axis_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.x_axis_vector_fields">
+<code>SomeGraphs.Sources.x_axis_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">x_axis_vector_fields(graph)::AxisVectorFields
+x_axis_vector_fields(graph, index::Integer)::AxisVectorFields
+</code>
+</pre>
+<p>The data source view of the X coordinates of a graph (of its points; of the points of one of its lines, given the 
+<code>index
+</code> of the line).
 </p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.y_axis_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.y_axis_vector_fields">
+<code>SomeGraphs.Sources.y_axis_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">y_axis_vector_fields(graph)::AxisVectorFields
+y_axis_vector_fields(graph, index::Integer)::AxisVectorFields
+</code>
+</pre>
+<p>The data source view of the Y coordinates of a graph (of its points; of the points of one of its lines, given the 
+<code>index
+</code> of the line).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.values_axis_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.values_axis_vector_fields">
+<code>SomeGraphs.Sources.values_axis_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">values_axis_vector_fields(graph)::AxisVectorFields
+</code>
+</pre>
+<p>The data source view of the values of a graph (of its bars).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.series_axis_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.series_axis_vector_fields">
+<code>SomeGraphs.Sources.series_axis_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">series_axis_vector_fields(graph, index::Integer)::AxisVectorFields
+</code>
+</pre>
+<p>The data source view of the values of one series of a graph, given the 
+<code>index
+</code> of the series.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.distribution_axis_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.distribution_axis_vector_fields">
+<code>SomeGraphs.Sources.distribution_axis_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distribution_axis_vector_fields(graph)::AxisVectorFields
+</code>
+</pre>
+<p>The data source view of the values of the distribution of a graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.distributions_axis_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.distributions_axis_vector_fields">
+<code>SomeGraphs.Sources.distributions_axis_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distributions_axis_vector_fields(graph, index::Integer)::AxisVectorFields
+</code>
+</pre>
+<p>The data source view of the values of one distribution of a graph, given the 
+<code>index
+</code> of the distribution.
+</p>
+</div>
+</section>
+</details>
+</article>
+<h4 id="Colors-Vector-Fields">
+<a class="docs-heading-anchor" href="#Colors-Vector-Fields">Colors Vector Fields
+</a>
+<a id="Colors-Vector-Fields-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Colors-Vector-Fields" title="Permalink">
+</a>
+</h4>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.points_colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.points_colors_vector_fields">
+<code>SomeGraphs.Sources.points_colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">points_colors_vector_fields(graph)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of the colors of the points of a graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.borders_colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.borders_colors_vector_fields">
+<code>SomeGraphs.Sources.borders_colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">borders_colors_vector_fields(graph)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of the colors of the borders of the points of a graph. The borders share the entities of the points.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.edges_colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.edges_colors_vector_fields">
+<code>SomeGraphs.Sources.edges_colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">edges_colors_vector_fields(graph)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of the colors of the edges of a graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.colors_vector_fields">
+<code>SomeGraphs.Sources.colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">colors_vector_fields(graph)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of the colors of a graph (of its bars).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.annotations_colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.annotations_colors_vector_fields">
+<code>SomeGraphs.Sources.annotations_colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of one annotation of a graph, given the 
+<code>index
+</code> of the annotation. The annotation shares the entities of the axis it annotates (the bars).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.rows_annotations_colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.rows_annotations_colors_vector_fields">
+<code>SomeGraphs.Sources.rows_annotations_colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">rows_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of one annotation of the rows of a graph, given the 
+<code>index
+</code> of the annotation. The annotation shares the entities of the rows.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.columns_annotations_colors_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.columns_annotations_colors_vector_fields">
+<code>SomeGraphs.Sources.columns_annotations_colors_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">columns_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
+</code>
+</pre>
+<p>The data source view of one annotation of the columns of a graph, given the 
+<code>index
+</code> of the annotation. The annotation shares the entities of the columns.
+</p>
+</div>
+</section>
+</details>
+</article>
+<h3 id="Sizes-Vector-Fields">
+<a class="docs-heading-anchor" href="#Sizes-Vector-Fields">Sizes Vector Fields
+</a>
+<a id="Sizes-Vector-Fields-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Sizes-Vector-Fields" title="Permalink">
+</a>
+</h3>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.points_sizes_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.points_sizes_vector_fields">
+<code>SomeGraphs.Sources.points_sizes_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">points_sizes_vector_fields(graph)::SizesVectorFields
+</code>
+</pre>
+<p>The data source view of the sizes of the points of a graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.borders_sizes_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.borders_sizes_vector_fields">
+<code>SomeGraphs.Sources.borders_sizes_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">borders_sizes_vector_fields(graph)::SizesVectorFields
+</code>
+</pre>
+<p>The data source view of the sizes of the borders of the points of a graph. The borders share the entities of the points.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.edges_sizes_vector_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.edges_sizes_vector_fields">
+<code>SomeGraphs.Sources.edges_sizes_vector_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">edges_sizes_vector_fields(graph)::SizesVectorFields
+</code>
+</pre>
+<p>The data source view of the sizes (widths) of the edges of a graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<h2 id="Matrices">
+<a class="docs-heading-anchor" href="#Matrices">Matrices
+</a>
+<a id="Matrices-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Matrices" title="Permalink">
+</a>
+</h2>
+<h3 id="Types-2">
+<a class="docs-heading-anchor" href="#Types-2">Types
+</a>
+<a class="docs-heading-anchor-permalink" href="#Types-2" title="Permalink">
+</a>
+</h3>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.MatrixFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixFields">
+<code>SomeGraphs.Sources.MatrixFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct MatrixFields &lt;: AbstractFields
+    data::MatrixDataFields
+    configuration::MatrixConfigurationFields
+end
+</code>
+</pre>
+<p>The data source view of the entries of a graph whose entities are arranged in rows and columns (the entries of a heatmap), shown as colors.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.MatrixDataFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixDataFields">
+<code>SomeGraphs.Sources.MatrixDataFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct MatrixDataFields
+    values::MatrixValuesData
+    entities::MatrixEntitiesData
+    rows_entities::VectorEntitiesData
+    columns_entities::VectorEntitiesData
+end
+</code>
+</pre>
+<p>The data half of a 
+<a href="sources.html#SomeGraphs.Sources.MatrixFields">
+<code>MatrixFields
+</code>
+</a> data source view: the 
+<a href="common.html#SomeGraphs.Common.MatrixValuesData">
+<code>MatrixValuesData
+</code>
+</a> of the entries of a graph (a heatmap), the 
+<a href="common.html#SomeGraphs.Common.MatrixEntitiesData">
+<code>MatrixEntitiesData
+</code>
+</a> of its cells, and the 
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
+</code>
+</a> of each of its two axes. All are the graph&#39;s own objects, so writing into them changes the graph.
+</p>
+<p>A matrix source knows the two axes its data is indexed by, so it can add hovers to all three: one per cell, one per row and one per column. The axis entities are the same ones the row and column views hand out (
+<code>rows_names_vector_data_fields
+</code>, 
+<code>rows_annotations_colors_vector_fields
+</code>, ...), so hovers added through either path are seen by both.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.MatrixConfigurationFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixConfigurationFields">
+<code>SomeGraphs.Sources.MatrixConfigurationFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct MatrixConfigurationFields &lt;: AbstractConfigurationFields
+    axis::AxisConfiguration
+    colors::ColorsConfiguration
+end
+</code>
+</pre>
+<p>The configuration half of a 
+<a href="sources.html#SomeGraphs.Sources.MatrixFields">
+<code>MatrixFields
+</code>
+</a> data source view: the 
+<a href="common.html#SomeGraphs.Common.ColorsConfiguration">
+<code>ColorsConfiguration
+</code>
+</a> the entries are colored by, and its 
+<code>axis
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<h3 id="Accessors-2">
+<a class="docs-heading-anchor" href="#Accessors-2">Accessors
+</a>
+<a class="docs-heading-anchor-permalink" href="#Accessors-2" title="Permalink">
+</a>
+</h3>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.entries_matrix_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.entries_matrix_fields">
+<code>SomeGraphs.Sources.entries_matrix_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">entries_matrix_fields(graph)::MatrixFields
+</code>
+</pre>
+<p>The data source view of the entries of a graph (of a heatmap).
+</p>
+</div>
+</section>
+</details>
+</article>
+<h2 id="Parts">
+<a class="docs-heading-anchor" href="#Parts">Parts
+</a>
+<a id="Parts-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Parts" title="Permalink">
+</a>
+</h2>
+<h3 id="Types-3">
+<a class="docs-heading-anchor" href="#Types-3">Types
+</a>
+<a class="docs-heading-anchor-permalink" href="#Types-3" title="Permalink">
+</a>
+</h3>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.PartFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.PartFields">
+<code>SomeGraphs.Sources.PartFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct PartFields{GraphType, PartType &lt;: AbstractPartData}
+    graph::GraphType
+    index::Int
+    data::PartType
+end
+</code>
+</pre>
+<p>The data source view of one part of a graph built from several such parts (a series of bars, a line, a distribution). This allows a data source to set the part regardless of the role it plays in the graph. Since parts may have multiple instances, they are identified by their 
+<code>index
+</code> in the 
+<code>graph
+</code>. Parts are different from simple vector data in that they have scalar properties (e.g., name, hover) and may contain multiple vector data (e.g., both x and y coordinates for a line part). The part 
+<code>data
+</code> acts as a view that allows accessing the relevant fields depending on the 
+<code>PartType
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<h3 id="Creators">
+<a class="docs-heading-anchor" href="#Creators">Creators
+</a>
+<a id="Creators-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Creators" title="Permalink">
+</a>
+</h3>
 <article>
 <details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.add_series!">
@@ -1434,6 +1372,150 @@ y_axis_vector_fields(graph, index::Integer)::AxisVectorFields
 </section>
 </details>
 </article>
+<h3 id="Accessors-3">
+<a class="docs-heading-anchor" href="#Accessors-3">Accessors
+</a>
+<a class="docs-heading-anchor-permalink" href="#Accessors-3" title="Permalink">
+</a>
+</h3>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.series_part_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.series_part_fields">
+<code>SomeGraphs.Sources.series_part_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">series_part_fields(graph, index::Integer)::PartFields
+</code>
+</pre>
+<p>The data source view of one series of bars of a graph, given the 
+<code>index
+</code> of the series (see 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.distribution_part_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.distribution_part_fields">
+<code>SomeGraphs.Sources.distribution_part_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distribution_part_fields(graph, index::Integer)::PartFields
+</code>
+</pre>
+<p>The data source view of one distribution of a graph, given the 
+<code>index
+</code> of the distribution (see 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.line_part_fields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.line_part_fields">
+<code>SomeGraphs.Sources.line_part_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">line_part_fields(graph, index::Integer)::PartFields
+</code>
+</pre>
+<p>The data source view of one line of a graph, given the 
+<code>index
+</code> of the line (see 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<h2 id="Hovers">
+<a class="docs-heading-anchor" href="#Hovers">Hovers
+</a>
+<a id="Hovers-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Hovers" title="Permalink">
+</a>
+</h2>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.add_hovers!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.add_hovers!">
+<code>SomeGraphs.Sources.add_hovers!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">add_hovers!(
+    entities::Union{VectorEntitiesData, MatrixEntitiesData},
+    hovers::AbstractArray{&lt;:AbstractString};
+    [title::Maybe{AbstractString} = nothing]
+)::Nothing
+</code>
+</pre>
+<p>Add a line to the hover of each of the 
+<code>entities
+</code>: the 
+<code>hovers
+</code> entry of the entity (a vector for 
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
+</code>
+</a>, a matrix for 
+<a href="common.html#SomeGraphs.Common.MatrixEntitiesData">
+<code>MatrixEntitiesData
+</code>
+</a>), prefixed by the 
+<code>title
+</code> (if any) as 
+<code>title: hover
+</code>. The lines of several calls are joined by 
+<code>&lt;br&gt;
+</code>, in the order of the calls. All the 
+<code>hovers
+</code> given to the same entities must be of the same size.
+</p>
+</div>
+</section>
+</details>
+</article>
 <p>
 <strong>Example:
 </strong>
@@ -1456,12 +1538,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='WCQvWMwsTD' class='' style=';'>
+<div id='sAMZjavKBK' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("WCQvWMwsTD")
+    const PLOT = document.getElementById("sAMZjavKBK")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1509,6 +1591,18 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources">
 <code>SomeGraphs.Sources
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.AbstractConfigurationFields">
+<code>SomeGraphs.Sources.AbstractConfigurationFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.AbstractFields">
+<code>SomeGraphs.Sources.AbstractFields
 </code>
 </a>
 </li>
