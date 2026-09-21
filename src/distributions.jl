@@ -553,7 +553,7 @@ end
 # The hovers of the drawn values of a distribution, if any: the `hover` of the distribution prefixed to the `hovers` of
 # its `points`.
 function displayed_hovers(distribution::DistributionData, n_values::Integer)::Maybe{AbstractVector{<:AbstractString}}
-    hovers = masked_values(distribution.points.hovers, distribution.points.mask, nothing)
+    hovers = masked_values(entities_hovers(distribution.points), distribution.points.mask, nothing)
     if distribution.hover !== nothing
         if hovers === nothing
             hovers = fill(distribution.hover, n_values)

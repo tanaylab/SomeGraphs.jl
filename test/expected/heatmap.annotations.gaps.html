@@ -2,25 +2,25 @@
 <head><meta charset="utf-8" /></head>
 <body>
 <div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
-    <script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+<script type="text/javascript">
 window.PlotlyConfig = {MathJaxConfig: 'local'};
 </script>
 <script src="https://cdn.plot.ly/plotly-2.33.0.min.js"></script>
 
-    <div
-        id=id-1
-        class="plotly-graph-div"
-        style="height:100%; width:100%;">
-    </div>
-    <script type="text/javascript">
-        
-        window.PLOTLYENV = window.PLOTLYENV || {}
-        
-        if (document.getElementById('id-1')) {
-    Plotly.newPlot(
-        'id-1',
-        [{"coloraxis":"coloraxis",
+<div
+id=id-1
+class="plotly-graph-div"
+style="height:100%; width:100%;">
+</div>
+<script type="text/javascript">
+
+window.PLOTLYENV = window.PLOTLYENV || {}
+
+if (document.getElementById('id-1')) {
+Plotly.newPlot(
+'id-1',
+[{"coloraxis":"coloraxis",
 "xaxis":"x2",
 "y":[1,2,3,4],
 "type":"heatmap",
@@ -32,6 +32,30 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 [2.0,null,5.0,10.0],
 [null,null,null,null],
 [3.0,null,4.0,11.0]],
+"text":[["X<br>A",
+"X<br>B",
+"",
+"X<br>C",
+"",
+"X<br>D"],
+["",
+"",
+"",
+"",
+"",
+""],
+["Y<br>A",
+"Y<br>B",
+"",
+"Y<br>C",
+"",
+"Y<br>D"],
+["Z<br>A",
+"Z<br>B",
+"",
+"Z<br>C",
+"",
+"Z<br>D"]],
 "transpose":true,
 "x":[1,2,3,4,5,6]},
 {"showlegend":false,
@@ -41,7 +65,14 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "y":[1.0,1.0,0.0,1.0,0.0,1.0],
 "type":"bar",
 "name":"score",
+"customdata":["A",
+"B",
+"",
+"C",
+"",
+"D"],
 "orientation":"v",
+"hovertemplate":"%{customdata}<extra></extra>",
 "x":["1",
 "2",
 "3",
@@ -59,10 +90,15 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "4"],
 "type":"bar",
 "name":"is",
+"customdata":["X",
+"",
+"Y",
+"Z"],
 "yaxis":"y2",
 "orientation":"h",
+"hovertemplate":"%{customdata}<extra></extra>",
 "x":[1.0,0.0,1.0,1.0]}],
-        {"showlegend":false,
+{"showlegend":false,
 "coloraxis2":{"showscale":false},
 "xaxis":{"showgrid":false,
 "showticklabels":false,
@@ -75,6 +111,7 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "bargap":0,
 "template":"simple_white",
 "legend":{"tracegroupgap":0},
+"hoverlabel":{"align":"left"},
 "yaxis2":{"showgrid":false,
 "showticklabels":true,
 "tickvals":[1,2,3,4],
@@ -121,15 +158,15 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "b":50,
 "r":50,
 "t":50}},
-        {"editable":false,
+{"editable":false,
 "responsive":true,
 "staticPlot":false,
 "scrollZoom":true},
-    )
+)
 }
 
-        
-    </script>
+
+</script>
 </div>
 
 </body>

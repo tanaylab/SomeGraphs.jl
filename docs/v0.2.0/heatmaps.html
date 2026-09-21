@@ -1000,7 +1000,6 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct HeatmapAxisData
-    names::VectorValuesData = VectorValuesData()
     entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
     groups::VectorValuesData = VectorValuesData()
@@ -1016,10 +1015,10 @@ end
 <code>HeatmapGraphData
 </code>
 </a>. The 
-<code>names
-</code> are strings, one per entry, shown as the tick labels; their title is the axis title. The 
 <code>entities
-</code> hold the hovers and mask of the entries. The 
+</code> hold the names, hovers and mask of the entries; their names are shown as the tick labels, titled by the axis 
+<code>title
+</code> of the configuration. The 
 <code>annotations
 </code> are shown to the side of the axis. If 
 <code>annotations_order
@@ -1425,7 +1424,7 @@ end
 <p>Use this to list the entries in the order they are shown:
 </p>
 <pre>
-<code class="language-julia hljs">ordered_rows_names = graph.data.rows.names.vector[graph.order.rows_order]
+<code class="language-julia hljs">ordered_rows_names = graph.data.rows.entities.names[graph.order.rows_order]
 </code>
 </pre>
 <p>Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its order (and, if they use the same groups, they will also have the same gaps):
@@ -1539,20 +1538,32 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='njA8f59RNJ' class='' style=';'>
+<div id='HL27D7qDfI' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("njA8f59RNJ")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("HL27D7qDfI")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
+<br>X","A
+<br>Y","A
+<br>Z"],["B
+<br>X","B
+<br>Y","B
+<br>Z"],["C
+<br>X","C
+<br>Y","C
+<br>Z"],["D
+<br>X","D
+<br>Y","D
+<br>Z"]],"z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1574,21 +1585,33 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='Ii6VYJeenN' class='' style=';'>
+<div id='SllisNozh5' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Ii6VYJeenN")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("SllisNozh5")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
+<br>A","X
+<br>B","X
+<br>C","X
+<br>D"],["Y
+<br>A","Y
+<br>B","Y
+<br>C","Y
+<br>D"],["Z
+<br>A","Z
+<br>B","Z
+<br>C","Z
+<br>D"]],"z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1610,21 +1633,33 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 flip_axes!(graph)
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FF8BlRrT9L' class='' style=';'>
+<div id='Iq3RgwhRoO' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FF8BlRrT9L")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("Iq3RgwhRoO")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
+<br>A","X
+<br>B","X
+<br>C","X
+<br>D"],["Y
+<br>A","Y
+<br>B","Y
+<br>C","Y
+<br>D"],["Z
+<br>A","Z
+<br>B","Z
+<br>C","Z
+<br>D"]],"z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1647,11 +1682,11 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
     ),
     columns = HeatmapAxisData(;
-        names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
                 values = VectorValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
@@ -1666,13 +1701,29 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ImUTiA0i45' class='' style=';'>
+<div id='3kxGIaFcaV' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ImUTiA0i45")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("3kxGIaFcaV")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
+<br>X","A
+<br>Y","A
+<br>Z"],["B
+<br>X","B
+<br>Y","B
+<br>Z"],["C
+<br>X","C
+<br>Y","C
+<br>Z"],["D
+<br>X","D
+<br>Y","D
+<br>Z"]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","customdata":["X","Y","Z"],"orientation":"v","hovertemplate":"%{customdata}
+<extra>
+</extra>","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","customdata":["A","B","C","D"],"yaxis":"y2","orientation":"h","hovertemplate":"%{customdata}
+<extra>
+</extra>","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1695,11 +1746,11 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
     ),
     columns = HeatmapAxisData(;
-        names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
                 values = VectorValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
@@ -1718,13 +1769,29 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='DtXdWyySe3' class='' style=';'>
+<div id='nwPXBXqglY' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("DtXdWyySe3")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,5.2915025],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("nwPXBXqglY")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
+<br>Z","A
+<br>X","A
+<br>Y"],["B
+<br>Z","B
+<br>X","B
+<br>Y"],["C
+<br>Z","C
+<br>X","C
+<br>Y"],["D
+<br>Z","D
+<br>X","D
+<br>Y"]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","customdata":["Z","X","Y"],"orientation":"v","hovertemplate":"%{customdata}
+<extra>
+</extra>","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","customdata":["A","B","C","D"],"yaxis":"y2","orientation":"h","hovertemplate":"%{customdata}
+<extra>
+</extra>","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,5.2915025],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"hoverlabel":{"align":"left"},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1747,12 +1814,12 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
         groups = VectorValuesData([1, 1, 2, 2]),
     ),
     columns = HeatmapAxisData(;
-        names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
                 values = VectorValuesData([&quot;yes&quot;, &quot;maybe&quot;, &quot;no&quot;], &quot;is_special&quot;),
@@ -1772,13 +1839,29 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='DH2pC2lYli' class='' style=';'>
+<div id='S1oQLIvRwb' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("DH2pC2lYli")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","orientation":"v","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","yaxis":"y2","orientation":"h","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("S1oQLIvRwb")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
+<br>X","","A
+<br>Z","A
+<br>Y"],["B
+<br>X","","B
+<br>Z","B
+<br>Y"],["","","",""],["C
+<br>X","","C
+<br>Z","C
+<br>Y"],["D
+<br>X","","D
+<br>Z","D
+<br>Y"]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","customdata":["X","","Z","Y"],"orientation":"v","hovertemplate":"%{customdata}
+<extra>
+</extra>","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","customdata":["A","B","","C","D"],"yaxis":"y2","orientation":"h","hovertemplate":"%{customdata}
+<extra>
+</extra>","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":"simple_white","legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"hoverlabel":{"align":"left"},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1800,9 +1883,9 @@ graph = heatmap_graph(;
         2 3 3 4 2 3;
         1 4 2 5 1 4;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
     columns = HeatmapAxisData(;
-        names = VectorValuesData([&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
+        entities = VectorEntitiesData(; names = [&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
         subgroups = VectorValuesData([&quot;P&quot;, &quot;Q&quot;, &quot;P&quot;, &quot;R&quot;, &quot;R&quot;, &quot;S&quot;]),
     ),
@@ -1813,13 +1896,37 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='cTw0Sqyhbe' class='' style=';'>
+<div id='OuJLINDRND' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("cTw0Sqyhbe")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[2.0,3.0,4.0,5.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5,6,7,8,9]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5,6,7,8,9],"range":[0.5,9.5],"ticktext":["W","U","","V","","Z","","X","Y"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("OuJLINDRND")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
+<br>W","A
+<br>U","","A
+<br>V","","A
+<br>Z","","A
+<br>X","A
+<br>Y"],["B
+<br>W","B
+<br>U","","B
+<br>V","","B
+<br>Z","","B
+<br>X","B
+<br>Y"],["C
+<br>W","C
+<br>U","","C
+<br>V","","C
+<br>Z","","C
+<br>X","C
+<br>Y"],["D
+<br>W","D
+<br>U","","D
+<br>V","","D
+<br>Z","","D
+<br>X","D
+<br>Y"]],"z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[2.0,3.0,4.0,5.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5,6,7,8,9]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5,6,7,8,9],"range":[0.5,9.5],"ticktext":["W","U","","V","","Z","","X","Y"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -1844,22 +1951,30 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData([&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
-        entities = VectorEntitiesData(; mask = [true, false, true, true]),
+        entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;], mask = [true, false, true, true]),
     ),
-    columns = HeatmapAxisData(; names = VectorValuesData([&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='sczAHobHiG' class='' style=';'>
+<div id='P4qMxCqS1s' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("sczAHobHiG")
-    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","z":[[4.0,2.0,1.0],[1.0,3.0,4.0],[5.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["A","C","D"]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("P4qMxCqS1s")
+    const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
+<br>X","A
+<br>Y","A
+<br>Z"],["C
+<br>X","C
+<br>Y","C
+<br>Z"],["D
+<br>X","D
+<br>Y","D
+<br>Z"]],"z":[[4.0,2.0,1.0],[1.0,3.0,4.0],[5.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":"simple_white","legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["A","C","D"]},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%

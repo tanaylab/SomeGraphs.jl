@@ -1572,17 +1572,24 @@ end
 
 """
     @kwdef mutable struct VectorEntitiesData
+        names::Maybe{AbstractVector{<:AbstractString}} = nothing
         hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
     end
 
-The hovers and mask of one set of entities of a graph (the points of a points graph, the bars of a bars graph, ...),
-shared by all the roles of these entities. Hovers are only shown in interactive graphs (or when saving an HTML file).
+The names, hovers and mask of one set of entities of a graph (the points of a points graph, the bars of a bars graph,
+...), shared by all the roles of these entities.
+
+The `names` identify the entities. Where the graph has room to label them, they are shown as the tick labels of their
+axis. They are also the first line of the hover of each entity, so the `hovers` are whatever you wish to say about an
+entity *in addition* to its name. Hovers are only shown in interactive graphs (or when saving an HTML file).
+
 The mask hides an arbitrary subset of the entities. Hidden entities are still part of the data: they take part in
 whatever is computed from it (axis ranges, clustering), unless the relevant configuration says otherwise (see
 `include_hidden` in [`AxisConfiguration`](@ref)). They are just not drawn.
 """
 @kwdef mutable struct VectorEntitiesData
+    names::Maybe{AbstractVector{<:AbstractString}} = nothing
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
 end

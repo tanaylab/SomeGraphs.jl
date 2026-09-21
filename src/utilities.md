@@ -16,10 +16,9 @@ SomeGraphs.Utilities.validate_axis_sizes
 SomeGraphs.Utilities.validate_values
 SomeGraphs.Utilities.validate_numeric_values
 SomeGraphs.Utilities.numeric_values
-SomeGraphs.Utilities.validate_string_values
-SomeGraphs.Utilities.string_values
 SomeGraphs.Utilities.shared_values_title
 SomeGraphs.Utilities.masked_values
+SomeGraphs.Utilities.entities_hovers
 SomeGraphs.Utilities.displayed_annotations
 SomeGraphs.Utilities.scale_axis_value
 SomeGraphs.Utilities.scale_axis_values

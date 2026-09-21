@@ -658,7 +658,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         order = points.order,
     )
 
-    points_hovers = points.entities.hovers
+    points_hovers = entities_hovers(points.entities)
 
     add_pixel_sizes(configured_points, configured_borders)
 
@@ -727,7 +727,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
 
     has_legend =
         configured_points.show_in_legend || configured_borders.show_in_legend || configured_edges.show_in_legend
-    has_hovers = points_hovers !== nothing || graph.data.edges.entities.hovers !== nothing
+    has_hovers = points_hovers !== nothing || entities_hovers(graph.data.edges.entities) !== nothing
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
@@ -845,7 +845,7 @@ function push_edge_traces!(;
                 showlegend = show_in_legend,
                 coloraxis = plotly_axis("color", configured_edges.colors.colors_scale_index),
             )
-            edge_hover = prefer_data(edges.entities.hovers, edge_index, nothing)
+            edge_hover = prefer_data(entities_hovers(edges.entities), edge_index, nothing)
             if edge_hover !== nothing
                 edge_trace[:text] = edge_hover
                 edge_trace[:hovertemplate] = "%{text}<extra></extra>"
@@ -1130,7 +1130,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
     scaled_points_xs = scaled_data(graph.configuration.x_axis, points_xs, mask)
     scaled_points_ys = scaled_data(graph.configuration.y_axis, points_ys, mask)
 
-    hovers = masked_values(graph.data.points.hovers, mask, nothing)
+    hovers = masked_values(entities_hovers(graph.data.points), mask, nothing)
 
     traces = Vector{GenericTrace}()
 
@@ -1540,11 +1540,11 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
                 end
             end
 
-            # Stacking inserts points into the lines, which have no hovers.
-            if graph.configuration.stacking !== nothing && line.points.hovers !== nothing
+            # Stacking inserts points into the lines, which have no hover of their own.
+            if graph.configuration.stacking !== nothing && entities_hovers(line.points) !== nothing
                 throw(
                     ArgumentError(
-                        "can't specify both graph.data.lines[$(line_index)].points.hovers\n" *
+                        "can't specify both graph.data.lines[$(line_index)].points.(names,hovers)\n" *
                         "and graph.configuration.stacking",
                     ),
                 )
@@ -1633,7 +1633,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         end
         push!(scaled_lines_points_xs, masked_values(scaled_points_xs, mask, nothing))
         push!(scaled_lines_points_ys, masked_values(scaled_points_ys, mask, nothing))
-        push!(lines_points_hovers, masked_values(line.points.hovers, mask, nothing))
+        push!(lines_points_hovers, masked_values(entities_hovers(line.points), mask, nothing))
     end
 
     stacked_scaled_ys_range = MaybeRange()

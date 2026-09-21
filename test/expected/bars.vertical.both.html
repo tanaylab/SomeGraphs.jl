@@ -2,29 +2,34 @@
 <head><meta charset="utf-8" /></head>
 <body>
 <div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
-    <script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+<script type="text/javascript">
 window.PlotlyConfig = {MathJaxConfig: 'local'};
 </script>
 <script src="https://cdn.plot.ly/plotly-2.33.0.min.js"></script>
 
-    <div
-        id=id-1
-        class="plotly-graph-div"
-        style="height:100%; width:100%;">
-    </div>
-    <script type="text/javascript">
-        
-        window.PLOTLYENV = window.PLOTLYENV || {}
-        
-        if (document.getElementById('id-1')) {
-    Plotly.newPlot(
-        'id-1',
-        [{"showlegend":false,
+<div
+id=id-1
+class="plotly-graph-div"
+style="height:100%; width:100%;">
+</div>
+<script type="text/javascript">
+
+window.PLOTLYENV = window.PLOTLYENV || {}
+
+if (document.getElementById('id-1')) {
+Plotly.newPlot(
+'id-1',
+[{"showlegend":false,
 "y":[-1.0,0.0,1.0,2.0],
 "type":"bar",
+"customdata":["Foo",
+"Bar",
+"Baz",
+"Vaz"],
 "yaxis":"y3",
 "orientation":"v",
+"hovertemplate":"%{customdata}<extra></extra>",
 "x":["Foo",
 "Bar",
 "Baz",
@@ -35,7 +40,12 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "y":[1.0,1.0,1.0,1.0],
 "type":"bar",
 "name":"score",
+"customdata":["Foo",
+"Bar",
+"Baz",
+"Vaz"],
 "orientation":"v",
+"hovertemplate":"%{customdata}<extra></extra>",
 "x":["Foo",
 "Bar",
 "Baz",
@@ -48,13 +58,18 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "y":[1.0,1.0,1.0,1.0],
 "type":"bar",
 "name":"is",
+"customdata":["Foo",
+"Bar",
+"Baz",
+"Vaz"],
 "yaxis":"y2",
 "orientation":"v",
+"hovertemplate":"%{customdata}<extra></extra>",
 "x":["Foo",
 "Bar",
 "Baz",
 "Vaz"]}],
-        {"showlegend":false,
+{"showlegend":false,
 "coloraxis":{"showscale":false},
 "xaxis":{"showgrid":false,
 "showticklabels":true},
@@ -78,6 +93,7 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "showticklabels":false,
 "range":[0.0,1.0],
 "domain":[0.055,0.10500000000000001]},
+"hoverlabel":{"align":"left"},
 "annotations":[{"yanchor":"middle",
 "xanchor":"right",
 "y":0.5,
@@ -99,15 +115,15 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "b":50,
 "r":50,
 "t":50}},
-        {"editable":false,
+{"editable":false,
 "responsive":true,
 "staticPlot":false,
 "scrollZoom":true},
-    )
+)
 }
 
-        
-    </script>
+
+</script>
 </div>
 
 </body>

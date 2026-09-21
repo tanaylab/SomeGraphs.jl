@@ -11,6 +11,7 @@ export collect_range!
 export configured_colors
 export ConfiguredColors
 export displayed_annotations
+export entities_hovers
 export fill_color
 export final_scaled_range
 export MaybeRange
@@ -35,13 +36,11 @@ export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
 export shared_values_title
-export string_values
 export SubGraph
 export validate_axis_sizes
 export validate_colors
 export validate_graph_bands
 export validate_numeric_values
-export validate_string_values
 export validate_values
 
 using Colors
@@ -878,30 +877,21 @@ function numeric_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:R
 end
 
 """
-    validate_string_values(context::ValidationContext, field::AbstractString, values::Maybe{AbstractVector})::Nothing
+    entities_hovers(entities::VectorEntitiesData)::Maybe{AbstractVector{<:AbstractString}}
 
-Validate that the `values` of a [`VectorValuesData`](@ref) `field` are strings (if specified).
+The hover to show for each of the `entities`: its name, followed by whatever its `hovers` say in addition to it. This
+is `nothing` if the entities have neither.
 """
-function validate_string_values(
-    context::ValidationContext,
-    field::AbstractString,
-    values::Maybe{AbstractVector},
-)::Nothing
-    if values !== nothing && !(eltype(values) <: AbstractString)
-        throw(ArgumentError("non-string $(location(context)).$(field)"))
+function entities_hovers(entities::VectorEntitiesData)::Maybe{AbstractVector{<:AbstractString}}
+    names = entities.names
+    hovers = entities.hovers
+    if names === nothing
+        return hovers
+    elseif hovers === nothing
+        return names
+    else
+        return names .* "<br>" .* hovers
     end
-    return nothing
-end
-
-"""
-    string_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:AbstractString}}
-
-The values of a [`VectorValuesData`](@ref) which was validated to be strings.
-"""
-function string_values(values_data::VectorValuesData)::Maybe{AbstractVector{<:AbstractString}}
-    values = values_data.vector
-    @assert values === nothing || values isa AbstractVector{<:AbstractString}
-    return values
 end
 
 """

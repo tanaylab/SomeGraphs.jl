@@ -909,7 +909,7 @@ nested_test("lines") do
             graph.configuration.stacking = StackValues
             graph.data.lines[2].points.hovers = ["A", "B"]
             @test_throws chomp("""
-                               ArgumentError: can't specify both graph.data.lines[2].points.hovers
+                               ArgumentError: can't specify both graph.data.lines[2].points.(names,hovers)
                                and graph.configuration.stacking
                                """) validate(context, graph)
         end

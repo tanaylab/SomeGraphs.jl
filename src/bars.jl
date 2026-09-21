@@ -22,6 +22,7 @@ using ..Validations
 using NamedArrays
 using PlotlyBase
 
+import ..Common.is_categorical_axis
 import ..Validations.Maybe
 
 """
@@ -49,6 +50,7 @@ end
     @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        bar_axis::AxisConfiguration = AxisConfiguration()
         value_bands::BandsConfiguration = BandsConfiguration()
         values_orientation::ValuesOrientation = VerticalValues
         colors::ColorsConfiguration = ColorsConfiguration()
@@ -64,6 +66,9 @@ specify bands for this axis using `value_bands`. The `bars` configure the bars t
 automatically by Plotly), in combination with the data bar colors (if any). The `annotations` are the sizes of the
 annotations shown next to the bars.
 
+The `bar_axis` shows the names of the bars. Only its `show_ticks`, `ticks_angle` and `title` apply, as the rest have no
+meaning for an axis of names.
+
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
 bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
 this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
@@ -71,6 +76,7 @@ this. A log scale never reaches zero, so there a bar is measured from the smalle
 @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    bar_axis::AxisConfiguration = AxisConfiguration()
     value_bands::BandsConfiguration = BandsConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
     colors::ColorsConfiguration = ColorsConfiguration()
@@ -78,9 +84,26 @@ this. A log scale never reaches zero, so there a bar is measured from the smalle
     annotations::AnnotationSize = AnnotationSize()
 end
 
+# The bar axis shows the names of the bars, so only the fields that apply to an axis of names may be specified.
+function validate_bar_axis(context::ValidationContext, bar_axis::AxisConfiguration)::Nothing
+    validate_field(context, "bar_axis", bar_axis)
+
+    if !is_categorical_axis(bar_axis)
+        throw(
+            ArgumentError(
+                "specified numeric or grid fields of $(location(context)).bar_axis\n" *
+                "(only show_ticks, ticks_angle and title apply to the names of the bars)",
+            ),
+        )
+    end
+
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, configuration::BarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
+    validate_bar_axis(context, configuration.bar_axis)
     validate_field(context, "value_bands", configuration.value_bands)
     validate_field(context, "colors", configuration.colors)
     validate_field(context, "bars", configuration.bars)
@@ -102,7 +125,6 @@ end
     @kwdef mutable struct BarsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         values::VectorValuesData = VectorValuesData()
-        names::VectorValuesData = VectorValuesData()
         bars::VectorEntitiesData = VectorEntitiesData()
         colors::VectorValuesData = VectorValuesData()
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -112,10 +134,10 @@ end
 
 The data for a graph of a single series of bars.
 
-The `values` are required and numeric, one per bar; their title is the value axis title. The `names` values (if any)
-are strings, one per bar, shown as the bar axis ticks; their title is the bar axis title. The `bars` hold the hovers and
-mask of the bars; masked bars are left out of the graph. The `colors` are optional (typically all bars have the same
-color); their title is the legend title. You can even add annotations to the bars.
+The `values` are required and numeric, one per bar; their title is the value axis title. The `bars` hold the names,
+hovers and mask of the bars; their names are shown as the bar axis ticks, and masked bars are left out of the graph.
+The `colors` are optional (typically all bars have the same color); their title is the legend title. You can even add
+annotations to the bars.
 
 If `annotations_order` is specified, the annotations are shown in that order. It describes all the annotations,
 including the ones that are not `is_shown`.
@@ -123,7 +145,6 @@ including the ones that are not `is_shown`.
 @kwdef mutable struct BarsGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
     values::VectorValuesData = VectorValuesData()
-    names::VectorValuesData = VectorValuesData()
     bars::VectorEntitiesData = VectorEntitiesData()
     colors::VectorValuesData = VectorValuesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -133,14 +154,13 @@ end
 
 function Validations.validate(context::ValidationContext, data::BarsGraphData)::Nothing
     validate_numeric_values(context, "values.vector", data.values.vector; is_required = true)
-    validate_string_values(context, "names.vector", data.names.vector)
 
     values = data.values.vector
     @assert values !== nothing
     validate_vector_is_not_empty(context, "values.vector", values)
     n_bars = length(values)
 
-    validate_vector_length(context, "names.vector", data.names.vector, "values.vector", n_bars)
+    validate_vector_length(context, "bars.names", data.bars.names, "values.vector", n_bars)
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.vector", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "values.vector", n_bars)
     validate_vector_length(context, "colors.vector", data.colors.vector, "values.vector", n_bars)
@@ -170,7 +190,6 @@ BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
     function bars_graph(;
         [figure_title::Maybe{AbstractString} = nothing,
         values::VectorValuesData = VectorValuesData(),
-        names::VectorValuesData = VectorValuesData(),
         bars::VectorEntitiesData = VectorEntitiesData(),
         colors::VectorValuesData = VectorValuesData(),
         annotations::AbstractVector{AnnotationData} = AnnotationData[],
@@ -185,7 +204,6 @@ Create a [`BarsGraph`](@ref) by initializing only the [`BarsGraphData`](@ref) fi
 function bars_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     values::VectorValuesData = VectorValuesData(),
-    names::VectorValuesData = VectorValuesData(),
     bars::VectorEntitiesData = VectorEntitiesData(),
     colors::VectorValuesData = VectorValuesData(),
     annotations::AbstractVector{AnnotationData} = AnnotationData[],
@@ -194,7 +212,7 @@ function bars_graph(;
     configuration::BarsGraphConfiguration = BarsGraphConfiguration(),
 )::BarsGraph
     return BarsGraph(
-        BarsGraphData(; figure_title, values, names, bars, colors, annotations, annotations_order, value_bands),
+        BarsGraphData(; figure_title, values, bars, colors, annotations, annotations_order, value_bands),
         configuration,
     )
 end
@@ -215,15 +233,6 @@ The colors of the bars.
 """
 function Sources.colors_vector_fields(graph::BarsGraph)::ColorsVectorFields
     return VectorFields(graph.data.colors, graph.data.bars, ColorsConfigurationFields(graph.configuration.colors))
-end
-
-"""
-    names_vector_data_fields(graph::BarsGraph)::VectorDataFields
-
-The names of the bars; their title is the title of the bars axis.
-"""
-function Sources.names_vector_data_fields(graph::BarsGraph)::VectorDataFields
-    return VectorDataFields(graph.data.names, graph.data.bars)
 end
 
 """
@@ -293,9 +302,9 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     mask = graph.data.bars.mask
 
     # Default names are given before masking so hidden bars do not shift the names of the rest.
-    default_names = prefer_data(string_values(graph.data.names), string.(1:n_bars))
+    default_names = prefer_data(graph.data.bars.names, string.(1:n_bars))
     names = masked_values(default_names, mask, nothing)
-    hovers = masked_values(graph.data.bars.hovers, mask, nothing)
+    hovers = masked_values(entities_hovers(graph.data.bars), mask, nothing)
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
@@ -347,14 +356,14 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data,
         annotation_size = graph.configuration.annotations,
-        entries_hovers = graph.data.bars.hovers,
+        entries_hovers = entities_hovers(graph.data.bars),
         mask,
         order = mask === nothing ? nothing : findall(mask),
     )
 
     layout = bars_layout(;
         graph,
-        has_tick_names = graph.data.names.vector !== nothing,
+        has_tick_names = graph.data.bars.names !== nothing,
         has_legend = false,
         has_hovers = hovers !== nothing,
         implicit_values_range,
@@ -370,6 +379,7 @@ end
     @kwdef mutable struct SeriesBarsGraphConfiguration <: AbstractGraphConfiguration
         figure::FigureConfiguration = FigureConfiguration()
         value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        bar_axis::AxisConfiguration = AxisConfiguration()
         values_orientation::ValuesOrientation = VerticalValues
         bars::BarsConfiguration = BarsConfiguration()
         annotations::AnnotationSize = AnnotationSize()
@@ -399,6 +409,7 @@ Without a `series_gap` all the pairs share the same two value axes and are shown
 @kwdef mutable struct SeriesBarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     value_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    bar_axis::AxisConfiguration = AxisConfiguration()
     values_orientation::ValuesOrientation = VerticalValues
     bars::BarsConfiguration = BarsConfiguration()
     annotations::AnnotationSize = AnnotationSize()
@@ -410,6 +421,7 @@ end
 function Validations.validate(context::ValidationContext, configuration::SeriesBarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
+    validate_bar_axis(context, configuration.bar_axis)
     validate_field(context, "bars", configuration.bars)
     validate_field(context, "annotations", configuration.annotations)
 
@@ -477,7 +489,6 @@ end
         figure_title::Maybe{AbstractString} = nothing
         series::AbstractVector{SeriesData} = SeriesData[]
         order::Maybe{AbstractVector{<:Integer}} = nothing
-        names::VectorValuesData = VectorValuesData()
         bars::VectorEntitiesData = VectorEntitiesData()
         annotations::AbstractVector{AnnotationData} = AnnotationData[]
         annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
@@ -486,9 +497,9 @@ end
 The data for a graph of multiple series of bars, a [`SeriesData`](@ref) per series.
 
 All the series must have the same number of bars. The value axis title is the title of the series' values: all the
-series that give one must give the same. The `names` values (if any) are strings, one per bar, shown as the bar axis
-ticks; their title is the bar axis title. The `bars` hold the hovers and mask shared by the bars of all the series;
-masked bars are left out of every series. You can even add annotations to the bars.
+series that give one must give the same. The `bars` hold the names, hovers and mask shared by the bars of all the
+series; their names are shown as the bar axis ticks, and masked bars are left out of every series. You can even add
+annotations to the bars.
 
 If `order` is specified, we draw the series in that order. Stacked, this is the order of the stack from its base; with a
 `series_gap`, this is the order of the series' own axes. The `order` describes all the series, including the ones that
@@ -501,7 +512,6 @@ in the series, skipping whichever is not specified.
     figure_title::Maybe{AbstractString} = nothing
     series::AbstractVector{SeriesData} = SeriesData[]
     order::Maybe{AbstractVector{<:Integer}} = nothing
-    names::VectorValuesData = VectorValuesData()
     bars::VectorEntitiesData = VectorEntitiesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
@@ -509,7 +519,6 @@ end
 
 function Validations.validate(context::ValidationContext, data::SeriesBarsGraphData)::Nothing
     validate_vector_is_not_empty(context, "series", data.series)
-    validate_string_values(context, "names.vector", data.names.vector)
 
     validate_vector_entries(context, "series", data.series) do _, series
         validate(context, series)
@@ -534,7 +543,7 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
         throw(ArgumentError("no is_shown $(location(context)).series"))
     end
 
-    validate_vector_length(context, "names.vector", data.names.vector, "series[1].values.vector", n_bars)
+    validate_vector_length(context, "bars.names", data.bars.names, "series[1].values.vector", n_bars)
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "series[1].values.vector", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "series[1].values.vector", n_bars)
 
@@ -565,7 +574,6 @@ SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
         [figure_title::Maybe{AbstractString} = nothing,
         series::AbstractVector{SeriesData} = SeriesData[],
         order::Maybe{AbstractVector{<:Integer}} = nothing,
-        names::VectorValuesData = VectorValuesData(),
         bars::VectorEntitiesData = VectorEntitiesData(),
         annotations::AbstractVector{AnnotationData} = AnnotationData[],
         annotations_order::Maybe{AbstractVector{<:Integer}} = nothing,
@@ -579,14 +587,13 @@ function series_bars_graph(;
     figure_title::Maybe{AbstractString} = nothing,
     series::AbstractVector{SeriesData} = SeriesData[],
     order::Maybe{AbstractVector{<:Integer}} = nothing,
-    names::VectorValuesData = VectorValuesData(),
     bars::VectorEntitiesData = VectorEntitiesData(),
     annotations::AbstractVector{AnnotationData} = AnnotationData[],
     annotations_order::Maybe{AbstractVector{<:Integer}} = nothing,
     configuration::SeriesBarsGraphConfiguration = SeriesBarsGraphConfiguration(),
 )::SeriesBarsGraph
     return SeriesBarsGraph(
-        SeriesBarsGraphData(; figure_title, series, order, names, bars, annotations, annotations_order),
+        SeriesBarsGraphData(; figure_title, series, order, bars, annotations, annotations_order),
         configuration,
     )
 end
@@ -707,15 +714,6 @@ Append an `annotation` of the bars (the ones shared by all the series) and retur
 function Sources.add_annotation!(graph::SeriesBarsGraph, annotation::AnnotationData = AnnotationData())::Int
     push!(graph.data.annotations, annotation)
     return length(graph.data.annotations)
-end
-
-"""
-    names_vector_data_fields(graph::SeriesBarsGraph)::VectorDataFields
-
-The names of the bars (shared by all the series); their title is the title of the bars axis.
-"""
-function Sources.names_vector_data_fields(graph::SeriesBarsGraph)::VectorDataFields
-    return VectorDataFields(graph.data.names, graph.data.bars)
 end
 
 function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
@@ -859,7 +857,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     shared_mask = graph.data.bars.mask
     # Default names are given before masking so hidden bars do not shift the names of the rest.
-    default_names = prefer_data(string_values(graph.data.names), string.(1:n_bars))
+    default_names = prefer_data(graph.data.bars.names, string.(1:n_bars))
 
     n_axes = arrangement.n_axes
 
@@ -887,8 +885,8 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         values = masked_values(all_values, series_mask, nothing)
 
         hovers = joined_hovers(
-            masked_values(graph.data.bars.hovers, series_mask, nothing),
-            masked_values(series.bars.hovers, series_mask, nothing),
+            masked_values(entities_hovers(graph.data.bars), series_mask, nothing),
+            masked_values(entities_hovers(series.bars), series_mask, nothing),
         )
         if series.hover !== nothing
             if hovers === nothing
@@ -1039,14 +1037,14 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data,
         annotation_size = graph.configuration.annotations,
-        entries_hovers = graph.data.bars.hovers,
+        entries_hovers = entities_hovers(graph.data.bars),
         mask = shared_mask,
         order = shared_mask === nothing ? nothing : findall(shared_mask),
     )
 
     layout = bars_layout(;
         graph,
-        has_tick_names = graph.data.names.vector !== nothing,
+        has_tick_names = graph.data.bars.names !== nothing,
         has_legend = show_in_legend,
         has_hovers,
         implicit_values_range,
@@ -1302,13 +1300,14 @@ function push_annotation_legend_trace!(;
     return nothing
 end
 
-# The titles of the value and bar axes given in the graph data.
-function data_axes_titles(graph::BarsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
-    return (graph.data.values.title, graph.data.names.title)
+# The title of the value axis given in the graph data. The bar axis is titled by the configuration alone, since its
+# names are entities rather than values and carry no title of their own.
+function data_value_axis_title(graph::BarsGraph)::Maybe{AbstractString}
+    return graph.data.values.title
 end
 
-function data_axes_titles(graph::SeriesBarsGraph)::Tuple{Maybe{AbstractString}, Maybe{AbstractString}}
-    return (series_value_axis_title(graph), graph.data.names.title)
+function data_value_axis_title(graph::SeriesBarsGraph)::Maybe{AbstractString}
+    return series_value_axis_title(graph)
 end
 
 function bars_layout(;
@@ -1360,7 +1359,8 @@ function bars_layout(;
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
 
-    value_axis_title, bar_axis_title = data_axes_titles(graph)
+    value_axis_title = data_value_axis_title(graph)
+    bar_axis = graph.configuration.bar_axis
 
     if graph isa SeriesBarsGraph
         if graph.configuration.stacking == StackValues
@@ -1463,10 +1463,14 @@ function bars_layout(;
         bar_axis_anchor = nothing
     end
 
+    show_tick_names = has_tick_names && bar_axis.show_ticks
+    bar_axis_screen_ticks_angle = axis_screen_ticks_angle(bar_axis.ticks_angle, bar_axis_letter == "y")
+
     layout["$(bar_axis_letter)axis"] = Dict(
         :showgrid => false,
-        :showticklabels => has_tick_names,
-        :title => bar_axis_title,
+        :showticklabels => show_tick_names,
+        :tickangle => (show_tick_names && bar_axis_screen_ticks_angle != 0) ? bar_axis_screen_ticks_angle : nothing,
+        :title => bar_axis.title,
         :anchor => bar_axis_anchor,
     )
 

@@ -29,9 +29,6 @@ SomeGraphs.Sources.SizesConfigurationFields
 #### Vector Data Fields
 
 ```@docs
-SomeGraphs.Sources.names_vector_data_fields
-SomeGraphs.Sources.rows_names_vector_data_fields
-SomeGraphs.Sources.columns_names_vector_data_fields
 SomeGraphs.Sources.rows_groups_vector_data_fields
 SomeGraphs.Sources.rows_subgroups_vector_data_fields
 SomeGraphs.Sources.columns_groups_vector_data_fields

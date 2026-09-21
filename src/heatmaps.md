@@ -37,8 +37,8 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -55,8 +55,8 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
@@ -74,8 +74,8 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 flip_axes!(graph)
 using PlotlyDocumenter
@@ -94,11 +94,11 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData(["A", "B", "C", "D"]),
+        entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
     ),
     columns = HeatmapAxisData(;
-        names = VectorValuesData(["X", "Y", "Z"]),
+        entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
                 values = VectorValuesData(["yes", "maybe", "no"], "is_special"),
@@ -125,11 +125,11 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData(["A", "B", "C", "D"]),
+        entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
     ),
     columns = HeatmapAxisData(;
-        names = VectorValuesData(["X", "Y", "Z"]),
+        entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
                 values = VectorValuesData(["yes", "maybe", "no"], "is_special"),
@@ -160,12 +160,12 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData(["A", "B", "C", "D"]),
+        entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
         groups = VectorValuesData([1, 1, 2, 2]),
     ),
     columns = HeatmapAxisData(;
-        names = VectorValuesData(["X", "Y", "Z"]),
+        entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
                 values = VectorValuesData(["yes", "maybe", "no"], "is_special"),
@@ -198,9 +198,9 @@ graph = heatmap_graph(;
         2 3 3 4 2 3;
         1 4 2 5 1 4;
     ]),
-    rows = HeatmapAxisData(; names = VectorValuesData(["A", "B", "C", "D"])),
+    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
     columns = HeatmapAxisData(;
-        names = VectorValuesData(["U", "V", "W", "X", "Y", "Z"]),
+        entities = VectorEntitiesData(; names = ["U", "V", "W", "X", "Y", "Z"]),
         groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
         subgroups = VectorValuesData(["P", "Q", "P", "R", "R", "S"]),
     ),
@@ -224,10 +224,9 @@ graph = heatmap_graph(;
         1 4 2;
     ]),
     rows = HeatmapAxisData(;
-        names = VectorValuesData(["A", "B", "C", "D"]),
-        entities = VectorEntitiesData(; mask = [true, false, true, true]),
+        entities = VectorEntitiesData(; names = ["A", "B", "C", "D"], mask = [true, false, true, true]),
     ),
-    columns = HeatmapAxisData(; names = VectorValuesData(["X", "Y", "Z"])),
+    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)

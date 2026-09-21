@@ -648,62 +648,6 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Utilities.validate_string_values">
-<a class="docstring-binding" href="#SomeGraphs.Utilities.validate_string_values">
-<code>SomeGraphs.Utilities.validate_string_values
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">validate_string_values(context::ValidationContext, field::AbstractString, values::Maybe{AbstractVector})::Nothing
-</code>
-</pre>
-<p>Validate that the 
-<code>values
-</code> of a 
-<a href="common.html#SomeGraphs.Common.VectorValuesData">
-<code>VectorValuesData
-</code>
-</a> 
-<code>field
-</code> are strings (if specified).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Utilities.string_values">
-<a class="docstring-binding" href="#SomeGraphs.Utilities.string_values">
-<code>SomeGraphs.Utilities.string_values
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">string_values(values_data::VectorValuesData)::Maybe{AbstractVector{&lt;:AbstractString}}
-</code>
-</pre>
-<p>The values of a 
-<a href="common.html#SomeGraphs.Common.VectorValuesData">
-<code>VectorValuesData
-</code>
-</a> which was validated to be strings.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.shared_values_title">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.shared_values_title">
 <code>SomeGraphs.Utilities.shared_values_title
@@ -768,6 +712,34 @@ end
 </code> (if any) and keep only the entries whose 
 <code>mask
 </code> is true (if any). The result is shorter than the input when a mask is given.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.entities_hovers">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.entities_hovers">
+<code>SomeGraphs.Utilities.entities_hovers
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">entities_hovers(entities::VectorEntitiesData)::Maybe{AbstractVector{&lt;:AbstractString}}
+</code>
+</pre>
+<p>The hover to show for each of the 
+<code>entities
+</code>: its name, followed by whatever its 
+<code>hovers
+</code> say in addition to it. This is 
+<code>nothing
+</code> if the entities have neither.
 </p>
 </div>
 </section>
@@ -1658,6 +1630,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.entities_hovers">
+<code>SomeGraphs.Utilities.entities_hovers
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.fill_color">
 <code>SomeGraphs.Utilities.fill_color
 </code>
@@ -1784,12 +1762,6 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.string_values">
-<code>SomeGraphs.Utilities.string_values
-</code>
-</a>
-</li>
-<li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_axis_sizes">
 <code>SomeGraphs.Utilities.validate_axis_sizes
 </code>
@@ -1810,12 +1782,6 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.validate_numeric_values">
 <code>SomeGraphs.Utilities.validate_numeric_values
-</code>
-</a>
-</li>
-<li>
-<a href="utilities.html#SomeGraphs.Utilities.validate_string_values">
-<code>SomeGraphs.Utilities.validate_string_values
 </code>
 </a>
 </li>

@@ -273,7 +273,6 @@ end
 
 """
     @kwdef mutable struct HeatmapAxisData
-        names::VectorValuesData = VectorValuesData()
         entities::VectorEntitiesData = VectorEntitiesData()
         order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
         groups::VectorValuesData = VectorValuesData()
@@ -283,8 +282,8 @@ end
         annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
-The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `names` are strings, one per entry,
-shown as the tick labels; their title is the axis title. The `entities` hold the hovers and mask of the entries. The
+The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `entities` hold the names, hovers
+and mask of the entries; their names are shown as the tick labels, titled by the axis `title` of the configuration. The
 `annotations` are shown to the side of the axis. If `annotations_order` is specified, they are shown in that order; it
 describes all the annotations, including the ones that are not `is_shown`.
 
@@ -307,7 +306,6 @@ This way the order computed for one graph (see [`heatmap_order`](@ref)) can be g
 whether or not the two hide the same entries. At least one entry must be shown.
 """
 @kwdef mutable struct HeatmapAxisData
-    names::VectorValuesData = VectorValuesData()
     entities::VectorEntitiesData = VectorEntitiesData()
     order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
     groups::VectorValuesData = VectorValuesData()
@@ -327,9 +325,7 @@ function Validations.validate(
 )::Nothing
     base = "entries.matrix.$(name)"
 
-    validate_string_values(context, "$(name).names.vector", axis.names.vector)
-    validate_vector_length(context, "$(name).names.vector", axis.names.vector, base, n_entries)
-
+    validate_vector_length(context, "$(name).entities.names", axis.entities.names, base, n_entries)
     validate_vector_length(context, "$(name).entities.hovers", axis.entities.hovers, base, n_entries)
     validate_vector_length(context, "$(name).entities.mask", axis.entities.mask, base, n_entries)
     if axis.entities.mask !== nothing && !any(axis.entities.mask)
@@ -548,24 +544,6 @@ Append an `annotation` of the columns and return its index.
 function Sources.add_columns_annotation!(graph::HeatmapGraph, annotation::AnnotationData = AnnotationData())::Int
     push!(graph.data.columns.annotations, annotation)
     return length(graph.data.columns.annotations)
-end
-
-"""
-    rows_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-
-The names of the rows; their title is the title of the rows axis.
-"""
-function Sources.rows_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-    return VectorDataFields(graph.data.rows.names, graph.data.rows.entities)
-end
-
-"""
-    columns_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-
-The names of the columns; their title is the title of the columns axis.
-"""
-function Sources.columns_names_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-    return VectorDataFields(graph.data.columns.names, graph.data.columns.entities)
 end
 
 """
@@ -908,12 +886,12 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     n_expanded_rows, n_expanded_columns = size(expanded_z)
 
-    rows_hovers = graph.data.rows.entities.hovers
+    rows_hovers = entities_hovers(graph.data.rows.entities)
     if rows_hovers !== nothing
         rows_hovers = rows_hovers[rows_order]
     end
 
-    columns_hovers = graph.data.columns.entities.hovers
+    columns_hovers = entities_hovers(graph.data.columns.entities)
     if columns_hovers !== nothing
         columns_hovers = columns_hovers[columns_order]
     end
@@ -962,7 +940,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data = columns_annotations_data,
         annotation_size = graph.configuration.columns.annotations,
-        entries_hovers = graph.data.columns.entities.hovers,
+        entries_hovers = entities_hovers(graph.data.columns.entities),
         mask = columns_mask,
         order = columns_order,
         expanded_mask = expanded_columns_mask,
@@ -978,7 +956,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         has_legend_only_traces,
         annotations_data = rows_annotations_data,
         annotation_size = graph.configuration.rows.annotations,
-        entries_hovers = graph.data.rows.entities.hovers,
+        entries_hovers = entities_hovers(graph.data.rows.entities),
         mask = rows_mask,
         order = rows_order,
         expanded_mask = expanded_rows_mask,
@@ -1036,17 +1014,18 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         )
     has_hovers =
         graph.data.cells.hovers !== nothing ||
-        graph.data.rows.entities.hovers !== nothing ||
-        graph.data.columns.entities.hovers !== nothing
+        entities_hovers(graph.data.rows.entities) !== nothing ||
+        entities_hovers(graph.data.columns.entities) !== nothing
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers)
 
-    expanded_rows_names = expand_vector(string_values(graph.data.rows.names), rows_order, expanded_rows_mask, "")
+    rows_names = graph.data.rows.entities.names
+    expanded_rows_names = expand_vector(rows_names, rows_order, expanded_rows_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("y", yaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = graph.data.rows.names.vector !== nothing);
-        title = prefer_data(graph.data.rows.names.title, graph.configuration.rows.title),
+        AxisConfiguration(; show_grid = false, show_ticks = rows_names !== nothing);
+        title = graph.configuration.rows.title,
         ticks_values = expanded_rows_names === nothing ? nothing : collect(1:n_expanded_rows),
         ticks_labels = expanded_rows_names,
         range = Range(; minimum = 0.5, maximum = n_expanded_rows + 0.5),
@@ -1063,13 +1042,13 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         is_zeroable = false,
     )
 
-    expanded_columns_names =
-        expand_vector(string_values(graph.data.columns.names), columns_order, expanded_columns_mask, "")
+    columns_names = graph.data.columns.entities.names
+    expanded_columns_names = expand_vector(columns_names, columns_order, expanded_columns_mask, "")
     set_layout_axis!(
         layout,
         plotly_axis("x", xaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = graph.data.columns.names.vector !== nothing);
-        title = prefer_data(graph.data.columns.names.title, graph.configuration.columns.title),
+        AxisConfiguration(; show_grid = false, show_ticks = columns_names !== nothing);
+        title = graph.configuration.columns.title,
         ticks_values = expanded_columns_names === nothing ? nothing : collect(1:n_expanded_columns),
         ticks_labels = expanded_columns_names,
         range = Range(; minimum = 0.5, maximum = n_expanded_columns + 0.5),
@@ -1448,7 +1427,7 @@ the graph will reuse it, and vice versa.
 Use this to list the entries in the order they are shown:
 
 ```julia
-ordered_rows_names = graph.data.rows.names.vector[graph.order.rows_order]
+ordered_rows_names = graph.data.rows.entities.names[graph.order.rows_order]
 ```
 
 Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its
@@ -1944,7 +1923,6 @@ end
 # The data of an axis, moved to the other axis of the graph (that is, with its `arrange_by` matrix transposed).
 function flipped_axis_data(axis::HeatmapAxisData)::HeatmapAxisData
     return HeatmapAxisData(;
-        names = axis.names,
         entities = axis.entities,
         order = axis.order,
         groups = axis.groups,

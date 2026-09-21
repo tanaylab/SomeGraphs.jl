@@ -39,8 +39,6 @@ nested_test("heatmaps") do
         @test graph.data.columns.annotations[2].values.vector == [0, 1, 0, 1]
 
         for (fields, values, entities) in (
-            (rows_names_vector_data_fields(graph), graph.data.rows.names, graph.data.rows.entities),
-            (columns_names_vector_data_fields(graph), graph.data.columns.names, graph.data.columns.entities),
             (rows_groups_vector_data_fields(graph), graph.data.rows.groups, graph.data.rows.entities),
             (rows_subgroups_vector_data_fields(graph), graph.data.rows.subgroups, graph.data.rows.entities),
             (columns_groups_vector_data_fields(graph), graph.data.columns.groups, graph.data.columns.entities),
@@ -160,11 +158,11 @@ nested_test("heatmaps") do
         end
 
         nested_test("~names") do
-            graph.data.rows.names.vector = [1, 2, 3]
-            @test_throws "ArgumentError: non-string graph.data.rows.names.vector" validate(
-                ValidationContext(["graph"]),
-                graph,
-            )
+            graph.data.rows.entities.names = ["X", "Y"]
+            @test_throws chomp("""
+                               ArgumentError: invalid length of graph.data.rows.entities.names: 2
+                               is different from length of graph.data.entries.matrix.rows: 3
+                               """) validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("mask") do
@@ -453,15 +451,24 @@ nested_test("heatmaps") do
     end
 
     nested_test("names") do
-        graph.data.rows.names.vector = ["X", "Y", "Z"]
-        graph.data.columns.names.vector = ["A", "B", "C", "D"]
-        test_html(graph, "heatmap.names.html")
-        return nothing
+        graph.data.rows.entities.names = ["X", "Y", "Z"]
+
+        nested_test("()") do
+            graph.data.columns.entities.names = ["A", "B", "C", "D"]
+            test_html(graph, "heatmap.names.html")
+            return nothing
+        end
+
+        # Naming one axis alone is normal when the other has too many entries to label.
+        nested_test("rows") do
+            test_html(graph, "heatmap.names.rows.html")
+            return nothing
+        end
     end
 
     nested_test("flip") do
-        graph.data.rows.names.vector = ["X", "Y", "Z"]
-        graph.data.columns.names.vector = ["A", "B", "C", "D"]
+        graph.data.rows.entities.names = ["X", "Y", "Z"]
+        graph.data.columns.entities.names = ["A", "B", "C", "D"]
         graph.data.columns.groups.vector = [1, 1, 2, 2]
         graph.data.columns.subgroups.vector = ["P", "Q", "Q", "R"]
         graph.configuration.columns.subgroups_gap = 1
@@ -581,8 +588,8 @@ nested_test("heatmaps") do
             nested_test("gaps") do
                 graph.data.rows.groups.vector = [1, 2, 2]
                 graph.data.columns.groups.vector = [1, 1, 2, 3]
-                graph.data.rows.names.vector = ["X", "Y", "Z"]
-                graph.data.columns.names.vector = ["A", "B", "C", "D"]
+                graph.data.rows.entities.names = ["X", "Y", "Z"]
+                graph.data.columns.entities.names = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.annotations.dendogram.gaps.html")
                 return nothing
             end
@@ -591,8 +598,8 @@ nested_test("heatmaps") do
         nested_test("gaps") do
             graph.data.rows.groups.vector = [1, 2, 2]
             graph.data.columns.groups.vector = [1, 1, 2, 3]
-            graph.data.rows.names.vector = ["X", "Y", "Z"]
-            graph.data.columns.names.vector = ["A", "B", "C", "D"]
+            graph.data.rows.entities.names = ["X", "Y", "Z"]
+            graph.data.columns.entities.names = ["A", "B", "C", "D"]
             test_html(graph, "heatmap.annotations.gaps.html")
             return nothing
         end
@@ -602,8 +609,8 @@ nested_test("heatmaps") do
             graph.configuration.entries.colors.show_legend = true
             graph.data.rows.annotations[1].colors.show_legend = true
             graph.data.columns.annotations[1].colors.show_legend = true
-            graph.data.rows.names.vector = ["X", "Y", "Z"]
-            graph.data.columns.names.vector = ["A", "B", "C", "D"]
+            graph.data.rows.entities.names = ["X", "Y", "Z"]
+            graph.data.columns.entities.names = ["A", "B", "C", "D"]
             test_html(graph, "heatmap.annotations.legend.html")
             return nothing
         end
@@ -725,8 +732,8 @@ nested_test("heatmaps") do
             nested_test("gaps") do
                 graph.data.rows.groups.vector = [1, 2, 2]
                 graph.data.columns.groups.vector = [1, 1, 2, 3]
-                graph.data.rows.names.vector = ["X", "Y", "Z"]
-                graph.data.columns.names.vector = ["A", "B", "C", "D"]
+                graph.data.rows.entities.names = ["X", "Y", "Z"]
+                graph.data.columns.entities.names = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.dendogram.gaps.html")
                 return nothing
             end
@@ -773,8 +780,8 @@ nested_test("heatmaps") do
     end
 
     nested_test("mask") do
-        graph.data.rows.names.vector = ["X", "Y", "Z"]
-        graph.data.columns.names.vector = ["A", "B", "C", "D"]
+        graph.data.rows.entities.names = ["X", "Y", "Z"]
+        graph.data.columns.entities.names = ["A", "B", "C", "D"]
         graph.data.rows.entities.hovers = ["R:X", "R:Y", "R:Z"]
         graph.data.columns.entities.hovers = ["C:A", "C:B", "C:C", "C:D"]
         graph.data.cells.hovers = [
@@ -895,8 +902,8 @@ nested_test("heatmaps") do
     end
 
     nested_test("hovers") do
-        graph.data.rows.names.vector = ["X", "Y", "Z"]
-        graph.data.columns.names.vector = ["A", "B", "C", "D"]
+        graph.data.rows.entities.names = ["X", "Y", "Z"]
+        graph.data.columns.entities.names = ["A", "B", "C", "D"]
 
         nested_test("entries") do
             graph.data.cells.hovers = [
@@ -913,8 +920,8 @@ nested_test("heatmaps") do
             nested_test("gaps") do
                 graph.data.rows.groups.vector = [1, 2, 2]
                 graph.data.columns.groups.vector = [1, 1, 2, 3]
-                graph.data.rows.names.vector = ["X", "Y", "Z"]
-                graph.data.columns.names.vector = ["A", "B", "C", "D"]
+                graph.data.rows.entities.names = ["X", "Y", "Z"]
+                graph.data.columns.entities.names = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.hovers.entries.gaps.html")
                 return nothing
             end
@@ -932,8 +939,8 @@ nested_test("heatmaps") do
             nested_test("gaps") do
                 graph.data.rows.groups.vector = [1, 2, 2]
                 graph.data.columns.groups.vector = [1, 1, 2, 3]
-                graph.data.rows.names.vector = ["X", "Y", "Z"]
-                graph.data.columns.names.vector = ["A", "B", "C", "D"]
+                graph.data.rows.entities.names = ["X", "Y", "Z"]
+                graph.data.columns.entities.names = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.hovers.axes.gaps.html")
                 return nothing
             end
@@ -956,8 +963,8 @@ nested_test("heatmaps") do
             nested_test("gaps") do
                 graph.data.rows.groups.vector = [1, 2, 2]
                 graph.data.columns.groups.vector = [1, 1, 2, 3]
-                graph.data.rows.names.vector = ["X", "Y", "Z"]
-                graph.data.columns.names.vector = ["A", "B", "C", "D"]
+                graph.data.rows.entities.names = ["X", "Y", "Z"]
+                graph.data.columns.entities.names = ["A", "B", "C", "D"]
                 test_html(graph, "heatmap.hovers.both.gaps.html")
                 return nothing
             end

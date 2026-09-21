@@ -44,7 +44,6 @@ export borders_sizes_vector_fields
 export colors_vector_fields
 export columns_annotations_colors_vector_fields
 export columns_groups_vector_data_fields
-export columns_names_vector_data_fields
 export columns_subgroups_vector_data_fields
 export distribution_axis_vector_fields
 export distribution_part_fields
@@ -53,12 +52,10 @@ export edges_colors_vector_fields
 export edges_sizes_vector_fields
 export entries_matrix_fields
 export line_part_fields
-export names_vector_data_fields
 export points_colors_vector_fields
 export points_sizes_vector_fields
 export rows_annotations_colors_vector_fields
 export rows_groups_vector_data_fields
-export rows_names_vector_data_fields
 export rows_subgroups_vector_data_fields
 export series_axis_vector_fields
 export series_part_fields
@@ -143,8 +140,8 @@ heatmap), the [`MatrixEntitiesData`](@ref) of its cells, and the [`VectorEntitie
 All are the graph's own objects, so writing into them changes the graph.
 
 A matrix source knows the two axes its data is indexed by, so it can add hovers to all three: one per cell, one per row
-and one per column. The axis entities are the same ones the row and column views hand out (`rows_names_vector_data_fields`,
-`rows_annotations_colors_vector_fields`, ...), so hovers added through either path are seen by both.
+and one per column. The axis entities are the same ones the row and column views hand out
+(`rows_annotations_colors_vector_fields`, ...), so whatever is written through either path is seen by both.
 """
 struct MatrixDataFields
     values::MatrixValuesData
@@ -497,28 +494,6 @@ The data source view of one annotation of the columns of a graph, given the `ind
 shares the entities of the columns.
 """
 function columns_annotations_colors_vector_fields end
-
-"""
-    names_vector_data_fields(graph)::VectorDataFields
-
-The data source view of the names of the entities of a graph (of its bars); their title is the title of the axis of the
-entities.
-"""
-function names_vector_data_fields end
-
-"""
-    rows_names_vector_data_fields(graph)::VectorDataFields
-
-The data source view of the names of the rows of a graph; their title is the title of the rows axis.
-"""
-function rows_names_vector_data_fields end
-
-"""
-    columns_names_vector_data_fields(graph)::VectorDataFields
-
-The data source view of the names of the columns of a graph; their title is the title of the columns axis.
-"""
-function columns_names_vector_data_fields end
 
 """
     rows_groups_vector_data_fields(graph)::VectorDataFields
