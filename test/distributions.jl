@@ -502,7 +502,7 @@ nested_test("distributions") do
     )
 
     nested_test("fields") do
-        fields = distributions_axis_vector_fields(graph, 2)
+        fields = distribution_part_fields(graph, 2).values
         @test fields.data.values === graph.data.distributions[2].values
         @test fields.data.entities === graph.data.distributions[2].points
         @test fields.configuration.axis === graph.configuration.value_axis
@@ -512,7 +512,7 @@ nested_test("distributions") do
         @test part.index == 3
         @test part.data === distribution
         @test graph.data.distributions[3] === distribution
-        @test distributions_axis_vector_fields(graph, 3).data.values === distribution.values
+        @test part.values.data.values === distribution.values
 
         part = add_distribution!(graph)
         @test part.index == 4

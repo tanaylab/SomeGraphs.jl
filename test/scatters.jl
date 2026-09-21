@@ -957,12 +957,12 @@ nested_test("lines") do
     end
 
     nested_test("fields") do
-        fields = x_axis_vector_fields(graph, 2)
+        fields = line_part_fields(graph, 2).x
         @test fields.data.values === graph.data.lines[2].x
         @test fields.data.entities === graph.data.lines[2].points
         @test fields.configuration.axis === graph.configuration.x_axis
 
-        fields = y_axis_vector_fields(graph, 2)
+        fields = line_part_fields(graph, 2).y
         @test fields.data.values === graph.data.lines[2].y
         @test fields.data.entities === graph.data.lines[2].points
         @test fields.configuration.axis === graph.configuration.y_axis
@@ -972,8 +972,8 @@ nested_test("lines") do
         @test part.index == 3
         @test part.data === line
         @test graph.data.lines[3] === line
-        @test x_axis_vector_fields(graph, 3).data.values === line.x
-        @test y_axis_vector_fields(graph, 3).data.values === line.y
+        @test part.x.data.values === line.x
+        @test part.y.data.values === line.y
 
         part = add_line!(graph)
         @test part.index == 4

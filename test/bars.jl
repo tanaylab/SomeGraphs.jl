@@ -298,7 +298,7 @@ nested_test("series_bars") do
     end
 
     nested_test("fields") do
-        fields = series_axis_vector_fields(graph, 2)
+        fields = series_part_fields(graph, 2).values
         @test fields.data.values === graph.data.series[2].values
         @test fields.data.entities === graph.data.series[2].bars
         @test fields.configuration.axis === graph.configuration.value_axis
@@ -321,7 +321,7 @@ nested_test("series_bars") do
         @test part.index == 3
         @test part.data === series
         @test graph.data.series[3] === series
-        fields = series_axis_vector_fields(graph, 3)
+        fields = part.values
         @test fields.data.values === series.values
         @test fields.data.entities === series.bars
 

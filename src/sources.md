@@ -41,9 +41,7 @@ SomeGraphs.Sources.columns_subgroups_vector_data_fields
 SomeGraphs.Sources.x_axis_vector_fields
 SomeGraphs.Sources.y_axis_vector_fields
 SomeGraphs.Sources.values_axis_vector_fields
-SomeGraphs.Sources.series_axis_vector_fields
 SomeGraphs.Sources.distribution_axis_vector_fields
-SomeGraphs.Sources.distributions_axis_vector_fields
 ```
 
 #### Colors Vector Fields

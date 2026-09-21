@@ -812,6 +812,19 @@ nested_test("heatmaps") do
                 test_html(graph, "heatmap.mask.rows.!hidden.html")
                 return nothing
             end
+
+            # A cell is hidden when its row is, so the hidden row leaves the range of the colors scale.
+            nested_test("!colors") do
+                graph.data.rows.entities.mask = [true, true, false]
+                @test graph.figure.layout[:coloraxis][:cmax] == 11
+                graph.configuration.entries.colors.axis.include_hidden = false
+                @test graph.figure.layout[:coloraxis][:cmax] == 7
+
+                # With no mask at all there is nothing to leave out, so the range covers everything again.
+                graph.data.rows.entities.mask = nothing
+                @test graph.figure.layout[:coloraxis][:cmax] == 11
+                return nothing
+            end
         end
 
         nested_test("columns") do
