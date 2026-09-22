@@ -1358,6 +1358,174 @@ end
 </section>
 </details>
 </article>
+<h2 id="Sinks">
+<a class="docs-heading-anchor" href="#Sinks">Sinks
+</a>
+<a id="Sinks-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Sinks" title="Permalink">
+</a>
+</h2>
+<p>A data source doesn&#39;t need to know which view it is filling, or how many. It takes 
+<code>Sinks
+</code> and walks them with 
+<code>visit_data_sinks
+</code> and/or 
+<code>visit_configuration_sinks
+</code>, writing a method per struct it fills.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.Sinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.Sinks">
+<code>SomeGraphs.Sources.Sinks
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>What a data source accepts: one 
+<a href="sources.html#SomeGraphs.Sources.AnySink">
+<code>AnySink
+</code>
+</a>, or a tuple or vector of them. Passing several lets one set of data feed several places in the graph. A data source writes only the sinks which hold the half it fills and ignores the rest, so a mixed collection is fine and either half may match nothing at all.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AnySink">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AnySink">
+<code>SomeGraphs.Sources.AnySink
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Any one struct a data source writes into: a 
+<a href="sources.html#SomeGraphs.Sources.DataSink">
+<code>DataSink
+</code>
+</a> or a 
+<a href="sources.html#SomeGraphs.Sources.ConfigurationSink">
+<code>ConfigurationSink
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.DataSink">
+<a class="docstring-binding" href="#SomeGraphs.Sources.DataSink">
+<code>SomeGraphs.Sources.DataSink
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>One struct a data source writes data into: a view, the data half of one, or one of the data structs it is made of. A view holds both halves, so it is both this and a 
+<a href="sources.html#SomeGraphs.Sources.ConfigurationSink">
+<code>ConfigurationSink
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.ConfigurationSink">
+<a class="docstring-binding" href="#SomeGraphs.Sources.ConfigurationSink">
+<code>SomeGraphs.Sources.ConfigurationSink
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>One struct a data source writes configuration into: a view, the configuration half of one, or one of the configuration structs it is made of.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.visit_data_sinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.visit_data_sinks">
+<code>SomeGraphs.Sources.visit_data_sinks
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
+</code>
+</pre>
+<p>Walk the 
+<code>sinks
+</code> down to the data structs they are built from, and call the 
+<code>visitor
+</code> on each of them. This lets a data source write a method per struct it fills, without a traversal of its own.
+</p>
+<p>A struct is visited once however many sinks reach it. All the roles of an axis share its entities, and 
+<a href="sources.html#SomeGraphs.Sources.add_hovers!">
+<code>add_hovers!
+</code>
+</a> appends, so without this a hover would be added once per sink which reaches the same entities.
+</p>
+<p>A matrix is walked into its entries only. Its row and column entities belong to their axes and are sized by one axis each, so a value per matrix entry can&#39;t be written to them; they are reached by naming them directly.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.visit_configuration_sinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.visit_configuration_sinks">
+<code>SomeGraphs.Sources.visit_configuration_sinks
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
+</code>
+</pre>
+<p>Walk the 
+<code>sinks
+</code> down to the configuration structs they are built from, and call the 
+<code>visitor
+</code> on each of them. The mirror of 
+<a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
+<code>visit_data_sinks
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
 <h2 id="Hovers">
 <a class="docs-heading-anchor" href="#Hovers">Hovers
 </a>
@@ -1416,16 +1584,35 @@ end
 <strong>Example:
 </strong>
 </p>
-<p>One source function, filling a role from a vector of values with a title and a hover line, applied to the X and Y coordinates and to the colors of the points of a graph:
+<p>One source function, writing a vector of values as the values of a role and as a hover line. It says what to do with a 
+<code>VectorValuesData
+</code> and with a 
+<code>VectorEntitiesData
+</code>, and 
+<code>visit_data_sinks
+</code> finds them in whatever it is given:
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
-function source!(fields::VectorFields, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
-    fields.data.values.vector = values
-    fields.data.values.title = title
-    add_hovers!(fields.data.entities, string.(values); title)
+
+function source!(sinks::Sinks, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
+    visit_data_sinks(sinks) do sink
+        return source!(sink, values, title)
+    end
     return nothing
 end
+
+function source!(values_data::VectorValuesData, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
+    values_data.vector = values
+    values_data.title = title
+    return nothing
+end
+
+function source!(entities::VectorEntitiesData, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
+    add_hovers!(entities, string.(values); title)
+    return nothing
+end
+
 graph = points_graph()
 source!(x_axis_vector_fields(graph), collect(0:10) .* 10, &quot;X&quot;)
 source!(y_axis_vector_fields(graph), collect(0:10) .^ 2, &quot;Y&quot;)
@@ -1434,12 +1621,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='nDRi7lGDqB' class='' style=';'>
+<div id='932rjrSbii' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nDRi7lGDqB")
+    const PLOT = document.getElementById("932rjrSbii")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1475,6 +1662,10 @@ to_documenter(graph.figure)
 
 </script>
 
+<p>All three roles share the points&#39; entities, so each call adds one hover line to the same entities, and the points end up with three. Had they been passed together in one call, 
+<code>visit_data_sinks
+</code> would have visited those entities once, and the hover would have been added once.
+</p>
 <h2 id="Index">
 <a class="docs-heading-anchor" href="#Index">Index
 </a>
@@ -1503,6 +1694,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.AnySink">
+<code>SomeGraphs.Sources.AnySink
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.AxisConfigurationFields">
 <code>SomeGraphs.Sources.AxisConfigurationFields
 </code>
@@ -1511,6 +1708,18 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.ColorsConfigurationFields">
 <code>SomeGraphs.Sources.ColorsConfigurationFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.ConfigurationSink">
+<code>SomeGraphs.Sources.ConfigurationSink
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.DataSink">
+<code>SomeGraphs.Sources.DataSink
 </code>
 </a>
 </li>
@@ -1535,6 +1744,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.PartFields">
 <code>SomeGraphs.Sources.PartFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.Sinks">
+<code>SomeGraphs.Sources.Sinks
 </code>
 </a>
 </li>
@@ -1715,6 +1930,18 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.values_axis_vector_fields">
 <code>SomeGraphs.Sources.values_axis_vector_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.visit_configuration_sinks">
+<code>SomeGraphs.Sources.visit_configuration_sinks
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
+<code>SomeGraphs.Sources.visit_data_sinks
 </code>
 </a>
 </li>

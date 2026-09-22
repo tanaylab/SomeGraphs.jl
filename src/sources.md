@@ -107,6 +107,20 @@ SomeGraphs.Sources.distribution_part_fields
 SomeGraphs.Sources.line_part_fields
 ```
 
+## Sinks
+
+A data source doesn't need to know which view it is filling, or how many. It takes `Sinks` and walks them with
+`visit_data_sinks` and/or `visit_configuration_sinks`, writing a method per struct it fills.
+
+```@docs
+SomeGraphs.Sources.Sinks
+SomeGraphs.Sources.AnySink
+SomeGraphs.Sources.DataSink
+SomeGraphs.Sources.ConfigurationSink
+SomeGraphs.Sources.visit_data_sinks
+SomeGraphs.Sources.visit_configuration_sinks
+```
+
 ## Hovers
 
 ```@docs
@@ -115,17 +129,30 @@ SomeGraphs.Sources.add_hovers!
 
 **Example:**
 
-One source function, filling a role from a vector of values with a title and a hover line, applied to the X and Y
-coordinates and to the colors of the points of a graph:
+One source function, writing a vector of values as the values of a role and as a hover line. It says what to do with a
+`VectorValuesData` and with a `VectorEntitiesData`, and `visit_data_sinks` finds them in whatever it is given:
 
 ```@example
 using SomeGraphs
-function source!(fields::VectorFields, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
-    fields.data.values.vector = values
-    fields.data.values.title = title
-    add_hovers!(fields.data.entities, string.(values); title)
+
+function source!(sinks::Sinks, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
+    visit_data_sinks(sinks) do sink
+        return source!(sink, values, title)
+    end
     return nothing
 end
+
+function source!(values_data::VectorValuesData, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
+    values_data.vector = values
+    values_data.title = title
+    return nothing
+end
+
+function source!(entities::VectorEntitiesData, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
+    add_hovers!(entities, string.(values); title)
+    return nothing
+end
+
 graph = points_graph()
 source!(x_axis_vector_fields(graph), collect(0:10) .* 10, "X")
 source!(y_axis_vector_fields(graph), collect(0:10) .^ 2, "Y")
@@ -133,6 +160,10 @@ source!(points_colors_vector_fields(graph), collect(0:10), "Color")
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
+
+All three roles share the points' entities, so each call adds one hover line to the same entities, and the points end
+up with three. Had they been passed together in one call, `visit_data_sinks` would have visited those entities once,
+and the hover would have been added once.
 
 ## Index
 

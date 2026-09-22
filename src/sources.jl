@@ -19,6 +19,12 @@ module Sources
 
 export AbstractFields
 export AbstractConfigurationFields
+export AnySink
+export ConfigurationSink
+export DataSink
+export Sinks
+export visit_configuration_sinks
+export visit_data_sinks
 export AxisConfigurationFields
 export AxisVectorFields
 export ColorsConfigurationFields
@@ -556,5 +562,202 @@ Append an annotation to the columns of a graph and return its index (for `column
 `annotation` leaves at its defaults can be set later, through the view.
 """
 function add_columns_annotation! end
+
+"""
+One struct a data source writes data into: a view, the data half of one, or one of the data structs it is made of. A
+view holds both halves, so it is both this and a [`ConfigurationSink`](@ref).
+"""
+DataSink = Union{
+    VectorFields,
+    MatrixFields,
+    VectorDataFields,
+    VectorValuesData,
+    VectorEntitiesData,
+    MatrixDataFields,
+    MatrixValuesData,
+    MatrixEntitiesData,
+}
+
+"""
+One struct a data source writes configuration into: a view, the configuration half of one, or one of the configuration
+structs it is made of.
+"""
+ConfigurationSink = Union{
+    VectorFields,
+    MatrixFields,
+    AbstractConfigurationFields,
+    AxisConfiguration,
+    ScaleConfiguration,
+    ColorsConfiguration,
+    SizesConfiguration,
+}
+
+"""
+Any one struct a data source writes into: a [`DataSink`](@ref) or a [`ConfigurationSink`](@ref).
+"""
+AnySink = Union{DataSink, ConfigurationSink}
+
+"""
+What a data source accepts: one [`AnySink`](@ref), or a tuple or vector of them. Passing several lets one set of data
+feed several places in the graph. A data source writes only the sinks which hold the half it fills and ignores the
+rest, so a mixed collection is fine and either half may match nothing at all.
+"""
+Sinks = Union{AnySink, Tuple, AbstractVector}
+
+"""
+    visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
+
+Walk the `sinks` down to the data structs they are built from, and call the `visitor` on each of them. This lets a data
+source write a method per struct it fills, without a traversal of its own.
+
+A struct is visited once however many sinks reach it. All the roles of an axis share its entities, and
+[`add_hovers!`](@ref) appends, so without this a hover would be added once per sink which reaches the same entities.
+
+A matrix is walked into its entries only. Its row and column entities belong to their axes and are sized by one axis
+each, so a value per matrix entry can't be written to them; they are reached by naming them directly.
+"""
+function visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
+    visited = Base.IdSet{Any}()
+    for sink in data_sinks(sinks)
+        visit_data_sink(visitor, sink, visited)
+    end
+    return nothing
+end
+
+function visit_data_sink(visitor::Function, fields::Union{VectorFields, MatrixFields}, visited::Base.IdSet)::Nothing
+    if !is_visited(fields, visited)
+        visit_data_sink(visitor, fields.data, visited)
+    end
+    return nothing
+end
+
+function visit_data_sink(
+    visitor::Function,
+    data_fields::Union{VectorDataFields, MatrixDataFields},
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(data_fields, visited)
+        visit_data_sink(visitor, data_fields.values, visited)
+        visit_data_sink(visitor, data_fields.entities, visited)
+    end
+    return nothing
+end
+
+function visit_data_sink(
+    visitor::Function,
+    values_or_entities::Union{VectorValuesData, VectorEntitiesData, MatrixValuesData, MatrixEntitiesData},
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(values_or_entities, visited)
+        visitor(values_or_entities)
+    end
+    return nothing
+end
+
+"""
+    visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
+
+Walk the `sinks` down to the configuration structs they are built from, and call the `visitor` on each of them. The
+mirror of [`visit_data_sinks`](@ref).
+"""
+function visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
+    visited = Base.IdSet{Any}()
+    for sink in configuration_sinks(sinks)
+        visit_configuration_sink(visitor, sink, visited)
+    end
+    return nothing
+end
+
+function visit_configuration_sink(
+    visitor::Function,
+    fields::Union{VectorFields, MatrixFields},
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(fields, visited)
+        visit_configuration_sink(visitor, fields.configuration, visited)
+    end
+    return nothing
+end
+
+function visit_configuration_sink(
+    visitor::Function,
+    configuration_fields::AxisConfigurationFields,
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(configuration_fields, visited)
+        visit_configuration_sink(visitor, configuration_fields.axis, visited)
+    end
+    return nothing
+end
+
+function visit_configuration_sink(
+    visitor::Function,
+    configuration_fields::Union{ColorsConfigurationFields, MatrixConfigurationFields},
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(configuration_fields, visited)
+        visit_configuration_sink(visitor, configuration_fields.colors, visited)
+    end
+    return nothing
+end
+
+function visit_configuration_sink(
+    visitor::Function,
+    configuration_fields::SizesConfigurationFields,
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(configuration_fields, visited)
+        visit_configuration_sink(visitor, configuration_fields.sizes, visited)
+    end
+    return nothing
+end
+
+function visit_configuration_sink(
+    visitor::Function,
+    configuration::Union{AxisConfiguration, ColorsConfiguration, SizesConfiguration, ScaleConfiguration},
+    visited::Base.IdSet,
+)::Nothing
+    if !is_visited(configuration, visited)
+        visitor(configuration)
+    end
+    return nothing
+end
+
+# Which of the `sinks` each half is written into. Either may be empty. A collection is asserted rather than typed,
+# because a literal vector of several kinds of sink is a `Vector{Any}`.
+function data_sinks(sinks::Union{Tuple, AbstractVector})::Union{Tuple, AbstractVector}
+    assert_sinks(sinks)
+    return filter(sink -> sink isa DataSink, sinks)
+end
+
+function data_sinks(sink::AnySink)::Tuple
+    return data_sinks((sink,))
+end
+
+function configuration_sinks(sinks::Union{Tuple, AbstractVector})::Union{Tuple, AbstractVector}
+    assert_sinks(sinks)
+    return filter(sink -> sink isa ConfigurationSink, sinks)
+end
+
+function configuration_sinks(sink::AnySink)::Tuple
+    return configuration_sinks((sink,))
+end
+
+function assert_sinks(sinks::Union{Tuple, AbstractVector})::Nothing
+    for sink in sinks
+        @assert sink isa AnySink "not a graph data or configuration struct: $(typeof(sink))"
+    end
+    return nothing
+end
+
+# Whether the `sink` was already visited, adding it to the set if it wasn't. Identity is what matters here, since two
+# distinct empty entities compare equal.
+function is_visited(sink::AnySink, visited::Base.IdSet)::Bool
+    if sink in visited
+        return true
+    end
+    push!(visited, sink)
+    return false
+end
 
 end  # module
