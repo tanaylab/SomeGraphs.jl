@@ -148,7 +148,7 @@ function validate_graph_bands(
 
     validate_is_range(context, "low_offset", bands_data.low_offset, "high_offset", bands_data.high_offset)
 
-    if axis_configuration !== nothing && axis_configuration.log_scale !== nothing
+    if axis_configuration !== nothing && axis_configuration.scale.log_base !== nothing
         validate_is_above(ValidationContext(["graph.configuration", field, "low_offset"]), bands_data.low_offset, 0)
         validate_is_above(
             ValidationContext(["graph.configuration", field, "middle_offset"]),
@@ -221,27 +221,28 @@ function validate_colors(
         end
     end
 
-    if colors_configuration.axis.minimum !== nothing ||
-       colors_configuration.axis.maximum !== nothing ||
-       colors_configuration.axis.log_scale !== nothing ||
-       colors_configuration.axis.percent
+    if colors_configuration.scale.minimum !== nothing ||
+       colors_configuration.scale.maximum !== nothing ||
+       colors_configuration.scale.log_base !== nothing ||
+       colors_configuration.scale.percent
         if !(colors_data isa AbstractVector{<:Real})
             throw(
                 ArgumentError(
                     "must specify numeric $(location(colors_data_context))\n" *
-                    "when using any of $(location(colors_configuration_context)).axis.(minimum,maximum,log_scale,percent)",
+                    "when using any of " *
+                    "$(location(colors_configuration_context)).scale.(minimum,maximum,log_base,percent)",
                 ),
             )
         end
 
-        if colors_configuration.axis.log_scale !== nothing
+        if colors_configuration.scale.log_base !== nothing
             validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
-                if colors_configuration.axis.minimum === nothing || color >= colors_configuration.axis.minimum
+                if colors_configuration.scale.minimum === nothing || color >= colors_configuration.scale.minimum
                     validate_in(
                         colors_data_context,
-                        "(value + $(location(colors_configuration_context)).axis.log_regularization)",
+                        "(value + $(location(colors_configuration_context)).scale.log_regularization)",
                     ) do
-                        validate_is_above(colors_data_context, color + colors_configuration.axis.log_regularization, 0)
+                        validate_is_above(colors_data_context, color + colors_configuration.scale.log_regularization, 0)
                         return nothing
                     end
                 end
@@ -348,18 +349,18 @@ function validate_colors(
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
 )::Nothing
     @assert mask === nothing
-    if colors_configuration.axis.minimum !== nothing ||
-       colors_configuration.axis.maximum !== nothing ||
-       colors_configuration.axis.log_scale !== nothing ||
-       colors_configuration.axis.percent
-        if colors_configuration.axis.log_scale !== nothing
+    if colors_configuration.scale.minimum !== nothing ||
+       colors_configuration.scale.maximum !== nothing ||
+       colors_configuration.scale.log_base !== nothing ||
+       colors_configuration.scale.percent
+        if colors_configuration.scale.log_base !== nothing
             validate_matrix_entries(colors_data_context, "entries_colors", colors_data) do _, _, color
-                if colors_configuration.axis.minimum === nothing || color >= colors_configuration.axis.minimum
+                if colors_configuration.scale.minimum === nothing || color >= colors_configuration.scale.minimum
                     validate_in(
                         colors_data_context,
-                        "(value + $(location(colors_configuration_context)).axis.log_regularization)",
+                        "(value + $(location(colors_configuration_context)).scale.log_regularization)",
                     ) do
-                        validate_is_above(colors_data_context, color + colors_configuration.axis.log_regularization, 0)
+                        validate_is_above(colors_data_context, color + colors_configuration.scale.log_regularization, 0)
                         return nothing
                     end
                 end
@@ -385,7 +386,7 @@ end
     )::Nothing
 
 Validate that the `values_data` from the `values_data_context` is valid and consistent with the `axis_configuration`
-from the `axis_configuration_context`. Specifically this ensures that if a `log_scale` is applied, all the values
+from the `axis_configuration_context`. Specifically this ensures that if a `log_base` is applied, all the values
 are positive.
 """
 function validate_values(
@@ -394,13 +395,13 @@ function validate_values(
     axis_configuration_context::ValidationContext,
     axis_configuration::AxisConfiguration,
 )::Nothing
-    if values_data !== nothing && axis_configuration.log_scale !== nothing
+    if values_data !== nothing && axis_configuration.scale.log_base !== nothing
         for (index, value) in enumerate(values_data)
             validate_in(
                 values_data_context,
-                "([$(index)] + $(location(axis_configuration_context)).axis.log_regularization)",
+                "([$(index)] + $(location(axis_configuration_context)).scale.log_regularization)",
             ) do
-                return validate_is_above(values_data_context, value + axis_configuration.log_regularization, 0)
+                return validate_is_above(values_data_context, value + axis_configuration.scale.log_regularization, 0)
             end
         end
     end
@@ -502,12 +503,12 @@ function set_layout_axis!(
         :showgrid => axis_configuration.show_grid,
         :gridcolor => axis_configuration.show_grid ? axis_configuration.grid_color : nothing,
         :showticklabels => show_ticks,
-        :tickprefix => show_ticks ? axis_ticks_prefix(axis_configuration) : nothing,
-        :ticksuffix => show_ticks ? axis_ticks_suffix(axis_configuration) : nothing,
+        :tickprefix => show_ticks ? axis_ticks_prefix(axis_configuration.scale) : nothing,
+        :ticksuffix => show_ticks ? axis_ticks_suffix(axis_configuration.scale) : nothing,
         :tickvals => show_ticks ? ticks_values : nothing,
         :ticktext => show_ticks ? ticks_labels : nothing,
         :tickangle => (show_ticks && screen_ticks_angle != 0) ? screen_ticks_angle : nothing,
-        :zeroline => is_zeroable ? axis_configuration.log_scale === nothing : nothing,
+        :zeroline => is_zeroable ? axis_configuration.scale.log_base === nothing : nothing,
         :domain => domain,
     )
     return nothing
@@ -612,8 +613,8 @@ function set_layout_colorscale!(;
                 else
                     colors_scale_offsets[next_colors_scale_offset_index[1]]
                 end,
-                :tickprefix => axis_ticks_prefix(colors_configuration.axis),
-                :ticksuffix => axis_ticks_suffix(colors_configuration.axis),
+                :tickprefix => axis_ticks_prefix(colors_configuration.scale),
+                :ticksuffix => axis_ticks_suffix(colors_configuration.scale),
             )
         end,
     )
@@ -668,29 +669,28 @@ function purge_nulls!(dict::AbstractDict)::Nothing
 end
 
 """
-    axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+    axis_ticks_prefix(scale_configuration::ScaleConfiguration)::Maybe{AbstractString}
 
-Return the prefix for the ticks of an `axis_configuration`.
+Return the prefix for the ticks of a `scale_configuration`.
 """
-function axis_ticks_prefix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
-    @assert axis_configuration.show_ticks
-    if axis_configuration.log_scale == Log10Scale
+function axis_ticks_prefix(scale_configuration::ScaleConfiguration)::Maybe{AbstractString}
+    if scale_configuration.log_base == Log10Base
         return "<sub>10</sub>"
-    elseif axis_configuration.log_scale == Log2Scale
+    elseif scale_configuration.log_base == Log2Base
         return "<sub>2</sub>"
     else
-        @assert axis_configuration.log_scale === nothing
+        @assert scale_configuration.log_base === nothing
         return nothing
     end
 end
 
 """
-    axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
+    axis_ticks_suffix(scale_configuration::ScaleConfiguration)::Maybe{AbstractString}
 
-Return the suffix for the ticks of an `axis_configuration`.
+Return the suffix for the ticks of a `scale_configuration`.
 """
-function axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{AbstractString}
-    if axis_configuration.percent
+function axis_ticks_suffix(scale_configuration::ScaleConfiguration)::Maybe{AbstractString}
+    if scale_configuration.percent
         return "<sub>%</sub>"
     else
         return nothing
@@ -698,95 +698,95 @@ function axis_ticks_suffix(axis_configuration::AxisConfiguration)::Maybe{Abstrac
 end
 
 """
-    scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::Real
-    scale_axis_value(axis_configuration::AxisConfiguration, value::Nothing; clamp::Bool = true)::Nothing
+    scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Real
+    scale_axis_value(scale_configuration::ScaleConfiguration, value::Nothing; clamp::Bool = true)::Nothing
 
-Scale a single `value` according to the `axis_configuration`. This deals with log scales and percent scaling. By
+Scale a single `value` according to the `scale_configuration`. This deals with log scales and percent scaling. By
 default, `clamp` the values to a specified explicit range.
 """
-function scale_axis_value(axis_configuration::AxisConfiguration, value::Real; clamp::Bool = true)::Float64
+function scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Float64
     if clamp
-        if axis_configuration.minimum !== nothing && value < axis_configuration.minimum
-            value = axis_configuration.minimum  # UNTESTED
+        if scale_configuration.minimum !== nothing && value < scale_configuration.minimum
+            value = scale_configuration.minimum  # UNTESTED
         end
-        if axis_configuration.maximum !== nothing && value > axis_configuration.maximum  # NOJET
-            value = axis_configuration.maximum  # UNTESTED
+        if scale_configuration.maximum !== nothing && value > scale_configuration.maximum  # NOJET
+            value = scale_configuration.maximum  # UNTESTED
         end
     end
 
-    if axis_configuration.percent
+    if scale_configuration.percent
         scale = 100.0
     else
         scale = 1.0
     end
 
-    offset = axis_configuration.log_regularization
+    offset = scale_configuration.log_regularization
 
-    if axis_configuration.log_scale === Log10Scale
+    if scale_configuration.log_base === Log10Base
         return log10((value + offset) * scale)
-    elseif axis_configuration.log_scale === Log2Scale
+    elseif scale_configuration.log_base === Log2Base
         return log2((value + offset) * scale)
     else
-        @assert axis_configuration.log_scale === nothing
+        @assert scale_configuration.log_base === nothing
         return value * scale + offset
     end
 end
 
-function scale_axis_value(::AxisConfiguration, ::Nothing; clamp::Bool = true)::Nothing  # NOLINT
+function scale_axis_value(::ScaleConfiguration, ::Nothing; clamp::Bool = true)::Nothing  # NOLINT
     return nothing
 end
 
 """
     scale_axis_values(
-        axis_configuration::AxisConfiguration,
+        scale_configuration::ScaleConfiguration,
         values::Maybe{AbstractVector{<:Maybe{Real}}};
         clamp::Bool = true
     )::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
     scale_axis_values(
-        axis_configuration::AxisConfiguration,
+        scale_configuration::ScaleConfiguration,
         values::Maybe{AbstractMatrix{<:Maybe{Real}}};
         clamp::Bool = true
     )::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
 
-Scale a vector of `values` according to the `axis_configuration`. This deals with log scales and percent scaling. By
+Scale a vector of `values` according to the `scale_configuration`. This deals with log scales and percent scaling. By
 default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so it can be
 safely modified further without impacting the original data).
 """
 function scale_axis_values(
-    axis_configuration::AxisConfiguration,
+    scale_configuration::ScaleConfiguration,
     values::Maybe{AbstractVector{<:Maybe{Real}}};
     clamp::Bool = true,
     copy::Bool = false,
 )::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
     if values === nothing
         return nothing  # UNTESTED
-    elseif !axis_configuration.percent &&
-           axis_configuration.log_scale === nothing &&
-           axis_configuration.minimum === nothing &&
-           axis_configuration.maximum === nothing
+    elseif !scale_configuration.percent &&
+           scale_configuration.log_base === nothing &&
+           scale_configuration.minimum === nothing &&
+           scale_configuration.maximum === nothing
         return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
     else
         function scale(value)
-            return scale_axis_value(axis_configuration, value; clamp)
+            return scale_axis_value(scale_configuration, value; clamp)
         end
         return scale.(values)
     end
 end
 
 function scale_axis_values(
-    axis_configuration::AxisConfiguration,
+    scale_configuration::ScaleConfiguration,
     values::AbstractMatrix{<:Maybe{Real}};
     clamp::Bool = true,
     copy::Bool = false,
 )::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
-    if !axis_configuration.percent &&
-       axis_configuration.log_scale === nothing &&
-       axis_configuration.minimum === nothing &&
-       axis_configuration.maximum === nothing
+    if !scale_configuration.percent &&
+       scale_configuration.log_base === nothing &&
+       scale_configuration.minimum === nothing &&
+       scale_configuration.maximum === nothing
         return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
     else
         function scale(value)
-            return scale_axis_value(axis_configuration, value; clamp)
+            return scale_axis_value(scale_configuration, value; clamp)
         end
         return scale.(values)
     end
@@ -803,29 +803,45 @@ end
 """
     final_scaled_range(
         implicit_scaled_range::Union{Range, MaybeRange},
+        scale_configuration::ScaleConfiguration
+    )::Range,
+    final_scaled_range(
+        implicit_scaled_range::Union{Range, MaybeRange},
         axis_configuration::AxisConfiguration
     )::Range,
 
-Compute the final range for some axis given the `implicit_scaled_range` computed from the values and the `axis_configuration`.
+Compute the final range given the `implicit_scaled_range` computed from the values and the explicit `minimum` and
+`maximum` of the `scale_configuration`. Given an `axis_configuration`, the range is also grown by its
+`expand_fraction`. Only a drawn axis expands, since the expansion exists to keep markers clear of the plot border.
 """
-function final_scaled_range(implicit_scaled_range::MaybeRange, axis_configuration::AxisConfiguration)::Range
+function final_scaled_range(implicit_scaled_range::MaybeRange, scale_configuration::ScaleConfiguration)::Range
     @assert implicit_scaled_range.minimum !== nothing
     @assert implicit_scaled_range.maximum !== nothing
     return final_scaled_range(  # NOJET
         Range(; minimum = implicit_scaled_range.minimum, maximum = implicit_scaled_range.maximum),
-        axis_configuration,
+        scale_configuration,
     )
 end
 
-function final_scaled_range(implicit_scaled_range::Range, axis_configuration::AxisConfiguration)::Range
-    explicit_scaled_minimum, explicit_scaled_maximum =
-        scale_axis_values(axis_configuration, [axis_configuration.minimum, axis_configuration.maximum]; clamp = false)
+function final_scaled_range(implicit_scaled_range::Range, scale_configuration::ScaleConfiguration)::Range
+    explicit_scaled_minimum, explicit_scaled_maximum = scale_axis_values(
+        scale_configuration,
+        [scale_configuration.minimum, scale_configuration.maximum];
+        clamp = false,
+    )
     explicit_scaled_range = MaybeRange(; minimum = explicit_scaled_minimum, maximum = explicit_scaled_maximum)
 
-    range = Range(;
+    return Range(;
         minimum = prefer_data(explicit_scaled_range.minimum, implicit_scaled_range.minimum),
         maximum = prefer_data(explicit_scaled_range.maximum, implicit_scaled_range.maximum),
     )
+end
+
+function final_scaled_range(
+    implicit_scaled_range::Union{Range, MaybeRange},
+    axis_configuration::AxisConfiguration,
+)::Range
+    range = final_scaled_range(implicit_scaled_range, axis_configuration.scale)
 
     if axis_configuration.expand_fraction > 0
         margins = (range.maximum - range.minimum) * axis_configuration.expand_fraction
@@ -978,7 +994,7 @@ end
     )::Maybe{AbstractVector{<:Real}}
 
 Scale a vector of `values` according to `sizes_configuration`. The `mask` (if any) marks the shown entities; the hidden
-ones are left out of the implicit range of the sizes unless the axis `include_hidden` is set.
+ones are left out of the implicit range of the sizes unless the scale `include_hidden` is set.
 """
 function scale_size_values(
     sizes_configuration::SizesConfiguration,
@@ -989,22 +1005,22 @@ function scale_size_values(
         return nothing
     end
 
-    axis_configuration = sizes_configuration.axis
-    ranged_values = range_values(axis_configuration, values, mask)
+    scale_configuration = sizes_configuration.scale
+    ranged_values = range_values(scale_configuration, values, mask)
 
     # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
     @assert all(isfinite, ranged_values) "non-finite value in the sizes range"  # NOJET
 
-    if axis_configuration.minimum !== nothing
-        minimum_value = axis_configuration.minimum
-        values = max.(values, axis_configuration.minimum)
+    if scale_configuration.minimum !== nothing
+        minimum_value = scale_configuration.minimum
+        values = max.(values, scale_configuration.minimum)
     else
         minimum_value = minimum(ranged_values)
     end
 
-    if axis_configuration.maximum !== nothing
-        maximum_value = axis_configuration.maximum
-        values = min.(values, axis_configuration.maximum)
+    if scale_configuration.maximum !== nothing
+        maximum_value = scale_configuration.maximum
+        values = min.(values, scale_configuration.maximum)
     else
         maximum_value = maximum(ranged_values)
     end
@@ -1013,9 +1029,9 @@ function scale_size_values(
         maximum_value += 1
     end
 
-    scaled_minimum_value = scale_axis_value(axis_configuration, minimum_value; clamp = false)
-    scaled_maximum_value = scale_axis_value(axis_configuration, maximum_value; clamp = false)
-    scaled_values = scale_axis_values(axis_configuration, values; clamp = false)
+    scaled_minimum_value = scale_axis_value(scale_configuration, minimum_value; clamp = false)
+    scaled_maximum_value = scale_axis_value(scale_configuration, maximum_value; clamp = false)
+    scaled_values = scale_axis_values(scale_configuration, values; clamp = false)
     @assert scaled_values !== nothing
 
     return [
@@ -1070,11 +1086,13 @@ function push_vertical_bands_shapes(
     cross_ref::AbstractString = "y domain",
 )::Nothing
     scaled_low_offset =
-        scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
-    scaled_middle_offset =
-        scale_axis_value(axis_configuration, prefer_data(bands_data.middle_offset, bands_configuration.middle.offset))
+        scale_axis_value(axis_configuration.scale, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
+    scaled_middle_offset = scale_axis_value(
+        axis_configuration.scale,
+        prefer_data(bands_data.middle_offset, bands_configuration.middle.offset),
+    )
     scaled_high_offset =
-        scale_axis_value(axis_configuration, prefer_data(bands_data.high_offset, bands_configuration.high.offset))
+        scale_axis_value(axis_configuration.scale, prefer_data(bands_data.high_offset, bands_configuration.high.offset))
 
     for (band_configuration, scaled_offset) in (
         (bands_configuration.low, scaled_low_offset),
@@ -1183,11 +1201,13 @@ function push_horizontal_bands_shapes(
     cross_ref::AbstractString = "x domain",
 )::Nothing
     scaled_low_offset =
-        scale_axis_value(axis_configuration, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
-    scaled_middle_offset =
-        scale_axis_value(axis_configuration, prefer_data(bands_data.middle_offset, bands_configuration.middle.offset))
+        scale_axis_value(axis_configuration.scale, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
+    scaled_middle_offset = scale_axis_value(
+        axis_configuration.scale,
+        prefer_data(bands_data.middle_offset, bands_configuration.middle.offset),
+    )
     scaled_high_offset =
-        scale_axis_value(axis_configuration, prefer_data(bands_data.high_offset, bands_configuration.high.offset))
+        scale_axis_value(axis_configuration.scale, prefer_data(bands_data.high_offset, bands_configuration.high.offset))
 
     for (band_configuration, scaled_offset) in (
         (bands_configuration.low, scaled_low_offset),
@@ -1400,7 +1420,7 @@ function start_diagonal_band_point(
     y_scaled_values_range::Range,
     offset::Real,
 )::Maybe{BandPoint}
-    scaled_offset = scale_axis_offset(axis_configuration, offset)
+    scaled_offset = scale_axis_offset(axis_configuration.scale, offset)
     bottom = ScaledPoint(; x = y_scaled_values_range.minimum - scaled_offset, y = y_scaled_values_range.minimum)
     left = ScaledPoint(; x = x_scaled_values_range.minimum, y = x_scaled_values_range.minimum + scaled_offset)
 
@@ -1429,7 +1449,7 @@ function end_diagonal_band_point(
     y_scaled_values_range::Range,
     offset::Real,
 )::Maybe{BandPoint}
-    scaled_offset = scale_axis_offset(axis_configuration, offset)
+    scaled_offset = scale_axis_offset(axis_configuration.scale, offset)
     top = ScaledPoint(; x = y_scaled_values_range.maximum - scaled_offset, y = y_scaled_values_range.maximum)
     right = ScaledPoint(; x = x_scaled_values_range.maximum, y = x_scaled_values_range.maximum + scaled_offset)
 
@@ -1448,19 +1468,19 @@ function end_diagonal_band_point(
     end
 end
 
-function scale_axis_offset(axis_configuration::AxisConfiguration, offset::Real)::Real
-    if axis_configuration.percent
+function scale_axis_offset(scale_configuration::ScaleConfiguration, offset::Real)::Real
+    if scale_configuration.percent
         scale = 100.0
     else
         scale = 1.0
     end
 
-    if axis_configuration.log_scale === Log10Scale
+    if scale_configuration.log_base === Log10Base
         return log10(offset * scale)
-    elseif axis_configuration.log_scale === Log2Scale
+    elseif scale_configuration.log_base === Log2Base
         return log2(offset * scale)
     else
-        @assert axis_configuration.log_scale === nothing
+        @assert scale_configuration.log_base === nothing
         return offset
     end
 end
@@ -1705,20 +1725,20 @@ end
 
 """
     range_values(
-        axis_configuration::AxisConfiguration,
+        scale_configuration::ScaleConfiguration,
         values::AbstractArray,
         mask::Maybe{AbstractArray{Bool}},
     )::AbstractArray
 
-The `values` which take part in the implicit range of an axis: all of them, unless the axis does not `include_hidden`,
-in which case only the ones shown by the `mask`.
+The `values` which take part in the implicit range: all of them, unless the scale does not `include_hidden`, in which
+case only the ones shown by the `mask`.
 """
 function range_values(
-    axis_configuration::AxisConfiguration,
+    scale_configuration::ScaleConfiguration,
     values::AbstractArray,
     mask::Maybe{AbstractArray{Bool}},
 )::AbstractArray
-    if mask === nothing || axis_configuration.include_hidden
+    if mask === nothing || scale_configuration.include_hidden
         return values
     else
         return values[mask]
@@ -1728,21 +1748,21 @@ end
 """
     collect_hidden_range!(
         range::MaybeRange,
-        axis_configuration::AxisConfiguration,
+        scale_configuration::ScaleConfiguration,
         scaled_values::AbstractVector{<:Real},
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
     )::Nothing
 
-Expand the implicit `range` of an axis to cover the hidden `scaled_values` (the ones whose `mask` is false), if the axis
-does `include_hidden`. The shown values are collected by whoever draws them.
+Expand the implicit `range` to cover the hidden `scaled_values` (the ones whose `mask` is false), if the scale does
+`include_hidden`. The shown values are collected by whoever draws them.
 """
 function collect_hidden_range!(
     range::MaybeRange,
-    axis_configuration::AxisConfiguration,
+    scale_configuration::ScaleConfiguration,
     scaled_values::AbstractVector{<:Real},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
 )::Nothing
-    if mask !== nothing && axis_configuration.include_hidden
+    if mask !== nothing && scale_configuration.include_hidden
         collect_range!(range, scaled_values[.!mask])
     end
     return nothing
@@ -2114,13 +2134,13 @@ function configured_colors(;
         colors_scale_index = next_colors_scale_index[1]
         next_colors_scale_index[1] += 1
 
-        final_colors_values = scale_axis_values(colors_configuration.axis, colors_values)
+        final_colors_values = scale_axis_values(colors_configuration.scale, colors_values)
         if colors_configuration.palette isa ContinuousColors
             color_palette_values = [entry[1] for entry in colors_configuration.palette]
-            scaled_colors_palette_values = scale_axis_values(colors_configuration.axis, color_palette_values)
+            scaled_colors_palette_values = scale_axis_values(colors_configuration.scale, color_palette_values)
             implicit_scaled_colors_range =
                 Range(; minimum = scaled_colors_palette_values[1], maximum = scaled_colors_palette_values[end])
-            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
+            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.scale)
 
             scale = implicit_scaled_colors_range.maximum - implicit_scaled_colors_range.minimum
             @assert scale > 0
@@ -2132,11 +2152,11 @@ function configured_colors(;
                 (final_value, entry) in zip(final_color_palette_values, colors_configuration.palette)
             ]
         else
-            ranged_values = range_values(colors_configuration.axis, final_colors_values, mask)
+            ranged_values = range_values(colors_configuration.scale, final_colors_values, mask)
             # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
             @assert all(isfinite, ranged_values) "non-finite value in the colors range"
             implicit_scaled_colors_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
-            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.axis)
+            final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.scale)
         end
     end
 

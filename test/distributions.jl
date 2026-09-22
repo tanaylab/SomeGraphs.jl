@@ -84,13 +84,13 @@ function test_distributions(  # UNTESTED
 
                 nested_test("log") do
                     nested_test("10") do
-                        graph.configuration.value_axis.log_scale = Log10Scale
+                        graph.configuration.value_axis.scale.log_base = Log10Base
                         test_html(graph, "$(plurality).$(kind).$(name).log10.html")
                         return nothing
                     end
 
                     nested_test("2") do
-                        graph.configuration.value_axis.log_scale = Log2Scale
+                        graph.configuration.value_axis.scale.log_base = Log2Base
                         test_html(graph, "$(plurality).$(kind).$(name).log2.html")
                         return nothing
                     end
@@ -105,7 +105,7 @@ function test_distributions(  # UNTESTED
                 end
 
                 nested_test("percent") do
-                    graph.configuration.value_axis.percent = true
+                    graph.configuration.value_axis.scale.percent = true
 
                     nested_test("()") do
                         test_html(graph, "$(plurality).$(kind).$(name).percent.html")
@@ -114,13 +114,13 @@ function test_distributions(  # UNTESTED
 
                     nested_test("log") do
                         nested_test("10") do
-                            graph.configuration.value_axis.log_scale = Log10Scale
+                            graph.configuration.value_axis.scale.log_base = Log10Base
                             test_html(graph, "$(plurality).$(kind).$(name).percent.log10.html")
                             return nothing
                         end
 
                         nested_test("2") do
-                            graph.configuration.value_axis.log_scale = Log2Scale
+                            graph.configuration.value_axis.scale.log_base = Log2Base
                             test_html(graph, "$(plurality).$(kind).$(name).percent.log2.html")
                             return nothing
                         end
@@ -293,7 +293,7 @@ nested_test("distribution") do
 
         nested_test("!hidden") do
             graph.data.distribution.points.mask = [index < n_values - 1 for index in 1:n_values]
-            graph.configuration.value_axis.include_hidden = false
+            graph.configuration.value_axis.scale.include_hidden = false
             test_html(graph, "distribution.mask.!hidden.html")
             return nothing
         end
@@ -373,18 +373,18 @@ nested_test("distribution") do
 
         nested_test("~percent") do
             graph.configuration.distribution.style = HistogramDistribution
-            graph.configuration.density_axis.percent = true
+            graph.configuration.density_axis.scale.percent = true
             @test_throws chomp("""
-                               ArgumentError: specified graph.configuration.density_axis.percent
+                               ArgumentError: specified graph.configuration.density_axis.scale.percent
                                without graph.configuration.distribution.normalize
                                """) graph.figure
         end
 
         nested_test("~log") do
             graph.configuration.distribution.style = HistogramDistribution
-            graph.configuration.density_axis.log_scale = Log10Scale
+            graph.configuration.density_axis.scale.log_base = Log10Base
             @test_throws(
-                "ArgumentError: unsupported graph.configuration.density_axis.log_scale: Log10Scale",
+                "ArgumentError: unsupported graph.configuration.density_axis.scale.log_base: Log10Base",
                 graph.figure
             )
         end
@@ -430,7 +430,7 @@ nested_test("distribution") do
                     graph.configuration.distribution.normalize = true
                 elseif name == "percents"
                     graph.configuration.distribution.normalize = true
-                    graph.configuration.density_axis.percent = true
+                    graph.configuration.density_axis.scale.percent = true
                 else
                     @assert name == "counts"
                     graph.data.distribution.name = "Counts"
@@ -455,7 +455,7 @@ nested_test("distribution") do
 
                 nested_test("percent") do
                     graph.configuration.distribution.normalize = true
-                    graph.configuration.density_axis.percent = true
+                    graph.configuration.density_axis.scale.percent = true
                     test_html(graph, "distribution.histogram_density.$(name).percent.html")
                     return nothing
                 end
@@ -467,8 +467,8 @@ nested_test("distribution") do
                 end
 
                 nested_test("range") do
-                    graph.configuration.density_axis.minimum = 0
-                    graph.configuration.density_axis.maximum = 50
+                    graph.configuration.density_axis.scale.minimum = 0
+                    graph.configuration.density_axis.scale.maximum = 50
                     test_html(graph, "distribution.histogram_density.$(name).range.html")
                     return nothing
                 end
@@ -567,7 +567,7 @@ nested_test("distributions") do
 
         nested_test("!hidden") do
             graph.data.distributions[2].points.mask = [index < n_values - 1 for index in 1:n_values]
-            graph.configuration.value_axis.include_hidden = false
+            graph.configuration.value_axis.scale.include_hidden = false
             test_html(graph, "distributions.mask.!hidden.html")
             return nothing
         end
@@ -601,9 +601,9 @@ nested_test("distributions") do
 
         nested_test("~percent") do
             graph.configuration.distribution.style = HistogramDistribution
-            graph.configuration.density_axis.percent = true
+            graph.configuration.density_axis.scale.percent = true
             @test_throws chomp("""
-                               ArgumentError: specified graph.configuration.density_axis.percent
+                               ArgumentError: specified graph.configuration.density_axis.scale.percent
                                without graph.configuration.distribution.normalize
                                """) graph.figure
         end
@@ -654,7 +654,7 @@ nested_test("distributions") do
         end
 
         nested_test("~series_axis_numeric") do
-            graph.configuration.series_axis.percent = true
+            graph.configuration.series_axis.scale.percent = true
             @test_throws chomp("""
                                ArgumentError: specified numeric or grid fields of graph.configuration.series_axis
                                (only show_ticks, ticks_angle and title apply to the cross-series names)
@@ -690,9 +690,9 @@ nested_test("distributions") do
 
         nested_test("~log") do
             graph.configuration.distribution.style = HistogramDistribution
-            graph.configuration.density_axis.log_scale = Log10Scale
+            graph.configuration.density_axis.scale.log_base = Log10Base
             @test_throws(
-                "ArgumentError: unsupported graph.configuration.density_axis.log_scale: Log10Scale",
+                "ArgumentError: unsupported graph.configuration.density_axis.scale.log_base: Log10Base",
                 graph.figure
             )
         end
@@ -725,7 +725,7 @@ nested_test("distributions") do
                     graph.configuration.distribution.normalize = true
                 elseif name == "percents"
                     graph.configuration.distribution.normalize = true
-                    graph.configuration.density_axis.percent = true
+                    graph.configuration.density_axis.scale.percent = true
                 else
                     @assert name == "counts"
                 end
@@ -775,8 +775,8 @@ nested_test("distributions") do
 
     nested_test("histogram_density") do
         graph.configuration.distribution.style = HistogramDistribution
-        graph.configuration.density_axis.minimum = 0
-        graph.configuration.density_axis.maximum = 50
+        graph.configuration.density_axis.scale.minimum = 0
+        graph.configuration.density_axis.scale.maximum = 50
 
         for (name, orientation) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
             nested_test(name) do

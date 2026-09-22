@@ -150,8 +150,10 @@ struct MatrixDataFields
 end
 
 """
-Abstract interface for the configuration half of `AbstractFields`. All concrete types have an `axis::AxisConfiguration`
-field, most have additional fields as appropriate for the specific configuration.
+Abstract interface for the configuration half of `AbstractFields`. Every concrete type says how the values are mapped
+to the range they are shown in, and most have additional fields as appropriate for the specific configuration. A role
+drawn along an axis has an `axis::AxisConfiguration`; a role shown as colors or sizes is not drawn along an axis, so it
+has only a `scale::ScaleConfiguration`.
 """
 abstract type AbstractConfigurationFields end
 
@@ -169,56 +171,57 @@ end
 
 """
     struct ColorsConfigurationFields <: AbstractConfigurationFields
-        axis::AxisConfiguration
+        scale::ScaleConfiguration
         colors::ColorsConfiguration
     end
 
 The configuration half of a `ColorsVectorFields` data source view (see [`VectorFields`](@ref)): the
-[`ColorsConfiguration`](@ref) the values are colored by, and its `axis`.
+[`ColorsConfiguration`](@ref) the values are colored by, and its `scale`. Colors are not drawn along an axis, so there
+is no title or ticks here; the colors title is the title of the values.
 """
 struct ColorsConfigurationFields <: AbstractConfigurationFields
-    axis::AxisConfiguration
+    scale::ScaleConfiguration
     colors::ColorsConfiguration
 end
 
 function ColorsConfigurationFields(colors::ColorsConfiguration)::ColorsConfigurationFields
-    return ColorsConfigurationFields(colors.axis, colors)
+    return ColorsConfigurationFields(colors.scale, colors)
 end
 
 """
     struct SizesConfigurationFields <: AbstractConfigurationFields
-        axis::AxisConfiguration
+        scale::ScaleConfiguration
         sizes::SizesConfiguration
     end
 
 The configuration half of a `SizesVectorFields` data source view (see [`VectorFields`](@ref)): the
-[`SizesConfiguration`](@ref) the values are sized by, and its `axis`.
+[`SizesConfiguration`](@ref) the values are sized by, and its `scale`.
 """
 struct SizesConfigurationFields <: AbstractConfigurationFields
-    axis::AxisConfiguration
+    scale::ScaleConfiguration
     sizes::SizesConfiguration
 end
 
 function SizesConfigurationFields(sizes::SizesConfiguration)::SizesConfigurationFields
-    return SizesConfigurationFields(sizes.axis, sizes)
+    return SizesConfigurationFields(sizes.scale, sizes)
 end
 
 """
     struct MatrixConfigurationFields <: AbstractConfigurationFields
-        axis::AxisConfiguration
+        scale::ScaleConfiguration
         colors::ColorsConfiguration
     end
 
 The configuration half of a [`MatrixFields`](@ref) data source view: the [`ColorsConfiguration`](@ref) the entries are
-colored by, and its `axis`.
+colored by, and its `scale`.
 """
 struct MatrixConfigurationFields <: AbstractConfigurationFields
-    axis::AxisConfiguration
+    scale::ScaleConfiguration
     colors::ColorsConfiguration
 end
 
 function MatrixConfigurationFields(colors::ColorsConfiguration)::MatrixConfigurationFields
-    return MatrixConfigurationFields(colors.axis, colors)
+    return MatrixConfigurationFields(colors.scale, colors)
 end
 
 """

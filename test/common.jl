@@ -150,69 +150,69 @@ nested_test("common") do
 
         nested_test("!fixed") do
             sizes.fixed = 1
-            sizes.axis.log_scale = Log2Scale
+            sizes.scale.log_base = Log2Base
             @test_throws chomp("""
                                ArgumentError: can't specify both sizes.fixed
-                               and any of sizes.(axis,span)
+                               and any of sizes.(scale,span)
                                """) validate(context, sizes)
         end
 
-        nested_test("~axis") do
-            sizes.axis.percent = true
+        nested_test("~percent") do
+            sizes.scale.percent = true
             @test_throws chomp("""
-                               ArgumentError: specified display fields of sizes.axis
-                               (only minimum, maximum, log_scale and log_regularization apply to sizes)
+                               ArgumentError: unsupported sizes.scale.percent
+                               (sizes have no labels to add % to)
                                """) validate(context, sizes)
         end
 
         nested_test("range") do
-            sizes.axis.minimum = 0
-            sizes.axis.maximum = 0
+            sizes.scale.minimum = 0
+            sizes.scale.maximum = 0
             @test_throws chomp("""
-                               ArgumentError: range low limit sizes.axis.minimum: 0
-                               is not below high limit sizes.axis.maximum: 0
+                               ArgumentError: range low limit sizes.scale.minimum: 0
+                               is not below high limit sizes.scale.maximum: 0
                                """) validate(context, sizes)
         end
 
         nested_test("~log_regularization") do
-            sizes.axis.log_regularization = 1
-            @test_throws "ArgumentError: non-zero non-log sizes.axis.log_regularization: 1" validate(context, sizes)
+            sizes.scale.log_regularization = 1
+            @test_throws "ArgumentError: non-zero non-log sizes.scale.log_regularization: 1" validate(context, sizes)
         end
 
         nested_test("log_regularization") do
-            sizes.axis.log_scale = Log2Scale
-            sizes.axis.log_regularization = -1
+            sizes.scale.log_base = Log2Base
+            sizes.scale.log_regularization = -1
             @test_throws chomp("""
-                               ArgumentError: too low sizes.axis.log_regularization: -1
+                               ArgumentError: too low sizes.scale.log_regularization: -1
                                is not at least: 0
                                """) validate(context, sizes)
         end
 
         nested_test("log_regularization+minimum") do
-            sizes.axis.log_scale = Log2Scale
-            sizes.axis.log_regularization = 1
+            sizes.scale.log_base = Log2Base
+            sizes.scale.log_regularization = 1
 
-            sizes.axis.minimum = -3
+            sizes.scale.minimum = -3
             @test_throws chomp("""
-                               ArgumentError: too low sizes.axis.(minimum + log_regularization): -2
+                               ArgumentError: too low sizes.scale.(minimum + log_regularization): -2
                                is not above: 0
                                """) validate(context, sizes)
 
-            sizes.axis.minimum = 2
+            sizes.scale.minimum = 2
             return validate(context, sizes)
         end
 
         nested_test("log_regularization+maximum") do
-            sizes.axis.log_scale = Log2Scale
-            sizes.axis.log_regularization = 1
+            sizes.scale.log_base = Log2Base
+            sizes.scale.log_regularization = 1
 
-            sizes.axis.maximum = -3
+            sizes.scale.maximum = -3
             @test_throws chomp("""
-                               ArgumentError: too low sizes.axis.(maximum + log_regularization): -2
+                               ArgumentError: too low sizes.scale.(maximum + log_regularization): -2
                                is not above: 0
                                """) validate(context, sizes)
 
-            sizes.axis.maximum = 2
+            sizes.scale.maximum = 2
             return validate(context, sizes)
         end
 
@@ -239,11 +239,11 @@ nested_test("common") do
         validate(context, axis)
 
         nested_test("range") do
-            axis.minimum = 0
-            axis.maximum = 0
+            axis.scale.minimum = 0
+            axis.scale.maximum = 0
             @test_throws chomp("""
-                               ArgumentError: range low limit axis.minimum: 0
-                               is not below high limit axis.maximum: 0
+                               ArgumentError: range low limit axis.scale.minimum: 0
+                               is not below high limit axis.scale.maximum: 0
                                """) validate(context, axis)
         end
 
@@ -256,44 +256,44 @@ nested_test("common") do
         end
 
         nested_test("~log_regularization") do
-            axis.log_regularization = 1
-            @test_throws "ArgumentError: non-zero non-log axis.log_regularization: 1" validate(context, axis)
+            axis.scale.log_regularization = 1
+            @test_throws "ArgumentError: non-zero non-log axis.scale.log_regularization: 1" validate(context, axis)
         end
 
         nested_test("log_regularization") do
-            axis.log_scale = Log10Scale
-            axis.log_regularization = -1
+            axis.scale.log_base = Log10Base
+            axis.scale.log_regularization = -1
             @test_throws chomp("""
-                               ArgumentError: too low axis.log_regularization: -1
+                               ArgumentError: too low axis.scale.log_regularization: -1
                                is not at least: 0
                                """) validate(context, axis)
         end
 
         nested_test("log_regularization+minimum") do
-            axis.log_scale = Log10Scale
-            axis.log_regularization = 1
+            axis.scale.log_base = Log10Base
+            axis.scale.log_regularization = 1
 
-            axis.minimum = -3
+            axis.scale.minimum = -3
             @test_throws chomp("""
-                               ArgumentError: too low axis.(minimum + log_regularization): -2
+                               ArgumentError: too low axis.scale.(minimum + log_regularization): -2
                                is not above: 0
                                """) validate(context, axis)
 
-            axis.minimum = 2
+            axis.scale.minimum = 2
             return validate(context, axis)
         end
 
         nested_test("log_regularization+maximum") do
-            axis.log_scale = Log10Scale
-            axis.log_regularization = 1
+            axis.scale.log_base = Log10Base
+            axis.scale.log_regularization = 1
 
-            axis.maximum = -3
+            axis.scale.maximum = -3
             @test_throws chomp("""
-                               ArgumentError: too low axis.(maximum + log_regularization): -2
+                               ArgumentError: too low axis.scale.(maximum + log_regularization): -2
                                is not above: 0
                                """) validate(context, axis)
 
-            axis.maximum = 2
+            axis.scale.maximum = 2
             return validate(context, axis)
         end
 
@@ -338,7 +338,7 @@ nested_test("common") do
         validate(context, band, axis)
 
         nested_test("offsets") do
-            axis.log_scale = Log2Scale
+            axis.scale.log_base = Log2Base
             band.offset = -1
             @test_throws chomp("""
                                ArgumentError: too low root.band.offset: -1
@@ -491,11 +491,6 @@ nested_test("common") do
         context = ValidationContext(["colors"])
         validate(context, colors)
 
-        nested_test("~ticks_angle") do
-            colors.axis.ticks_angle = 45
-            @test_throws "ArgumentError: unsupported colors.axis.ticks_angle: 45" validate(context, colors)
-        end
-
         nested_test("fixed") do
             nested_test("()") do
                 colors.fixed = "red"
@@ -518,10 +513,10 @@ nested_test("common") do
 
             nested_test("precent") do
                 colors.fixed = "red"
-                colors.axis.percent = true
+                colors.scale.percent = true
                 @test_throws chomp("""
                                    ArgumentError: can't specify both colors.fixed
-                                   and any of colors.axis.(minimum,maximum,log_scale,percent)
+                                   and any of colors.scale.(minimum,maximum,log_base,percent)
                                    """) validate(context, colors)
             end
 
@@ -666,13 +661,13 @@ nested_test("common") do
 
         nested_test("log_regularization+cmin") do
             colors.palette = [0 => "red", 1 => "green", 1 => "blue"]
-            colors.axis.log_scale = Log10Scale
+            colors.scale.log_base = Log10Base
             @test_throws chomp("""
-                               ArgumentError: too low colors.(palette[1].value + axis.log_regularization): 0
+                               ArgumentError: too low colors.(palette[1].value + scale.log_regularization): 0
                                is not above: 0
                                """) validate(context, colors)
 
-            colors.axis.log_regularization = 1
+            colors.scale.log_regularization = 1
             return validate(context, colors)
         end
 
@@ -694,10 +689,10 @@ nested_test("common") do
 
             nested_test("percent") do
                 colors.palette = Dict(["foo" => "red", "bar" => "green"])
-                colors.axis.percent = true
+                colors.scale.percent = true
                 @test_throws chomp("""
                                    ArgumentError: can't specify both categorical colors.palette
-                                   and any of colors.axis.(minimum,maximum,log_scale,percent)
+                                   and any of colors.scale.(minimum,maximum,log_base,percent)
                                    """) validate(context, colors)
             end
         end

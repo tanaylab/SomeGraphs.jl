@@ -70,8 +70,8 @@ The `bar_axis` shows the names of the bars. Only its `show_ticks`, `ticks_angle`
 meaning for an axis of names.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
-bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
-this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
+bars show their sizes rather than their differences. Setting an explicit `value_axis.scale.minimum` (or `maximum`)
+overrides this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
 """
 @kwdef mutable struct BarsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -340,8 +340,8 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     collect_hidden_range!(
         implicit_values_range,
-        graph.configuration.value_axis,
-        scale_axis_values(graph.configuration.value_axis, values; clamp = false),
+        graph.configuration.value_axis.scale,
+        scale_axis_values(graph.configuration.value_axis.scale, values; clamp = false),
         mask,
     )
     collect_zero_range!(implicit_values_range, graph.configuration.value_axis)
@@ -350,7 +350,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     annotations_colors = push_annotations_traces!(;
         traces,
         names = default_names,
-        value_axis = graph.configuration.value_axis,
+        show_grid = graph.configuration.value_axis.show_grid,
         values_orientation = graph.configuration.values_orientation,
         next_colors_scale_index,
         has_legend_only_traces,
@@ -397,8 +397,8 @@ then the gaps will be the same size as the graphs. If neither is specified, then
 (adjacent to each other) with the `bars.gap` between the groups. The colors of the bars are those of their series.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
-bars show their sizes rather than their differences. Setting an explicit `value_axis.minimum` (or `maximum`) overrides
-this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
+bars show their sizes rather than their differences. Setting an explicit `value_axis.scale.minimum` (or `maximum`)
+overrides this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
 
 If `mirrored`, the series are read in pairs, so their number must be even. The 1st series of each pair grows to the left
 (or down) and the 2nd to the right (or up), away from the bar axis they share - a butterfly graph. Each pair therefore
@@ -722,7 +722,7 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         if graph.configuration.stacking == StackFractions
             @assert values !== nothing
             for (bar_index, bar_value) in enumerate(values)
-                scaled_value = scale_axis_value(graph.configuration.value_axis, bar_value)
+                scaled_value = scale_axis_value(graph.configuration.value_axis.scale, bar_value)
                 if scaled_value === nothing || scaled_value < 0
                     throw(
                         ArgumentError(
@@ -808,7 +808,7 @@ end
 # zero still shows their sizes rather than their differences. A log scale never reaches zero, so there a bar is measured
 # from the smallest value shown.
 function collect_zero_range!(scaled_range::MaybeRange, value_axis::AxisConfiguration)::Nothing
-    if value_axis.log_scale === nothing
+    if value_axis.scale.log_base === nothing
         collect_range!(scaled_range, (0.0,))  # NOJET
     end
     return nothing
@@ -917,11 +917,16 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
         specific_scaled_values[position] = scaled_values
         axis_index = arrangement.axis_indices[position]
-        all_scaled_values = scale_axis_values(graph.configuration.value_axis, all_values; clamp = false)
+        all_scaled_values = scale_axis_values(graph.configuration.value_axis.scale, all_values; clamp = false)
 
         # Stacked, it is the totals below which say how far each axis has to reach, so they are collected instead.
         if graph.configuration.stacking === nothing
-            collect_hidden_range!(implicit_values_range, graph.configuration.value_axis, all_scaled_values, series_mask)
+            collect_hidden_range!(
+                implicit_values_range,
+                graph.configuration.value_axis.scale,
+                all_scaled_values,
+                series_mask,
+            )
             if specific_scaled_ranges !== nothing
                 range_axes_indices =
                     graph.configuration.mirrored ? (axis_index, mirror_value_axis_index(axis_index)) : (axis_index,)
@@ -929,7 +934,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                     collect_range!(specific_scaled_ranges[range_axis_index], scaled_values)
                     collect_hidden_range!(
                         specific_scaled_ranges[range_axis_index],
-                        graph.configuration.value_axis,
+                        graph.configuration.value_axis.scale,
                         all_scaled_values,
                         series_mask,
                     )
@@ -960,7 +965,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                 collect_range!(implicit_values_range, total_scaled_values)
                 collect_hidden_range!(
                     implicit_values_range,
-                    graph.configuration.value_axis,
+                    graph.configuration.value_axis.scale,
                     all_total_scaled_values,
                     shared_mask,
                 )
@@ -969,7 +974,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
                     collect_range!(specific_scaled_ranges[range_axis_index], total_scaled_values)
                     collect_hidden_range!(
                         specific_scaled_ranges[range_axis_index],
-                        graph.configuration.value_axis,
+                        graph.configuration.value_axis.scale,
                         all_total_scaled_values,
                         shared_mask,
                     )
@@ -985,11 +990,11 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
         for position in 1:n_series
             specific_scaled_values[position] ./= total_scaled_values_per_axis[arrangement.axis_indices[position]]
-            if graph.configuration.value_axis.percent
+            if graph.configuration.value_axis.scale.percent
                 specific_scaled_values[position] .*= 100
             end
         end
-        if graph.configuration.value_axis.percent
+        if graph.configuration.value_axis.scale.percent
             implicit_values_range = MaybeRange(; minimum = 0, maximum = 100)
         else
             implicit_values_range = MaybeRange(; minimum = 0, maximum = 1)
@@ -1019,7 +1024,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     annotations_colors = push_annotations_traces!(;
         traces,
         names = default_names,
-        value_axis = graph.configuration.value_axis,
+        show_grid = graph.configuration.value_axis.show_grid,
         values_orientation = graph.configuration.values_orientation,
         n_graphs = n_axes,
         graphs_gap = value_axes_gap(graph.configuration),
@@ -1065,7 +1070,7 @@ function push_bar_trace!(;
     xaxis_index, x0, yaxis_index, y0 =
         plotly_sub_graph_axes(; basis_sub_graph, values_sub_graph = sub_graph, values_orientation)
 
-    scaled_values = scale_axis_values(value_axis, values; clamp = false)
+    scaled_values = scale_axis_values(value_axis.scale, values; clamp = false)
     collect_range!(implicit_values_range, scaled_values)
 
     if names === nothing
@@ -1109,7 +1114,7 @@ end
 function push_annotations_traces!(;
     traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
-    value_axis::AxisConfiguration,
+    show_grid::Bool,
     basis_sub_graph::Maybe{SubGraph} = nothing,
     values_orientation::ValuesOrientation,
     n_graphs::Integer = 1,
@@ -1128,7 +1133,7 @@ function push_annotations_traces!(;
         push_annotation_traces!(;
             traces,
             names,
-            value_axis,
+            show_grid,
             basis_sub_graph,
             values_orientation,
             n_graphs,
@@ -1153,7 +1158,7 @@ end
 function push_annotation_traces!(;
     traces::Vector{GenericTrace},
     names::Maybe{AbstractVector{<:AbstractString}},
-    value_axis::AxisConfiguration,
+    show_grid::Bool,
     basis_sub_graph::Maybe{SubGraph},
     values_orientation::ValuesOrientation,
     n_graphs::Integer,
@@ -1219,10 +1224,9 @@ function push_annotation_traces!(;
             fill(1.0, order === nothing ? length(annotation_values) : length(order))
         end,
         value_axis = AxisConfiguration(;
-            minimum = 0,
-            maximum = 1,
+            scale = ScaleConfiguration(; minimum = 0, maximum = 1),
             show_ticks = false,
-            show_grid = value_axis.show_grid,
+            show_grid,
         ),
         basis_sub_graph,
         values_orientation,

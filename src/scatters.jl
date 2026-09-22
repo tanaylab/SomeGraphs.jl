@@ -125,11 +125,19 @@ function Validations.validate(context::ValidationContext, configuration::PointsG
     if configuration.diagonal_bands.low.offset !== nothing ||
        configuration.diagonal_bands.middle.offset !== nothing ||
        configuration.diagonal_bands.high.offset !== nothing
-        if configuration.x_axis.log_scale != configuration.y_axis.log_scale
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)"))
+        if configuration.x_axis.scale.log_base != configuration.y_axis.scale.log_base
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
+                ),
+            )
         end
-        if configuration.x_axis.percent != configuration.y_axis.percent
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)"))
+        if configuration.x_axis.scale.percent != configuration.y_axis.scale.percent
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
+                ),
+            )
         end
     end
 
@@ -489,11 +497,19 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
        graph.data.diagonal_bands.low_offset !== nothing ||
        graph.data.diagonal_bands.middle_offset !== nothing ||
        graph.data.diagonal_bands.high_offset !== nothing
-        if graph.configuration.x_axis.log_scale !== graph.configuration.y_axis.log_scale
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)"))
+        if graph.configuration.x_axis.scale.log_base !== graph.configuration.y_axis.scale.log_base
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
+                ),
+            )
         end
-        if graph.configuration.x_axis.percent !== graph.configuration.y_axis.percent
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)"))
+        if graph.configuration.x_axis.scale.percent !== graph.configuration.y_axis.scale.percent
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
+                ),
+            )
         end
     end
 
@@ -556,8 +572,8 @@ function scaled_data(
     values::AbstractVector{<:Real},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
 )::ScaledData
-    scaled_values = scale_axis_values(axis_configuration, values)
-    ranged_values = range_values(axis_configuration, scaled_values, mask)
+    scaled_values = scale_axis_values(axis_configuration.scale, values)
+    ranged_values = range_values(axis_configuration.scale, scaled_values, mask)
     implicit_scaled_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
     scaled_range = final_scaled_range(implicit_scaled_range, axis_configuration)
     return ScaledData(; values = scaled_values, range = scaled_range)
@@ -1263,19 +1279,29 @@ function Validations.validate(
     if configuration.diagonal_bands.low.offset !== nothing ||
        configuration.diagonal_bands.middle.offset !== nothing ||
        configuration.diagonal_bands.high.offset !== nothing
-        if configuration.x_axis.log_scale != configuration.y_axis.log_scale
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)"))
+        if configuration.x_axis.scale.log_base != configuration.y_axis.scale.log_base
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
+                ),
+            )
         end
-        if configuration.x_axis.percent != configuration.y_axis.percent
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)"))
+        if configuration.x_axis.scale.percent != configuration.y_axis.scale.percent
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
+                ),
+            )
         end
     end
 
     if configuration isa LinesGraphConfiguration &&
-       configuration.y_axis.log_scale !== nothing &&
+       configuration.y_axis.scale.log_base !== nothing &&
        configuration.stacking !== nothing
         throw(
-            ArgumentError("can't specify both $(location(context)).stacking and $(location(context)).y_axis.log_scale"),
+            ArgumentError(
+                "can't specify both $(location(context)).stacking and $(location(context)).y_axis.scale.log_base",
+            ),
         )
     end
 
@@ -1509,7 +1535,7 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
             if graph.configuration.stacking == StackFractions
                 @assert ys !== nothing
                 for (y_index, y_value) in enumerate(ys)
-                    scaled_value = scale_axis_value(graph.configuration.y_axis, y_value)
+                    scaled_value = scale_axis_value(graph.configuration.y_axis.scale, y_value)
                     if scaled_value !== nothing && scaled_value < 0
                         throw(
                             ArgumentError(
@@ -1543,11 +1569,19 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
        graph.data.diagonal_bands.low_offset !== nothing ||
        graph.data.diagonal_bands.middle_offset !== nothing ||
        graph.data.diagonal_bands.high_offset !== nothing
-        if graph.configuration.x_axis.log_scale !== graph.configuration.y_axis.log_scale
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)"))
+        if graph.configuration.x_axis.scale.log_base !== graph.configuration.y_axis.scale.log_base
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
+                ),
+            )
         end
-        if graph.configuration.x_axis.percent !== graph.configuration.y_axis.percent
-            throw(ArgumentError("diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)"))
+        if graph.configuration.x_axis.scale.percent !== graph.configuration.y_axis.scale.percent
+            throw(
+                ArgumentError(
+                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
+                ),
+            )
         end
     end
 
@@ -1607,11 +1641,11 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         @assert points_xs !== nothing
         @assert points_ys !== nothing
         mask = line.points.mask
-        scaled_points_xs = scale_axis_values(graph.configuration.x_axis, points_xs)
-        scaled_points_ys = scale_axis_values(graph.configuration.y_axis, points_ys)
-        collect_hidden_range!(implicit_scaled_xs_range, graph.configuration.x_axis, scaled_points_xs, mask)
+        scaled_points_xs = scale_axis_values(graph.configuration.x_axis.scale, points_xs)
+        scaled_points_ys = scale_axis_values(graph.configuration.y_axis.scale, points_ys)
+        collect_hidden_range!(implicit_scaled_xs_range, graph.configuration.x_axis.scale, scaled_points_xs, mask)
         if graph.configuration.stacking === nothing
-            collect_hidden_range!(implicit_scaled_ys_range, graph.configuration.y_axis, scaled_points_ys, mask)
+            collect_hidden_range!(implicit_scaled_ys_range, graph.configuration.y_axis.scale, scaled_points_ys, mask)
         end
         push!(scaled_lines_points_xs, masked_values(scaled_points_xs, mask, nothing))
         push!(scaled_lines_points_ys, masked_values(scaled_points_ys, mask, nothing))
@@ -1650,7 +1684,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         if graph.configuration.stacking == StackValues
             group_norm = nothing
         elseif graph.configuration.stacking == StackFractions
-            if graph.configuration.y_axis.percent
+            if graph.configuration.y_axis.scale.percent
                 scaled_ys_range = Range(; minimum = -1, maximum = 101)
                 group_norm = "percent"
             else

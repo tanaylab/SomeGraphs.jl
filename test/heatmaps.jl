@@ -11,7 +11,7 @@ nested_test("heatmaps") do
         @test fields.data.entities === graph.data.cells
         @test fields.data.rows_entities === graph.data.rows.entities
         @test fields.data.columns_entities === graph.data.columns.entities
-        @test fields.configuration.axis === graph.configuration.entries.colors.axis
+        @test fields.configuration.scale === graph.configuration.entries.colors.scale
         @test fields.configuration.colors === graph.configuration.entries.colors
 
         annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0], "score"))
@@ -519,8 +519,8 @@ nested_test("heatmaps") do
     end
 
     nested_test("log") do
-        graph.configuration.entries.colors.axis.log_scale = Log2Scale
-        graph.configuration.entries.colors.axis.log_regularization = 1
+        graph.configuration.entries.colors.scale.log_base = Log2Base
+        graph.configuration.entries.colors.scale.log_regularization = 1
         test_html(graph, "heatmap.log2.html")
         return nothing
     end
@@ -808,7 +808,7 @@ nested_test("heatmaps") do
 
             nested_test("!hidden") do
                 graph.data.rows.entities.mask = [true, true, false]
-                graph.data.rows.annotations[1].colors.axis.include_hidden = false
+                graph.data.rows.annotations[1].colors.scale.include_hidden = false
                 test_html(graph, "heatmap.mask.rows.!hidden.html")
                 return nothing
             end
@@ -817,7 +817,7 @@ nested_test("heatmaps") do
             nested_test("!colors") do
                 graph.data.rows.entities.mask = [true, true, false]
                 @test graph.figure.layout[:coloraxis][:cmax] == 11
-                graph.configuration.entries.colors.axis.include_hidden = false
+                graph.configuration.entries.colors.scale.include_hidden = false
                 @test graph.figure.layout[:coloraxis][:cmax] == 7
 
                 # With no mask at all there is nothing to leave out, so the range covers everything again.

@@ -196,7 +196,7 @@ graph = distribution_graph(; distribution = DistributionData(; values = VectorVa
 graph.configuration.distribution.style = CumulativeDistribution
 graph.configuration.distribution.line.is_filled = true
 graph.configuration.distribution.normalize = true
-graph.configuration.density_axis.percent = true
+graph.configuration.density_axis.scale.percent = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

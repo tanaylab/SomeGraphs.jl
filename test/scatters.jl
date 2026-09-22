@@ -39,12 +39,12 @@ nested_test("points") do
 
         nested_test("diagonal") do
             nested_test("log") do
-                graph.configuration.x_axis.log_scale = Log10Scale
-                graph.configuration.x_axis.log_regularization = 1
+                graph.configuration.x_axis.scale.log_base = Log10Base
+                graph.configuration.x_axis.scale.log_regularization = 1
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
                         context,
                         graph,
                     )
@@ -52,7 +52,7 @@ nested_test("points") do
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
                         context,
                         graph,
                     )
@@ -60,11 +60,11 @@ nested_test("points") do
             end
 
             nested_test("percent") do
-                graph.configuration.x_axis.percent = true
+                graph.configuration.x_axis.scale.percent = true
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
                         context,
                         graph,
                     )
@@ -72,7 +72,7 @@ nested_test("points") do
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
                         context,
                         graph,
                     )
@@ -112,13 +112,13 @@ nested_test("points") do
         fields = points_colors_vector_fields(graph)
         @test fields.data.values === graph.data.points.colors
         @test fields.data.entities === graph.data.points.entities
-        @test fields.configuration.axis === graph.configuration.points.colors.axis
+        @test fields.configuration.scale === graph.configuration.points.colors.scale
         @test fields.configuration.colors === graph.configuration.points.colors
 
         fields = points_sizes_vector_fields(graph)
         @test fields.data.values === graph.data.points.sizes
         @test fields.data.entities === graph.data.points.entities
-        @test fields.configuration.axis === graph.configuration.points.sizes.axis
+        @test fields.configuration.scale === graph.configuration.points.sizes.scale
         @test fields.configuration.sizes === graph.configuration.points.sizes
 
         fields = borders_colors_vector_fields(graph)
@@ -156,12 +156,12 @@ nested_test("points") do
         end
 
         nested_test("!hidden") do
-            graph.configuration.x_axis.include_hidden = false
-            graph.configuration.y_axis.include_hidden = false
+            graph.configuration.x_axis.scale.include_hidden = false
+            graph.configuration.y_axis.scale.include_hidden = false
             graph.data.points.colors.vector = collect(0:10)
             graph.data.points.sizes.vector = collect(0:10)
-            graph.configuration.points.colors.axis.include_hidden = false
-            graph.configuration.points.sizes.axis.include_hidden = false
+            graph.configuration.points.colors.scale.include_hidden = false
+            graph.configuration.points.sizes.scale.include_hidden = false
             test_html(graph, "points.mask.!hidden.html")
             return nothing
         end
@@ -302,10 +302,10 @@ nested_test("points") do
     end
 
     nested_test("log") do
-        graph.configuration.x_axis.log_scale = Log10Scale
-        graph.configuration.x_axis.log_regularization = 1
-        graph.configuration.y_axis.log_scale = Log10Scale
-        graph.configuration.y_axis.log_regularization = 1
+        graph.configuration.x_axis.scale.log_base = Log10Base
+        graph.configuration.x_axis.scale.log_regularization = 1
+        graph.configuration.y_axis.scale.log_base = Log10Base
+        graph.configuration.y_axis.scale.log_regularization = 1
 
         nested_test("()") do
             test_html(graph, "points.log.html")
@@ -704,10 +704,10 @@ nested_test("points") do
         graph.configuration.points.sizes.fixed = 16
         graph.configuration.figure.width = 200
         graph.configuration.figure.height = 200
-        graph.configuration.x_axis.minimum = -3
-        graph.configuration.y_axis.minimum = -3
-        graph.configuration.x_axis.maximum = 3
-        graph.configuration.y_axis.maximum = 3
+        graph.configuration.x_axis.scale.minimum = -3
+        graph.configuration.y_axis.scale.minimum = -3
+        graph.configuration.x_axis.scale.maximum = 3
+        graph.configuration.y_axis.scale.maximum = 3
 
         nested_test("()") do
             return test_html(graph, "points.density.html")
@@ -746,12 +746,12 @@ nested_test("line") do
 
         nested_test("diagonal") do
             nested_test("log") do
-                graph.configuration.x_axis.log_scale = Log10Scale
-                graph.configuration.x_axis.log_regularization = 1
+                graph.configuration.x_axis.scale.log_base = Log10Base
+                graph.configuration.x_axis.scale.log_regularization = 1
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
                         context,
                         graph,
                     )
@@ -759,7 +759,7 @@ nested_test("line") do
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.log_scale == y_axis.log_scale)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
                         context,
                         graph,
                     )
@@ -767,11 +767,11 @@ nested_test("line") do
             end
 
             nested_test("percent") do
-                graph.configuration.x_axis.percent = true
+                graph.configuration.x_axis.scale.percent = true
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
                         context,
                         graph,
                     )
@@ -779,7 +779,7 @@ nested_test("line") do
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.percent == y_axis.percent)" validate(
+                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
                         context,
                         graph,
                     )
@@ -821,8 +821,8 @@ nested_test("line") do
         end
 
         nested_test("!hidden") do
-            graph.configuration.x_axis.include_hidden = false
-            graph.configuration.y_axis.include_hidden = false
+            graph.configuration.x_axis.scale.include_hidden = false
+            graph.configuration.y_axis.scale.include_hidden = false
             test_html(graph, "line.mask.!hidden.html")
             return nothing
         end
@@ -888,8 +888,8 @@ nested_test("lines") do
 
         nested_test("log") do
             graph.configuration.stacking = StackFractions
-            graph.configuration.y_axis.log_scale = Log10Scale
-            @test_throws "can't specify both graph.configuration.stacking and graph.configuration.y_axis.log_scale" validate(
+            graph.configuration.y_axis.scale.log_base = Log10Base
+            @test_throws "can't specify both graph.configuration.stacking and graph.configuration.y_axis.scale.log_base" validate(
                 context,
                 graph,
             )
@@ -1064,8 +1064,8 @@ nested_test("lines") do
             end
 
             nested_test("!hidden") do
-                graph.configuration.x_axis.include_hidden = false
-                graph.configuration.y_axis.include_hidden = false
+                graph.configuration.x_axis.scale.include_hidden = false
+                graph.configuration.y_axis.scale.include_hidden = false
                 test_html(graph, "lines.mask.points.!hidden.html")
                 return nothing
             end
@@ -1132,7 +1132,7 @@ nested_test("lines") do
             end
 
             nested_test("percent") do
-                graph.configuration.y_axis.percent = true
+                graph.configuration.y_axis.scale.percent = true
                 test_html(graph, "lines.fractions.percent.html")
                 return nothing
             end

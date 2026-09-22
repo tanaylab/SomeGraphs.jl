@@ -78,6 +78,7 @@ to_documenter(graph.figure)
 
 ```@docs
 SomeGraphs.Common.AxisConfiguration
+SomeGraphs.Common.ScaleConfiguration
 ```
 
 **Examples:**
@@ -117,8 +118,8 @@ Override range:
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
-graph.configuration.value_axis.minimum = 1
-graph.configuration.value_axis.maximum = 4
+graph.configuration.value_axis.scale.minimum = 1
+graph.configuration.value_axis.scale.maximum = 4
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -128,13 +129,13 @@ Percent:
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
-graph.configuration.value_axis.percent = 1
+graph.configuration.value_axis.scale.percent = 1
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
 
 ```@docs
-SomeGraphs.Common.LogScale
+SomeGraphs.Common.LogBase
 ```
 
 **Examples:**
@@ -144,8 +145,8 @@ Log 2:
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
-graph.configuration.value_axis.log_scale = Log2Scale
-graph.configuration.value_axis.log_regularization = 1
+graph.configuration.value_axis.scale.log_base = Log2Base
+graph.configuration.value_axis.scale.log_regularization = 1
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -155,8 +156,8 @@ Log 10:
 ```@example
 using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
-graph.configuration.value_axis.log_scale = Log10Scale
-graph.configuration.value_axis.log_regularization = 1e-5
+graph.configuration.value_axis.scale.log_base = Log10Base
+graph.configuration.value_axis.scale.log_regularization = 1e-5
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

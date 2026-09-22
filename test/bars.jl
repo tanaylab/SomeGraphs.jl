@@ -21,7 +21,7 @@ nested_test("bars") do
         end
 
         nested_test("~bar_axis") do
-            graph.configuration.bar_axis.percent = true
+            graph.configuration.bar_axis.scale.percent = true
             @test_throws chomp("""
                                ArgumentError: specified numeric or grid fields of graph.configuration.bar_axis
                                (only show_ticks, ticks_angle and title apply to the names of the bars)
@@ -54,8 +54,8 @@ nested_test("bars") do
             end
 
             nested_test("axis") do
-                graph.configuration.value_axis.minimum = -Inf
-                @test_throws "ArgumentError: non-finite graph.configuration.value_axis.minimum: -Inf" validate(
+                graph.configuration.value_axis.scale.minimum = -Inf
+                @test_throws "ArgumentError: non-finite graph.configuration.value_axis.scale.minimum: -Inf" validate(
                     ValidationContext(["graph"]),
                     graph,
                 )
@@ -77,7 +77,7 @@ nested_test("bars") do
         fields = colors_vector_fields(graph)
         @test fields.data.values === graph.data.colors
         @test fields.data.entities === graph.data.bars
-        @test fields.configuration.axis === graph.configuration.colors.axis
+        @test fields.configuration.scale === graph.configuration.colors.scale
         @test fields.configuration.colors === graph.configuration.colors
 
         annotation = AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))
@@ -108,9 +108,9 @@ nested_test("bars") do
         nested_test("!hidden") do
             graph.data.bars.mask = [true, true, false, false]
             graph.data.colors.vector = [0, 1, 2, 3]
-            graph.configuration.value_axis.include_hidden = false
-            graph.configuration.colors.axis.include_hidden = false
-            graph.data.annotations[1].colors.axis.include_hidden = false
+            graph.configuration.value_axis.scale.include_hidden = false
+            graph.configuration.colors.scale.include_hidden = false
+            graph.data.annotations[1].colors.scale.include_hidden = false
             test_html(graph, "bars.mask.!hidden.html")
             return nothing
         end
@@ -376,7 +376,7 @@ nested_test("series_bars") do
 
         nested_test("!hidden") do
             graph.data.bars.mask = [true, true, true, true, true, true, true, true, false, false, false]
-            graph.configuration.value_axis.include_hidden = false
+            graph.configuration.value_axis.scale.include_hidden = false
             test_html(graph, "series_bars.mask.!hidden.html")
             return nothing
         end
@@ -902,7 +902,7 @@ nested_test("series_bars") do
 
                 nested_test("percents") do
                     graph.configuration.stacking = StackFractions
-                    graph.configuration.value_axis.percent = true
+                    graph.configuration.value_axis.scale.percent = true
                     test_html(graph, "series_bars.$(orientation_name).percents.html")
                     return nothing
                 end

@@ -395,7 +395,7 @@ of its column.
 
 The `rows` and `columns` hold the data of each axis (see [`HeatmapAxisData`](@ref)). A cell is shown if both its row
 and its column are shown; there is no mask of its own. The values of the hidden cells still take part in the range of
-the colors scale, unless `include_hidden` is disabled in the `entries.colors.axis` of the configuration.
+the colors scale, unless `include_hidden` is disabled in the `entries.colors.scale` of the configuration.
 
 Valid combinations of the fields controlling order and clustering are:
 
@@ -484,7 +484,7 @@ end
 # is no mask of its own. This is `nothing` unless the range is restricted to the shown cells, so the matrix is only
 # built when it can make a difference.
 function shown_cells_mask(graph::HeatmapGraph)::Maybe{Union{AbstractMatrix{Bool}, BitMatrix}}
-    if graph.configuration.entries.colors.axis.include_hidden
+    if graph.configuration.entries.colors.scale.include_hidden
         return nothing
     end
 
@@ -956,7 +956,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         traces,
         names = nothing,
         basis_sub_graph = columns_sub_graph,
-        value_axis = graph.configuration.entries.colors.axis,
+        show_grid = true,
         values_orientation = VerticalValues,
         next_colors_scale_index,
         has_legend_only_traces,
@@ -972,7 +972,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         traces,
         names = nothing,
         basis_sub_graph = rows_sub_graph,
-        value_axis = graph.configuration.entries.colors.axis,
+        show_grid = true,
         values_orientation = HorizontalValues,
         next_colors_scale_index,
         has_legend_only_traces,

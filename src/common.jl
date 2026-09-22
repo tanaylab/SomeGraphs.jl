@@ -25,14 +25,15 @@ export Graph
 export HorizontalValues
 export LineConfiguration
 export LineStyle
-export Log10Scale
-export Log2Scale
-export LogScale
+export Log10Base
+export Log2Base
+export LogBase
 export MarginsConfiguration
 export MatrixEntitiesData
 export MatrixValuesData
 export NAMED_COLOR_SCALES
 export PlotlyFigure
+export ScaleConfiguration
 export SizesConfiguration
 export SolidLine
 export StackFractions
@@ -335,23 +336,96 @@ The orientation of the values axis in a distribution(s) or bars graph:
 @enum ValuesOrientation HorizontalValues VerticalValues
 
 """
-Supported log scales (when log scaling is enabled):
+Supported bases for taking the log of values (when log scaling is enabled):
 
-  - `Log10Scale` converts values to their log (base 10).
+  - `Log10Base` converts values to their log (base 10).
 
-  - `Log2Scale` converts values to their log (base 2).
+  - `Log2Base` converts values to their log (base 2).
 """
-@enum LogScale Log10Scale Log2Scale
+@enum LogBase Log10Base Log2Base
 
 """
-    @kwdef mutable struct AxisConfiguration <: Validated
+    @kwdef mutable struct ScaleConfiguration <: Validated
         minimum::Maybe{Real} = nothing
         maximum::Maybe{Real} = nothing
         include_hidden::Bool = true
-        expand_fraction::Real = 0
-        log_scale::Maybe{LogScale} = nothing
+        log_base::Maybe{LogBase} = nothing
         log_regularization::Real = 0
         percent::Bool = false
+    end
+
+How to map data values to the range they are shown in. This is the numeric half of an [`AxisConfiguration`](@ref), and
+is also what colors and sizes are mapped through, since neither of these is a drawn axis.
+
+Everything is optional; by default, the `minimum` and `maximum` are computed automatically from the data. Entities
+hidden by a mask (see [`VectorEntitiesData`](@ref)) still take part in this computation, so hiding some of them does not
+move the range. Set `include_hidden` to `false` to compute the range from the shown entities only.
+
+If `log_base` is specified, then the `log_regularization` is added to the value to avoid zero values, and the values
+are shown according to the [`LogBase`](@ref). Otherwise, `log_regularization` must be 0.
+
+If `percent` is set, then the values are multiplied by 100 and a `%` suffix is added to the tick labels.
+
+The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able
+to control log scale and/or percent scaling without changing anything else.
+"""
+@kwdef mutable struct ScaleConfiguration <: Validated
+    minimum::Maybe{Real} = nothing
+    maximum::Maybe{Real} = nothing
+    include_hidden::Bool = true
+    log_base::Maybe{LogBase} = nothing
+    log_regularization::Real = 0
+    percent::Bool = false
+end
+
+function Validations.validate(context::ValidationContext, scale_configuration::ScaleConfiguration)::Nothing
+    for (field, value) in (
+        ("minimum", scale_configuration.minimum),
+        ("maximum", scale_configuration.maximum),
+        ("log_regularization", scale_configuration.log_regularization),
+    )
+        validate_in(context, field) do
+            validate_is_finite(context, value)
+            return nothing
+        end
+    end
+
+    validate_is_range(context, "minimum", scale_configuration.minimum, "maximum", scale_configuration.maximum)
+
+    if scale_configuration.log_base === nothing
+        if scale_configuration.log_regularization != 0
+            throw(
+                ArgumentError(
+                    "non-zero non-log $(location(context)).log_regularization: $(scale_configuration.log_regularization)",
+                ),
+            )
+        end
+    else
+        validate_in(context, "log_regularization") do
+            validate_is_at_least(context, scale_configuration.log_regularization, 0)
+            return nothing
+        end
+        if scale_configuration.minimum !== nothing
+            validate_in(context, "(minimum + log_regularization)") do
+                validate_is_above(context, scale_configuration.minimum + scale_configuration.log_regularization, 0)
+                return nothing
+            end
+        end
+        if scale_configuration.maximum !== nothing
+            validate_in(context, "(maximum + log_regularization)") do
+                validate_is_above(context, scale_configuration.maximum + scale_configuration.log_regularization, 0)
+                return nothing
+            end
+        end
+    end
+
+    return nothing
+end
+
+"""
+    @kwdef mutable struct AxisConfiguration <: Validated
+        scale::ScaleConfiguration = ScaleConfiguration()
+        expand_fraction::Real = 0
         show_ticks::Bool = true
         ticks_angle::Maybe{Real} = nothing
         show_grid::Bool = true
@@ -359,19 +433,12 @@ Supported log scales (when log scaling is enabled):
         title::Maybe{AbstractString} = nothing
     end
 
-Generic configuration for a graph axis. Everything is optional; by default, the `minimum` and `maximum` are computed
-automatically from the data. Entities hidden by a mask (see [`VectorEntitiesData`](@ref)) still take part in this computation,
-so hiding some of them does not move the axis. Set `include_hidden` to `false` to compute the range from the shown
-entities only.
+Generic configuration for a drawn graph axis. The `scale` says how the values are mapped to the range they are shown
+in (see [`ScaleConfiguration`](@ref)); the rest says how the axis is drawn.
 
 The `expand_fraction` grows the visible range by this fraction of its size on each side (e.g. `0.01` adds 1% at both
 ends). This keeps round markers at the extreme values from being clipped by the plot border. It is applied in the scaled
 (e.g. log) space, after the `minimum` and `maximum` are determined.
-
-If `log_scale` is specified, then the `log_regularization` is added to the coordinate to avoid zero values, and the axis
-is shown according to the [`LogScale`](@ref). Otherwise, `log_regularization` must be 0.
-
-If `percent` is set, then the values are multiplied by 100 and a `%` suffix is added to the tick labels.
 
 The `show_ticks` and/or `show_grid` can be disabled for a cleaner (though less informative) graph appearance. By default
 the grid lines are shown in `lightgrey`. The `ticks_angle` rotates the tick labels and is measured relative to the axis
@@ -379,20 +446,12 @@ the grid lines are shown in `lightgrey`. The `ticks_angle` rotates the tick labe
 default (`nothing`) the labels are horizontal, which is the readable orientation for numbers regardless of the axis
 direction.
 
-The minimum/maximum, data values, color palette values etc. are all in the original scale. That is, you should be able
-to control log scale and/or percent scaling without changing anything else.
-
 If `title` is specified, it will be shown next to the axis. However, in some cases the correct title depends on the data
 set, so you can override this in the data.
 """
 @kwdef mutable struct AxisConfiguration <: Validated
-    minimum::Maybe{Real} = nothing
-    maximum::Maybe{Real} = nothing
-    include_hidden::Bool = true
+    scale::ScaleConfiguration = ScaleConfiguration()
     expand_fraction::Real = 0
-    log_scale::Maybe{LogScale} = nothing
-    log_regularization::Real = 0
-    percent::Bool = false
     show_ticks::Bool = true
     ticks_angle::Maybe{Real} = nothing
     show_grid::Bool = true
@@ -401,18 +460,7 @@ set, so you can override this in the data.
 end
 
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
-    for (field, value) in (
-        ("minimum", axis_configuration.minimum),
-        ("maximum", axis_configuration.maximum),
-        ("log_regularization", axis_configuration.log_regularization),
-    )
-        validate_in(context, field) do
-            validate_is_finite(context, value)
-            return nothing
-        end
-    end
-
-    validate_is_range(context, "minimum", axis_configuration.minimum, "maximum", axis_configuration.maximum)
+    validate_field(context, "scale", axis_configuration.scale)
 
     validate_in(context, "expand_fraction") do
         validate_is_finite(context, axis_configuration.expand_fraction)
@@ -432,33 +480,6 @@ function Validations.validate(context::ValidationContext, axis_configuration::Ax
     validate_in(context, "grid_color") do
         validate_is_color(context, axis_configuration.grid_color)
         return nothing
-    end
-
-    if axis_configuration.log_scale === nothing
-        if axis_configuration.log_regularization != 0
-            throw(
-                ArgumentError(
-                    "non-zero non-log $(location(context)).log_regularization: $(axis_configuration.log_regularization)",
-                ),
-            )
-        end
-    else
-        validate_in(context, "log_regularization") do
-            validate_is_at_least(context, axis_configuration.log_regularization, 0)
-            return nothing
-        end
-        if axis_configuration.minimum !== nothing
-            validate_in(context, "(minimum + log_regularization)") do
-                validate_is_above(context, axis_configuration.minimum + axis_configuration.log_regularization, 0)
-                return nothing
-            end
-        end
-        if axis_configuration.maximum !== nothing
-            validate_in(context, "(maximum + log_regularization)") do
-                validate_is_above(context, axis_configuration.maximum + axis_configuration.log_regularization, 0)
-                return nothing
-            end
-        end
     end
 
     return nothing
@@ -538,7 +559,7 @@ function Validations.validate(  # UNTESTED
 )::Nothing
     validate_in(context, "offset") do
         validate_is_finite(context, band_configuration.offset)
-        if axis_configuration !== nothing && axis_configuration.log_scale !== nothing
+        if axis_configuration !== nothing && axis_configuration.scale.log_base !== nothing
             validate_is_above(context, band_configuration.offset, 0)
         end
         return nothing
@@ -1257,27 +1278,20 @@ function interpolate_color(palette::ContinuousColors, value::Real)::AbstractStri
     end
 end
 
-# Whether an axis configuration only uses the fields that apply to scaling values (`minimum`, `maximum`, `log_scale` and
-# `log_regularization`); the display fields must be left at their defaults.
-function is_values_axis(axis_configuration::AxisConfiguration)::Bool
-    return !axis_configuration.percent &&
-           axis_configuration.expand_fraction == 0 &&
-           axis_configuration.show_ticks &&
-           axis_configuration.ticks_angle === nothing &&
-           axis_configuration.show_grid &&
-           axis_configuration.grid_color == "lightgrey" &&
-           axis_configuration.title === nothing
+# Whether a scale configuration is left at its defaults.
+function is_default_scale(scale_configuration::ScaleConfiguration)::Bool
+    return scale_configuration.minimum === nothing &&
+           scale_configuration.maximum === nothing &&
+           scale_configuration.include_hidden &&
+           scale_configuration.log_base === nothing &&
+           scale_configuration.log_regularization == 0 &&
+           !scale_configuration.percent
 end
 
 # Whether an axis configuration only uses the fields that apply to a categorical (cross-series names) axis, namely
-# `show_ticks`, `ticks_angle` and `title`; the numeric and grid fields must be left at their defaults.
+# `show_ticks`, `ticks_angle` and `title`; the scale and grid fields must be left at their defaults.
 function is_categorical_axis(axis_configuration::AxisConfiguration)::Bool
-    return axis_configuration.minimum === nothing &&
-           axis_configuration.maximum === nothing &&
-           axis_configuration.include_hidden &&
-           axis_configuration.log_scale === nothing &&
-           axis_configuration.log_regularization == 0 &&
-           !axis_configuration.percent &&
+    return is_default_scale(axis_configuration.scale) &&
            axis_configuration.show_grid &&
            axis_configuration.grid_color == "lightgrey"
 end
@@ -1293,35 +1307,30 @@ end
 """
     @kwdef mutable struct SizesConfiguration <: Validated
         fixed::Maybe{Real} = nothing
-        axis::AxisConfiguration = AxisConfiguration()
+        scale::ScaleConfiguration = ScaleConfiguration()
         smallest::Real = 6
         span::Real = 12
     end
 
 Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
 used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be
-specified. The `axis` scales the sizes data: values at most its `minimum` (or the minimal value) are mapped to the
+specified. The `scale` maps the sizes data: values at most its `minimum` (or the minimal value) are mapped to the
 `smallest` size in pixels, values at least its `maximum` (or the maximal value) are mapped to a size with an additional
-`span` in pixels, and if `log_scale` is set the log of the values (plus the `log_regularization`) is used instead. The
-display fields of the `axis` (`percent`, ticks, grid, title) do not apply to sizes and must be left at their defaults.
+`span` in pixels, and if `log_base` is set the log of the values (plus the `log_regularization`) is used instead. Sizes are
+not drawn along an axis, so there is nothing to label; `percent` therefore does not apply and must be left unset.
 """
 @kwdef mutable struct SizesConfiguration <: Validated
     fixed::Maybe{Real} = nothing
-    axis::AxisConfiguration = AxisConfiguration()
+    scale::ScaleConfiguration = ScaleConfiguration()
     smallest::Real = 6
     span::Real = 12
 end
 
 function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
-    validate_field(context, "axis", sizes_configuration.axis)
+    validate_field(context, "scale", sizes_configuration.scale)
 
-    if !is_values_axis(sizes_configuration.axis)
-        throw(
-            ArgumentError(
-                "specified display fields of $(location(context)).axis\n" *
-                "(only minimum, maximum, log_scale and log_regularization apply to sizes)",
-            ),
-        )
+    if sizes_configuration.scale.percent
+        throw(ArgumentError("unsupported $(location(context)).scale.percent\n" * "(sizes have no labels to add % to)"))
     end
 
     if sizes_configuration.fixed !== nothing
@@ -1330,10 +1339,10 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
             return validate_is_above(context, sizes_configuration.fixed, 0)
         end
 
-        if !is_default_axis(sizes_configuration.axis) || sizes_configuration.span != 12
+        if !is_default_scale(sizes_configuration.scale) || sizes_configuration.span != 12
             throw(
                 ArgumentError(
-                    "can't specify both $(location(context)).fixed\n" * "and any of $(location(context)).(axis,span)",
+                    "can't specify both $(location(context)).fixed\n" * "and any of $(location(context)).(scale,span)",
                 ),
             )
         end
@@ -1360,26 +1369,26 @@ end
     @kwdef mutable struct ColorsConfiguration <: Validated
         fixed::Maybe{AbstractString} = nothing
         palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
-        axis::AxisConfiguration = AxisConfiguration()
+        scale::ScaleConfiguration = ScaleConfiguration()
         show_legend::Bool = false
         title::Maybe{AbstractString} = nothing
     end
 
 Configure how to color some data. Supported combinations of configuration and data are:
 
-| `fixed`    | `palette`                      | colors data | `axis`        | `show_legend` | Behavior         |
+| `fixed`    | `palette`                      | colors data | `scale`       | `show_legend` | Behavior         |
 |:---------- |:------------------------------ |:----------- |:------------- |:------------- |:---------------- |
-| color name | `nothing`                      | `nothing`   | Restricted(A) | `false`       | Named fixed (1)  |
-| `nothing`  | `nothing`                      | `nothing`   | Restricted(A) | `false`       | Auto fixed (2)   |
-| `nothing`  | `nothing`                      | str[]       | Restricted(A) | `false`       | Named data (3)   |
+| color name | `nothing`                      | `nothing`   | Restricted(S) | `false`       | Named fixed (1)  |
+| `nothing`  | `nothing`                      | `nothing`   | Restricted(S) | `false`       | Auto fixed (2)   |
+| `nothing`  | `nothing`                      | str[]       | Restricted(S) | `false`       | Named data (3)   |
 | `nothing`  | `nothing`                      | num[]       | Any           | Any           | Auto scale (4)   |
 | `nothing`  | palette name                   | num[]       | Any           | Any           | Named scale (5)  |
 | `nothing`  | (value::num, color::str)[]     | num[]       | Any           | Any           | Manual scale (6) |
-| `nothing`  | Dict{value::str => color::str} | str[]       | Restricted(A) | Any           | Categorical (7)  |
+| `nothing`  | Dict{value::str => color::str} | str[]       | Restricted(S) | Any           | Categorical (7)  |
 
 Any other combination of configuration is not allowed.
 
-**Restricted Axis:** The `axis` can't specify `log_scale`, `percent`, `minimum`, `maximum` as they make no sense in this case.
+**Restricted Scale:** The `scale` can't specify `log_base`, `percent`, `minimum`, `maximum` as they make no sense in this case.
 
 **Named fixed (1):** All the data entities will be given the same `fixed` color.
 
@@ -1388,13 +1397,13 @@ Any other combination of configuration is not allowed.
 **Named data (3):** The colors data contains explicit color names. An empty color name will prevent the matching data from being
 plotted. If the `fixed` color is specified, it is ignored.
 
-**Auto scale (4):** The colors data (transformed by the `axis`) will be shown in a color scale chosen by Plotly.
+**Auto scale (4):** The colors data (transformed by the `scale`) will be shown in a color scale chosen by Plotly.
 
-**Named scale (5):** The colors data (transformed by the `axis`) will be shown using the named standard Plotly
+**Named scale (5):** The colors data (transformed by the `scale`) will be shown using the named standard Plotly
 [color scale](https://plotly.com/python/builtin-colorscales/) (see [`NAMED_COLOR_SCALES`](@ref)).
 
-**Manual scale (6):** The colors data (transformed by the `axis`) will be shown using the specified palette (whose values will also be
-transformed by the `axis`). The values must be in non-decreasing order, and the overall range of values must not be
+**Manual scale (6):** The colors data (transformed by the `scale`) will be shown using the specified palette (whose values will also be
+transformed by the `scale`). The values must be in non-decreasing order, and the overall range of values must not be
 empty.
 
 **Categorical (7):** The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the
@@ -1410,7 +1419,7 @@ title depends on the data set, so you can override this in the data.
 @kwdef mutable struct ColorsConfiguration <: Validated
     palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
     fixed::Maybe{AbstractString} = nothing
-    axis::AxisConfiguration = AxisConfiguration()
+    scale::ScaleConfiguration = ScaleConfiguration()
     show_legend::Bool = false
     title::Maybe{AbstractString} = nothing
 end
@@ -1419,15 +1428,7 @@ function Validations.validate(
     context::ValidationContext,
     colors_configuration::ColorsConfiguration,
 )::Maybe{AbstractString}
-    validate_field(context, "axis", colors_configuration.axis)
-
-    if colors_configuration.axis.ticks_angle !== nothing
-        throw(
-            ArgumentError(
-                "unsupported $(location(context)).axis.ticks_angle: $(colors_configuration.axis.ticks_angle)",
-            ),
-        )
-    end
+    validate_field(context, "scale", colors_configuration.scale)
 
     palette = colors_configuration.palette
 
@@ -1436,14 +1437,14 @@ function Validations.validate(
             throw(ArgumentError("can't specify both $(location(context)).fixed\n" * "and $(location(context)).palette"))
         end
 
-        if colors_configuration.axis.minimum !== nothing ||
-           colors_configuration.axis.maximum !== nothing ||
-           colors_configuration.axis.log_scale !== nothing ||
-           colors_configuration.axis.percent
+        if colors_configuration.scale.minimum !== nothing ||
+           colors_configuration.scale.maximum !== nothing ||
+           colors_configuration.scale.log_base !== nothing ||
+           colors_configuration.scale.percent
             throw(
                 ArgumentError(
                     "can't specify both $(location(context)).fixed\n" *
-                    "and any of $(location(context)).axis.(minimum,maximum,log_scale,percent)",
+                    "and any of $(location(context)).scale.(minimum,maximum,log_base,percent)",
                 ),
             )
         end
@@ -1495,9 +1496,9 @@ function Validations.validate(
 
         validate_is_range(context, "palette[1].value", palette[1][1], "palette[end].value", palette[end][1])  # NOJET
 
-        if colors_configuration.axis.log_scale !== nothing
-            validate_in(context, "(palette[1].value + axis.log_regularization)") do
-                validate_is_above(context, palette[1][1] + colors_configuration.axis.log_regularization, 0)
+        if colors_configuration.scale.log_base !== nothing
+            validate_in(context, "(palette[1].value + scale.log_regularization)") do
+                validate_is_above(context, palette[1][1] + colors_configuration.scale.log_regularization, 0)
                 return nothing
             end
         end
@@ -1519,14 +1520,14 @@ function Validations.validate(
             end
         end
 
-        if colors_configuration.axis.minimum !== nothing ||
-           colors_configuration.axis.maximum !== nothing ||
-           colors_configuration.axis.log_scale !== nothing ||
-           colors_configuration.axis.percent
+        if colors_configuration.scale.minimum !== nothing ||
+           colors_configuration.scale.maximum !== nothing ||
+           colors_configuration.scale.log_base !== nothing ||
+           colors_configuration.scale.percent
             throw(
                 ArgumentError(
                     "can't specify both categorical $(location(context)).palette\n" *
-                    "and any of $(location(context)).axis.(minimum,maximum,log_scale,percent)",
+                    "and any of $(location(context)).scale.(minimum,maximum,log_base,percent)",
                 ),
             )
         end

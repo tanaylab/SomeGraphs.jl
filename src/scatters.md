@@ -91,10 +91,10 @@ Diagonal bands (log scales):
 ```@example
 using SomeGraphs
 graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
-graph.configuration.x_axis.log_scale = Log10Scale
-graph.configuration.y_axis.log_scale = Log10Scale
-graph.configuration.x_axis.log_regularization = 1
-graph.configuration.y_axis.log_regularization = 1
+graph.configuration.x_axis.scale.log_base = Log10Base
+graph.configuration.y_axis.scale.log_base = Log10Base
+graph.configuration.x_axis.scale.log_regularization = 1
+graph.configuration.y_axis.scale.log_regularization = 1
 graph.configuration.diagonal_bands.low.offset = 1 / 4
 graph.configuration.diagonal_bands.middle.offset = 1
 graph.configuration.diagonal_bands.high.offset = 4
@@ -161,10 +161,10 @@ graph.configuration.points.colors.palette = "Viridis"
 graph.configuration.points.sizes.fixed = 16
 graph.configuration.figure.width = 200
 graph.configuration.figure.height = 200
-graph.configuration.x_axis.minimum = -3
-graph.configuration.y_axis.minimum = -3
-graph.configuration.x_axis.maximum = 3
-graph.configuration.y_axis.maximum = 3
+graph.configuration.x_axis.scale.minimum = -3
+graph.configuration.y_axis.scale.minimum = -3
+graph.configuration.x_axis.scale.maximum = 3
+graph.configuration.y_axis.scale.maximum = 3
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```
@@ -290,7 +290,7 @@ graph = lines_graph(;
 )
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
-graph.configuration.y_axis.percent = true
+graph.configuration.y_axis.scale.percent = true
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

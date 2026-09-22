@@ -16,13 +16,13 @@ nested_test("utilities") do
         values = [1, nothing]
 
         nested_test("default") do
-            @test scale_axis_values(AxisConfiguration(), values) == [1.0, nothing]
+            @test scale_axis_values(ScaleConfiguration(), values) == [1.0, nothing]
         end
 
         nested_test("log10") do
             values = [1, 10, nothing]
             return test_same_values(
-                scale_axis_values(AxisConfiguration(; log_scale = Log10Scale), values),
+                scale_axis_values(ScaleConfiguration(; log_base = Log10Base), values),
                 [0.0, 1.0, nothing],
             )
         end
@@ -30,20 +30,20 @@ nested_test("utilities") do
         nested_test("log2") do
             values = [1, 2, nothing]
             return test_same_values(
-                scale_axis_values(AxisConfiguration(; log_scale = Log2Scale), values),
+                scale_axis_values(ScaleConfiguration(; log_base = Log2Base), values),
                 [0.0, 1.0, nothing],
             )
         end
 
         nested_test("percent") do
             nested_test("()") do
-                return test_same_values(scale_axis_values(AxisConfiguration(; percent = true), values), [100, nothing])
+                return test_same_values(scale_axis_values(ScaleConfiguration(; percent = true), values), [100, nothing])
             end
 
             nested_test("log10") do
                 values = [1.0, sqrt(10), 10.0, nothing]
                 return test_same_values(
-                    scale_axis_values(AxisConfiguration(; log_scale = Log10Scale), values),
+                    scale_axis_values(ScaleConfiguration(; log_base = Log10Base), values),
                     [0.0, 0.5, 1.0, nothing],
                 )
             end
@@ -51,7 +51,7 @@ nested_test("utilities") do
             nested_test("log2") do
                 values = [1.0, sqrt(2), 2.0, nothing]
                 return test_same_values(
-                    scale_axis_values(AxisConfiguration(; log_scale = Log2Scale), values),
+                    scale_axis_values(ScaleConfiguration(; log_base = Log2Base), values),
                     [0.0, 0.5, 1.0, nothing],
                 )
             end
@@ -95,8 +95,8 @@ nested_test("utilities") do
         end
 
         nested_test("log") do
-            sizes_configuration.axis.log_scale = Log2Scale
-            sizes_configuration.axis.log_regularization = 1
+            sizes_configuration.scale.log_base = Log2Base
+            sizes_configuration.scale.log_regularization = 1
 
             nested_test("()") do
                 test_same_values(scale_size_values(sizes_configuration, [0, 1, 3]), [6, 12, 18])
@@ -104,13 +104,13 @@ nested_test("utilities") do
             end
 
             nested_test("minimum") do
-                sizes_configuration.axis.minimum = 0
+                sizes_configuration.scale.minimum = 0
                 test_same_values(scale_size_values(sizes_configuration, [-1, 1, 3]), [6, 12, 18])
                 return nothing
             end
 
             nested_test("maximum") do
-                sizes_configuration.axis.maximum = 3
+                sizes_configuration.scale.maximum = 3
                 test_same_values(scale_size_values(sizes_configuration, [0, 1, 4]), [6, 12, 18])
                 return nothing
             end
@@ -140,7 +140,7 @@ nested_test("utilities") do
         data_context = ValidationContext(["values_data"])
         configuration_context = ValidationContext(["axis_configuration"])
         configuration = AxisConfiguration()
-        configuration.log_scale = Log2Scale
+        configuration.scale.log_base = Log2Base
 
         validate_values(data_context, nothing, configuration_context, configuration)
 
@@ -149,14 +149,14 @@ nested_test("utilities") do
         nested_test("negative") do
             @test_throws chomp(
                 """
-                ArgumentError: too low values_data.([1] + axis_configuration.axis.log_regularization): 0.0
+                ArgumentError: too low values_data.([1] + axis_configuration.scale.log_regularization): 0.0
                 is not above: 0
                 """,
             ) validate_values(data_context, data, configuration_context, configuration)
         end
 
         nested_test("positive") do
-            configuration.log_regularization = 1
+            configuration.scale.log_regularization = 1
             return validate_values(data_context, data, configuration_context, configuration)
         end
     end
@@ -235,11 +235,11 @@ nested_test("utilities") do
             end
 
             nested_test("axis") do
-                configuration.axis.percent = true
+                configuration.scale.percent = true
                 data = ["Foo", "Bar"]
                 @test_throws chomp("""
                                    ArgumentError: must specify numeric colors_data
-                                   when using any of colors_configuration.axis.(minimum,maximum,log_scale,percent)
+                                   when using any of colors_configuration.scale.(minimum,maximum,log_base,percent)
                                    """) validate_colors(data_context, data, configuration_context, configuration)
             end
         end
@@ -269,16 +269,16 @@ nested_test("utilities") do
             end
 
             nested_test("log") do
-                configuration.axis.log_scale = Log2Scale
+                configuration.scale.log_base = Log2Base
 
                 @test_throws chomp(
                     """
-                    ArgumentError: too low colors_data[1].(value + colors_configuration.axis.log_regularization): 0
+                    ArgumentError: too low colors_data[1].(value + colors_configuration.scale.log_regularization): 0
                     is not above: 0
                     """,
                 ) validate_colors(data_context, data, configuration_context, configuration)
 
-                configuration.axis.log_regularization = 1
+                configuration.scale.log_regularization = 1
                 return validate_colors(data_context, data, configuration_context, configuration)
             end
         end

@@ -151,7 +151,7 @@ Configure a graph for showing a single distribution. The `density_axis` configur
 counts for a `HistogramDistribution`, the cumulative scale for a `CumulativeDistribution`); it must be left at its
 default for the other styles, which have no meaningful density scale. The `cumulative_bands` are only used if the
 `distribution.style` is `CumulativeDistribution`; their offsets are always in fractions (between 0 and 1) regardless of
-the `distribution.normalize` and `density_axis.percent` settings.
+the `distribution.normalize` and `density_axis.scale.percent` settings.
 """
 @kwdef mutable struct DistributionGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -173,10 +173,11 @@ function Validations.validate(
     validate_field(context, "density_axis", configuration.density_axis)
     validate_field(context, "cumulative_bands", configuration.cumulative_bands)
 
-    if configuration.density_axis.log_scale !== nothing
+    if configuration.density_axis.scale.log_base !== nothing
         throw(
             ArgumentError(
-                "unsupported $(location(context)).density_axis.log_scale: $(configuration.density_axis.log_scale)",
+                "unsupported $(location(context)).density_axis.scale.log_base: " *
+                "$(configuration.density_axis.scale.log_base)",
             ),
         )
     end
@@ -191,10 +192,10 @@ function Validations.validate(
         )
     end
 
-    if configuration.density_axis.percent && !configuration.distribution.normalize
+    if configuration.density_axis.scale.percent && !configuration.distribution.normalize
         throw(
             ArgumentError(
-                "specified $(location(context)).density_axis.percent\n" *
+                "specified $(location(context)).density_axis.scale.percent\n" *
                 "without $(location(context)).distribution.normalize",
             ),
         )
@@ -267,10 +268,11 @@ function Validations.validate(
         throw(ArgumentError("overlay (no $(location(context)).distributions_gap specified) for box distributions"))
     end
 
-    if configuration.density_axis.log_scale !== nothing
+    if configuration.density_axis.scale.log_base !== nothing
         throw(
             ArgumentError(
-                "unsupported $(location(context)).density_axis.log_scale: $(configuration.density_axis.log_scale)",
+                "unsupported $(location(context)).density_axis.scale.log_base: " *
+                "$(configuration.density_axis.scale.log_base)",
             ),
         )
     end
@@ -285,10 +287,10 @@ function Validations.validate(
         )
     end
 
-    if configuration.density_axis.percent && !configuration.distribution.normalize
+    if configuration.density_axis.scale.percent && !configuration.distribution.normalize
         throw(
             ArgumentError(
-                "specified $(location(context)).density_axis.percent\n" *
+                "specified $(location(context)).density_axis.scale.percent\n" *
                 "without $(location(context)).distribution.normalize",
             ),
         )
@@ -574,8 +576,8 @@ function collect_hidden_values_range!(
     @assert values !== nothing
     collect_hidden_range!(
         implicit_values_range,
-        value_axis,
-        scale_axis_values(value_axis, values; clamp = false),
+        value_axis.scale,
+        scale_axis_values(value_axis.scale, values; clamp = false),
         distribution.points.mask,
     )
     return nothing
@@ -782,7 +784,7 @@ function cumulative_density_flags(
     return (
         configuration.distribution.cumulative_descending,
         configuration.distribution.normalize,
-        configuration.density_axis.percent,
+        configuration.density_axis.scale.percent,
     )
 end
 
@@ -792,7 +794,7 @@ function histogram_density_histnorm(
 )::Maybe{AbstractString}
     if configuration.distribution.style != HistogramDistribution
         return nothing
-    elseif configuration.density_axis.percent
+    elseif configuration.density_axis.scale.percent
         return "percent"
     elseif configuration.distribution.normalize
         return "probability"
@@ -814,7 +816,7 @@ function distribution_trace(;
     scale_group::Maybe{AbstractString} = nothing,
     is_one_of_many::Bool,
 )::GenericTrace
-    scaled_values = scale_axis_values(configuration.value_axis, values; clamp = false, copy = true)
+    scaled_values = scale_axis_values(configuration.value_axis.scale, values; clamp = false, copy = true)
     collect_range!(implicit_values_range, scaled_values)
 
     xaxis_index, x0, yaxis_index, y0 = plotly_sub_graph_axes(;
@@ -1037,8 +1039,8 @@ function distribution_layout(;
             end
 
             cumulative_range = Range(;
-                minimum = density_axis.minimum === nothing ? 0 : density_axis.minimum,
-                maximum = density_axis.maximum === nothing ? cumulative_maximum : density_axis.maximum,
+                minimum = density_axis.scale.minimum === nothing ? 0 : density_axis.scale.minimum,
+                maximum = density_axis.scale.maximum === nothing ? cumulative_maximum : density_axis.scale.maximum,
             )
 
             set_layout_axis!(
@@ -1094,8 +1096,12 @@ function distribution_layout(;
                 end
 
                 cumulative_range = Range(;
-                    minimum = density_axis.minimum === nothing ? 0 : density_axis.minimum,
-                    maximum = density_axis.maximum === nothing ? cumulative_maximum : density_axis.maximum,
+                    minimum = density_axis.scale.minimum === nothing ? 0 : density_axis.scale.minimum,
+                    maximum = if density_axis.scale.maximum === nothing
+                        cumulative_maximum
+                    else
+                        density_axis.scale.maximum
+                    end,
                 )
 
                 set_layout_axis!(
@@ -1118,10 +1124,10 @@ function distribution_layout(;
         if graph isa DistributionGraph
             if graph.configuration.distribution.style == HistogramDistribution
                 density_axis = graph.configuration.density_axis
-                if density_axis.minimum === nothing || density_axis.maximum === nothing
+                if density_axis.scale.minimum === nothing || density_axis.scale.maximum === nothing
                     density_range = nothing
                 else
-                    density_range = Range(; minimum = density_axis.minimum, maximum = density_axis.maximum)
+                    density_range = Range(; minimum = density_axis.scale.minimum, maximum = density_axis.scale.maximum)
                 end
                 set_layout_axis!(
                     layout,
@@ -1138,10 +1144,10 @@ function distribution_layout(;
         elseif graph isa DistributionsGraph
             density_axis = graph.configuration.density_axis
             is_histogram = graph.configuration.distribution.style == HistogramDistribution
-            if density_axis.minimum === nothing || density_axis.maximum === nothing
+            if density_axis.scale.minimum === nothing || density_axis.scale.maximum === nothing
                 density_range = nothing
             else
-                density_range = Range(; minimum = density_axis.minimum, maximum = density_axis.maximum)
+                density_range = Range(; minimum = density_axis.scale.minimum, maximum = density_axis.scale.maximum)
             end
 
             n_distributions = length(displayed_distributions(graph))  # NOJET
