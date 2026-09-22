@@ -901,6 +901,166 @@ end
 </section>
 </details>
 </article>
+<h4 id="Entities">
+<a class="docs-heading-anchor" href="#Entities">Entities
+</a>
+<a id="Entities-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Entities" title="Permalink">
+</a>
+</h4>
+<p>The entities are shared by all the roles of the same thing, so writing them through any role is seen by all. Reach them directly to add a hover line, or to hide entities with a mask, without filling any role.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.points_entities">
+<a class="docstring-binding" href="#SomeGraphs.Sources.points_entities">
+<code>SomeGraphs.Sources.points_entities
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">points_entities(graph)::VectorEntitiesData
+</code>
+</pre>
+<p>The entities of the points of a graph, shared by all their roles. Use this to add a hover line, or to hide points with a mask, without filling any role. For one line of a multi-line graph, use the 
+<code>entities
+</code> of its 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.edges_entities">
+<a class="docstring-binding" href="#SomeGraphs.Sources.edges_entities">
+<code>SomeGraphs.Sources.edges_entities
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">edges_entities(graph)::VectorEntitiesData
+</code>
+</pre>
+<p>The entities of the edges of a graph, shared by all their roles.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.bars_entities">
+<a class="docstring-binding" href="#SomeGraphs.Sources.bars_entities">
+<code>SomeGraphs.Sources.bars_entities
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">bars_entities(graph)::VectorEntitiesData
+</code>
+</pre>
+<p>The entities of the bars of a graph, shared by all their roles. In a multiple series graph these are the bars shared by all the series; for the bars of one series, use the 
+<code>entities
+</code> of its 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.distribution_entities">
+<a class="docstring-binding" href="#SomeGraphs.Sources.distribution_entities">
+<code>SomeGraphs.Sources.distribution_entities
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">distribution_entities(graph)::VectorEntitiesData
+</code>
+</pre>
+<p>The entities of the points of the distribution of a graph. For one distribution of a multiple distributions graph, use the 
+<code>entities
+</code> of its 
+<a href="sources.html#SomeGraphs.Sources.PartFields">
+<code>PartFields
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.rows_entities">
+<a class="docstring-binding" href="#SomeGraphs.Sources.rows_entities">
+<code>SomeGraphs.Sources.rows_entities
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">rows_entities(graph)::VectorEntitiesData
+</code>
+</pre>
+<p>The entities of the rows of a graph (of a heatmap), shared by all their roles.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.columns_entities">
+<a class="docstring-binding" href="#SomeGraphs.Sources.columns_entities">
+<code>SomeGraphs.Sources.columns_entities
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">columns_entities(graph)::VectorEntitiesData
+</code>
+</pre>
+<p>The entities of the columns of a graph (of a heatmap), shared by all their roles.
+</p>
+</div>
+</section>
+</details>
+</article>
 <h2 id="Matrices">
 <a class="docs-heading-anchor" href="#Matrices">Matrices
 </a>
@@ -1621,12 +1781,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='932rjrSbii' class='' style=';'>
+<div id='KmLCSUdbds' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("932rjrSbii")
+    const PLOT = document.getElementById("KmLCSUdbds")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1820,6 +1980,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.bars_entities">
+<code>SomeGraphs.Sources.bars_entities
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.borders_colors_vector_fields">
 <code>SomeGraphs.Sources.borders_colors_vector_fields
 </code>
@@ -1844,6 +2010,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.columns_entities">
+<code>SomeGraphs.Sources.columns_entities
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.columns_groups_vector_data_fields">
 <code>SomeGraphs.Sources.columns_groups_vector_data_fields
 </code>
@@ -1862,6 +2034,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.distribution_entities">
+<code>SomeGraphs.Sources.distribution_entities
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.distribution_part_fields">
 <code>SomeGraphs.Sources.distribution_part_fields
 </code>
@@ -1870,6 +2048,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.edges_colors_vector_fields">
 <code>SomeGraphs.Sources.edges_colors_vector_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.edges_entities">
+<code>SomeGraphs.Sources.edges_entities
 </code>
 </a>
 </li>
@@ -1898,6 +2082,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.points_entities">
+<code>SomeGraphs.Sources.points_entities
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.points_sizes_vector_fields">
 <code>SomeGraphs.Sources.points_sizes_vector_fields
 </code>
@@ -1906,6 +2096,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.rows_annotations_colors_vector_fields">
 <code>SomeGraphs.Sources.rows_annotations_colors_vector_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.rows_entities">
+<code>SomeGraphs.Sources.rows_entities
 </code>
 </a>
 </li>

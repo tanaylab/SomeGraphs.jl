@@ -64,6 +64,20 @@ SomeGraphs.Sources.borders_sizes_vector_fields
 SomeGraphs.Sources.edges_sizes_vector_fields
 ```
 
+#### Entities
+
+The entities are shared by all the roles of the same thing, so writing them through any role is seen by all. Reach them
+directly to add a hover line, or to hide entities with a mask, without filling any role.
+
+```@docs
+SomeGraphs.Sources.points_entities
+SomeGraphs.Sources.edges_entities
+SomeGraphs.Sources.bars_entities
+SomeGraphs.Sources.distribution_entities
+SomeGraphs.Sources.rows_entities
+SomeGraphs.Sources.columns_entities
+```
+
 ## Matrices
 
 ### Types

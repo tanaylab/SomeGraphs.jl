@@ -439,6 +439,14 @@ function Sources.edges_colors_vector_fields(graph::PointsGraph)::ColorsVectorFie
     )
 end
 
+function Sources.points_entities(graph::PointsGraph)::VectorEntitiesData
+    return graph.data.points.entities
+end
+
+function Sources.edges_entities(graph::PointsGraph)::VectorEntitiesData
+    return graph.data.edges.entities
+end
+
 """
     edges_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
 
@@ -1453,6 +1461,10 @@ The Y coordinates of the points of the line, along the `y_axis`.
 """
 function Sources.y_axis_vector_fields(graph::LineGraph)::AxisVectorFields
     return VectorFields(graph.data.y, graph.data.points, AxisConfigurationFields(graph.configuration.y_axis))
+end
+
+function Sources.points_entities(graph::LineGraph)::VectorEntitiesData
+    return graph.data.points
 end
 
 Sources.entities_field(::LineData)::Symbol = :points

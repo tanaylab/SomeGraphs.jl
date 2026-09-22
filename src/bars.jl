@@ -226,6 +226,10 @@ function Sources.values_axis_vector_fields(graph::BarsGraph)::AxisVectorFields
     return VectorFields(graph.data.values, graph.data.bars, AxisConfigurationFields(graph.configuration.value_axis))
 end
 
+function Sources.bars_entities(graph::BarsGraph)::VectorEntitiesData
+    return graph.data.bars
+end
+
 """
     colors_vector_fields(graph::BarsGraph)::ColorsVectorFields
 
@@ -695,6 +699,10 @@ The `index` annotation of the bars, which shares the entities of the bars (the o
 function Sources.annotations_colors_vector_fields(graph::SeriesBarsGraph, index::Integer)::ColorsVectorFields
     annotation = graph.data.annotations[index]
     return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
+end
+
+function Sources.bars_entities(graph::SeriesBarsGraph)::VectorEntitiesData
+    return graph.data.bars
 end
 
 """

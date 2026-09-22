@@ -111,6 +111,7 @@ end
         include_hidden::Bool = true
         groups_gap::Maybe{Integer} = 1
         subgroups_gap::Maybe{Integer} = nothing
+        total_gaps_fraction::Maybe{Real} = 1 / 20
         dendogram_size::Maybe{Real} = nothing
         dendogram_line::LineConfiguration = LineConfiguration()
     end
@@ -128,12 +129,17 @@ come last, joined to the root of the tree. This has no effect on an `Hclust` giv
 
 If groups are specified for the entries in the [`HeatmapAxisData`](@ref), they can be used to constrain the clustering,
 and/or to create visible gaps in the heatmap (between entries of different groups). The `groups_gap` is the number of
-fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry
+fake entries to add between the separated entries. That is, the default gap of 1 will add a blank gap of one entry
 between adjacent entries of different groups. A gap of `nothing` will not be shown.
 
 If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is
 contiguous, and within it each subgroup is contiguous. Their `subgroups_gap` works the same way, and defaults to
 `nothing` because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+
+A gap of a fixed number of entries is invisible in an axis holding thousands of them, and is most of an axis holding a
+few dozen. The `total_gaps_fraction` fixes this. The gaps are widened together, keeping their ratio, until they take
+this fraction of the axis. They are never narrowed, so `groups_gap` and `subgroups_gap` are minimums. Set it to
+`nothing` to use the gaps as given.
 
 Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level
 specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of
@@ -156,6 +162,7 @@ If a dendogram tree is shown, the `dendogram_line` can be used to control it. Th
     include_hidden::Bool = true
     groups_gap::Maybe{Integer} = 1
     subgroups_gap::Maybe{Integer} = nothing
+    total_gaps_fraction::Maybe{Real} = 1 / 20
     dendogram_size::Maybe{Real} = nothing
     dendogram_line::LineConfiguration = LineConfiguration()
 end
@@ -169,6 +176,10 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
     end
     validate_in(context, "subgroups_gap") do
         return validate_is_above(context, configuration.subgroups_gap, 0)
+    end
+    validate_in(context, "total_gaps_fraction") do
+        validate_is_above(context, configuration.total_gaps_fraction, 0)
+        return validate_is_below(context, configuration.total_gaps_fraction, 1)
     end
     validate_in(context, "dendogram_size") do
         return validate_is_above(context, configuration.dendogram_size, 0)
@@ -525,6 +536,14 @@ function Sources.entries_matrix_fields(graph::HeatmapGraph)::MatrixFields
         graph.data.columns.entities,
         graph.configuration.entries.colors,
     )
+end
+
+function Sources.rows_entities(graph::HeatmapGraph)::VectorEntitiesData
+    return graph.data.rows.entities
+end
+
+function Sources.columns_entities(graph::HeatmapGraph)::VectorEntitiesData
+    return graph.data.columns.entities
 end
 
 """
@@ -892,16 +911,14 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     expanded_rows_mask = compute_expansion_mask(
         rows_order,
         graph.data.rows.groups.vector,
-        graph.configuration.rows.groups_gap,
         graph.data.rows.subgroups.vector,
-        graph.configuration.rows.subgroups_gap,
+        graph.configuration.rows,
     )
     expanded_columns_mask = compute_expansion_mask(
         columns_order,
         graph.data.columns.groups.vector,
-        graph.configuration.columns.groups_gap,
         graph.data.columns.subgroups.vector,
-        graph.configuration.columns.subgroups_gap,
+        graph.configuration.columns,
     )
 
     expanded_z = expand_z_matrix(reordered_values, rows_order, expanded_rows_mask, columns_order, expanded_columns_mask)
@@ -1794,10 +1811,12 @@ end
 function compute_expansion_mask(
     order::Maybe{AbstractVector{<:Integer}},
     groups::Maybe{AbstractVector},
-    groups_gap::Maybe{Integer},
-    subgroups::Maybe{AbstractVector} = nothing,
-    subgroups_gap::Maybe{Integer} = nothing,
+    subgroups::Maybe{AbstractVector},
+    axis_configuration::HeatmapAxisConfiguration,
 )::Maybe{Union{BitVector, AbstractVector{Bool}}}
+    groups_gap = axis_configuration.groups_gap
+    subgroups_gap = axis_configuration.subgroups_gap
+
     has_groups_gap = groups !== nothing && groups_gap !== nothing
     has_subgroups_gap = subgroups !== nothing && subgroups_gap !== nothing
     if !has_groups_gap && !has_subgroups_gap
@@ -1811,28 +1830,45 @@ function compute_expansion_mask(
         order = 1:length(groups === nothing ? subgroups : groups)  # UNTESTED
     end
 
-    expanded_mask = Bool[]
-
-    ## A boundary between the groups is also a boundary between the subgroups, and is gapped as the wider of the two.
+    ## The gap before each entry, in entries, at the minimal widths. A boundary between the groups is also a boundary
+    ## between the subgroups, and is gapped as the wider of the two.
+    gap_per_entry = zeros(Int, length(order))
     prev_group = has_groups_gap ? groups[order[1]] : nothing
     prev_subgroup = has_subgroups_gap ? subgroups[order[1]] : nothing
-    for entry_index in order
-        gap = 0
+    for (entry_position, entry_index) in enumerate(order)
         if has_groups_gap && groups[entry_index] != prev_group
-            gap = groups_gap
+            gap_per_entry[entry_position] = groups_gap
         elseif has_subgroups_gap && subgroups[entry_index] != prev_subgroup
-            gap = subgroups_gap
+            gap_per_entry[entry_position] = subgroups_gap
         end
-        has_groups_gap && (prev_group = groups[entry_index])
-        has_subgroups_gap && (prev_subgroup = subgroups[entry_index])
+        if has_groups_gap
+            prev_group = groups[entry_index]
+        end
+        if has_subgroups_gap
+            prev_subgroup = subgroups[entry_index]
+        end
+    end
 
-        for _ in 1:gap
+    scale = gaps_scale(length(order), sum(gap_per_entry), axis_configuration.total_gaps_fraction)
+
+    expanded_mask = Bool[]
+    for gap in gap_per_entry
+        for _ in 1:round(Int, gap * scale)
             push!(expanded_mask, false)
         end
         push!(expanded_mask, true)
     end
 
     return expanded_mask
+end
+
+# How much to widen every gap so that together they take the `total_gaps_fraction` of the axis. Gaps are never
+# narrowed, so this is at least 1.
+function gaps_scale(n_entries::Integer, total_gap_entries::Integer, total_gaps_fraction::Maybe{Real})::Float64
+    if total_gaps_fraction === nothing || total_gap_entries == 0
+        return 1.0
+    end
+    return max(1.0, n_entries * total_gaps_fraction / total_gap_entries)
 end
 
 function expand_z_matrix(

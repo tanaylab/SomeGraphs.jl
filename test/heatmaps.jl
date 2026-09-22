@@ -466,6 +466,50 @@ nested_test("heatmaps") do
         end
     end
 
+    nested_test("gaps") do
+        graph.data.rows.entities.names = ["X", "Y", "Z"]
+        graph.data.columns.entities.names = ["A", "B", "C", "D"]
+        graph.data.columns.groups.vector = [1, 1, 2, 2]
+
+        # The default fraction of four columns is less than one entry, so the gap stays at its minimum.
+        nested_test("minimal") do
+            test_html(graph, "heatmap.gaps.html")
+            return nothing
+        end
+
+        # Asking for three quarters of the axis widens the single gap from one entry to three.
+        nested_test("fraction") do
+            graph.configuration.columns.total_gaps_fraction = 3 / 4
+            test_html(graph, "heatmap.gaps.fraction.html")
+            return nothing
+        end
+
+        # Without a fraction the gap is used as given, however many entries the axis holds.
+        nested_test("none") do
+            graph.configuration.columns.total_gaps_fraction = nothing
+            test_html(graph, "heatmap.gaps.html")
+            return nothing
+        end
+
+        nested_test("invalid") do
+            nested_test("low") do
+                graph.configuration.columns.total_gaps_fraction = 0
+                @test_throws chomp("""
+                                   too low graph.configuration.columns.total_gaps_fraction: 0
+                                   is not above: 0
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+
+            nested_test("high") do
+                graph.configuration.columns.total_gaps_fraction = 1
+                @test_throws chomp("""
+                                   too high graph.configuration.columns.total_gaps_fraction: 1
+                                   is not below: 1
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
+    end
+
     nested_test("flip") do
         graph.data.rows.entities.names = ["X", "Y", "Z"]
         graph.data.columns.entities.names = ["A", "B", "C", "D"]

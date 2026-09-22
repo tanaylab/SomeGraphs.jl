@@ -45,8 +45,14 @@ export add_line!
 export add_rows_annotation!
 export add_series!
 export annotations_colors_vector_fields
+export bars_entities
 export borders_colors_vector_fields
 export borders_sizes_vector_fields
+export columns_entities
+export distribution_entities
+export edges_entities
+export points_entities
+export rows_entities
 export colors_vector_fields
 export columns_annotations_colors_vector_fields
 export columns_groups_vector_data_fields
@@ -470,6 +476,51 @@ function series_part_fields end
 The data source view of the entries of a graph (of a heatmap).
 """
 function entries_matrix_fields end
+
+"""
+    points_entities(graph)::VectorEntitiesData
+
+The entities of the points of a graph, shared by all their roles. Use this to add a hover line, or to hide points with
+a mask, without filling any role. For one line of a multi-line graph, use the `entities` of its [`PartFields`](@ref).
+"""
+function points_entities end
+
+"""
+    edges_entities(graph)::VectorEntitiesData
+
+The entities of the edges of a graph, shared by all their roles.
+"""
+function edges_entities end
+
+"""
+    bars_entities(graph)::VectorEntitiesData
+
+The entities of the bars of a graph, shared by all their roles. In a multiple series graph these are the bars shared by
+all the series; for the bars of one series, use the `entities` of its [`PartFields`](@ref).
+"""
+function bars_entities end
+
+"""
+    distribution_entities(graph)::VectorEntitiesData
+
+The entities of the points of the distribution of a graph. For one distribution of a multiple distributions graph, use
+the `entities` of its [`PartFields`](@ref).
+"""
+function distribution_entities end
+
+"""
+    rows_entities(graph)::VectorEntitiesData
+
+The entities of the rows of a graph (of a heatmap), shared by all their roles.
+"""
+function rows_entities end
+
+"""
+    columns_entities(graph)::VectorEntitiesData
+
+The entities of the columns of a graph (of a heatmap), shared by all their roles.
+"""
+function columns_entities end
 
 """
     rows_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields

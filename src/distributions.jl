@@ -597,6 +597,10 @@ function Sources.distribution_axis_vector_fields(graph::DistributionGraph)::Axis
     )
 end
 
+function Sources.distribution_entities(graph::DistributionGraph)::VectorEntitiesData
+    return graph.data.distribution.points
+end
+
 function Common.validate_graph(graph::DistributionGraph)::Nothing
     values = numeric_values(graph.data.distribution.values)
     @assert values !== nothing

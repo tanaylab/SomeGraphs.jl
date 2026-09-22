@@ -1203,6 +1203,7 @@ end
     include_hidden::Bool = true
     groups_gap::Maybe{Integer} = 1
     subgroups_gap::Maybe{Integer} = nothing
+    total_gaps_fraction::Maybe{Real} = 1 / 20
     dendogram_size::Maybe{Real} = nothing
     dendogram_line::LineConfiguration = LineConfiguration()
 end
@@ -1242,7 +1243,7 @@ end
 </code>
 </a>, they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). The 
 <code>groups_gap
-</code> is the number of fake entries to added between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of 
+</code> is the number of fake entries to add between the separated entries. That is, the default gap of 1 will add a blank gap of one entry between adjacent entries of different groups. A gap of 
 <code>nothing
 </code> will not be shown.
 </p>
@@ -1251,6 +1252,16 @@ end
 </code> works the same way, and defaults to 
 <code>nothing
 </code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+</p>
+<p>A gap of a fixed number of entries is invisible in an axis holding thousands of them, and is most of an axis holding a few dozen. The 
+<code>total_gaps_fraction
+</code> fixes this. The gaps are widened together, keeping their ratio, until they take this fraction of the axis. They are never narrowed, so 
+<code>groups_gap
+</code> and 
+<code>subgroups_gap
+</code> are minimums. Set it to 
+<code>nothing
+</code> to use the gaps as given.
 </p>
 <p>Each level is placed independently: a level specified by numbers is laid out in the order of these numbers, and a level specified by names is laid out by the clustering. Numbering both levels therefore lays the entries out in the order of their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the subgroups inside each of them.
 </p>
@@ -1549,12 +1560,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='h8GTm6eg7N' class='' style=';'>
+<div id='CWwS4VuU0Y' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("h8GTm6eg7N")
+    const PLOT = document.getElementById("CWwS4VuU0Y")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1597,12 +1608,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='oVnSxxo98a' class='' style=';'>
+<div id='c6l9oHVClF' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("oVnSxxo98a")
+    const PLOT = document.getElementById("c6l9oHVClF")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1645,12 +1656,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='dCb2HfIUXu' class='' style=';'>
+<div id='YQRuoZ9LhN' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("dCb2HfIUXu")
+    const PLOT = document.getElementById("YQRuoZ9LhN")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1705,12 +1716,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Qp62WwWz7A' class='' style=';'>
+<div id='DJ2x6yx264' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Qp62WwWz7A")
+    const PLOT = document.getElementById("DJ2x6yx264")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1773,12 +1784,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='xNHivDmnGS' class='' style=';'>
+<div id='eD9VHMSPsm' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("xNHivDmnGS")
+    const PLOT = document.getElementById("eD9VHMSPsm")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1843,12 +1854,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='nT2rwFrdbb' class='' style=';'>
+<div id='ZFlzrj6xaj' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nT2rwFrdbb")
+    const PLOT = document.getElementById("ZFlzrj6xaj")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1900,12 +1911,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='mCh93svOfg' class='' style=';'>
+<div id='a5XxWxaHn3' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("mCh93svOfg")
+    const PLOT = document.getElementById("a5XxWxaHn3")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1963,12 +1974,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='LxGALsAzzA' class='' style=';'>
+<div id='8ASqQW1pjr' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("LxGALsAzzA")
+    const PLOT = document.getElementById("8ASqQW1pjr")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
