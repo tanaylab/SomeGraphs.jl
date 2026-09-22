@@ -437,7 +437,9 @@ function plotly_layout(
         margin_r = figure_configuration.margins.right,
         margin_t = figure_configuration.margins.top,
         margin_b = figure_configuration.margins.bottom,
-        template = "simple_white",
+        # An empty template, because we style the graph ourselves. Without one, PlotlyBase fills in whatever
+        # `PlotlyBase.templates.default` happens to be, which is global state that would change what we emit.
+        template = Template(),
         width = prefer_data(figure_configuration.width, nothing),
         height = prefer_data(figure_configuration.height, nothing),
         plot_bgcolor = figure_configuration.background_color,
@@ -2171,20 +2173,6 @@ function configured_colors(;
         show_in_legend,
         show_scale,
     )
-end
-
-"""
-    @kwdef mutable struct ConfiguredAnnotation
-        annotation_data::AnnotationData
-        final_colors_values::AbstractVector{<:Real}
-        final_colors_range::Maybe{Range}
-    end
-"""
-@kwdef mutable struct ConfiguredAnnotation
-    annotation_data::AnnotationData
-    final_hovers::AbstractVector{<:AbstractString}
-    final_colors_values::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}
-    final_colors_range::Maybe{Range}
 end
 
 end  # module

@@ -261,7 +261,6 @@ end
         margins::MarginsConfiguration = MarginsConfiguration()
         width::Maybe{Int} = nothing
         height::Maybe{Int} = nothing
-        template::Maybe{AbstractString} = nothing
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
         colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
@@ -275,7 +274,6 @@ units.
 
 You can also manually change the `background_color` (inside the graph's area) and `paper_color` (outside the graph's area,
 that is, the margins).
-the axes.
 
 If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
 will happily place them all on top of each other. We therefore need to tell it how to position each and every color
@@ -296,7 +294,6 @@ requires more offsets.
     margins::MarginsConfiguration = MarginsConfiguration()
     width::Maybe{Int} = nothing
     height::Maybe{Int} = nothing
-    template::Maybe{AbstractString} = nothing
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
     colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
@@ -1637,8 +1634,11 @@ end
 
 An annotation to attach to an axis. This applies to discrete axes (bars axis for a [`BarsGraph`](@ref
 SomeGraphs.Bars.BarsGraph) or the rows and/or columns of a `HeatmapGraph`). The `values` are required, one per entry of
-the axis; their title is the title of the annotation. Hovering an annotation shows the hovers of the axis entries. An
-annotation which is not `is_shown` is left out of the graph, and gives up its place in the row of annotations.
+the axis. Hovering an annotation shows the hovers of the axis entries. An annotation which is not `is_shown` is left
+out of the graph, and gives up its place in the row of annotations.
+
+The title of the annotation is the title of the `values`, falling back to the title of the `colors`. It names the
+annotation next to the axis, and titles its legend or color scale.
 
 The `colors` configuration is part of the data, because the color of annotations (in particular, categorical ones) is
 tightly coupled with the data.

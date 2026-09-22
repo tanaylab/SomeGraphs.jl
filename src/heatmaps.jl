@@ -1149,7 +1149,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                     plotly_annotations,
                     values_sub_graph = sub_graph,
                     values_orientation,
-                    title = annotation_data.values.title,
+                    title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                 )
                 set_layout_axis!(  # NOJET
                     layout,
@@ -1167,7 +1167,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                         colors_configuration = annotation_data.colors,
                         scaled_colors_palette = annotation_colors.scaled_colors_palette,
                         range = nothing,
-                        title = annotation_data.values.title,
+                        title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                         show_scale = annotation_colors.show_scale,
                         next_colors_scale_offset_index,
                         colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,

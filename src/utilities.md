@@ -11,7 +11,6 @@ SomeGraphs.Utilities.validate_colors
 SomeGraphs.Utilities.fill_color
 SomeGraphs.Utilities.ConfiguredColors
 SomeGraphs.Utilities.configured_colors
-SomeGraphs.Utilities.ConfiguredAnnotation
 SomeGraphs.Utilities.validate_axis_sizes
 SomeGraphs.Utilities.validate_values
 SomeGraphs.Utilities.validate_numeric_values

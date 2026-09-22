@@ -224,6 +224,15 @@ nested_test("bars") do
                         test_html(graph, "bars.$(orientation_name).continuous.legend.html")
                         return nothing
                     end
+
+                    # The title falls back to the one in the colors, so this is the same graph as above.
+                    nested_test("colors_title") do
+                        graph.data.annotations[1].values.title = nothing
+                        graph.data.annotations[1].colors.title = "score"
+                        graph.data.annotations[1].colors.show_legend = true
+                        test_html(graph, "bars.$(orientation_name).continuous.legend.html")
+                        return nothing
+                    end
                 end
 
                 nested_test("categorical") do

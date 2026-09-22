@@ -585,7 +585,6 @@ end
     legend_group::AbstractString
     pixel_size::Maybe{Real}
     pixel_sizes::Maybe{AbstractVector{<:Real}}
-    original_sizes::Maybe{AbstractVector{<:Real}}
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}}
     order::Maybe{AbstractVector{<:Integer}}
 end
@@ -624,16 +623,7 @@ function configured_scatters(;
             scatters_configuration.colors.palette isa AutomaticColors
         )
 
-    return ConfiguredScatters(;
-        colors,
-        show_in_legend,
-        legend_group,
-        original_sizes = size_values,
-        pixel_size,
-        pixel_sizes,
-        mask,
-        order,
-    )
+    return ConfiguredScatters(; colors, show_in_legend, legend_group, pixel_size, pixel_sizes, mask, order)
 end
 
 function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
