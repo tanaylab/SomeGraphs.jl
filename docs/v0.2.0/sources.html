@@ -1527,12 +1527,12 @@ end
 </a>
 </h2>
 <p>A data source doesn&#39;t need to know which view it is filling, or how many. It takes 
-<code>Sinks
+<code>CompoundSinks
 </code> and walks them with 
 <code>visit_data_sinks
 </code> and/or 
 <code>visit_configuration_sinks
-</code>, writing a method per struct it fills.
+</code>, writing a method per struct it fills and an explicit no-op for the structs it ignores.
 </p>
 <article>
 <details class="docstring" open="true">
@@ -1551,6 +1551,44 @@ end
 <code>AnySink
 </code>
 </a>, or a tuple or vector of them. Passing several lets one set of data feed several places in the graph. A data source writes only the sinks which hold the half it fills and ignores the rest, so a mixed collection is fine and either half may match nothing at all.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.CompoundSinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.CompoundSinks">
+<code>SomeGraphs.Sources.CompoundSinks
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>The 
+<a href="sources.html#Sinks">
+<code>Sinks
+</code>
+</a> a data source walks rather than writes: a view (which holds both halves), or a tuple or vector of sinks. A struct which is written is not one of these.
+</p>
+<p>A function writing into sinks has one method taking a 
+<code>CompoundSinks
+</code>, which walks them with 
+<a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
+<code>visit_data_sinks
+</code>
+</a> or 
+<a href="sources.html#SomeGraphs.Sources.visit_configuration_sinks">
+<code>visit_configuration_sinks
+</code>
+</a> and calls itself on each struct reached, a method per struct it writes, and one explicit no-op method for the union of the structs it ignores. A struct covered by none of these is a 
+<code>MethodError
+</code>. Taking 
+<code>Sinks
+</code> there instead would match such a struct too, and walking it calls the same method again, forever.
 </p>
 </div>
 </section>
@@ -1750,12 +1788,12 @@ end
 <code>VectorEntitiesData
 </code>, and 
 <code>visit_data_sinks
-</code> finds them in whatever it is given:
+</code> finds them in whatever it is given. Given a matrix struct, it fails rather than silently doing nothing, since it says nothing about those:
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 
-function source!(sinks::Sinks, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
+function source!(sinks::CompoundSinks, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
     visit_data_sinks(sinks) do sink
         return source!(sink, values, title)
     end
@@ -1781,12 +1819,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='O4ZSPDgSPL' class='' style=';'>
+<div id='GVbcunQA8J' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("O4ZSPDgSPL")
+    const PLOT = document.getElementById("GVbcunQA8J")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1868,6 +1906,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.ColorsConfigurationFields">
 <code>SomeGraphs.Sources.ColorsConfigurationFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.CompoundSinks">
+<code>SomeGraphs.Sources.CompoundSinks
 </code>
 </a>
 </li>

@@ -20,6 +20,7 @@ module Sources
 export AbstractFields
 export AbstractConfigurationFields
 export AnySink
+export CompoundSinks
 export ConfigurationSink
 export DataSink
 export Sinks
@@ -654,6 +655,17 @@ feed several places in the graph. A data source writes only the sinks which hold
 rest, so a mixed collection is fine and either half may match nothing at all.
 """
 Sinks = Union{AnySink, Tuple, AbstractVector}
+
+"""
+The [`Sinks`](@ref) a data source walks rather than writes: a view (which holds both halves), or a tuple or vector of
+sinks. A struct which is written is not one of these.
+
+A function writing into sinks has one method taking a `CompoundSinks`, which walks them with [`visit_data_sinks`](@ref)
+or [`visit_configuration_sinks`](@ref) and calls itself on each struct reached, a method per struct it writes, and one
+explicit no-op method for the union of the structs it ignores. A struct covered by none of these is a `MethodError`.
+Taking `Sinks` there instead would match such a struct too, and walking it calls the same method again, forever.
+"""
+CompoundSinks = Union{AbstractFields, Tuple, AbstractVector}
 
 """
     visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing

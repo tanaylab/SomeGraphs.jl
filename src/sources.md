@@ -123,11 +123,13 @@ SomeGraphs.Sources.line_part_fields
 
 ## Sinks
 
-A data source doesn't need to know which view it is filling, or how many. It takes `Sinks` and walks them with
-`visit_data_sinks` and/or `visit_configuration_sinks`, writing a method per struct it fills.
+A data source doesn't need to know which view it is filling, or how many. It takes `CompoundSinks` and walks them with
+`visit_data_sinks` and/or `visit_configuration_sinks`, writing a method per struct it fills and an explicit no-op for
+the structs it ignores.
 
 ```@docs
 SomeGraphs.Sources.Sinks
+SomeGraphs.Sources.CompoundSinks
 SomeGraphs.Sources.AnySink
 SomeGraphs.Sources.DataSink
 SomeGraphs.Sources.ConfigurationSink
@@ -144,12 +146,13 @@ SomeGraphs.Sources.add_hovers!
 **Example:**
 
 One source function, writing a vector of values as the values of a role and as a hover line. It says what to do with a
-`VectorValuesData` and with a `VectorEntitiesData`, and `visit_data_sinks` finds them in whatever it is given:
+`VectorValuesData` and with a `VectorEntitiesData`, and `visit_data_sinks` finds them in whatever it is given. Given a
+matrix struct, it fails rather than silently doing nothing, since it says nothing about those:
 
 ```@example
 using SomeGraphs
 
-function source!(sinks::Sinks, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
+function source!(sinks::CompoundSinks, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
     visit_data_sinks(sinks) do sink
         return source!(sink, values, title)
     end

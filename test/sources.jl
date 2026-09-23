@@ -105,5 +105,35 @@ nested_test("sources") do
         nested_test("invalid") do
             @test_throws "not a graph data or configuration struct: String" visit_data_sinks(identity, ["not a sink"])
         end
+
+        nested_test("compound") do
+            # A source written the intended way: a compound method which walks, a method per struct it writes, and an
+            # explicit no-op for the structs it ignores. A struct it says nothing about is an error, not a loop.
+            function source!(sinks::CompoundSinks, values::AbstractVector{<:Real})::Nothing
+                visit_data_sinks(sinks) do sink
+                    return source!(sink, values)
+                end
+                return nothing
+            end
+
+            function source!(values_data::VectorValuesData, values::AbstractVector{<:Real})::Nothing
+                values_data.vector = values
+                return nothing
+            end
+
+            function source!(::VectorEntitiesData, ::AbstractVector{<:Real})::Nothing
+                return nothing
+            end
+
+            points = points_graph()
+            source!(x_axis_vector_fields(points), [1.0, 2.0])
+            @test points.data.x.vector == [1.0, 2.0]
+
+            source!((points.data.y, points.data.points.entities), [3.0, 4.0])
+            @test points.data.y.vector == [3.0, 4.0]
+
+            @test_throws MethodError source!(graph.data.entries, [5.0, 6.0])
+            @test_throws MethodError source!(entries_matrix_fields(graph), [5.0, 6.0])
+        end
     end
 end
