@@ -1196,6 +1196,8 @@ end
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct HeatmapAxisConfiguration &lt;: Validated
     title::Maybe{AbstractString} = nothing
+    show_ticks::Bool = true
+    ticks_angle::Maybe{Real} = nothing
     annotations::AnnotationSize = AnnotationSize()
     reorder::Maybe{HeatmapReorder} = nothing
     linkage::Maybe{HeatmapLinkage} = nothing
@@ -1214,6 +1216,18 @@ end
 </code> is the title of the axis. The 
 <code>annotations
 </code> are the sizes of the annotations shown to the side of the axis.
+</p>
+<p>The entries are labelled by their names from the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
+<code>HeatmapAxisData
+</code>
+</a>, if they have any. Set 
+<code>show_ticks
+</code> to 
+<code>false
+</code> to leave them unlabelled, which is what an axis holding thousands of entries wants; the names are still the first line of each hover. By default the labels are shown parallel to the axis, and 
+<code>ticks_angle
+</code> rotates them.
 </p>
 <p>You can use 
 <code>reorder
@@ -1560,12 +1574,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='CWwS4VuU0Y' class='' style=';'>
+<div id='eHnMMc3Bad' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("CWwS4VuU0Y")
+    const PLOT = document.getElementById("eHnMMc3Bad")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1608,12 +1622,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='c6l9oHVClF' class='' style=';'>
+<div id='DN3d9nr2fk' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("c6l9oHVClF")
+    const PLOT = document.getElementById("DN3d9nr2fk")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1656,12 +1670,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='YQRuoZ9LhN' class='' style=';'>
+<div id='F97kgK1X78' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YQRuoZ9LhN")
+    const PLOT = document.getElementById("F97kgK1X78")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1716,12 +1730,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='DJ2x6yx264' class='' style=';'>
+<div id='QpvetEa8xu' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("DJ2x6yx264")
+    const PLOT = document.getElementById("QpvetEa8xu")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1784,12 +1798,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='eD9VHMSPsm' class='' style=';'>
+<div id='BUzh9RYEIi' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("eD9VHMSPsm")
+    const PLOT = document.getElementById("BUzh9RYEIi")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1854,12 +1868,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZFlzrj6xaj' class='' style=';'>
+<div id='yKNlCuxNHl' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZFlzrj6xaj")
+    const PLOT = document.getElementById("yKNlCuxNHl")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1911,12 +1925,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='a5XxWxaHn3' class='' style=';'>
+<div id='HlSPY7CoJz' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("a5XxWxaHn3")
+    const PLOT = document.getElementById("HlSPY7CoJz")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1974,12 +1988,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='8ASqQW1pjr' class='' style=';'>
+<div id='X7Mu6lJMVh' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8ASqQW1pjr")
+    const PLOT = document.getElementById("X7Mu6lJMVh")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A

@@ -104,6 +104,8 @@ end
 """
     @kwdef mutable struct HeatmapAxisConfiguration <: Validated
         title::Maybe{AbstractString} = nothing
+        show_ticks::Bool = true
+        ticks_angle::Maybe{Real} = nothing
         annotations::AnnotationSize = AnnotationSize()
         reorder::Maybe{HeatmapReorder} = nothing
         linkage::Maybe{HeatmapLinkage} = nothing
@@ -118,6 +120,10 @@ end
 
 Configure one axis (the rows or the columns) of a heatmap. The `title` is the title of the axis. The `annotations` are
 the sizes of the annotations shown to the side of the axis.
+
+The entries are labelled by their names from the [`HeatmapAxisData`](@ref), if they have any. Set `show_ticks` to
+`false` to leave them unlabelled, which is what an axis holding thousands of entries wants; the names are still the
+first line of each hover. By default the labels are shown parallel to the axis, and `ticks_angle` rotates them.
 
 You can use `reorder` to reorder the entries of the axis. When specifying `linkage`, by default, the clustering uses the
 `Euclidean` distance metric. You can override this by specifying the `metric`.
@@ -155,6 +161,8 @@ If a dendogram tree is shown, the `dendogram_line` can be used to control it. Th
 """
 @kwdef mutable struct HeatmapAxisConfiguration <: Validated
     title::Maybe{AbstractString} = nothing
+    show_ticks::Bool = true
+    ticks_angle::Maybe{Real} = nothing
     annotations::AnnotationSize = AnnotationSize()
     reorder::Maybe{HeatmapReorder} = nothing
     linkage::Maybe{HeatmapLinkage} = nothing
@@ -170,6 +178,15 @@ end
 function Validations.validate(context::ValidationContext, configuration::HeatmapAxisConfiguration)::Nothing
     validate_field(context, "annotations", configuration.annotations)
     validate_field(context, "dendogram_line", configuration.dendogram_line)
+
+    if configuration.ticks_angle !== nothing
+        validate_in(context, "ticks_angle") do
+            validate_is_finite(context, configuration.ticks_angle)
+            validate_is_at_least(context, configuration.ticks_angle, -90)
+            validate_is_at_most(context, configuration.ticks_angle, 90)
+            return nothing
+        end
+    end
 
     validate_in(context, "groups_gap") do
         return validate_is_above(context, configuration.groups_gap, 0)
@@ -1063,7 +1080,11 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     set_layout_axis!(
         layout,
         plotly_axis("y", yaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = rows_names !== nothing);
+        AxisConfiguration(;
+            show_grid = false,
+            show_ticks = rows_names !== nothing && graph.configuration.rows.show_ticks,
+            ticks_angle = graph.configuration.rows.ticks_angle,
+        );
         title = graph.configuration.rows.title,
         ticks_values = expanded_rows_names === nothing ? nothing : collect(1:n_expanded_rows),
         ticks_labels = expanded_rows_names,
@@ -1086,7 +1107,11 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     set_layout_axis!(
         layout,
         plotly_axis("x", xaxis_index),
-        AxisConfiguration(; show_grid = false, show_ticks = columns_names !== nothing);
+        AxisConfiguration(;
+            show_grid = false,
+            show_ticks = columns_names !== nothing && graph.configuration.columns.show_ticks,
+            ticks_angle = graph.configuration.columns.ticks_angle,
+        );
         title = graph.configuration.columns.title,
         ticks_values = expanded_columns_names === nothing ? nothing : collect(1:n_expanded_columns),
         ticks_labels = expanded_columns_names,

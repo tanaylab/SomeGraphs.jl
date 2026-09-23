@@ -464,6 +464,32 @@ nested_test("heatmaps") do
             test_html(graph, "heatmap.names.rows.html")
             return nothing
         end
+
+        # An axis holding too many entries to label still names them in the hovers.
+        nested_test("ticks") do
+            graph.data.columns.entities.names = ["A", "B", "C", "D"]
+            graph.configuration.columns.show_ticks = false
+            test_html(graph, "heatmap.names.ticks.html")
+            return nothing
+        end
+
+        nested_test("angle") do
+            graph.data.columns.entities.names = ["A", "B", "C", "D"]
+            graph.configuration.columns.ticks_angle = 90
+
+            nested_test("()") do
+                test_html(graph, "heatmap.names.angle.html")
+                return nothing
+            end
+
+            nested_test("invalid") do
+                graph.configuration.columns.ticks_angle = 91
+                @test_throws chomp("""
+                                   too high graph.configuration.columns.ticks_angle: 91
+                                   is not at most: 90
+                                   """) validate(ValidationContext(["graph"]), graph)
+            end
+        end
     end
 
     nested_test("gaps") do
@@ -488,6 +514,14 @@ nested_test("heatmaps") do
         nested_test("none") do
             graph.configuration.columns.total_gaps_fraction = nothing
             test_html(graph, "heatmap.gaps.html")
+            return nothing
+        end
+
+        # A single group has no boundaries, so there is no gap to widen.
+        nested_test("single") do
+            graph.data.columns.groups.vector = [1, 1, 1, 1]
+            graph.configuration.columns.total_gaps_fraction = 3 / 4
+            test_html(graph, "heatmap.names.html")
             return nothing
         end
 
