@@ -775,22 +775,23 @@ function visit_configuration_sink(
 end
 
 # Which of the `sinks` each half is written into. Either may be empty. A collection is asserted rather than typed,
-# because a literal vector of several kinds of sink is a `Vector{Any}`.
-function data_sinks(sinks::Union{Tuple, AbstractVector})::Union{Tuple, AbstractVector}
+# because a literal vector of several kinds of sink is a `Vector{Any}`. The result is typed, so that a visitor is seen
+# to be called only with the half it handles.
+function data_sinks(sinks::Union{Tuple, AbstractVector})::Vector{DataSink}
     assert_sinks(sinks)
-    return filter(sink -> sink isa DataSink, sinks)
+    return collect(DataSink, filter(sink -> sink isa DataSink, sinks))
 end
 
-function data_sinks(sink::AnySink)::Tuple
+function data_sinks(sink::AnySink)::Vector{DataSink}
     return data_sinks((sink,))
 end
 
-function configuration_sinks(sinks::Union{Tuple, AbstractVector})::Union{Tuple, AbstractVector}
+function configuration_sinks(sinks::Union{Tuple, AbstractVector})::Vector{ConfigurationSink}
     assert_sinks(sinks)
-    return filter(sink -> sink isa ConfigurationSink, sinks)
+    return collect(ConfigurationSink, filter(sink -> sink isa ConfigurationSink, sinks))
 end
 
-function configuration_sinks(sink::AnySink)::Tuple
+function configuration_sinks(sink::AnySink)::Vector{ConfigurationSink}
     return configuration_sinks((sink,))
 end
 
