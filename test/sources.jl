@@ -109,7 +109,10 @@ nested_test("sources") do
         nested_test("compound") do
             # A source written the intended way: a compound method which walks, a method per struct it writes, and an
             # explicit no-op for the structs it ignores. A struct it says nothing about is an error, not a loop.
-            function source!(sinks::CompoundSinks, values::AbstractVector{<:Real})::Nothing
+            function source!(
+                sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+                values::AbstractVector{<:Real},
+            )::Nothing
                 visit_data_sinks(sinks) do sink
                     return source!(sink, values)
                 end
@@ -131,6 +134,10 @@ nested_test("sources") do
 
             source!((points.data.y, points.data.points.entities), [3.0, 4.0])
             @test points.data.y.vector == [3.0, 4.0]
+
+            # A configuration leaf contains no data, so it is walked and nothing is found.
+            source!(points.configuration.x_axis, [5.0, 6.0])
+            @test points.data.x.vector == [1.0, 2.0]
 
             @test_throws MethodError source!(graph.data.entries, [5.0, 6.0])
             @test_throws MethodError source!(entries_matrix_fields(graph), [5.0, 6.0])

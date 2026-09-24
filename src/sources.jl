@@ -19,9 +19,14 @@ module Sources
 
 export AbstractFields
 export AbstractConfigurationFields
+export AnyContainer
+export AnyLeaf
 export AnySink
-export CompoundSinks
+export ConfigurationContainer
+export ConfigurationLeaf
 export ConfigurationSink
+export DataContainer
+export DataLeaf
 export DataSink
 export Sinks
 export visit_configuration_sinks
@@ -616,56 +621,64 @@ Append an annotation to the columns of a graph and return its index (for `column
 function add_columns_annotation! end
 
 """
-One struct a data source writes data into: a view, the data half of one, or one of the data structs it is made of. A
-view holds both halves, so it is both this and a [`ConfigurationSink`](@ref).
+A struct holding graph data: the values of a role, or the entities they belong to.
 """
-DataSink = Union{
-    VectorFields,
-    MatrixFields,
-    VectorDataFields,
-    VectorValuesData,
-    VectorEntitiesData,
-    MatrixDataFields,
-    MatrixValuesData,
-    MatrixEntitiesData,
-}
+DataLeaf = Union{VectorValuesData, VectorEntitiesData, MatrixValuesData, MatrixEntitiesData}
 
 """
-One struct a data source writes configuration into: a view, the configuration half of one, or one of the configuration
-structs it is made of.
+A struct holding graph configuration: how a role is shown.
 """
-ConfigurationSink = Union{
-    VectorFields,
-    MatrixFields,
-    AbstractConfigurationFields,
-    AxisConfiguration,
-    ScaleConfiguration,
-    ColorsConfiguration,
-    SizesConfiguration,
-}
+ConfigurationLeaf = Union{AxisConfiguration, ScaleConfiguration, ColorsConfiguration, SizesConfiguration}
 
 """
-Any one struct a data source writes into: a [`DataSink`](@ref) or a [`ConfigurationSink`](@ref).
+A [`DataLeaf`](@ref) or a [`ConfigurationLeaf`](@ref).
 """
-AnySink = Union{DataSink, ConfigurationSink}
+AnyLeaf = Union{DataLeaf, ConfigurationLeaf}
+
+"""
+Anything that may contain graph data: a view, or the data half of one. [`visit_data_sinks`](@ref) reaches the
+[`DataLeaf`](@ref) structs inside.
+"""
+DataContainer = Union{VectorFields, MatrixFields, VectorDataFields, MatrixDataFields}
+
+"""
+Anything that may contain graph configuration: a view, or the configuration half of one.
+[`visit_configuration_sinks`](@ref) reaches the [`ConfigurationLeaf`](@ref) structs inside.
+"""
+ConfigurationContainer = Union{VectorFields, MatrixFields, AbstractConfigurationFields}
+
+"""
+A [`DataContainer`](@ref) or a [`ConfigurationContainer`](@ref).
+"""
+AnyContainer = Union{DataContainer, ConfigurationContainer}
+
+"""
+One struct a data source writes data into: a [`DataContainer`](@ref) or a [`DataLeaf`](@ref).
+"""
+DataSink = Union{DataContainer, DataLeaf}
+
+"""
+One struct a data source writes configuration into: a [`ConfigurationContainer`](@ref) or a [`ConfigurationLeaf`](@ref).
+"""
+ConfigurationSink = Union{ConfigurationContainer, ConfigurationLeaf}
+
+"""
+Any one struct a data source writes into: an [`AnyContainer`](@ref) or an [`AnyLeaf`](@ref).
+"""
+AnySink = Union{AnyContainer, AnyLeaf}
 
 """
 What a data source accepts: one [`AnySink`](@ref), or a tuple or vector of them. Passing several lets one set of data
 feed several places in the graph. A data source writes only the sinks which hold the half it fills and ignores the
 rest, so a mixed collection is fine and either half may match nothing at all.
+
+The method of a data source which walks the sinks takes every `Sinks` but the leaves it writes:
+`Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector}` when writing data, and the mirror when writing
+configuration. It has a method per leaf it writes, and one explicit no-op method for the leaves it ignores, so a leaf it
+says nothing about is a `MethodError`. Taking `Sinks` in the walking method would match such a leaf too, and walking it
+calls the same method again, forever.
 """
 Sinks = Union{AnySink, Tuple, AbstractVector}
-
-"""
-The [`Sinks`](@ref) a data source walks rather than writes: a view (which holds both halves), or a tuple or vector of
-sinks. A struct which is written is not one of these.
-
-A function writing into sinks has one method taking a `CompoundSinks`, which walks them with [`visit_data_sinks`](@ref)
-or [`visit_configuration_sinks`](@ref) and calls itself on each struct reached, a method per struct it writes, and one
-explicit no-op method for the union of the structs it ignores. A struct covered by none of these is a `MethodError`.
-Taking `Sinks` there instead would match such a struct too, and walking it calls the same method again, forever.
-"""
-CompoundSinks = Union{AbstractFields, Tuple, AbstractVector}
 
 """
     visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing

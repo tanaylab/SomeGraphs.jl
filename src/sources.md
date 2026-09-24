@@ -123,16 +123,21 @@ SomeGraphs.Sources.line_part_fields
 
 ## Sinks
 
-A data source doesn't need to know which view it is filling, or how many. It takes `CompoundSinks` and walks them with
-`visit_data_sinks` and/or `visit_configuration_sinks`, writing a method per struct it fills and an explicit no-op for
-the structs it ignores.
+A data source doesn't need to know which view it is filling, or how many. It takes `Sinks` and walks them with
+`visit_data_sinks` or `visit_configuration_sinks`, writing a method per leaf it fills and an explicit no-op for the
+leaves it ignores.
 
 ```@docs
-SomeGraphs.Sources.Sinks
-SomeGraphs.Sources.CompoundSinks
-SomeGraphs.Sources.AnySink
+SomeGraphs.Sources.DataLeaf
+SomeGraphs.Sources.ConfigurationLeaf
+SomeGraphs.Sources.AnyLeaf
+SomeGraphs.Sources.DataContainer
+SomeGraphs.Sources.ConfigurationContainer
+SomeGraphs.Sources.AnyContainer
 SomeGraphs.Sources.DataSink
 SomeGraphs.Sources.ConfigurationSink
+SomeGraphs.Sources.AnySink
+SomeGraphs.Sources.Sinks
 SomeGraphs.Sources.visit_data_sinks
 SomeGraphs.Sources.visit_configuration_sinks
 ```
@@ -152,7 +157,11 @@ matrix struct, it fails rather than silently doing nothing, since it says nothin
 ```@example
 using SomeGraphs
 
-function source!(sinks::CompoundSinks, values::AbstractVector{<:Real}, title::AbstractString)::Nothing
+function source!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    values::AbstractVector{<:Real},
+    title::AbstractString,
+)::Nothing
     visit_data_sinks(sinks) do sink
         return source!(sink, values, title)
     end

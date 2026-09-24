@@ -1527,18 +1527,18 @@ end
 </a>
 </h2>
 <p>A data source doesn&#39;t need to know which view it is filling, or how many. It takes 
-<code>CompoundSinks
+<code>Sinks
 </code> and walks them with 
 <code>visit_data_sinks
-</code> and/or 
+</code> or 
 <code>visit_configuration_sinks
-</code>, writing a method per struct it fills and an explicit no-op for the structs it ignores.
+</code>, writing a method per leaf it fills and an explicit no-op for the leaves it ignores.
 </p>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.Sinks">
-<a class="docstring-binding" href="#SomeGraphs.Sources.Sinks">
-<code>SomeGraphs.Sources.Sinks
+<summary id="SomeGraphs.Sources.DataLeaf">
+<a class="docstring-binding" href="#SomeGraphs.Sources.DataLeaf">
+<code>SomeGraphs.Sources.DataLeaf
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1546,11 +1546,7 @@ end
 </summary>
 <section>
 <div>
-<p>What a data source accepts: one 
-<a href="sources.html#SomeGraphs.Sources.AnySink">
-<code>AnySink
-</code>
-</a>, or a tuple or vector of them. Passing several lets one set of data feed several places in the graph. A data source writes only the sinks which hold the half it fills and ignores the rest, so a mixed collection is fine and either half may match nothing at all.
+<p>A struct holding graph data: the values of a role, or the entities they belong to.
 </p>
 </div>
 </section>
@@ -1558,9 +1554,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.CompoundSinks">
-<a class="docstring-binding" href="#SomeGraphs.Sources.CompoundSinks">
-<code>SomeGraphs.Sources.CompoundSinks
+<summary id="SomeGraphs.Sources.ConfigurationLeaf">
+<a class="docstring-binding" href="#SomeGraphs.Sources.ConfigurationLeaf">
+<code>SomeGraphs.Sources.ConfigurationLeaf
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1568,27 +1564,59 @@ end
 </summary>
 <section>
 <div>
-<p>The 
-<a href="sources.html#Sinks">
-<code>Sinks
-</code>
-</a> a data source walks rather than writes: a view (which holds both halves), or a tuple or vector of sinks. A struct which is written is not one of these.
+<p>A struct holding graph configuration: how a role is shown.
 </p>
-<p>A function writing into sinks has one method taking a 
-<code>CompoundSinks
-</code>, which walks them with 
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AnyLeaf">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AnyLeaf">
+<code>SomeGraphs.Sources.AnyLeaf
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A 
+<a href="sources.html#SomeGraphs.Sources.DataLeaf">
+<code>DataLeaf
+</code>
+</a> or a 
+<a href="sources.html#SomeGraphs.Sources.ConfigurationLeaf">
+<code>ConfigurationLeaf
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.DataContainer">
+<a class="docstring-binding" href="#SomeGraphs.Sources.DataContainer">
+<code>SomeGraphs.Sources.DataContainer
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Anything that may contain graph data: a view, or the data half of one. 
 <a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
 <code>visit_data_sinks
 </code>
-</a> or 
-<a href="sources.html#SomeGraphs.Sources.visit_configuration_sinks">
-<code>visit_configuration_sinks
+</a> reaches the 
+<a href="sources.html#SomeGraphs.Sources.DataLeaf">
+<code>DataLeaf
 </code>
-</a> and calls itself on each struct reached, a method per struct it writes, and one explicit no-op method for the union of the structs it ignores. A struct covered by none of these is a 
-<code>MethodError
-</code>. Taking 
-<code>Sinks
-</code> there instead would match such a struct too, and walking it calls the same method again, forever.
+</a> structs inside.
 </p>
 </div>
 </section>
@@ -1596,9 +1624,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Sources.AnySink">
-<a class="docstring-binding" href="#SomeGraphs.Sources.AnySink">
-<code>SomeGraphs.Sources.AnySink
+<summary id="SomeGraphs.Sources.ConfigurationContainer">
+<a class="docstring-binding" href="#SomeGraphs.Sources.ConfigurationContainer">
+<code>SomeGraphs.Sources.ConfigurationContainer
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1606,13 +1634,39 @@ end
 </summary>
 <section>
 <div>
-<p>Any one struct a data source writes into: a 
-<a href="sources.html#SomeGraphs.Sources.DataSink">
-<code>DataSink
+<p>Anything that may contain graph configuration: a view, or the configuration half of one. 
+<a href="sources.html#SomeGraphs.Sources.visit_configuration_sinks">
+<code>visit_configuration_sinks
+</code>
+</a> reaches the 
+<a href="sources.html#SomeGraphs.Sources.ConfigurationLeaf">
+<code>ConfigurationLeaf
+</code>
+</a> structs inside.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AnyContainer">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AnyContainer">
+<code>SomeGraphs.Sources.AnyContainer
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A 
+<a href="sources.html#SomeGraphs.Sources.DataContainer">
+<code>DataContainer
 </code>
 </a> or a 
-<a href="sources.html#SomeGraphs.Sources.ConfigurationSink">
-<code>ConfigurationSink
+<a href="sources.html#SomeGraphs.Sources.ConfigurationContainer">
+<code>ConfigurationContainer
 </code>
 </a>.
 </p>
@@ -1632,9 +1686,13 @@ end
 </summary>
 <section>
 <div>
-<p>One struct a data source writes data into: a view, the data half of one, or one of the data structs it is made of. A view holds both halves, so it is both this and a 
-<a href="sources.html#SomeGraphs.Sources.ConfigurationSink">
-<code>ConfigurationSink
+<p>One struct a data source writes data into: a 
+<a href="sources.html#SomeGraphs.Sources.DataContainer">
+<code>DataContainer
+</code>
+</a> or a 
+<a href="sources.html#SomeGraphs.Sources.DataLeaf">
+<code>DataLeaf
 </code>
 </a>.
 </p>
@@ -1654,7 +1712,73 @@ end
 </summary>
 <section>
 <div>
-<p>One struct a data source writes configuration into: a view, the configuration half of one, or one of the configuration structs it is made of.
+<p>One struct a data source writes configuration into: a 
+<a href="sources.html#SomeGraphs.Sources.ConfigurationContainer">
+<code>ConfigurationContainer
+</code>
+</a> or a 
+<a href="sources.html#SomeGraphs.Sources.ConfigurationLeaf">
+<code>ConfigurationLeaf
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AnySink">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AnySink">
+<code>SomeGraphs.Sources.AnySink
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Any one struct a data source writes into: an 
+<a href="sources.html#SomeGraphs.Sources.AnyContainer">
+<code>AnyContainer
+</code>
+</a> or an 
+<a href="sources.html#SomeGraphs.Sources.AnyLeaf">
+<code>AnyLeaf
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.Sinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.Sinks">
+<code>SomeGraphs.Sources.Sinks
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>What a data source accepts: one 
+<a href="sources.html#SomeGraphs.Sources.AnySink">
+<code>AnySink
+</code>
+</a>, or a tuple or vector of them. Passing several lets one set of data feed several places in the graph. A data source writes only the sinks which hold the half it fills and ignores the rest, so a mixed collection is fine and either half may match nothing at all.
+</p>
+<p>The method of a data source which walks the sinks takes every 
+<code>Sinks
+</code> but the leaves it writes: 
+<code>Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector}
+</code> when writing data, and the mirror when writing configuration. It has a method per leaf it writes, and one explicit no-op method for the leaves it ignores, so a leaf it says nothing about is a 
+<code>MethodError
+</code>. Taking 
+<code>Sinks
+</code> in the walking method would match such a leaf too, and walking it calls the same method again, forever.
 </p>
 </div>
 </section>
@@ -1793,7 +1917,11 @@ end
 <pre>
 <code class="language-julia hljs">using SomeGraphs
 
-function source!(sinks::CompoundSinks, values::AbstractVector{&lt;:Real}, title::AbstractString)::Nothing
+function source!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    values::AbstractVector{&lt;:Real},
+    title::AbstractString,
+)::Nothing
     visit_data_sinks(sinks) do sink
         return source!(sink, values, title)
     end
@@ -1819,12 +1947,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='GVbcunQA8J' class='' style=';'>
+<div id='ZBIBI4BHA8' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("GVbcunQA8J")
+    const PLOT = document.getElementById("ZBIBI4BHA8")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -1892,6 +2020,18 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.AnyContainer">
+<code>SomeGraphs.Sources.AnyContainer
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.AnyLeaf">
+<code>SomeGraphs.Sources.AnyLeaf
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.AnySink">
 <code>SomeGraphs.Sources.AnySink
 </code>
@@ -1910,14 +2050,32 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
-<a href="sources.html#SomeGraphs.Sources.CompoundSinks">
-<code>SomeGraphs.Sources.CompoundSinks
+<a href="sources.html#SomeGraphs.Sources.ConfigurationContainer">
+<code>SomeGraphs.Sources.ConfigurationContainer
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.ConfigurationLeaf">
+<code>SomeGraphs.Sources.ConfigurationLeaf
 </code>
 </a>
 </li>
 <li>
 <a href="sources.html#SomeGraphs.Sources.ConfigurationSink">
 <code>SomeGraphs.Sources.ConfigurationSink
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.DataContainer">
+<code>SomeGraphs.Sources.DataContainer
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.DataLeaf">
+<code>SomeGraphs.Sources.DataLeaf
 </code>
 </a>
 </li>
