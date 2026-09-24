@@ -28,7 +28,11 @@ export ConfigurationSink
 export DataContainer
 export DataLeaf
 export DataSink
+export MatrixDataLeaf
+export MatrixDataSinks
 export Sinks
+export VectorDataLeaf
+export VectorDataSinks
 export visit_configuration_sinks
 export visit_data_sinks
 export AxisConfigurationFields
@@ -621,9 +625,19 @@ Append an annotation to the columns of a graph and return its index (for `column
 function add_columns_annotation! end
 
 """
-A struct holding graph data: the values of a role, or the entities they belong to.
+A struct holding graph data with a value per entity: the values of a role, or the entities they belong to.
 """
-DataLeaf = Union{VectorValuesData, VectorEntitiesData, MatrixValuesData, MatrixEntitiesData}
+VectorDataLeaf = Union{VectorValuesData, VectorEntitiesData}
+
+"""
+A struct holding graph data with a value per row per column: the entries of a heatmap, or the cells they belong to.
+"""
+MatrixDataLeaf = Union{MatrixValuesData, MatrixEntitiesData}
+
+"""
+A struct holding graph data: a [`VectorDataLeaf`](@ref) or a [`MatrixDataLeaf`](@ref).
+"""
+DataLeaf = Union{VectorDataLeaf, MatrixDataLeaf}
 
 """
 A struct holding graph configuration: how a role is shown.
@@ -679,6 +693,18 @@ says nothing about is a `MethodError`. Taking `Sinks` in the walking method woul
 calls the same method again, forever.
 """
 Sinks = Union{AnySink, Tuple, AbstractVector}
+
+"""
+What a data source writing a value per entity accepts: every [`Sinks`](@ref) but a [`MatrixDataLeaf`](@ref), which has
+no place for such a value.
+"""
+VectorDataSinks = Union{AnyContainer, ConfigurationLeaf, VectorDataLeaf, Tuple, AbstractVector}
+
+"""
+What a data source writing a value per row per column accepts: every [`Sinks`](@ref) but a [`VectorDataLeaf`](@ref),
+which has no place for such a value.
+"""
+MatrixDataSinks = Union{AnyContainer, ConfigurationLeaf, MatrixDataLeaf, Tuple, AbstractVector}
 
 """
     visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing

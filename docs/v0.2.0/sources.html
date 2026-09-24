@@ -1536,6 +1536,42 @@ end
 </p>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.VectorDataLeaf">
+<a class="docstring-binding" href="#SomeGraphs.Sources.VectorDataLeaf">
+<code>SomeGraphs.Sources.VectorDataLeaf
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A struct holding graph data with a value per entity: the values of a role, or the entities they belong to.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.MatrixDataLeaf">
+<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixDataLeaf">
+<code>SomeGraphs.Sources.MatrixDataLeaf
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A struct holding graph data with a value per row per column: the entries of a heatmap, or the cells they belong to.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.DataLeaf">
 <a class="docstring-binding" href="#SomeGraphs.Sources.DataLeaf">
 <code>SomeGraphs.Sources.DataLeaf
@@ -1546,7 +1582,15 @@ end
 </summary>
 <section>
 <div>
-<p>A struct holding graph data: the values of a role, or the entities they belong to.
+<p>A struct holding graph data: a 
+<a href="sources.html#SomeGraphs.Sources.VectorDataLeaf">
+<code>VectorDataLeaf
+</code>
+</a> or a 
+<a href="sources.html#SomeGraphs.Sources.MatrixDataLeaf">
+<code>MatrixDataLeaf
+</code>
+</a>.
 </p>
 </div>
 </section>
@@ -1786,6 +1830,58 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.VectorDataSinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.VectorDataSinks">
+<code>SomeGraphs.Sources.VectorDataSinks
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>What a data source writing a value per entity accepts: every 
+<a href="sources.html#Sinks">
+<code>Sinks
+</code>
+</a> but a 
+<a href="sources.html#SomeGraphs.Sources.MatrixDataLeaf">
+<code>MatrixDataLeaf
+</code>
+</a>, which has no place for such a value.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.MatrixDataSinks">
+<a class="docstring-binding" href="#SomeGraphs.Sources.MatrixDataSinks">
+<code>SomeGraphs.Sources.MatrixDataSinks
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>What a data source writing a value per row per column accepts: every 
+<a href="sources.html#Sinks">
+<code>Sinks
+</code>
+</a> but a 
+<a href="sources.html#SomeGraphs.Sources.VectorDataLeaf">
+<code>VectorDataLeaf
+</code>
+</a>, which has no place for such a value.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.visit_data_sinks">
 <a class="docstring-binding" href="#SomeGraphs.Sources.visit_data_sinks">
 <code>SomeGraphs.Sources.visit_data_sinks
@@ -1947,12 +2043,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZBIBI4BHA8' class='' style=';'>
+<div id='wmhlYyQ39Y' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZBIBI4BHA8")
+    const PLOT = document.getElementById("wmhlYyQ39Y")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -2098,6 +2194,18 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.MatrixDataLeaf">
+<code>SomeGraphs.Sources.MatrixDataLeaf
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.MatrixDataSinks">
+<code>SomeGraphs.Sources.MatrixDataSinks
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.MatrixFields">
 <code>SomeGraphs.Sources.MatrixFields
 </code>
@@ -2124,6 +2232,18 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.VectorDataFields">
 <code>SomeGraphs.Sources.VectorDataFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.VectorDataLeaf">
+<code>SomeGraphs.Sources.VectorDataLeaf
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.VectorDataSinks">
+<code>SomeGraphs.Sources.VectorDataSinks
 </code>
 </a>
 </li>

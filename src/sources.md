@@ -128,6 +128,8 @@ A data source doesn't need to know which view it is filling, or how many. It tak
 leaves it ignores.
 
 ```@docs
+SomeGraphs.Sources.VectorDataLeaf
+SomeGraphs.Sources.MatrixDataLeaf
 SomeGraphs.Sources.DataLeaf
 SomeGraphs.Sources.ConfigurationLeaf
 SomeGraphs.Sources.AnyLeaf
@@ -138,6 +140,8 @@ SomeGraphs.Sources.DataSink
 SomeGraphs.Sources.ConfigurationSink
 SomeGraphs.Sources.AnySink
 SomeGraphs.Sources.Sinks
+SomeGraphs.Sources.VectorDataSinks
+SomeGraphs.Sources.MatrixDataSinks
 SomeGraphs.Sources.visit_data_sinks
 SomeGraphs.Sources.visit_configuration_sinks
 ```
