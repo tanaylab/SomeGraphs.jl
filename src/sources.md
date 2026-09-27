@@ -80,6 +80,19 @@ SomeGraphs.Sources.rows_arrangement
 SomeGraphs.Sources.columns_arrangement
 ```
 
+#### Sides
+
+A side of a heatmap stands for its data, configuration and placement together, for copying one side onto another.
+
+```@docs
+SomeGraphs.Sources.HeatmapSide
+SomeGraphs.Sources.rows_side
+SomeGraphs.Sources.columns_side
+SomeGraphs.Sources.side_data
+SomeGraphs.Sources.side_configuration
+SomeGraphs.Sources.side_placement
+```
+
 ## Matrices
 
 ### Types

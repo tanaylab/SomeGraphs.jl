@@ -1105,6 +1105,189 @@ end
 </section>
 </details>
 </article>
+<h4 id="Sides">
+<a class="docs-heading-anchor" href="#Sides">Sides
+</a>
+<a id="Sides-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Sides" title="Permalink">
+</a>
+</h4>
+<p>A side of a heatmap stands for its data, configuration and placement together, for copying one side onto another.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.HeatmapSide">
+<a class="docstring-binding" href="#SomeGraphs.Sources.HeatmapSide">
+<code>SomeGraphs.Sources.HeatmapSide
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct HeatmapSide
+    graph::Graph
+    is_rows::Bool
+end
+</code>
+</pre>
+<p>One side (the rows or the columns) of a heatmap graph, as returned by 
+<a href="sources.html#SomeGraphs.Sources.rows_side">
+<code>rows_side
+</code>
+</a> and 
+<a href="sources.html#SomeGraphs.Sources.columns_side">
+<code>columns_side
+</code>
+</a>. It stands for the three things a side has: its data (
+<a href="sources.html#SomeGraphs.Sources.side_data">
+<code>side_data
+</code>
+</a>), its configuration (
+<a href="sources.html#SomeGraphs.Sources.side_configuration">
+<code>side_configuration
+</code>
+</a>) and its computed placement (
+<a href="sources.html#SomeGraphs.Sources.side_placement">
+<code>side_placement
+</code>
+</a>).
+</p>
+<p>As a sink, it reaches the entities and the arrangement of the side. As a source, it is what the fills copying one side onto another take.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.rows_side">
+<a class="docstring-binding" href="#SomeGraphs.Sources.rows_side">
+<code>SomeGraphs.Sources.rows_side
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">rows_side(graph)::HeatmapSide
+</code>
+</pre>
+<p>The rows side of a graph (of a heatmap): its data, configuration and placement (see 
+<a href="sources.html#SomeGraphs.Sources.HeatmapSide">
+<code>HeatmapSide
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.columns_side">
+<a class="docstring-binding" href="#SomeGraphs.Sources.columns_side">
+<code>SomeGraphs.Sources.columns_side
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">columns_side(graph)::HeatmapSide
+</code>
+</pre>
+<p>The columns side of a graph (of a heatmap): its data, configuration and placement (see 
+<a href="sources.html#SomeGraphs.Sources.HeatmapSide">
+<code>HeatmapSide
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.side_data">
+<a class="docstring-binding" href="#SomeGraphs.Sources.side_data">
+<code>SomeGraphs.Sources.side_data
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">side_data(side::HeatmapSide)::HeatmapSideData
+</code>
+</pre>
+<p>The data of a 
+<code>side
+</code> of a heatmap: the entities, the arrangement and the annotations of its entries.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.side_configuration">
+<a class="docstring-binding" href="#SomeGraphs.Sources.side_configuration">
+<code>SomeGraphs.Sources.side_configuration
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">side_configuration(side::HeatmapSide)::HeatmapSideConfiguration
+</code>
+</pre>
+<p>The configuration of a 
+<code>side
+</code> of a heatmap.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.side_placement">
+<a class="docstring-binding" href="#SomeGraphs.Sources.side_placement">
+<code>SomeGraphs.Sources.side_placement
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">side_placement(side::HeatmapSide)::SidePlacement
+</code>
+</pre>
+<p>The computed placement of a 
+<code>side
+</code> of a heatmap: the final order of its entries, and the tree they were placed by, if one was needed. Computing it once (see 
+<code>heatmap_placement
+</code>) serves both sides.
+</p>
+</div>
+</section>
+</details>
+</article>
 <h2 id="Matrices">
 <a class="docs-heading-anchor" href="#Matrices">Matrices
 </a>
@@ -1590,7 +1773,7 @@ end
 </summary>
 <section>
 <div>
-<p>A struct holding graph data with a value per entity: the values of a role, or the entities they belong to.
+<p>A struct holding graph data with a value per entity: the values of a role, the entities they belong to, or the arrangement of the entities of a heatmap axis.
 </p>
 </div>
 </section>
@@ -1696,7 +1879,7 @@ end
 </summary>
 <section>
 <div>
-<p>Anything that may contain graph data: a view, or the data half of one. 
+<p>Anything that may contain graph data: a view, the data half of one, or a side of a heatmap. 
 <a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
 <code>visit_data_sinks
 </code>
@@ -2087,12 +2270,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='SY93gjoY2l' class='' style=';'>
+<div id='zzTBLjNCpB' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("SY93gjoY2l")
+    const PLOT = document.getElementById("zzTBLjNCpB")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -2222,6 +2405,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.DataSink">
 <code>SomeGraphs.Sources.DataSink
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.HeatmapSide">
+<code>SomeGraphs.Sources.HeatmapSide
 </code>
 </a>
 </li>
@@ -2394,6 +2583,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.columns_side">
+<code>SomeGraphs.Sources.columns_side
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.columns_subgroups_vector_data_fields">
 <code>SomeGraphs.Sources.columns_subgroups_vector_data_fields
 </code>
@@ -2490,6 +2685,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.rows_side">
+<code>SomeGraphs.Sources.rows_side
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.rows_subgroups_vector_data_fields">
 <code>SomeGraphs.Sources.rows_subgroups_vector_data_fields
 </code>
@@ -2498,6 +2699,24 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.series_part_fields">
 <code>SomeGraphs.Sources.series_part_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.side_configuration">
+<code>SomeGraphs.Sources.side_configuration
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.side_data">
+<code>SomeGraphs.Sources.side_data
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.side_placement">
+<code>SomeGraphs.Sources.side_placement
 </code>
 </a>
 </li>

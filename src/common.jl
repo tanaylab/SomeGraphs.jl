@@ -8,6 +8,7 @@ export AbstractGraphData
 export AbstractPartData
 export AnnotationData
 export AnnotationSize
+export ArrangementData
 export AutomaticColors
 export AxisConfiguration
 export BandConfiguration
@@ -56,6 +57,7 @@ using ..Validations
 using Colors
 using ColorVectorSpace
 
+import Clustering.Hclust  # NOLINT
 import JSON
 import PlotlyKaleido
 
@@ -1616,6 +1618,37 @@ function validate_entities_order(
         throw(ArgumentError("no effect for specified $(location(context)).$(field).order"))
     end
     return nothing
+end
+
+"""
+    @kwdef mutable struct ArrangementData
+        hclust::Maybe{Hclust} = nothing
+        groups::VectorValuesData = VectorValuesData()
+        subgroups::VectorValuesData = VectorValuesData()
+        arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+    end
+
+The inputs to arranging the entries of one axis of a heatmap, other than the `order` of its entities: a clustering
+tree, the groups of the entries, and the matrix to cluster them by.
+
+By default, if reordering the entries, this is based on the `entries.matrix` of the graph. You can override this by
+specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.matrix` (the rows
+`arrange_by` must have the same number of rows, and the columns `arrange_by` the same number of columns); the other
+dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows `arrange_by`
+matrix should be in row-major layout, but that's not critical.
+
+Alternatively you can give the tree of the entries as an `hclust`, and/or the `order` of the entities; see
+`HeatmapSideConfiguration` for how they take part in the layout.
+
+If `groups` values (numbers or strings, one per entry) are specified, then a gap can be added between entries of
+different groups. Groups can also be used to constrain the computed clustering. The `subgroups` are a second, finer
+level of grouping nested in the groups. Neither has a title.
+"""
+@kwdef mutable struct ArrangementData
+    hclust::Maybe{Hclust} = nothing
+    groups::VectorValuesData = VectorValuesData()
+    subgroups::VectorValuesData = VectorValuesData()
+    arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
 end
 
 """

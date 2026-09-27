@@ -28,6 +28,7 @@ export ConfigurationSink
 export DataContainer
 export DataLeaf
 export DataSink
+export HeatmapSide
 export MatrixDataLeaf
 export MatrixDataSinks
 export Sinks
@@ -60,11 +61,16 @@ export borders_colors_vector_fields
 export borders_sizes_vector_fields
 export columns_arrangement
 export columns_entities
+export columns_side
 export distribution_entities
 export edges_entities
 export points_entities
 export rows_arrangement
 export rows_entities
+export rows_side
+export side_configuration
+export side_data
+export side_placement
 export colors_vector_fields
 export columns_annotations_colors_vector_fields
 export columns_groups_vector_data_fields
@@ -549,6 +555,42 @@ The arrangement of the columns of a graph (of a heatmap): the tree, groups and m
 function columns_arrangement end
 
 """
+    rows_side(graph)::HeatmapSide
+
+The rows side of a graph (of a heatmap): its data, configuration and placement (see [`HeatmapSide`](@ref)).
+"""
+function rows_side end
+
+"""
+    columns_side(graph)::HeatmapSide
+
+The columns side of a graph (of a heatmap): its data, configuration and placement (see [`HeatmapSide`](@ref)).
+"""
+function columns_side end
+
+"""
+    side_data(side::HeatmapSide)::HeatmapSideData
+
+The data of a `side` of a heatmap: the entities, the arrangement and the annotations of its entries.
+"""
+function side_data end
+
+"""
+    side_configuration(side::HeatmapSide)::HeatmapSideConfiguration
+
+The configuration of a `side` of a heatmap.
+"""
+function side_configuration end
+
+"""
+    side_placement(side::HeatmapSide)::SidePlacement
+
+The computed placement of a `side` of a heatmap: the final order of its entries, and the tree they were placed by, if
+one was needed. Computing it once (see `heatmap_placement`) serves both sides.
+"""
+function side_placement end
+
+"""
     rows_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields
 
 The data source view of one annotation of the rows of a graph, given the `index` of the annotation. The annotation
@@ -641,9 +683,28 @@ Append an annotation to the columns of a graph and return its index (for `column
 function add_columns_annotation! end
 
 """
-A struct holding graph data with a value per entity: the values of a role, or the entities they belong to.
+    struct HeatmapSide
+        graph::Graph
+        is_rows::Bool
+    end
+
+One side (the rows or the columns) of a heatmap graph, as returned by [`rows_side`](@ref) and [`columns_side`](@ref).
+It stands for the three things a side has: its data ([`side_data`](@ref)), its configuration
+([`side_configuration`](@ref)) and its computed placement ([`side_placement`](@ref)).
+
+As a sink, it reaches the entities and the arrangement of the side. As a source, it is what the fills copying one side
+onto another take.
 """
-VectorDataLeaf = Union{VectorValuesData, VectorEntitiesData}
+struct HeatmapSide
+    graph::Graph
+    is_rows::Bool
+end
+
+"""
+A struct holding graph data with a value per entity: the values of a role, the entities they belong to, or the
+arrangement of the entities of a heatmap axis.
+"""
+VectorDataLeaf = Union{VectorValuesData, VectorEntitiesData, ArrangementData}
 
 """
 A struct holding graph data with a value per row per column: the entries of a heatmap, or the cells they belong to.
@@ -666,10 +727,10 @@ A [`DataLeaf`](@ref) or a [`ConfigurationLeaf`](@ref).
 AnyLeaf = Union{DataLeaf, ConfigurationLeaf}
 
 """
-Anything that may contain graph data: a view, or the data half of one. [`visit_data_sinks`](@ref) reaches the
-[`DataLeaf`](@ref) structs inside.
+Anything that may contain graph data: a view, the data half of one, or a side of a heatmap. [`visit_data_sinks`](@ref)
+reaches the [`DataLeaf`](@ref) structs inside.
 """
-DataContainer = Union{VectorFields, MatrixFields, VectorDataFields, MatrixDataFields}
+DataContainer = Union{VectorFields, MatrixFields, VectorDataFields, MatrixDataFields, HeatmapSide}
 
 """
 Anything that may contain graph configuration: a view, or the configuration half of one.
@@ -761,13 +822,18 @@ function visit_data_sink(
     return nothing
 end
 
-function visit_data_sink(
-    visitor::Function,
-    values_or_entities::Union{VectorValuesData, VectorEntitiesData, MatrixValuesData, MatrixEntitiesData},
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(values_or_entities, visited)
-        visitor(values_or_entities)
+function visit_data_sink(visitor::Function, side::HeatmapSide, visited::Base.IdSet)::Nothing
+    if !is_visited(side, visited)
+        data = side_data(side)
+        visit_data_sink(visitor, data.entities, visited)
+        visit_data_sink(visitor, data.arrangement, visited)
+    end
+    return nothing
+end
+
+function visit_data_sink(visitor::Function, leaf::DataLeaf, visited::Base.IdSet)::Nothing
+    if !is_visited(leaf, visited)
+        visitor(leaf)
     end
     return nothing
 end

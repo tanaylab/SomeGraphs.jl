@@ -184,6 +184,7 @@ SomeGraphs.Common.AnnotationData
 SomeGraphs.Common.AnnotationSize
 SomeGraphs.Common.VectorValuesData
 SomeGraphs.Common.VectorEntitiesData
+SomeGraphs.Common.ArrangementData
 SomeGraphs.Common.MatrixValuesData
 SomeGraphs.Common.MatrixEntitiesData
 ```

@@ -12,14 +12,13 @@ SomeGraphs.Heatmaps
 SomeGraphs.Heatmaps.HeatmapGraph
 SomeGraphs.Heatmaps.heatmap_graph
 SomeGraphs.Heatmaps.HeatmapGraphData
-SomeGraphs.Heatmaps.HeatmapAxisData
-SomeGraphs.Heatmaps.ArrangementData
+SomeGraphs.Heatmaps.HeatmapSideData
 SomeGraphs.Heatmaps.HeatmapGraphConfiguration
 SomeGraphs.Heatmaps.EntriesConfiguration
-SomeGraphs.Heatmaps.HeatmapAxisConfiguration
+SomeGraphs.Heatmaps.HeatmapSideConfiguration
 SomeGraphs.Heatmaps.TreeSource
 SomeGraphs.Heatmaps.OrderSource
-SomeGraphs.Heatmaps.AxisPlacement
+SomeGraphs.Heatmaps.SidePlacement
 SomeGraphs.Heatmaps.HeatmapGraphPlacement
 SomeGraphs.Heatmaps.heatmap_placement
 SomeGraphs.Heatmaps.reset_placement!
@@ -40,8 +39,8 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
@@ -58,8 +57,8 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
@@ -77,8 +76,8 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 flip_axes!(graph)
 using PlotlyDocumenter
@@ -96,11 +95,11 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
     ),
-    columns = HeatmapAxisData(;
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
@@ -127,11 +126,11 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
     ),
-    columns = HeatmapAxisData(;
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
@@ -160,12 +159,12 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
         arrangement = ArrangementData(; groups = VectorValuesData([1, 1, 2, 2])),
     ),
-    columns = HeatmapAxisData(;
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
         annotations = [
             AnnotationData(;
@@ -197,8 +196,8 @@ graph = heatmap_graph(;
         2 3 3 4 2 3;
         1 4 2 5 1 4;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
-    columns = HeatmapAxisData(;
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["U", "V", "W", "X", "Y", "Z"]),
         arrangement = ArrangementData(;
             groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
@@ -224,10 +223,10 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = ["A", "B", "C", "D"], mask = [true, false, true, true]),
     ),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)

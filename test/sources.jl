@@ -63,9 +63,21 @@ nested_test("sources") do
             end
 
             nested_test("matrix") do
-                # The rows and columns entities belong to their axes, so the entries are all that is visited.
+                # The rows and columns entities belong to their sides, so the entries are all that is visited.
                 @test visited_names(visit_data_sinks, entries_matrix_fields(graph)) ==
                       [:MatrixValuesData, :MatrixEntitiesData]
+                return nothing
+            end
+
+            nested_test("side") do
+                @test visited_names(visit_data_sinks, columns_side(graph)) == [:VectorEntitiesData, :ArrangementData]
+                return nothing
+            end
+
+            nested_test("side+groups") do
+                # The groups view shares the entities of the side, which is visited once.
+                @test visited_names(visit_data_sinks, (columns_side(graph), groups)) ==
+                      [:VectorEntitiesData, :ArrangementData, :VectorValuesData]
                 return nothing
             end
         end

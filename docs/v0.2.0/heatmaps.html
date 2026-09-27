@@ -208,8 +208,8 @@
     [figure_title::Maybe{AbstractString} = nothing,
     entries::MatrixValuesData = MatrixValuesData(),
     cells::MatrixEntitiesData = MatrixEntitiesData(),
-    rows::HeatmapAxisData = HeatmapAxisData(),
-    columns::HeatmapAxisData = HeatmapAxisData(),
+    rows::HeatmapSideData = HeatmapSideData(),
+    columns::HeatmapSideData = HeatmapSideData(),
     configuration::HeatmapGraphConfiguration = HeatmapGraphConfiguration()]
 )::HeatmapGraph
 </code>
@@ -249,8 +249,8 @@
     figure_title::Maybe{AbstractString} = nothing
     entries::MatrixValuesData = MatrixValuesData()
     cells::MatrixEntitiesData = MatrixEntitiesData()
-    rows::HeatmapAxisData = HeatmapAxisData()
-    columns::HeatmapAxisData = HeatmapAxisData()
+    rows::HeatmapSideData = HeatmapSideData()
+    columns::HeatmapSideData = HeatmapSideData()
 end
 </code>
 </pre>
@@ -266,9 +266,9 @@ end
 <code>rows
 </code> and 
 <code>columns
-</code> hold the data of each axis (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
-<code>HeatmapAxisData
+</code> hold the data of each side (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideData">
+<code>HeatmapSideData
 </code>
 </a>). A cell is shown if both its row and its column are shown; there is no mask of its own. The values of the hidden cells still take part in the range of the colors scale, unless 
 <code>include_hidden
@@ -278,15 +278,15 @@ end
 </p>
 <p>The 
 <code>order
-</code> of the entities of each axis and the 
+</code> of the entities of each side and the 
 <code>hclust
 </code> of its arrangement (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.ArrangementData">
+<a href="common.html#SomeGraphs.Common.ArrangementData">
 <code>ArrangementData
 </code>
-</a>) take part in the layout of the axis as described in 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
-<code>HeatmapAxisConfiguration
+</a>) take part in the layout of the side as described in 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideConfiguration">
+<code>HeatmapSideConfiguration
 </code>
 </a>. The 
 <code>groups
@@ -302,9 +302,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.HeatmapAxisData">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapAxisData">
-<code>SomeGraphs.Heatmaps.HeatmapAxisData
+<summary id="SomeGraphs.Heatmaps.HeatmapSideData">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapSideData">
+<code>SomeGraphs.Heatmaps.HeatmapSideData
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -313,7 +313,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">@kwdef mutable struct HeatmapAxisData
+<code class="language-julia hljs">@kwdef mutable struct HeatmapSideData
     entities::VectorEntitiesData = VectorEntitiesData()
     arrangement::ArrangementData = ArrangementData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
@@ -321,19 +321,19 @@ end
 end
 </code>
 </pre>
-<p>The data of one axis (the rows or the columns) of a 
+<p>The data of one side (the rows or the columns) of a 
 <a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphData">
 <code>HeatmapGraphData
 </code>
 </a>. The 
 <code>entities
-</code> hold the names, hovers, mask and order of the entries; their names are shown as the tick labels, titled by the axis 
+</code> hold the names, hovers, mask and order of the entries; their names are shown as the tick labels, titled by the 
 <code>title
-</code> of the configuration. The 
+</code> of the side configuration. The 
 <code>arrangement
 </code> holds what else the entries are arranged by. The 
 <code>annotations
-</code> are shown to the side of the axis. If 
+</code> are shown next to the entries. If 
 <code>annotations_order
 </code> is specified, they are shown in that order; it describes all the annotations, including the ones that are not 
 <code>is_shown
@@ -355,65 +355,6 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.ArrangementData">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.ArrangementData">
-<code>SomeGraphs.Heatmaps.ArrangementData
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef mutable struct ArrangementData
-    hclust::Maybe{Hclust} = nothing
-    groups::VectorValuesData = VectorValuesData()
-    subgroups::VectorValuesData = VectorValuesData()
-    arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
-end
-</code>
-</pre>
-<p>The inputs to arranging the entries of one axis of a heatmap, other than the 
-<code>order
-</code> of its entities: a clustering tree, the groups of the entries, and the matrix to cluster them by.
-</p>
-<p>By default, if reordering the entries, this is based on the 
-<code>entries.matrix
-</code> of the graph. You can override this by specifying an 
-<code>arrange_by
-</code> matrix. Only the reordered dimension needs to match the 
-<code>entries.matrix
-</code> (the rows 
-<code>arrange_by
-</code> must have the same number of rows, and the columns 
-<code>arrange_by
-</code> the same number of columns); the other dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows 
-<code>arrange_by
-</code> matrix should be in row-major layout, but that&#39;s not critical.
-</p>
-<p>Alternatively you can give the tree of the entries as an 
-<code>hclust
-</code>, and/or the 
-<code>order
-</code> of the entities; see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
-<code>HeatmapAxisConfiguration
-</code>
-</a> for how they take part in the layout.
-</p>
-<p>If 
-<code>groups
-</code> values (numbers or strings, one per entry) are specified, then a gap can be added between entries of different groups. Groups can also be used to constrain the computed clustering. The 
-<code>subgroups
-</code> are a second, finer level of grouping nested in the groups. Neither has a title.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
 <summary id="SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
 <a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphConfiguration">
 <code>SomeGraphs.Heatmaps.HeatmapGraphConfiguration
@@ -428,8 +369,8 @@ end
 <code class="language-julia hljs">@kwdef mutable struct HeatmapGraphConfiguration &lt;: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     entries::EntriesConfiguration = EntriesConfiguration()
-    rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
-    columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
+    rows::HeatmapSideConfiguration = HeatmapSideConfiguration()
+    columns::HeatmapSideConfiguration = HeatmapSideConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
     final_placement::Maybe{HeatmapGraphPlacement} = nothing
 end
@@ -449,9 +390,9 @@ end
 <code>rows
 </code> and 
 <code>columns
-</code> configure each axis (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
-<code>HeatmapAxisConfiguration
+</code> configure each side (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideConfiguration">
+<code>HeatmapSideConfiguration
 </code>
 </a>).
 </p>
@@ -461,9 +402,9 @@ end
 <code>placement
 </code> (e.g., for generating other graphs in an identical placement). It is computed once, whether the graph&#39;s figure is generated or its placement is asked for first.
 </p>
-<div class="admonition is-info" id="Note-e66df3ce5cf1e74">
+<div class="admonition is-info" id="Note-1a16dd135bccf08b">
 <header class="admonition-header">Note
-<a class="admonition-anchor" href="#Note-e66df3ce5cf1e74" title="Permalink">
+<a class="admonition-anchor" href="#Note-1a16dd135bccf08b" title="Permalink">
 </a>
 </header>
 <div class="admonition-body">
@@ -481,11 +422,11 @@ end
 <code>metric
 </code> and 
 <code>dendogram_size
-</code> of the axes configuration, and the 
+</code> of the sides configuration, and the 
 <code>entries.matrix
 </code>, the 
 <code>order
-</code> of the axes entities and their 
+</code> of the sides entities and their 
 <code>arrangement
 </code>. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the placement of the first grouping unless the cache is reset in between.
 </p>
@@ -523,9 +464,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
-<code>SomeGraphs.Heatmaps.HeatmapAxisConfiguration
+<summary id="SomeGraphs.Heatmaps.HeatmapSideConfiguration">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapSideConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapSideConfiguration
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -534,7 +475,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">@kwdef mutable struct HeatmapAxisConfiguration &lt;: Validated
+<code class="language-julia hljs">@kwdef mutable struct HeatmapSideConfiguration &lt;: Validated
     title::Maybe{AbstractString} = nothing
     show_ticks::Bool = true
     ticks_angle::Maybe{Real} = nothing
@@ -552,25 +493,25 @@ end
 end
 </code>
 </pre>
-<p>Configure one axis (the rows or the columns) of a heatmap. The 
+<p>Configure one side (the rows or the columns) of a heatmap. The 
 <code>title
-</code> is the title of the axis. The 
+</code> is shown on the axis of the side. The 
 <code>annotations
-</code> are the sizes of the annotations shown to the side of the axis.
+</code> are the sizes of the annotations shown next to the entries.
 </p>
 <p>The entries are labelled by their names from the 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
-<code>HeatmapAxisData
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideData">
+<code>HeatmapSideData
 </code>
 </a>, if they have any. Set 
 <code>show_ticks
 </code> to 
 <code>false
-</code> to leave them unlabelled, which is what an axis holding thousands of entries wants; the names are still the first line of each hover. By default the labels are shown parallel to the axis, and 
+</code> to leave them unlabelled, which is what a side holding thousands of entries wants; the names are still the first line of each hover. By default the labels are shown parallel to the axis, and 
 <code>ticks_angle
 </code> rotates them.
 </p>
-<p>The layout of the axis is an order, and optionally a tree for the dendogram. The 
+<p>The layout of the side is an order, and optionally a tree for the dendogram. The 
 <code>tree_source
 </code> says where the tree comes from (see 
 <a href="heatmaps.html#SomeGraphs.Heatmaps.TreeSource">
@@ -674,7 +615,7 @@ end
 </td>
 <td style="text-align: left">forbidden
 </td>
-<td style="text-align: left">the other axis&#39;s
+<td style="text-align: left">the other side&#39;s
 </td>
 <td style="text-align: left">leaves, as is
 </td>
@@ -704,7 +645,7 @@ end
 <code>GivenOrder
 </code>
 </td>
-<td style="text-align: left">the other axis&#39;s
+<td style="text-align: left">the other side&#39;s
 </td>
 <td style="text-align: left">leaves, toward the target
 </td>
@@ -802,9 +743,9 @@ end
 <code>SameOrder
 </code> is a plain target-order. With 
 <code>SameTree
-</code> it copies the layout of the other axis; with 
+</code> it copies the layout of the other side; with 
 <code>OrderTree
-</code> it builds this axis&#39;s tree around the other&#39;s order; with 
+</code> it builds this side&#39;s tree around the other&#39;s order; with 
 <code>ClusteredTree
 </code> it clusters toward it.
 </p>
@@ -960,7 +901,7 @@ end
 <code>SameTree
 </code>, so specifying them for one is an error.
 </p>
-<p>By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not move the rest. Set 
+<p>By default, a computed clustering sees all the entries of the side, hidden ones included, so hiding some entries does not move the rest. Set 
 <code>include_hidden
 </code> to 
 <code>false
@@ -973,8 +914,8 @@ end
 </code> given in the data, which is used as is.
 </p>
 <p>If groups are specified for the entries in the 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
-<code>HeatmapAxisData
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideData">
+<code>HeatmapSideData
 </code>
 </a>, they can be used to constrain the clustering, and/or to create visible gaps in the heatmap (between entries of different groups). The 
 <code>groups_gap
@@ -988,7 +929,7 @@ end
 <code>nothing
 </code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
 </p>
-<p>A gap of a fixed number of entries is invisible in an axis holding thousands of them, and is most of an axis holding a few dozen. The 
+<p>A gap of a fixed number of entries is invisible in a side holding thousands of them, and is most of a side holding a few dozen. The 
 <code>total_gaps_fraction
 </code> fixes this. The gaps are widened together, keeping their ratio, until they take this fraction of the axis. They are never narrowed, so 
 <code>groups_gap
@@ -1026,7 +967,7 @@ end
 </summary>
 <section>
 <div>
-<p>Specify where the tree of a heatmap axis comes from.
+<p>Specify where the tree of a heatmap side comes from.
 </p>
 <ul>
 <li>
@@ -1055,7 +996,7 @@ end
 </li>
 <li>
 <code>SameTree
-</code> uses the tree of the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
+</code> uses the tree of the other side. This can only be applied to square matrices and can&#39;t be specified for both sides.
 </li>
 </ul>
 <p>A tree is needed when any field depends on one: the dendogram is shown, a 
@@ -1084,7 +1025,7 @@ end
 </summary>
 <section>
 <div>
-<p>Specify where the order of a heatmap axis comes from.
+<p>Specify where the order of a heatmap side comes from.
 </p>
 <ul>
 <li>
@@ -1119,7 +1060,7 @@ end
 </li>
 <li>
 <code>SameOrder
-</code> uses the order of the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
+</code> uses the order of the other side. This can only be applied to square matrices and can&#39;t be specified for both sides.
 </li>
 </ul>
 <p>The last five name a target order. When a tree is needed, the branches of a given, same or clustered tree are reordered toward the target (using 
@@ -1134,9 +1075,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.AxisPlacement">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.AxisPlacement">
-<code>SomeGraphs.Heatmaps.AxisPlacement
+<summary id="SomeGraphs.Heatmaps.SidePlacement">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.SidePlacement">
+<code>SomeGraphs.Heatmaps.SidePlacement
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1145,13 +1086,13 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">struct AxisPlacement
+<code class="language-julia hljs">struct SidePlacement
     order::AbstractVector{&lt;:Integer}
     hclust::Maybe{Hclust}
 end
 </code>
 </pre>
-<p>Where the entries of one axis of a heatmap were put: their final 
+<p>Where the entries of one side of a heatmap were put: their final 
 <code>order
 </code>, and the tree they were put by, if one was needed.
 </p>
@@ -1160,7 +1101,7 @@ end
 <code>order
 </code> is the order of the entries of the data, that is, the index of the original entry shown at each position. This is always a permutation of 
 <code>1:n_entries
-</code>, which for an axis that isn&#39;t reordered at all is the identity.
+</code>, which for a side that isn&#39;t reordered at all is the identity.
 </li>
 <li>
 <code>hclust
@@ -1195,14 +1136,14 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">struct HeatmapGraphPlacement
-    rows::AxisPlacement
-    columns::AxisPlacement
+    rows::SidePlacement
+    columns::SidePlacement
 end
 </code>
 </pre>
 <p>The computed 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.AxisPlacement">
-<code>AxisPlacement
+<a href="heatmaps.html#SomeGraphs.Heatmaps.SidePlacement">
+<code>SidePlacement
 </code>
 </a> of the rows and of the columns of a heatmap graph, as returned by 
 <a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_placement">
@@ -1360,19 +1301,19 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='js1Mj4U9TC' class='' style=';'>
+<div id='pFxnd5TZyL' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("js1Mj4U9TC")
+    const PLOT = document.getElementById("pFxnd5TZyL")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1407,20 +1348,20 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='uAiVYTcgFx' class='' style=';'>
+<div id='UvCws765Bm' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("uAiVYTcgFx")
+    const PLOT = document.getElementById("UvCws765Bm")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1455,20 +1396,20 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 flip_axes!(graph)
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='McAlmnkcW1' class='' style=';'>
+<div id='2BJEO9zfSB' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("McAlmnkcW1")
+    const PLOT = document.getElementById("2BJEO9zfSB")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1503,11 +1444,11 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
     ),
-    columns = HeatmapAxisData(;
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
@@ -1523,12 +1464,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FLisCdXbBk' class='' style=';'>
+<div id='iqjmDlpMLc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FLisCdXbBk")
+    const PLOT = document.getElementById("iqjmDlpMLc")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1567,11 +1508,11 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
     ),
-    columns = HeatmapAxisData(;
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
@@ -1589,12 +1530,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='xxqt5qTskc' class='' style=';'>
+<div id='TdM3RHZG51' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("xxqt5qTskc")
+    const PLOT = document.getElementById("TdM3RHZG51")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1633,12 +1574,12 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
         arrangement = ArrangementData(; groups = VectorValuesData([1, 1, 2, 2])),
     ),
-    columns = HeatmapAxisData(;
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         annotations = [
             AnnotationData(;
@@ -1657,12 +1598,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='4qYaupH9Xc' class='' style=';'>
+<div id='eTsHwcNaY7' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("4qYaupH9Xc")
+    const PLOT = document.getElementById("eTsHwcNaY7")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1701,8 +1642,8 @@ graph = heatmap_graph(;
         2 3 3 4 2 3;
         1 4 2 5 1 4;
     ]),
-    rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
-    columns = HeatmapAxisData(;
+    rows = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
+    columns = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
         arrangement = ArrangementData(;
             groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
@@ -1716,12 +1657,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='PfgjTjZLDK' class='' style=';'>
+<div id='BKDJot9Lus' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("PfgjTjZLDK")
+    const PLOT = document.getElementById("BKDJot9Lus")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1770,21 +1711,21 @@ graph = heatmap_graph(;
         2 3 3;
         1 4 2;
     ]),
-    rows = HeatmapAxisData(;
+    rows = HeatmapSideData(;
         entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;], mask = [true, false, true, true]),
     ),
-    columns = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
+    columns = HeatmapSideData(; entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;])),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='1COZUthCcK' class='' style=';'>
+<div id='cZKx51LD3Z' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("1COZUthCcK")
+    const PLOT = document.getElementById("cZKx51LD3Z")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1821,32 +1762,8 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.ArrangementData">
-<code>SomeGraphs.Heatmaps.ArrangementData
-</code>
-</a>
-</li>
-<li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.AxisPlacement">
-<code>SomeGraphs.Heatmaps.AxisPlacement
-</code>
-</a>
-</li>
-<li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps.EntriesConfiguration">
 <code>SomeGraphs.Heatmaps.EntriesConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
-<code>SomeGraphs.Heatmaps.HeatmapAxisConfiguration
-</code>
-</a>
-</li>
-<li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisData">
-<code>SomeGraphs.Heatmaps.HeatmapAxisData
 </code>
 </a>
 </li>
@@ -1887,8 +1804,26 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideConfiguration">
+<code>SomeGraphs.Heatmaps.HeatmapSideConfiguration
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideData">
+<code>SomeGraphs.Heatmaps.HeatmapSideData
+</code>
+</a>
+</li>
+<li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps.OrderSource">
 <code>SomeGraphs.Heatmaps.OrderSource
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.SidePlacement">
+<code>SomeGraphs.Heatmaps.SidePlacement
 </code>
 </a>
 </li>

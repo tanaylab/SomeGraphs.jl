@@ -58,6 +58,15 @@ nested_test("heatmaps") do
 
         @test rows_arrangement(graph) === graph.data.rows.arrangement
         @test columns_arrangement(graph) === graph.data.columns.arrangement
+
+        for (side, data, configuration, placement) in (
+            (rows_side(graph), graph.data.rows, graph.configuration.rows, graph.placement.rows),
+            (columns_side(graph), graph.data.columns, graph.configuration.columns, graph.placement.columns),
+        )
+            @test side_data(side) === data
+            @test side_configuration(side) === configuration
+            @test side_placement(side) === placement
+        end
         return nothing
     end
 
@@ -425,13 +434,13 @@ nested_test("heatmaps") do
             return nothing
         end
 
-        # Naming one axis alone is normal when the other has too many entries to label.
+        # Naming one side alone is normal when the other has too many entries to label.
         nested_test("rows") do
             test_html(graph, "heatmap.names.rows.html")
             return nothing
         end
 
-        # An axis holding too many entries to label still names them in the hovers.
+        # A side holding too many entries to label still names them in the hovers.
         nested_test("ticks") do
             graph.data.columns.entities.names = ["A", "B", "C", "D"]
             graph.configuration.columns.show_ticks = false
@@ -476,7 +485,7 @@ nested_test("heatmaps") do
             return nothing
         end
 
-        # Without a fraction the gap is used as given, however many entries the axis holds.
+        # Without a fraction the gap is used as given, however many entries the side holds.
         nested_test("none") do
             graph.configuration.columns.total_gaps_fraction = nothing
             test_html(graph, "heatmap.gaps.html")
