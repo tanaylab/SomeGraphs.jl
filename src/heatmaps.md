@@ -19,9 +19,10 @@ SomeGraphs.Heatmaps.EntriesConfiguration
 SomeGraphs.Heatmaps.HeatmapAxisConfiguration
 SomeGraphs.Heatmaps.TreeSource
 SomeGraphs.Heatmaps.OrderSource
-SomeGraphs.Heatmaps.HeatmapGraphOrder
-SomeGraphs.Heatmaps.heatmap_order
-SomeGraphs.Heatmaps.reset_order!
+SomeGraphs.Heatmaps.AxisPlacement
+SomeGraphs.Heatmaps.HeatmapGraphPlacement
+SomeGraphs.Heatmaps.heatmap_placement
+SomeGraphs.Heatmaps.reset_placement!
 SomeGraphs.Heatmaps.HeatmapLinkage
 SomeGraphs.Heatmaps.HeatmapOrigin
 ```

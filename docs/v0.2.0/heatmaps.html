@@ -344,8 +344,8 @@ end
 <code>VectorEntitiesData
 </code>
 </a>) are not drawn, but they are still part of the data: the clustering sees them, and the order (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
-<code>heatmap_order
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_placement">
+<code>heatmap_placement
 </code>
 </a>) can be given to another graph of the same data, whether or not the two hide the same entries. At least one entry must be shown.
 </p>
@@ -431,7 +431,7 @@ end
     rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
-    final_order::Maybe{HeatmapGraphOrder} = nothing
+    final_placement::Maybe{HeatmapGraphPlacement} = nothing
 end
 </code>
 </pre>
@@ -456,20 +456,20 @@ end
 </a>).
 </p>
 <p>The 
-<code>final_order
-</code> caches the computed order of the rows and the columns; access it through the graph&#39;s 
-<code>order
-</code> (e.g., for generating other graphs in an identical order). It is computed once, whether the graph&#39;s figure is generated or its order is asked for first.
+<code>final_placement
+</code> caches the computed placement of the rows and the columns; access it through the graph&#39;s 
+<code>placement
+</code> (e.g., for generating other graphs in an identical placement). It is computed once, whether the graph&#39;s figure is generated or its placement is asked for first.
 </p>
-<div class="admonition is-info" id="Note-3a86ceb3f202edc0">
+<div class="admonition is-info" id="Note-e66df3ce5cf1e74">
 <header class="admonition-header">Note
-<a class="admonition-anchor" href="#Note-3a86ceb3f202edc0" title="Permalink">
+<a class="admonition-anchor" href="#Note-e66df3ce5cf1e74" title="Permalink">
 </a>
 </header>
 <div class="admonition-body">
 <p>Nothing detects that the cache went stale. Call 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!">
-<code>reset_order!
+<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_placement!">
+<code>reset_placement!
 </code>
 </a> if anything it was computed from is changed after it was computed - that is, the 
 <code>tree_source
@@ -487,7 +487,7 @@ end
 <code>order
 </code> of the axes entities and their 
 <code>arrangement
-</code>. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order of the first grouping unless the cache is reset in between.
+</code>. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the placement of the first grouping unless the cache is reset in between.
 </p>
 </div>
 </div>
@@ -965,8 +965,8 @@ end
 </code> to 
 <code>false
 </code> to cluster the shown entries only. Either way the resulting order and tree (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
-<code>heatmap_order
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_placement">
+<code>heatmap_placement
 </code>
 </a>) describe all the entries; when the hidden ones were left out of the clustering, they come last, joined to the root of the tree. This has no effect on an 
 <code>Hclust
@@ -1134,9 +1134,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.HeatmapGraphOrder">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphOrder">
-<code>SomeGraphs.Heatmaps.HeatmapGraphOrder
+<summary id="SomeGraphs.Heatmaps.AxisPlacement">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.AxisPlacement">
+<code>SomeGraphs.Heatmaps.AxisPlacement
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1145,43 +1145,37 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">struct HeatmapGraphOrder
-    rows_order::AbstractVector{&lt;:Integer}
-    rows_hclust::Maybe{Hclust}
-    columns_order::AbstractVector{&lt;:Integer}
-    columns_hclust::Maybe{Hclust}
+<code class="language-julia hljs">struct AxisPlacement
+    order::AbstractVector{&lt;:Integer}
+    hclust::Maybe{Hclust}
 end
 </code>
 </pre>
-<p>The computed final order and clustering of the rows and the columns of a heatmap graph, as returned by 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
-<code>heatmap_order
-</code>
-</a>.
+<p>Where the entries of one axis of a heatmap were put: their final 
+<code>order
+</code>, and the tree they were put by, if one was needed.
 </p>
 <ul>
 <li>
-<code>rows_order
-</code> is the order of the rows of the data, that is, the index of the original row shown at each position. This is always a permutation of 
-<code>1:n_rows
+<code>order
+</code> is the order of the entries of the data, that is, the index of the original entry shown at each position. This is always a permutation of 
+<code>1:n_entries
 </code>, which for an axis that isn&#39;t reordered at all is the identity.
 </li>
 <li>
-<code>rows_hclust
-</code> is the tree the rows were clustered by, or 
+<code>hclust
+</code> is the tree of the entries, or 
 <code>nothing
-</code> if they weren&#39;t clustered (they were left alone, given an explicit order, or slanted without a tree).
-</li>
-<li>
-<code>columns_order
-</code> and 
-<code>columns_hclust
-</code> are the same for the columns.
+</code> if no tree was needed (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.TreeSource">
+<code>TreeSource
+</code>
+</a>).
 </li>
 </ul>
 <p>These describe the order of the data, not the order it is displayed in; applying the 
 <code>origin
-</code> is up to whoever shows the graph, as is skipping the hidden rows and columns (the order and the tree include them).
+</code> is up to whoever shows the graph, as is skipping the hidden entries (the order and the tree include them).
 </p>
 </div>
 </section>
@@ -1189,9 +1183,42 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.heatmap_order">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_order">
-<code>SomeGraphs.Heatmaps.heatmap_order
+<summary id="SomeGraphs.Heatmaps.HeatmapGraphPlacement">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphPlacement">
+<code>SomeGraphs.Heatmaps.HeatmapGraphPlacement
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">struct HeatmapGraphPlacement
+    rows::AxisPlacement
+    columns::AxisPlacement
+end
+</code>
+</pre>
+<p>The computed 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.AxisPlacement">
+<code>AxisPlacement
+</code>
+</a> of the rows and of the columns of a heatmap graph, as returned by 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_placement">
+<code>heatmap_placement
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.heatmap_placement">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.heatmap_placement">
+<code>SomeGraphs.Heatmaps.heatmap_placement
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -1200,34 +1227,34 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+<code class="language-julia hljs">heatmap_placement(graph::HeatmapGraph)::HeatmapGraphPlacement
 </code>
 </pre>
 <p>Return the 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
-<code>HeatmapGraphOrder
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphPlacement">
+<code>HeatmapGraphPlacement
 </code>
 </a> of a heatmap 
 <code>graph
-</code>, that is, the final order of its rows and columns and the trees they were clustered by, without rendering it.
+</code>, that is, the final order of its rows and columns and the trees they were placed by, without rendering it.
 </p>
 <p>You can just write 
-<code>graph.order
+<code>graph.placement
 </code> instead of 
-<code>heatmap_order(graph)
-</code>. Either way the order is only computed once; showing the graph will reuse it, and vice versa.
+<code>heatmap_placement(graph)
+</code>. Either way the placement is only computed once; showing the graph will reuse it, and vice versa.
 </p>
 <p>Use this to list the entries in the order they are shown:
 </p>
 <pre>
-<code class="language-julia hljs">ordered_rows_names = graph.data.rows.entities.names[graph.order.rows_order]
+<code class="language-julia hljs">ordered_rows_names = graph.data.rows.entities.names[graph.placement.rows.order]
 </code>
 </pre>
 <p>Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its order (and, if they use the same groups, they will also have the same gaps):
 </p>
 <pre>
 <code class="language-julia hljs">graph.configuration.columns.order_source = OptimalTreeReorder
-other_graph.data.columns.entities.order = graph.order.columns_order
+other_graph.data.columns.entities.order = graph.placement.columns.order
 </code>
 </pre>
 <p>If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order 
@@ -1236,7 +1263,7 @@ other_graph.data.columns.entities.order = graph.order.columns_order
 </p>
 <pre>
 <code class="language-julia hljs">graph.configuration.columns.dendogram_size = 0.1
-other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
+other_graph.data.columns.arrangement.hclust = graph.placement.columns.hclust
 other_graph.configuration.columns.dendogram_size = 0.1
 </code>
 </pre>
@@ -1246,9 +1273,9 @@ other_graph.configuration.columns.dendogram_size = 0.1
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.reset_order!">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.reset_order!">
-<code>SomeGraphs.Heatmaps.reset_order!
+<summary id="SomeGraphs.Heatmaps.reset_placement!">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.reset_placement!">
+<code>SomeGraphs.Heatmaps.reset_placement!
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -1257,18 +1284,18 @@ other_graph.configuration.columns.dendogram_size = 0.1
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">reset_order!(graph::HeatmapGraph)::Nothing
+<code class="language-julia hljs">reset_placement!(graph::HeatmapGraph)::Nothing
 </code>
 </pre>
 <p>Forget the 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
-<code>HeatmapGraphOrder
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphPlacement">
+<code>HeatmapGraphPlacement
 </code>
 </a> cached in the graph&#39;s 
-<code>final_order
+<code>final_placement
 </code>, so that asking for the graph&#39;s 
-<code>order
-</code> (or showing it) will compute it again. Call this after changing anything the order was computed from.
+<code>placement
+</code> (or showing it) will compute it again. Call this after changing anything the placement was computed from.
 </p>
 </div>
 </section>
@@ -1340,12 +1367,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='h1CT5wkeYK' class='' style=';'>
+<div id='js1Mj4U9TC' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("h1CT5wkeYK")
+    const PLOT = document.getElementById("js1Mj4U9TC")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1388,12 +1415,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='06Vi2hHbRP' class='' style=';'>
+<div id='uAiVYTcgFx' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("06Vi2hHbRP")
+    const PLOT = document.getElementById("uAiVYTcgFx")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1436,12 +1463,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='J7GY5AcDss' class='' style=';'>
+<div id='McAlmnkcW1' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("J7GY5AcDss")
+    const PLOT = document.getElementById("McAlmnkcW1")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1496,12 +1523,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Nu3lcIMGLv' class='' style=';'>
+<div id='FLisCdXbBk' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Nu3lcIMGLv")
+    const PLOT = document.getElementById("FLisCdXbBk")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1562,12 +1589,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XSdZoLNPC4' class='' style=';'>
+<div id='xxqt5qTskc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XSdZoLNPC4")
+    const PLOT = document.getElementById("xxqt5qTskc")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1630,12 +1657,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='TULV3VuRkE' class='' style=';'>
+<div id='4qYaupH9Xc' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("TULV3VuRkE")
+    const PLOT = document.getElementById("4qYaupH9Xc")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1689,12 +1716,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='vqtsvfrFJ6' class='' style=';'>
+<div id='PfgjTjZLDK' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("vqtsvfrFJ6")
+    const PLOT = document.getElementById("PfgjTjZLDK")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1752,12 +1779,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='caxBfOMX6E' class='' style=';'>
+<div id='1COZUthCcK' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("caxBfOMX6E")
+    const PLOT = document.getElementById("1COZUthCcK")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1800,6 +1827,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.AxisPlacement">
+<code>SomeGraphs.Heatmaps.AxisPlacement
+</code>
+</a>
+</li>
+<li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps.EntriesConfiguration">
 <code>SomeGraphs.Heatmaps.EntriesConfiguration
 </code>
@@ -1836,8 +1869,8 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphOrder">
-<code>SomeGraphs.Heatmaps.HeatmapGraphOrder
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapGraphPlacement">
+<code>SomeGraphs.Heatmaps.HeatmapGraphPlacement
 </code>
 </a>
 </li>
@@ -1872,14 +1905,14 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
-<code>SomeGraphs.Heatmaps.heatmap_order
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_placement">
+<code>SomeGraphs.Heatmaps.heatmap_placement
 </code>
 </a>
 </li>
 <li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_order!">
-<code>SomeGraphs.Heatmaps.reset_order!
+<a href="heatmaps.html#SomeGraphs.Heatmaps.reset_placement!">
+<code>SomeGraphs.Heatmaps.reset_placement!
 </code>
 </a>
 </li>

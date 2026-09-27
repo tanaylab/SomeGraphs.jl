@@ -819,8 +819,8 @@ nested_test("heatmaps") do
             graph.configuration.columns.include_hidden = false
             graph.configuration.rows.order_source = SameOrder
             test_html(graph, "heatmap.reorder.rows=columns.!hidden.html")
-            @test graph.order.rows_order == graph.order.columns_order
-            @test graph.order.columns_order[end] == 2
+            @test graph.placement.rows.order == graph.placement.columns.order
+            @test graph.placement.columns.order[end] == 2
             return nothing
         end
     end
@@ -893,7 +893,7 @@ nested_test("heatmaps") do
             graph.data.rows.entities.mask = [true, false, true]
             graph.data.rows.entities.order = [3, 2, 1]
             test_html(graph, "heatmap.mask.order.html")
-            @test graph.order.rows_order == [3, 2, 1]
+            @test graph.placement.rows.order == [3, 2, 1]
             return nothing
         end
 
@@ -905,16 +905,16 @@ nested_test("heatmaps") do
             nested_test("order") do
                 graph.data.rows.entities.order = [3, 2, 1]
                 graph.configuration.rows.tree_source = ClusteredTree
-                @test graph.order.rows_order == [3, 1, 2]
+                @test graph.placement.rows.order == [3, 1, 2]
                 return nothing
             end
 
             nested_test("arrange_by") do
                 graph.data.rows.arrangement.arrange_by = Float32[1 2; 3 4; 5 6]
                 graph.configuration.rows.order_source = OptimalTreeReorder
-                @test sort(graph.order.rows_order) == 1:3
-                @test graph.order.rows_order[end] == 2
-                @test graph.order.columns_order == 1:4
+                @test sort(graph.placement.rows.order) == 1:3
+                @test graph.placement.rows.order[end] == 2
+                @test graph.placement.columns.order == 1:4
                 return nothing
             end
         end
@@ -927,12 +927,12 @@ nested_test("heatmaps") do
             nested_test("()") do
                 graph.data.columns.entities.mask = [true, false, true, true]
                 test_html(graph, "heatmap.mask.dendogram.html")
-                @test sort(graph.order.columns_order) == 1:4
-                @test graph.order.columns_hclust.order == graph.order.columns_order
+                @test sort(graph.placement.columns.order) == 1:4
+                @test graph.placement.columns.hclust.order == graph.placement.columns.order
 
                 other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.matrix))
-                other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
-                @test other_graph.order.columns_order == graph.order.columns_order
+                other_graph.data.columns.arrangement.hclust = graph.placement.columns.hclust
+                @test other_graph.placement.columns.order == graph.placement.columns.order
                 return nothing
             end
 
@@ -947,14 +947,14 @@ nested_test("heatmaps") do
                 graph.data.columns.entities.mask = [true, false, true, true]
                 graph.configuration.columns.include_hidden = false
                 test_html(graph, "heatmap.mask.dendogram.!hidden.html")
-                @test sort(graph.order.columns_order) == 1:4
-                @test graph.order.columns_order[end] == 2
-                @test graph.order.columns_hclust.order == graph.order.columns_order
+                @test sort(graph.placement.columns.order) == 1:4
+                @test graph.placement.columns.order[end] == 2
+                @test graph.placement.columns.hclust.order == graph.placement.columns.order
 
                 other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.matrix))
                 other_graph.data.columns.entities.mask = graph.data.columns.entities.mask
-                other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
-                @test other_graph.order.columns_order == graph.order.columns_order
+                other_graph.data.columns.arrangement.hclust = graph.placement.columns.hclust
+                @test other_graph.placement.columns.order == graph.placement.columns.order
                 return nothing
             end
         end
@@ -1030,20 +1030,20 @@ nested_test("heatmaps") do
         end
     end
 
-    nested_test("order") do
+    nested_test("placement") do
         nested_test("()") do
-            @test graph.order.rows_order == 1:3
-            @test graph.order.columns_order == 1:4
-            @test graph.order.rows_hclust === nothing
-            @test graph.order.columns_hclust === nothing
+            @test graph.placement.rows.order == 1:3
+            @test graph.placement.columns.order == 1:4
+            @test graph.placement.rows.hclust === nothing
+            @test graph.placement.columns.hclust === nothing
             return nothing
         end
 
         nested_test("only") do
-            graph.order
-            @test graph.configuration.final_order === graph.order
+            graph.placement
+            @test graph.configuration.final_placement === graph.placement
             graph.figure
-            @test graph.configuration.final_order === graph.order
+            @test graph.configuration.final_placement === graph.placement
             return nothing
         end
 
@@ -1056,32 +1056,32 @@ nested_test("heatmaps") do
 
             nested_test("dendogram") do
                 graph.configuration.columns.dendogram_size = 0.1
-                @test graph.order.columns_order in ([1, 3, 2, 4], [4, 2, 3, 1])
-                @test graph.order.columns_hclust.order == graph.order.columns_order
+                @test graph.placement.columns.order in ([1, 3, 2, 4], [4, 2, 3, 1])
+                @test graph.placement.columns.hclust.order == graph.placement.columns.order
                 return nothing
             end
 
             nested_test("order+dendogram") do
                 graph.data.columns.entities.order = [2, 1, 4, 3]
                 graph.configuration.columns.dendogram_size = 0.1
-                @test graph.order.columns_order == [2, 1, 4, 3]
-                @test graph.order.columns_hclust.order == [2, 1, 4, 3]
+                @test graph.placement.columns.order == [2, 1, 4, 3]
+                @test graph.placement.columns.hclust.order == [2, 1, 4, 3]
                 return nothing
             end
 
             nested_test("hclust") do
                 graph.data.columns.arrangement.hclust = tree
-                @test graph.order.columns_order == tree.order
-                @test graph.order.columns_hclust === tree
+                @test graph.placement.columns.order == tree.order
+                @test graph.placement.columns.hclust === tree
                 return nothing
             end
 
             nested_test("hclust+order") do
                 graph.data.columns.arrangement.hclust = tree
                 graph.data.columns.entities.order = reverse(tree.order)
-                @test graph.order.columns_order == reverse(tree.order)
-                @test graph.order.columns_hclust.order == reverse(tree.order)
-                @test graph.order.columns_hclust.merges == tree.merges
+                @test graph.placement.columns.order == reverse(tree.order)
+                @test graph.placement.columns.hclust.order == reverse(tree.order)
+                @test graph.placement.columns.hclust.merges == tree.merges
                 return nothing
             end
 
@@ -1089,15 +1089,15 @@ nested_test("heatmaps") do
                 graph.data.columns.entities.order = [4, 3, 2, 1]
                 graph.configuration.columns.tree_source = ClusteredTree
                 graph.configuration.columns.dendogram_size = 0.1
-                @test graph.order.columns_order == [4, 2, 3, 1]
-                @test graph.order.columns_hclust.order == [4, 2, 3, 1]
+                @test graph.placement.columns.order == [4, 2, 3, 1]
+                @test graph.placement.columns.hclust.order == [4, 2, 3, 1]
                 return nothing
             end
 
             nested_test("slanted+dendogram") do
                 graph.configuration.columns.order_source = SlantedOrder
                 graph.configuration.columns.dendogram_size = 0.1
-                @test graph.order.columns_hclust.order == graph.order.columns_order
+                @test graph.placement.columns.hclust.order == graph.placement.columns.order
                 return nothing
             end
 
@@ -1108,17 +1108,17 @@ nested_test("heatmaps") do
                 graph.configuration.columns.dendogram_size = 0.1
 
                 nested_test("tree") do
-                    @test graph.order.rows_order == graph.order.columns_order
-                    @test graph.order.rows_hclust.merges == graph.order.columns_hclust.merges
-                    @test graph.order.rows_hclust.order == graph.order.columns_hclust.order
+                    @test graph.placement.rows.order == graph.placement.columns.order
+                    @test graph.placement.rows.hclust.merges == graph.placement.columns.hclust.merges
+                    @test graph.placement.rows.hclust.order == graph.placement.columns.hclust.order
                     return nothing
                 end
 
                 nested_test("order") do
                     graph.configuration.rows.tree_source = OrderTree
-                    @test graph.order.rows_order == graph.order.columns_order
-                    @test graph.order.rows_hclust !== graph.order.columns_hclust
-                    @test graph.order.rows_hclust.order == graph.order.rows_order
+                    @test graph.placement.rows.order == graph.placement.columns.order
+                    @test graph.placement.rows.hclust !== graph.placement.columns.hclust
+                    @test graph.placement.rows.hclust.order == graph.placement.rows.order
                     return nothing
                 end
             end
@@ -1128,45 +1128,45 @@ nested_test("heatmaps") do
         nested_test("reset") do
             graph.configuration.columns.order_source = OptimalTreeReorder
             graph.data.columns.arrangement.groups.vector = [1, 1, 2, 2]
-            grouped_order = graph.order.columns_order
+            grouped_order = graph.placement.columns.order
 
             graph.data.columns.arrangement.groups.vector = [1, 2, 2, 1]
-            @test graph.order.columns_order == grouped_order
+            @test graph.placement.columns.order == grouped_order
 
-            reset_order!(graph)
-            @test graph.configuration.final_order === nothing
-            @test graph.order.columns_order != grouped_order
+            reset_placement!(graph)
+            @test graph.configuration.final_placement === nothing
+            @test graph.placement.columns.order != grouped_order
             return nothing
         end
 
         nested_test("reorder") do
             graph.configuration.columns.order_source = OptimalTreeReorder
-            @test sort(graph.order.columns_order) == 1:4
-            @test graph.order.columns_hclust !== nothing
+            @test sort(graph.placement.columns.order) == 1:4
+            @test graph.placement.columns.hclust !== nothing
 
             nested_test("vector") do
                 other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.matrix))
-                other_graph.data.columns.entities.order = graph.order.columns_order
-                @test other_graph.order.columns_order == graph.order.columns_order
+                other_graph.data.columns.entities.order = graph.placement.columns.order
+                @test other_graph.placement.columns.order == graph.placement.columns.order
                 @test other_graph.json == graph.json
                 return nothing
             end
 
             nested_test("hclust") do
                 other_graph = heatmap_graph(; entries = MatrixValuesData(reverse(graph.data.entries.matrix; dims = 1)))
-                other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
-                @test other_graph.order.columns_order == graph.order.columns_order
+                other_graph.data.columns.arrangement.hclust = graph.placement.columns.hclust
+                @test other_graph.placement.columns.order == graph.placement.columns.order
                 return nothing
             end
 
             # The order is that of the data, so it is unaffected by which corner the origin is displayed at, and can be
             # fed back into a graph with the same origin without being flipped a second time.
             nested_test("origin") do
-                columns_order = graph.order.columns_order
+                columns_order = graph.placement.columns.order
                 graph.configuration.origin = HeatmapTopLeft
-                graph.configuration.final_order = nothing
-                @test graph.order.columns_order == columns_order
-                @test graph.order.rows_order == 1:3
+                graph.configuration.final_placement = nothing
+                @test graph.placement.columns.order == columns_order
+                @test graph.placement.rows.order == 1:3
 
                 other_graph = heatmap_graph(; entries = MatrixValuesData(graph.data.entries.matrix))
                 other_graph.data.columns.entities.order = columns_order
@@ -1184,7 +1184,7 @@ nested_test("heatmaps") do
             ]
             graph.configuration.rows.order_source = OptimalTreeReorder
             graph.configuration.columns.order_source = SameOrder
-            @test graph.order.columns_order == graph.order.rows_order
+            @test graph.placement.columns.order == graph.placement.rows.order
             return nothing
         end
     end
@@ -1210,7 +1210,7 @@ nested_test("heatmaps") do
         graph.configuration.columns.order_source = OptimalTreeReorder
 
         nested_test("()") do
-            columns_order = graph.order.columns_order
+            columns_order = graph.placement.columns.order
 
             # Each group, and each subgroup, is contiguous; the numbered groups are in the order of their numbers, and
             # the named subgroups are wherever the clustering placed them.
@@ -1221,7 +1221,7 @@ nested_test("heatmaps") do
 
         nested_test("numbered") do
             graph.data.columns.arrangement.subgroups.vector = subgroups
-            columns_order = graph.order.columns_order
+            columns_order = graph.placement.columns.order
 
             # Numbering both levels lays the columns out in the order of their (group, subgroup) pair, which is not the
             # order of the subgroups alone.
@@ -1233,7 +1233,7 @@ nested_test("heatmaps") do
         # A subgroup is nested in its group, so each group may number its own subgroups the same way.
         nested_test("reused") do
             graph.data.columns.arrangement.subgroups.vector = repeat(1:3; inner = 2, outer = 2)
-            columns_order = graph.order.columns_order
+            columns_order = graph.placement.columns.order
             @test labels_in_order(columns_order, groups) == [1, 2]
             @test length(labels_in_order(columns_order, subgroups)) == 6
             @test labels_in_order(columns_order, graph.data.columns.arrangement.subgroups.vector) == [1, 2, 3, 1, 2, 3]
@@ -1242,7 +1242,7 @@ nested_test("heatmaps") do
 
         nested_test("gaps") do
             graph.configuration.columns.subgroups_gap = 1
-            columns_order = graph.order.columns_order
+            columns_order = graph.placement.columns.order
 
             # A gap between the groups, and a gap between the subgroups of each group; the boundary between the groups
             # is gapped once, as a group boundary.
@@ -1250,8 +1250,8 @@ nested_test("heatmaps") do
 
             # The gaps are drawn, but do not change the order.
             graph.configuration.columns.subgroups_gap = nothing
-            reset_order!(graph)
-            @test graph.order.columns_order == columns_order
+            reset_placement!(graph)
+            @test graph.placement.columns.order == columns_order
             return nothing
         end
 

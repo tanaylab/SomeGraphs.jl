@@ -5,6 +5,7 @@ module Heatmaps
 
 export ArrangementData
 export AverageLinkage
+export AxisPlacement
 export ClusteredTree
 export CompleteLinkage
 export EntriesConfiguration
@@ -13,7 +14,7 @@ export GivenOrder
 export GivenTree
 export GivenTreeOrder
 export heatmap_graph
-export heatmap_order
+export heatmap_placement
 export HeatmapAxisConfiguration
 export HeatmapAxisData
 export HeatmapBottomLeft
@@ -21,7 +22,7 @@ export HeatmapBottomRight
 export HeatmapGraph
 export HeatmapGraphConfiguration
 export HeatmapGraphData
-export HeatmapGraphOrder
+export HeatmapGraphPlacement
 export HeatmapLinkage
 export HeatmapOrigin
 export HeatmapTopLeft
@@ -30,7 +31,7 @@ export OptimalTreeReorder
 export OrderSource
 export OrderTree
 export RCompatibleTreeReorder
-export reset_order!
+export reset_placement!
 export SameOrder
 export SameTree
 export SingleLinkage
@@ -100,30 +101,38 @@ Specify where the origin (row 1 column 1) should be displayed. The Plotly defaul
 @enum HeatmapOrigin HeatmapTopLeft HeatmapTopRight HeatmapBottomLeft HeatmapBottomRight
 
 """
-    struct HeatmapGraphOrder
-        rows_order::AbstractVector{<:Integer}
-        rows_hclust::Maybe{Hclust}
-        columns_order::AbstractVector{<:Integer}
-        columns_hclust::Maybe{Hclust}
+    struct AxisPlacement
+        order::AbstractVector{<:Integer}
+        hclust::Maybe{Hclust}
     end
 
-The computed final order and clustering of the rows and the columns of a heatmap graph, as returned by
-[`heatmap_order`](@ref).
+Where the entries of one axis of a heatmap were put: their final `order`, and the tree they were put by, if one was
+needed.
 
-  - `rows_order` is the order of the rows of the data, that is, the index of the original row shown at each position.
-    This is always a permutation of `1:n_rows`, which for an axis that isn't reordered at all is the identity.
-  - `rows_hclust` is the tree the rows were clustered by, or `nothing` if they weren't clustered (they were left alone,
-    given an explicit order, or slanted without a tree).
-  - `columns_order` and `columns_hclust` are the same for the columns.
+  - `order` is the order of the entries of the data, that is, the index of the original entry shown at each position.
+    This is always a permutation of `1:n_entries`, which for an axis that isn't reordered at all is the identity.
+  - `hclust` is the tree of the entries, or `nothing` if no tree was needed (see [`TreeSource`](@ref)).
 
 These describe the order of the data, not the order it is displayed in; applying the `origin` is up to whoever shows
-the graph, as is skipping the hidden rows and columns (the order and the tree include them).
+the graph, as is skipping the hidden entries (the order and the tree include them).
 """
-struct HeatmapGraphOrder
-    rows_order::AbstractVector{<:Integer}
-    rows_hclust::Maybe{Hclust}
-    columns_order::AbstractVector{<:Integer}
-    columns_hclust::Maybe{Hclust}
+struct AxisPlacement
+    order::AbstractVector{<:Integer}
+    hclust::Maybe{Hclust}
+end
+
+"""
+    struct HeatmapGraphPlacement
+        rows::AxisPlacement
+        columns::AxisPlacement
+    end
+
+The computed [`AxisPlacement`](@ref) of the rows and of the columns of a heatmap graph, as returned by
+[`heatmap_placement`](@ref).
+"""
+struct HeatmapGraphPlacement
+    rows::AxisPlacement
+    columns::AxisPlacement
 end
 
 """
@@ -202,7 +211,7 @@ default, `Euclidean`). Neither applies to a `GivenTree` or a `SameTree`, so spec
 
 By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not
 move the rest. Set `include_hidden` to `false` to cluster the shown entries only. Either way the resulting order and
-tree (see [`heatmap_order`](@ref)) describe all the entries; when the hidden ones were left out of the clustering, they
+tree (see [`heatmap_placement`](@ref)) describe all the entries; when the hidden ones were left out of the clustering, they
 come last, joined to the root of the tree. This has no effect on an `Hclust` given in the data, which is used as is.
 
 If groups are specified for the entries in the [`HeatmapAxisData`](@ref), they can be used to constrain the clustering,
@@ -323,7 +332,7 @@ end
         rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
         columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
         origin::HeatmapOrigin = HeatmapBottomLeft
-        final_order::Maybe{HeatmapGraphOrder} = nothing
+        final_placement::Maybe{HeatmapGraphPlacement} = nothing
     end
 
 Configure a graph showing a heatmap.
@@ -334,17 +343,18 @@ tweak the graph size for best results; there's no way to directly control the wi
 The `entries` configure the entries (see [`EntriesConfiguration`](@ref)); the `rows` and `columns` configure each axis
 (see [`HeatmapAxisConfiguration`](@ref)).
 
-The `final_order` caches the computed order of the rows and the columns; access it through the graph's `order` (e.g.,
-for generating other graphs in an identical order). It is computed once, whether the graph's figure is generated or its
-order is asked for first.
+The `final_placement` caches the computed placement of the rows and the columns; access it through the graph's
+`placement` (e.g., for generating other graphs in an identical placement). It is computed once, whether the graph's
+figure is generated or its placement is asked for first.
 
 !!! note
 
-    Nothing detects that the cache went stale. Call [`reset_order!`](@ref) if anything it was computed from is changed
-    after it was computed - that is, the `tree_source`, `order_source`, `linkage`, `metric` and `dendogram_size` of
-    the axes configuration, and the `entries.matrix`, the `order` of the axes entities and their `arrangement`. The
-    groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each
-    time, silently reuses the order of the first grouping unless the cache is reset in between.
+    Nothing detects that the cache went stale. Call [`reset_placement!`](@ref) if anything it was computed from is
+    changed after it was computed - that is, the `tree_source`, `order_source`, `linkage`, `metric` and
+    `dendogram_size` of the axes configuration, and the `entries.matrix`, the `order` of the axes entities and their
+    `arrangement`. The groups are easy to forget: they constrain the clustering, so saving the same graph twice,
+    grouped differently each time, silently reuses the placement of the first grouping unless the cache is reset in
+    between.
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -352,7 +362,7 @@ order is asked for first.
     rows::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     columns::HeatmapAxisConfiguration = HeatmapAxisConfiguration()
     origin::HeatmapOrigin = HeatmapBottomLeft
-    final_order::Maybe{HeatmapGraphOrder} = nothing
+    final_placement::Maybe{HeatmapGraphPlacement} = nothing
 end
 
 function Validations.validate(context::ValidationContext, configuration::HeatmapGraphConfiguration)::Nothing
@@ -411,7 +421,7 @@ including the ones that are not `is_shown`.
 
 Hidden entries (see the mask of [`VectorEntitiesData`](@ref)) are not drawn, but they are still part of the data: the
 clustering sees them, and the order (a permutation or a tree) always describes all the entries, hidden ones included.
-This way the order computed for one graph (see [`heatmap_order`](@ref)) can be given to another graph of the same data,
+This way the order computed for one graph (see [`heatmap_placement`](@ref)) can be given to another graph of the same data,
 whether or not the two hide the same entries. At least one entry must be shown.
 """
 @kwdef mutable struct HeatmapAxisData
@@ -955,18 +965,18 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         mask = shown_cells_mask(graph),
     )
 
-    final_order = heatmap_order(graph)
+    placement = heatmap_placement(graph)
 
     # The order is that of the data; the `origin` decides which end of each axis the first entry is shown at.
     rows_mask = graph.data.rows.entities.mask
     columns_mask = graph.data.columns.entities.mask
     rows_order = displayed_order(
-        final_order.rows_order,
+        placement.rows.order,
         rows_mask,
         graph.configuration.origin in (HeatmapTopLeft, HeatmapTopRight),
     )
     columns_order = displayed_order(
-        final_order.columns_order,
+        placement.columns.order,
         columns_mask,
         graph.configuration.origin in (HeatmapBottomRight, HeatmapTopRight),
     )
@@ -1098,7 +1108,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if graph.configuration.rows.dendogram_size !== nothing
         rows_max_height = push_dendogram_trace!(;
             traces,
-            clusters = displayed_hclust(final_order.rows_hclust, rows_mask),
+            clusters = displayed_hclust(placement.rows.hclust, rows_mask),
             values_orientation = HorizontalValues,
             dendogram_line = graph.configuration.rows.dendogram_line,
             expanded_mask = expanded_rows_mask,
@@ -1119,7 +1129,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if graph.configuration.columns.dendogram_size !== nothing
         columns_max_height = push_dendogram_trace!(;
             traces,
-            clusters = displayed_hclust(final_order.columns_hclust, columns_mask),
+            clusters = displayed_hclust(placement.columns.hclust, columns_mask),
             values_orientation = VerticalValues,
             dendogram_line = graph.configuration.columns.dendogram_line,
             expanded_mask = expanded_columns_mask,
@@ -1398,7 +1408,7 @@ function all_entries_hclust(clusters::Hclust, mask::Union{AbstractVector{Bool}, 
     return Hclust(merges, heights, all_entries_order(clusters.order, mask), clusters.linkage)
 end
 
-function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+function compute_heatmap_placement(graph::HeatmapGraph)::HeatmapGraphPlacement
     rows_mask = is_clustering_shown(graph.data.rows, graph.configuration.rows) ? graph.data.rows.entities.mask : nothing
     columns_mask = if is_clustering_shown(graph.data.columns, graph.configuration.columns)
         graph.data.columns.entities.mask
@@ -1415,7 +1425,7 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
     end
 
     if rows_mask === nothing && columns_mask === nothing
-        return compute_clustered_order(graph)
+        return compute_clustered_placement(graph)
     end
 
     values = entries_values(graph)
@@ -1433,27 +1443,27 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
         ),
         graph.configuration,
     )
-    clustered_order = compute_clustered_order(clustered_graph)
+    clustered_placement = compute_clustered_placement(clustered_graph)
 
-    rows_order = clustered_order.rows_order
-    rows_hclust = clustered_order.rows_hclust
+    rows_order = clustered_placement.rows.order
+    rows_hclust = clustered_placement.rows.hclust
     if rows_mask !== nothing
         rows_order = all_entries_order(rows_order, rows_mask)
         rows_hclust = rows_hclust === nothing ? nothing : all_entries_hclust(rows_hclust, rows_mask)
     end
 
-    columns_order = clustered_order.columns_order
-    columns_hclust = clustered_order.columns_hclust
+    columns_order = clustered_placement.columns.order
+    columns_hclust = clustered_placement.columns.hclust
     if columns_mask !== nothing
         columns_order = all_entries_order(columns_order, columns_mask)
         columns_hclust = columns_hclust === nothing ? nothing : all_entries_hclust(columns_hclust, columns_mask)
     end
 
-    return HeatmapGraphOrder(rows_order, rows_hclust, columns_order, columns_hclust)
+    return HeatmapGraphPlacement(AxisPlacement(rows_order, rows_hclust), AxisPlacement(columns_order, columns_hclust))
 end
 
-# The order of the entries of a graph, clustering all of them.
-function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
+# The placement of the entries of a graph, clustering all of them.
+function compute_clustered_placement(graph::HeatmapGraph)::HeatmapGraphPlacement
     data_rows_arrange_by = prefer_data(graph.data.rows.arrangement.arrange_by, entries_values(graph))
     data_columns_arrange_by = prefer_data(graph.data.columns.arrangement.arrange_by, entries_values(graph))
     @assert data_rows_arrange_by !== nothing
@@ -1549,22 +1559,22 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
         )
     end
 
-    return HeatmapGraphOrder(rows_order, rows_hclust, columns_order, columns_hclust)
+    return HeatmapGraphPlacement(AxisPlacement(rows_order, rows_hclust), AxisPlacement(columns_order, columns_hclust))
 end
 
 """
-    heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
+    heatmap_placement(graph::HeatmapGraph)::HeatmapGraphPlacement
 
-Return the [`HeatmapGraphOrder`](@ref) of a heatmap `graph`, that is, the final order of its rows and columns and the
-trees they were clustered by, without rendering it.
+Return the [`HeatmapGraphPlacement`](@ref) of a heatmap `graph`, that is, the final order of its rows and columns and
+the trees they were placed by, without rendering it.
 
-You can just write `graph.order` instead of `heatmap_order(graph)`. Either way the order is only computed once; showing
-the graph will reuse it, and vice versa.
+You can just write `graph.placement` instead of `heatmap_placement(graph)`. Either way the placement is only computed
+once; showing the graph will reuse it, and vice versa.
 
 Use this to list the entries in the order they are shown:
 
 ```julia
-ordered_rows_names = graph.data.rows.entities.names[graph.order.rows_order]
+ordered_rows_names = graph.data.rows.entities.names[graph.placement.rows.order]
 ```
 
 Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its
@@ -1572,7 +1582,7 @@ order (and, if they use the same groups, they will also have the same gaps):
 
 ```julia
 graph.configuration.columns.order_source = OptimalTreeReorder
-other_graph.data.columns.entities.order = graph.order.columns_order
+other_graph.data.columns.entities.order = graph.placement.columns.order
 ```
 
 If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order
@@ -1581,34 +1591,34 @@ refers to the original column indices):
 
 ```julia
 graph.configuration.columns.dendogram_size = 0.1
-other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
+other_graph.data.columns.arrangement.hclust = graph.placement.columns.hclust
 other_graph.configuration.columns.dendogram_size = 0.1
 ```
 """
-function heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
-    final_order = graph.configuration.final_order  # NOJET
-    if final_order === nothing
-        graph.configuration.final_order = final_order = compute_heatmap_order(graph)  # NOJET
+function heatmap_placement(graph::HeatmapGraph)::HeatmapGraphPlacement
+    final_placement = graph.configuration.final_placement  # NOJET
+    if final_placement === nothing
+        graph.configuration.final_placement = final_placement = compute_heatmap_placement(graph)  # NOJET
     end
-    return final_order
+    return final_placement
 end
 
 """
-    reset_order!(graph::HeatmapGraph)::Nothing
+    reset_placement!(graph::HeatmapGraph)::Nothing
 
-Forget the [`HeatmapGraphOrder`](@ref) cached in the graph's `final_order`, so that asking for the graph's `order` (or
-showing it) will compute it again. Call this after changing anything the order was computed from.
+Forget the [`HeatmapGraphPlacement`](@ref) cached in the graph's `final_placement`, so that asking for the graph's
+`placement` (or showing it) will compute it again. Call this after changing anything the placement was computed from.
 """
-function reset_order!(graph::HeatmapGraph)::Nothing
-    graph.configuration.final_order = nothing
+function reset_placement!(graph::HeatmapGraph)::Nothing
+    graph.configuration.final_placement = nothing
     return nothing
 end
 
-# Only a heatmap has a computed order, so only a heatmap has this property; any other graph will complain there's no
-# such field.
+# Only a heatmap has a computed placement, so only a heatmap has this property; any other graph will complain there's
+# no such field.
 function Base.getproperty(graph::HeatmapGraph, property::Symbol)::Any
-    if property == :order
-        return heatmap_order(graph)
+    if property == :placement
+        return heatmap_placement(graph)
     else
         return invoke(Base.getproperty, Tuple{Graph, Symbol}, graph, property)
     end
