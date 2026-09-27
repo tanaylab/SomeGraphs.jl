@@ -58,10 +58,12 @@ export annotations_colors_vector_fields
 export bars_entities
 export borders_colors_vector_fields
 export borders_sizes_vector_fields
+export columns_arrangement
 export columns_entities
 export distribution_entities
 export edges_entities
 export points_entities
+export rows_arrangement
 export rows_entities
 export colors_vector_fields
 export columns_annotations_colors_vector_fields
@@ -531,6 +533,20 @@ function rows_entities end
 The entities of the columns of a graph (of a heatmap), shared by all their roles.
 """
 function columns_entities end
+
+"""
+    rows_arrangement(graph)::ArrangementData
+
+The arrangement of the rows of a graph (of a heatmap): the tree, groups and matrix they are arranged by.
+"""
+function rows_arrangement end
+
+"""
+    columns_arrangement(graph)::ArrangementData
+
+The arrangement of the columns of a graph (of a heatmap): the tree, groups and matrix they are arranged by.
+"""
+function columns_arrangement end
 
 """
     rows_annotations_colors_vector_fields(graph, index::Integer)::ColorsVectorFields

@@ -3,9 +3,15 @@ Graphs for showing a 2D matrix.
 """
 module Heatmaps
 
+export ArrangementData
 export AverageLinkage
+export ClusteredTree
 export CompleteLinkage
 export EntriesConfiguration
+export EntryOrder
+export GivenOrder
+export GivenTree
+export GivenTreeOrder
 export heatmap_graph
 export heatmap_order
 export HeatmapAxisConfiguration
@@ -18,19 +24,19 @@ export HeatmapGraphData
 export HeatmapGraphOrder
 export HeatmapLinkage
 export HeatmapOrigin
-export HeatmapReorder
 export HeatmapTopLeft
 export HeatmapTopRight
-export OptimalHclust
-export RCompatibleHclust
+export OptimalTreeReorder
+export OrderSource
+export OrderTree
+export RCompatibleTreeReorder
 export reset_order!
-export ReorderHclust
 export SameOrder
+export SameTree
 export SingleLinkage
-export SlantedHclust
 export SlantedOrder
-export SlantedPreSquaredHclust
 export SlantedPreSquaredOrder
+export TreeSource
 export WardLinkage
 export WardPreSquaredLinkage
 
@@ -47,22 +53,41 @@ using Slanter
 import ..Bars.push_annotations_traces!
 import ..Bars.push_plotly_annotation!
 import ..Bars.expand_vector
+import ..Common.validate_entities_order
 import ..Validations.Maybe
 
 """
-Specify how to reorder the rows and/or columns.
+Specify where the tree of a heatmap axis comes from.
 
-  - `OptimalHclust` orders `hclust` branches using the (better) Bar-Joseph method.
-  - `RCompatibleHclust` orders `hclust` branches in the same (bad) way that `R` does.
-  - `ReorderHclust` reorders `hclust` branches to be as close as possible to a given order (using `reorder_hclust`).
-  - `SlantedHclust` and `SlantedPreSquaredHclust` orders `hclust` branches using `Slanter` (using `slanted_orders`
-    and `reorder_hclust`).
-  - `SlantedOrder` and `SlantedPreSquaredOrder` uses `slanted_orders` (if a tree is needed, uses `ehclust` to create
-    a tree preserving this order).
-  - `SameOrder` orders the rows/columns in the same way as the other axis. This can only be applied to square matrices
-    and can't be specified for both axes.
+  - `GivenTree` uses the `hclust` of the arrangement.
+  - `ClusteredTree` clusters the data (using the `linkage` and `metric`, and the `groups` and `arrange_by` of the
+    arrangement).
+  - `OrderTree` builds a tree around the target order (using `ehclust`), so the leaves are exactly the target order.
+  - `SameTree` uses the tree of the other axis. This can only be applied to square matrices and can't be specified for
+    both axes.
+
+A tree is needed when any field depends on one: the dendogram is shown, a `tree_source` is specified, the
+`order_source` is `GivenTreeOrder` or a tree-reorder, or an `hclust` is given. Otherwise no tree is built.
 """
-@enum HeatmapReorder RCompatibleHclust OptimalHclust ReorderHclust SlantedHclust SlantedPreSquaredHclust SlantedOrder SlantedPreSquaredOrder SameOrder
+@enum TreeSource GivenTree ClusteredTree OrderTree SameTree
+
+"""
+Specify where the order of a heatmap axis comes from.
+
+  - `GivenTreeOrder` uses the leaves of the given tree, as they are.
+  - `OptimalTreeReorder` and `RCompatibleTreeReorder` are tree-reorders. They reorder the branches of the tree (using
+    the (better) Bar-Joseph method, or in the same (bad) way that `R` does) and use its leaves.
+  - `GivenOrder` uses the `order` of the entities.
+  - `EntryOrder` uses the entries as they are.
+  - `SlantedOrder` and `SlantedPreSquaredOrder` slant the data (using `slanted_orders`).
+  - `SameOrder` uses the order of the other axis. This can only be applied to square matrices and can't be specified for
+    both axes.
+
+The last five name a target order. When a tree is needed, the branches of a given, same or clustered tree are reordered
+toward the target (using `reorder_hclust`), so the final order only approximates the target. An `OrderTree` is built
+around the target, so the final order is the target.
+"""
+@enum OrderSource GivenTreeOrder OptimalTreeReorder RCompatibleTreeReorder GivenOrder EntryOrder SlantedOrder SlantedPreSquaredOrder SameOrder
 
 """
 Specify the linkage to use when performing hierarchical clustering (`hclust` / `ehclust`). The default is `WardLinkage`.
@@ -107,7 +132,8 @@ end
         show_ticks::Bool = true
         ticks_angle::Maybe{Real} = nothing
         annotations::AnnotationSize = AnnotationSize()
-        reorder::Maybe{HeatmapReorder} = nothing
+        tree_source::Maybe{TreeSource} = nothing
+        order_source::Maybe{OrderSource} = nothing
         linkage::Maybe{HeatmapLinkage} = nothing
         metric::Maybe{PreMetric} = nothing
         include_hidden::Bool = true
@@ -125,8 +151,54 @@ The entries are labelled by their names from the [`HeatmapAxisData`](@ref), if t
 `false` to leave them unlabelled, which is what an axis holding thousands of entries wants; the names are still the
 first line of each hover. By default the labels are shown parallel to the axis, and `ticks_angle` rotates them.
 
-You can use `reorder` to reorder the entries of the axis. When specifying `linkage`, by default, the clustering uses the
-`Euclidean` distance metric. You can override this by specifying the `metric`.
+The layout of the axis is an order, and optionally a tree for the dendogram. The `tree_source` says where the tree comes
+from (see [`TreeSource`](@ref)) and the `order_source` says where the order comes from (see [`OrderSource`](@ref)). A
+tree is needed when any field depends on one: the dendogram is shown, a `tree_source` is specified, the `order_source`
+is `GivenTreeOrder` or a tree-reorder, or an `hclust` is given in the arrangement. Otherwise no tree is built, and
+specifying `linkage` or `metric` is an error. Nothing that is specified is ever ignored.
+
+"Toward the target" means the branches of the tree are reordered to be as close as possible to the target order, so the
+final order is the leaves and only approximates the target. "Around the target" means the tree is built so that its
+leaves are exactly the target.
+
+| tree source   | `hclust`  | order source     | `order`      | final tree, when needed                                                              | final order               |
+|:------------- |:--------- |:---------------- |:------------ |:------------------------------------------------------------------------------------ |:------------------------- |
+| Given         | required  | `GivenTreeOrder` | forbidden    | given                                                                                | leaves, as is             |
+| Given         | required  | tree-reorder     | forbidden    | INVALID: Clustering.jl has no public way to reorder the branches of an existing tree |                           |
+| Given         | required  | target-order     | `GivenOrder` | given                                                                                | leaves, toward the target |
+| Same          | forbidden | `GivenTreeOrder` | forbidden    | the other axis's                                                                     | leaves, as is             |
+| Same          | forbidden | tree-reorder     | forbidden    | INVALID, as for Given                                                                |                           |
+| Same          | forbidden | target-order     | `GivenOrder` | the other axis's                                                                     | leaves, toward the target |
+| Clustered     | forbidden | tree-reorder     | forbidden    | clustered                                                                            | leaves, reordered         |
+| Clustered     | forbidden | target-order     | `GivenOrder` | clustered                                                                            | leaves, toward the target |
+| Order         | forbidden | target-order     | `GivenOrder` | around the target                                                                    | the target                |
+| (none)        | forbidden | target-order     | `GivenOrder` |                                                                                      | the target                |
+| anything else |           |                  |              | INVALID                                                                              |                           |
+
+The `order` column says which order source requires the `order` data; the other sources forbid it. The invalid
+remainder is `GivenTreeOrder` without a given or same tree, `OrderTree` with `GivenTreeOrder` or a tree-reorder, which
+is circular, and a tree-reorder of a given or same tree, which is not implemented.
+
+`SameOrder` is a plain target-order. With `SameTree` it copies the layout of the other axis; with `OrderTree` it builds
+this axis's tree around the other's order; with `ClusteredTree` it clusters toward it.
+
+Both sources default to `nothing`, which infers them from what is given:
+
+| `order` given | `hclust` given | tree needed | tree source     | order source         |
+|:------------- |:-------------- |:----------- |:--------------- |:-------------------- |
+| no            | no             | no          | (none)          | `EntryOrder`         |
+| no            | no             | yes         | `ClusteredTree` | `OptimalTreeReorder` |
+| yes           | no             | no          | (none)          | `GivenOrder`         |
+| yes           | no             | yes         | `OrderTree`     | `GivenOrder`         |
+| no            | yes            | always      | `GivenTree`     | `GivenTreeOrder`     |
+| yes           | yes            | always      | `GivenTree`     | `GivenOrder`         |
+
+One source may be inferred while the other is explicit. An `order` with an explicit `ClusteredTree` infers `GivenOrder`
+(cluster, then toward the given order). An explicit `SlantedOrder` with a dendogram infers `OrderTree`. An explicit
+`SameOrder` with a tree needed and nothing given infers `SameTree`. An explicit `SameTree` infers `SameOrder`.
+
+A `ClusteredTree` or an `OrderTree` is built using the `linkage` (by default, `WardLinkage`) and the `metric` (by
+default, `Euclidean`). Neither applies to a `GivenTree` or a `SameTree`, so specifying them for one is an error.
 
 By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not
 move the rest. Set `include_hidden` to `false` to cluster the shown entries only. Either way the resulting order and
@@ -152,9 +224,8 @@ specified by names is laid out by the clustering. Numbering both levels therefor
 their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the
 subgroups inside each of them.
 
-If you specify `dendogram_size`, then you should either specify linkage (for computing a clustering) or must specify
-`Hclust` order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual
-inconvenient units (fractions of the total graph size) because Plotly.
+If you specify `dendogram_size`, the tree (see above) is shown to the side of the data. The size is specified in the
+usual inconvenient units (fractions of the total graph size) because Plotly.
 
 If a dendogram tree is shown, the `dendogram_line` can be used to control it. The default color is black. The
 `is_filled` field shouldn't be set as it has no meaning here.
@@ -164,7 +235,8 @@ If a dendogram tree is shown, the `dendogram_line` can be used to control it. Th
     show_ticks::Bool = true
     ticks_angle::Maybe{Real} = nothing
     annotations::AnnotationSize = AnnotationSize()
-    reorder::Maybe{HeatmapReorder} = nothing
+    tree_source::Maybe{TreeSource} = nothing
+    order_source::Maybe{OrderSource} = nothing
     linkage::Maybe{HeatmapLinkage} = nothing
     metric::Maybe{PreMetric} = nothing
     include_hidden::Bool = true
@@ -269,10 +341,10 @@ order is asked for first.
 !!! note
 
     Nothing detects that the cache went stale. Call [`reset_order!`](@ref) if anything it was computed from is changed
-    after it was computed - that is, the `reorder`, `linkage` and `metric` of the axes configuration, and the
-    `entries.matrix` and the `order`, `arrange_by`, `groups` and `subgroups` of the axes data. The groups are easy to
-    forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently
-    reuses the order of the first grouping unless the cache is reset in between.
+    after it was computed - that is, the `tree_source`, `order_source`, `linkage`, `metric` and `dendogram_size` of
+    the axes configuration, and the `entries.matrix`, the `order` of the axes entities and their `arrangement`. The
+    groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each
+    time, silently reuses the order of the first grouping unless the cache is reset in between.
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -289,31 +361,19 @@ function Validations.validate(context::ValidationContext, configuration::Heatmap
     validate_field(context, "rows", configuration.rows)
     validate_field(context, "columns", configuration.columns)
 
-    if configuration.rows.reorder == SameOrder && configuration.columns.reorder == SameOrder
-        throw(ArgumentError(chomp("""
-                                  can't specify both heatmap $(location(context)).rows.reorder: SameOrder
-                                  and heatmap $(location(context)).columns.reorder: SameOrder
-                                  """)))
-    end
-
     return nothing
 end
 
 """
-    @kwdef mutable struct HeatmapAxisData
-        entities::VectorEntitiesData = VectorEntitiesData()
-        order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
+    @kwdef mutable struct ArrangementData
+        hclust::Maybe{Hclust} = nothing
         groups::VectorValuesData = VectorValuesData()
         subgroups::VectorValuesData = VectorValuesData()
         arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
-        annotations::AbstractVector{AnnotationData} = AnnotationData[]
-        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
-The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `entities` hold the names, hovers
-and mask of the entries; their names are shown as the tick labels, titled by the axis `title` of the configuration. The
-`annotations` are shown to the side of the axis. If `annotations_order` is specified, they are shown in that order; it
-describes all the annotations, including the ones that are not `is_shown`.
+The inputs to arranging the entries of one axis of a heatmap, other than the `order` of its entities: a clustering
+tree, the groups of the entries, and the matrix to cluster them by.
 
 By default, if reordering the entries, this is based on the `entries.matrix` of the graph. You can override this by
 specifying an `arrange_by` matrix. Only the reordered dimension needs to match the `entries.matrix` (the rows
@@ -321,24 +381,42 @@ specifying an `arrange_by` matrix. Only the reordered dimension needs to match t
 dimension holds whatever features you want to cluster by, and need not match. For efficiency the rows `arrange_by`
 matrix should be in row-major layout, but that's not critical.
 
-Alternatively you can force the order of the entries by specifying the `order` permutation. You can also specify an
-`Hclust` object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
+Alternatively you can give the tree of the entries as an `hclust`, and/or the `order` of the entities; see
+[`HeatmapAxisConfiguration`](@ref) for how they take part in the layout.
 
 If `groups` values (numbers or strings, one per entry) are specified, then a gap can be added between entries of
 different groups. Groups can also be used to constrain the computed clustering. The `subgroups` are a second, finer
 level of grouping nested in the groups. Neither has a title.
+"""
+@kwdef mutable struct ArrangementData
+    hclust::Maybe{Hclust} = nothing
+    groups::VectorValuesData = VectorValuesData()
+    subgroups::VectorValuesData = VectorValuesData()
+    arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+end
+
+"""
+    @kwdef mutable struct HeatmapAxisData
+        entities::VectorEntitiesData = VectorEntitiesData()
+        arrangement::ArrangementData = ArrangementData()
+        annotations::AbstractVector{AnnotationData} = AnnotationData[]
+        annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
+    end
+
+The data of one axis (the rows or the columns) of a [`HeatmapGraphData`](@ref). The `entities` hold the names, hovers,
+mask and order of the entries; their names are shown as the tick labels, titled by the axis `title` of the
+configuration. The `arrangement` holds what else the entries are arranged by. The `annotations` are shown to the side
+of the axis. If `annotations_order` is specified, they are shown in that order; it describes all the annotations,
+including the ones that are not `is_shown`.
 
 Hidden entries (see the mask of [`VectorEntitiesData`](@ref)) are not drawn, but they are still part of the data: the
-clustering sees them, and the `order` (a permutation or a tree) always describes all the entries, hidden ones included.
+clustering sees them, and the order (a permutation or a tree) always describes all the entries, hidden ones included.
 This way the order computed for one graph (see [`heatmap_order`](@ref)) can be given to another graph of the same data,
 whether or not the two hide the same entries. At least one entry must be shown.
 """
 @kwdef mutable struct HeatmapAxisData
     entities::VectorEntitiesData = VectorEntitiesData()
-    order::Maybe{Union{Hclust, AbstractVector{<:Integer}}} = nothing
-    groups::VectorValuesData = VectorValuesData()
-    subgroups::VectorValuesData = VectorValuesData()
-    arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+    arrangement::ArrangementData = ArrangementData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
 end
@@ -360,34 +438,43 @@ function Validations.validate(
         throw(ArgumentError("all entries hidden by $(location(context)).$(name).entities.mask"))
     end
 
-    if axis.order isa Hclust
-        order = axis.order.order
-    else
-        order = axis.order
-    end
-    validate_vector_length(context, "$(name).order", order, base, n_entries)
+    validate_entities_order(context, "$(name).entities", axis.entities, base, n_entries; is_ordered = true)
 
-    for (field, values_data) in (("groups", axis.groups), ("subgroups", axis.subgroups))
-        validate_vector_length(context, "$(name).$(field).vector", values_data.vector, base, n_entries)
-        validate_vector_is_finite(context, "$(name).$(field).vector", values_data.vector)
+    arrangement = axis.arrangement
+    hclust = arrangement.hclust
+    if hclust !== nothing
+        validate_vector_length(context, "$(name).arrangement.hclust.order", hclust.order, base, n_entries)
+    end
+
+    for (field, values_data) in (("groups", arrangement.groups), ("subgroups", arrangement.subgroups))
+        validate_vector_length(context, "$(name).arrangement.$(field).vector", values_data.vector, base, n_entries)
+        validate_vector_is_finite(context, "$(name).arrangement.$(field).vector", values_data.vector)
         if values_data.title !== nothing
-            throw(ArgumentError("can't specify heatmap $(location(context)).$(name).$(field).title"))
+            throw(ArgumentError("can't specify heatmap $(location(context)).$(name).arrangement.$(field).title"))
         end
     end
 
     # The subgroups of an axis are a second, finer level of grouping, so they only make sense together with the groups.
     # A subgroup is nested in its group, so the same subgroup in two different groups is two different subgroups;
     # there's no need for the subgroups to be unique.
-    if axis.subgroups.vector !== nothing && axis.groups.vector === nothing
+    if arrangement.subgroups.vector !== nothing && arrangement.groups.vector === nothing
         throw(
             ArgumentError(
-                "can't specify heatmap $(location(context)).$(name).subgroups.vector without $(name).groups.vector",
+                "can't specify heatmap $(location(context)).$(name).arrangement.subgroups.vector" *
+                " without $(name).arrangement.groups.vector",
             ),
         )
     end
 
-    validate_matrix_dimension(context, "$(name).arrange_by", axis.arrange_by, name == "rows" ? 1 : 2, base, n_entries)
-    validate_matrix_is_finite(context, "$(name).arrange_by", axis.arrange_by)
+    validate_matrix_dimension(
+        context,
+        "$(name).arrangement.arrange_by",
+        arrangement.arrange_by,
+        name == "rows" ? 1 : 2,
+        base,
+        n_entries,
+    )
+    validate_matrix_is_finite(context, "$(name).arrangement.arrange_by", arrangement.arrange_by)
 
     validate_vector_length(
         context,
@@ -425,35 +512,10 @@ The `rows` and `columns` hold the data of each axis (see [`HeatmapAxisData`](@re
 and its column are shown; there is no mask of its own. The values of the hidden cells still take part in the range of
 the colors scale, unless `include_hidden` is disabled in the `entries.colors.scale` of the configuration.
 
-Valid combinations of the fields controlling order and clustering are:
-
-| data `order`                | data `arrange_by`                   | data `groups` | config `reorder`                           | config `dendogram_size` | config `linkage` | config `metric` | result tree                                                                                      | result order                         | notes                                                  |
-|:--------------------------- |:----------------------------------- |:------------- |:------------------------------------------ |:----------------------- |:---------------- |:--------------- |:------------------------------------------------------------------------------------------------ |:------------------------------------ |:------------------------------------------------------ |
-| `nothing`                   | `nothing`                           | ignored       | `nothing`                                  | `nothing`               | `nothing`        | `nothing`       | Not computed                                                                                     | Original data order                  | Do not cluster, use the original data order (default)  |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | ignored       | `nothing`                                  | Any                     | `nothing`/ Any   | `nothing`/ Any  | `ehclust` of original order with `linkage` or `WardLinkage`                                      | Original data order                  | Cluster, preserving the original order                 |
-| `nothing`                   | `nothing`                           | ignored       | `SameOrder`                                | `nothing`/ Any          | `nothing`        | `nothing`       | Same as other axis                                                                               | Same as other axis                   | Square matrices only                                   |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `nothing`     | `OptimalHclust`/ `RCompatibleHclust`       | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `hclust` with `linkage` or `WardLinkage`                                                         | `hclust` with `reorder`              | Cluster using `linkage` and branch `reorder`           |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | Any           | `OptimalHclust`/ `RCompatibleHclust`       | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `ehclust` with `groups` and `linkage` or `WardLinkage`                                           | `hclust` with `groups` and `reorder` | Cluster using `groups`, `linkage` and branch `reorder` |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | `nothing`     | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `hclust` with `linkage` or `WardLinkage`, then `reorder_hclust` by `slanted_orders`              | `reorder_hclust` by `slanted_orders` | Cluster, then slant preserving the tree                |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | Any           | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `hclust` with `groups` and `linkage` or `WardLinkage`, then `reorder_hclust` by `slanted_orders` | `reorder_hclust` by `slanted_orders` | Cluster using `groups`, then slant preserving the tree |
-| `nothing`                   | `nothing`/ `AbstractMatrix{<:Real}` | ignored       | `SlantedOrder`/ `SlantedPreSquaredOrder`   | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `ehclust` of `slanted_orders` with `linkage` or `WardLinkage`                                    | `slanted_orders`                     | Slant, then cluster preserving the slanted order       |
-| `Hclust`                    | `nothing`                           | ignored       | `nothing`                                  | `nothing`/ Any          | `nothing`        | `nothing`       | `Hclust` tree                                                                                    | `Hclust` order                       | Force a specific tree and order on the data            |
-| `Hclust`                    | `nothing`/ `AbstractMatrix{<:Real}` | ignored       | `SlantedHclust`/ `SlantedPreSquaredHclust` | `nothing`/ Any          | `nothing`        | `nothing`       | `reorder_hclust` by `slanted_orders`                                                             | `reorder_hclust` by `slanted_orders` | Slant, preserving a given tree                         |
-| `AbstractVector{<:Integer}` | `nothing`                           | ignored       | `nothing`                                  | `nothing`               | `nothing`        | `nothing`       | Not computed                                                                                     | `order` permutation                  | Do not cluster, use the specified order                |
-| `AbstractVector{<:Integer}` | `nothing`                           | ignored       | `nothing`                                  | Any                     | `nothing`/ Any   | `nothing`/ Any  | `ehclust` of `order` with `linkage` or `WardLinkage`                                             | `order` permutation                  | Cluster, preserving the specified order                |
-| `AbstractVector{<:Integer}` | `nothing`                           | `nothing`     | `ReorderHclust`                            | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `hclust` with `linkage` or `WardLinkage`                                                         | `reorder_hclust` by data `order`     | Cluster, then reorder branches to be close to `order`  |
-| `AbstractVector{<:Integer}` | `nothing`                           | Any           | `ReorderHclust`                            | `nothing`/ Any          | `nothing`/ Any   | `nothing`/ Any  | `ehclust` with `groups` and `linkage` or `WardLinkage`                                           | `reorder_hclust` by data `order`     | Cluster, then reorder branches to be close to `order`  |
-
-All other combinations are invalid. Note:
-
-  - When calling `hclust` and/or `ehclust` and/or `slanted_orders`, then specifying `arrange_by` will use it instead of
-    the displayed data matrix.
-
-  - When calling `hclust` and/or `ehclust`, then specifying a `metric` will be used instead of `Euclidean` to compute
-    the distances matrix.
-
-  - Specifying `groups` only impacts the tree and order when computing a new clustering without other order constraints.
-    They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.
+The `order` of the entities of each axis and the `hclust` of its arrangement (see [`ArrangementData`](@ref)) take part
+in the layout of the axis as described in [`HeatmapAxisConfiguration`](@ref). The `groups` and `subgroups` of the
+arrangement constrain a `ClusteredTree`. They can still be specified to denote gaps in the heatmap, even when they do
+not impact the tree and/or order.
 """
 @kwdef mutable struct HeatmapGraphData <: AbstractGraphData
     figure_title::Maybe{AbstractString} = nothing
@@ -563,6 +625,14 @@ function Sources.columns_entities(graph::HeatmapGraph)::VectorEntitiesData
     return graph.data.columns.entities
 end
 
+function Sources.rows_arrangement(graph::HeatmapGraph)::ArrangementData
+    return graph.data.rows.arrangement
+end
+
+function Sources.columns_arrangement(graph::HeatmapGraph)::ArrangementData
+    return graph.data.columns.arrangement
+end
+
 """
     rows_annotations_colors_vector_fields(graph::HeatmapGraph, index::Integer)::ColorsVectorFields
 
@@ -609,7 +679,7 @@ end
 The groups of the rows.
 """
 function Sources.rows_groups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-    return VectorDataFields(graph.data.rows.groups, graph.data.rows.entities)
+    return VectorDataFields(graph.data.rows.arrangement.groups, graph.data.rows.entities)
 end
 
 """
@@ -618,7 +688,7 @@ end
 The subgroups of the rows.
 """
 function Sources.rows_subgroups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-    return VectorDataFields(graph.data.rows.subgroups, graph.data.rows.entities)
+    return VectorDataFields(graph.data.rows.arrangement.subgroups, graph.data.rows.entities)
 end
 
 """
@@ -627,7 +697,7 @@ end
 The groups of the columns.
 """
 function Sources.columns_groups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-    return VectorDataFields(graph.data.columns.groups, graph.data.columns.entities)
+    return VectorDataFields(graph.data.columns.arrangement.groups, graph.data.columns.entities)
 end
 
 """
@@ -636,7 +706,67 @@ end
 The subgroups of the columns.
 """
 function Sources.columns_subgroups_vector_data_fields(graph::HeatmapGraph)::VectorDataFields
-    return VectorDataFields(graph.data.columns.subgroups, graph.data.columns.entities)
+    return VectorDataFields(graph.data.columns.arrangement.subgroups, graph.data.columns.entities)
+end
+
+# The resolved sources of the layout of an axis. The tree source is `nothing` when no tree is needed.
+struct AxisSources
+    tree_source::Maybe{TreeSource}
+    order_source::OrderSource
+end
+
+# Whether an order source is a tree-reorder: the leaves of the tree after its branches are reordered.
+function is_tree_reorder(order_source::OrderSource)::Bool
+    return order_source in (OptimalTreeReorder, RCompatibleTreeReorder)
+end
+
+# Whether an order source is the leaves of the tree, so it needs a tree.
+function is_tree_order(order_source::OrderSource)::Bool
+    return order_source == GivenTreeOrder || is_tree_reorder(order_source)
+end
+
+# Whether an order source names a target order that is slanted.
+function is_slanted_order(order_source::OrderSource)::Bool
+    return order_source in (SlantedOrder, SlantedPreSquaredOrder)
+end
+
+# Resolve the sources of the layout of an axis, inferring the unspecified ones from what is given as described in
+# `HeatmapAxisConfiguration`. This does not validate the result against the data; `validate_graph` does.
+function axis_sources(axis_data::HeatmapAxisData, axis_configuration::HeatmapAxisConfiguration)::AxisSources
+    is_order_given = axis_data.entities.order !== nothing
+    is_hclust_given = axis_data.arrangement.hclust !== nothing
+    tree_source = axis_configuration.tree_source
+    order_source = axis_configuration.order_source
+
+    if order_source === nothing
+        if is_order_given
+            order_source = GivenOrder
+        elseif tree_source == SameTree
+            order_source = SameOrder
+        elseif tree_source == GivenTree || is_hclust_given
+            order_source = GivenTreeOrder
+        elseif tree_source == ClusteredTree ||
+               (tree_source != OrderTree && axis_configuration.dendogram_size !== nothing)
+            order_source = OptimalTreeReorder
+        else
+            order_source = EntryOrder
+        end
+    end
+
+    if tree_source === nothing &&
+       (axis_configuration.dendogram_size !== nothing || is_hclust_given || is_tree_order(order_source))
+        if is_hclust_given
+            tree_source = GivenTree
+        elseif order_source == SameOrder
+            tree_source = SameTree
+        elseif is_tree_order(order_source)
+            tree_source = ClusteredTree
+        else
+            tree_source = OrderTree
+        end
+    end
+
+    return AxisSources(tree_source, order_source)
 end
 
 function Common.validate_graph(graph::HeatmapGraph)::Nothing
@@ -663,202 +793,149 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
         dendogram_size = graph.configuration.columns.dendogram_size,
     )
 
+    rows_sources = axis_sources(graph.data.rows, graph.configuration.rows)
+    columns_sources = axis_sources(graph.data.columns, graph.configuration.columns)
+
+    rows_same_source = same_source(graph.configuration.rows)
+    columns_same_source = same_source(graph.configuration.columns)
+    if rows_same_source !== nothing && columns_same_source !== nothing
+        throw(ArgumentError(chomp("""
+                                  can't specify both heatmap graph.configuration.rows.$(rows_same_source)
+                                  and heatmap graph.configuration.columns.$(columns_same_source)
+                                  """)))
+    end
+
     n_rows, n_columns = size(values)
     if n_rows != n_columns
-        for (name, axis_configuration) in (("rows", graph.configuration.rows), ("columns", graph.configuration.columns))
-            if axis_configuration.reorder == SameOrder
+        for (name, axis_same_source) in (("rows", rows_same_source), ("columns", columns_same_source))
+            if axis_same_source !== nothing
                 throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.configuration.$(name).reorder: SameOrder
+                                          can't specify heatmap graph.configuration.$(name).$(axis_same_source)
                                           for a non-square matrix: $(n_rows) rows x $(n_columns) columns
                                           """)))
             end
         end
     end
 
-    for (name, axis_data, axis_configuration, other_name, other_axis_data, other_axis_configuration) in (
-        ("columns", graph.data.columns, graph.configuration.columns, "rows", graph.data.rows, graph.configuration.rows),
-        ("rows", graph.data.rows, graph.configuration.rows, "columns", graph.data.columns, graph.configuration.columns),
+    validate_axis_sources("rows", graph.data.rows, graph.configuration.rows, rows_sources, "columns", columns_sources)
+    validate_axis_sources(
+        "columns",
+        graph.data.columns,
+        graph.configuration.columns,
+        columns_sources,
+        "rows",
+        rows_sources,
     )
-        data_order = axis_data.order
-        data_arrange_by = axis_data.arrange_by
-        configuration_reorder = axis_configuration.reorder
-        configuration_linkage = axis_configuration.linkage
-        configuration_metric = axis_configuration.metric
-        configuration_dendogram_size = axis_configuration.dendogram_size
-        other_data_order = other_axis_data.order
 
-        is_clustered = false
-        is_using_groups = axis_configuration.groups_gap !== nothing
-        if data_order === nothing
-            if configuration_reorder === nothing
-                if configuration_dendogram_size === nothing
-                    if data_arrange_by !== nothing
-                        throw(ArgumentError(chomp("""
-                                                  can't specify heatmap graph.data.$(name).arrange_by
-                                                  without graph.configuration.$(name).dendogram_size
-                                                  or graph.configuration.$(name).reorder
-                                                  """)))
-                    end
-                    if configuration_linkage !== nothing
-                        throw(ArgumentError(chomp("""
-                                                  can't specify heatmap graph.configuration.$(name).linkage
-                                                  without graph.configuration.$(name).dendogram_size
-                                                  or graph.configuration.$(name).reorder
-                                                  """)))
-                    end
-                    if configuration_metric !== nothing
-                        throw(ArgumentError(chomp("""
-                                                  can't specify heatmap graph.configuration.$(name).metric
-                                                  without graph.configuration.$(name).dendogram_size
-                                                  or graph.configuration.$(name).reorder
-                                                  """)))
-                    end
-                end
+    return nothing
+end
 
-            elseif configuration_reorder == SameOrder
-                if data_arrange_by !== nothing
-                    throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.data.$(name).arrange_by
-                                              for graph.configuration.$(name).reorder: $(configuration_reorder)
-                                              """)))
-                end
-                if configuration_linkage !== nothing
-                    throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name).linkage
-                                              for graph.configuration.$(name).reorder: $(configuration_reorder)
-                                              """)))
-                end
-                if configuration_metric !== nothing
-                    throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name).metric
-                                              for graph.configuration.$(name).reorder: $(configuration_reorder)
-                                              """)))
-                end
-                if other_data_order === nothing && other_axis_configuration.reorder === nothing
-                    throw(
-                        ArgumentError(
-                            chomp("""
-                                  can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
-                                  without an order to copy from the $(other_name)
-                                  """),
-                        ),
-                    )
-                end
-                if configuration_dendogram_size !== nothing &&
-                   !(other_data_order isa Hclust) &&
-                   other_axis_configuration.reorder === nothing &&
-                   other_axis_configuration.dendogram_size === nothing
-                    throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name).dendogram_size
-                                              with graph.configuration.$(name).reorder: $(configuration_reorder)
-                                              without a tree to copy from the $(other_name)
-                                              """)))
-                end
+# The specified source of an axis which copies from the other axis, as `field: value` for error messages, if any. An
+# inferred `SameOrder` or `SameTree` always comes with a specified one.
+function same_source(axis_configuration::HeatmapAxisConfiguration)::Maybe{String}
+    if axis_configuration.order_source == SameOrder
+        return "order_source: SameOrder"
+    elseif axis_configuration.tree_source == SameTree
+        return "tree_source: SameTree"
+    else
+        return nothing
+    end
+end
 
-            elseif configuration_reorder in (OptimalHclust, RCompatibleHclust, SlantedHclust, SlantedPreSquaredHclust)
-                is_using_groups = is_clustered = true
+# Validate the layout data and configuration of an axis against its resolved sources, per the table in
+# `HeatmapAxisConfiguration`.
+function validate_axis_sources(
+    name::AbstractString,
+    axis_data::HeatmapAxisData,
+    axis_configuration::HeatmapAxisConfiguration,
+    sources::AxisSources,
+    other_name::AbstractString,
+    other_sources::AxisSources,
+)::Nothing
+    tree_source = sources.tree_source
+    order_source = sources.order_source
 
-            elseif !(configuration_reorder in (SlantedOrder, SlantedPreSquaredOrder))
-                throw(
-                    ArgumentError(
-                        chomp("""
-                              can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
-                              without explicit vector graph.data.$(name).order
-                              """),
-                    ),
-                )
-            end
-
-        elseif data_order isa Hclust
-            if configuration_linkage !== nothing
-                throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.configuration.$(name).linkage
-                                          for explicit hclust graph.data.$(name).order
-                                          """)))
-            end
-            if configuration_metric !== nothing
-                throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.configuration.$(name).metric
-                                          for explicit hclust graph.data.$(name).order
-                                          """)))
-            end
-            if !(configuration_reorder in (nothing, SlantedHclust, SlantedPreSquaredHclust))
-                throw(
-                    ArgumentError(
-                        chomp("""
-                              can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
-                              for explicit hclust graph.data.$(name).order
-                              """),
-                    ),
-                )
-            end
-            if configuration_reorder === nothing && data_arrange_by !== nothing
-                throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.data.$(name).arrange_by
-                                          without graph.configuration.$(name).reorder
-                                          for explicit hclust graph.data.$(name).order
-                                          """)))
-            end
-
-        elseif data_order isa AbstractVector
-            if data_arrange_by !== nothing
-                throw(ArgumentError(chomp("""
-                                          can't specify heatmap graph.data.$(name).arrange_by
-                                          for explicit vector graph.data.$(name).order
-                                          """)))
-            end
-
-            if configuration_reorder == ReorderHclust
-                is_using_groups = is_clustered = true
-
-            elseif configuration_reorder !== nothing
-                throw(
-                    ArgumentError(
-                        chomp("""
-                              can't specify heatmap graph.configuration.$(name).reorder: $(configuration_reorder)
-                              for explicit vector graph.data.$(name).order
-                              """),
-                    ),
-                )
-            end
-
-            if configuration_dendogram_size === nothing
-                if configuration_linkage !== nothing
-                    throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name).linkage
-                                              for explicit vector graph.data.$(name).order
-                                              without graph.configuration.$(name).dendogram_size
-                                              """)))
-                end
-                if configuration_metric !== nothing
-                    throw(ArgumentError(chomp("""
-                                              can't specify heatmap graph.configuration.$(name).metric
-                                              for explicit vector graph.data.$(name).order
-                                              without graph.configuration.$(name).dendogram_size
-                                              """)))
-                end
-            end
-
-        else
-            @assert false
-        end
-
-        if !is_using_groups && axis_data.groups.vector !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name).groups.vector"))
-        end
-
-        ## Unlike the groups, the subgroups have their own gap, so they are of use if either the axis is clustered (they
-        ## constrain the clustering) or they are gapped.
-        if !is_clustered && axis_configuration.subgroups_gap === nothing && axis_data.subgroups.vector !== nothing
-            throw(ArgumentError("no effect for specified graph.data.$(name).subgroups.vector"))
-        end
-
-        if axis_configuration.subgroups_gap !== nothing && axis_data.subgroups.vector === nothing
+    is_tree_built = tree_source in (ClusteredTree, OrderTree)
+    for (field, value) in (("linkage", axis_configuration.linkage), ("metric", axis_configuration.metric))
+        if value !== nothing && !is_tree_built
             throw(ArgumentError(chomp("""
-                                      can't specify heatmap graph.configuration.$(name).subgroups_gap
-                                      without graph.data.$(name).subgroups.vector
+                                      can't specify heatmap graph.configuration.$(name).$(field)
+                                      without graph.configuration.$(name).tree_source: ClusteredTree or OrderTree
                                       """)))
         end
+    end
+
+    if tree_source == GivenTree
+        if axis_data.arrangement.hclust === nothing
+            throw(ArgumentError(chomp("""
+                                      must specify heatmap graph.data.$(name).arrangement.hclust
+                                      for graph.configuration.$(name).tree_source: GivenTree
+                                      """)))
+        end
+    elseif axis_data.arrangement.hclust !== nothing
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap graph.data.$(name).arrangement.hclust
+                                  for graph.configuration.$(name).tree_source: $(tree_source)
+                                  """)))
+    end
+
+    if order_source == GivenOrder
+        if axis_data.entities.order === nothing
+            throw(ArgumentError(chomp("""
+                                      must specify heatmap graph.data.$(name).entities.order
+                                      for graph.configuration.$(name).order_source: GivenOrder
+                                      """)))
+        end
+    elseif axis_data.entities.order !== nothing
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap graph.data.$(name).entities.order
+                                  for graph.configuration.$(name).order_source: $(order_source)
+                                  """)))
+    end
+
+    if order_source == GivenTreeOrder && !(tree_source in (GivenTree, SameTree))
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap graph.configuration.$(name).order_source: GivenTreeOrder
+                                  for graph.configuration.$(name).tree_source: $(tree_source)
+                                  """)))
+    end
+
+    if is_tree_reorder(order_source) && tree_source != ClusteredTree
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap graph.configuration.$(name).order_source: $(order_source)
+                                  for graph.configuration.$(name).tree_source: $(tree_source)
+                                  """)))
+    end
+
+    if tree_source == SameTree && other_sources.tree_source === nothing
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap graph.configuration.$(name).tree_source: SameTree
+                                  without a tree for the $(other_name)
+                                  """)))
+    end
+
+    if axis_data.arrangement.arrange_by !== nothing && !is_tree_built && !is_slanted_order(order_source)
+        throw(ArgumentError("no effect for specified graph.data.$(name).arrangement.arrange_by"))
+    end
+
+    is_clustered = tree_source == ClusteredTree
+    if !is_clustered && axis_configuration.groups_gap === nothing && axis_data.arrangement.groups.vector !== nothing
+        throw(ArgumentError("no effect for specified graph.data.$(name).arrangement.groups.vector"))
+    end
+
+    ## Unlike the groups, the subgroups have their own gap, so they are of use if either the axis is clustered (they
+    ## constrain the clustering) or they are gapped.
+    if !is_clustered &&
+       axis_configuration.subgroups_gap === nothing &&
+       axis_data.arrangement.subgroups.vector !== nothing
+        throw(ArgumentError("no effect for specified graph.data.$(name).arrangement.subgroups.vector"))
+    end
+
+    if axis_configuration.subgroups_gap !== nothing && axis_data.arrangement.subgroups.vector === nothing
+        throw(ArgumentError(chomp("""
+                                  can't specify heatmap graph.configuration.$(name).subgroups_gap
+                                  without graph.data.$(name).arrangement.subgroups.vector
+                                  """)))
     end
 
     return nothing
@@ -927,14 +1004,14 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
 
     expanded_rows_mask = compute_expansion_mask(
         rows_order,
-        graph.data.rows.groups.vector,
-        graph.data.rows.subgroups.vector,
+        graph.data.rows.arrangement.groups.vector,
+        graph.data.rows.arrangement.subgroups.vector,
         graph.configuration.rows,
     )
     expanded_columns_mask = compute_expansion_mask(
         columns_order,
-        graph.data.columns.groups.vector,
-        graph.data.columns.subgroups.vector,
+        graph.data.columns.arrangement.groups.vector,
+        graph.data.columns.arrangement.subgroups.vector,
         graph.configuration.columns,
     )
 
@@ -1255,7 +1332,9 @@ end
 
 # Whether the clustering of an axis leaves out its hidden entries. A given tree covers all of them, so it is used as is.
 function is_clustering_shown(axis_data::HeatmapAxisData, axis_configuration::HeatmapAxisConfiguration)::Bool
-    return !axis_configuration.include_hidden && axis_data.entities.mask !== nothing && !(axis_data.order isa Hclust)
+    return !axis_configuration.include_hidden &&
+           axis_data.entities.mask !== nothing &&
+           axis_data.arrangement.hclust === nothing
 end
 
 # The data of an axis restricted to its shown entries, for clustering them alone: the shown entries of the (explicit)
@@ -1266,23 +1345,25 @@ function shown_axis_data(
     mask::Union{AbstractVector{Bool}, BitVector},
     dimension::Integer,
 )::HeatmapAxisData
-    order = axis.order
+    @assert axis.arrangement.hclust === nothing
+    order = axis.entities.order
     if order !== nothing
-        @assert order isa AbstractVector
         shown_positions = cumsum(mask)
         order = [shown_positions[index] for index in order if mask[index]]
     end
 
-    arrange_by = axis.arrange_by
+    arrange_by = axis.arrangement.arrange_by
     if arrange_by !== nothing
         arrange_by = dimension == 1 ? arrange_by[mask, :] : arrange_by[:, mask]
     end
 
     return HeatmapAxisData(;
-        order,
-        groups = VectorValuesData(; vector = masked_values(axis.groups.vector, mask, nothing)),
-        subgroups = VectorValuesData(; vector = masked_values(axis.subgroups.vector, mask, nothing)),
-        arrange_by,
+        entities = VectorEntitiesData(; order),
+        arrangement = ArrangementData(;
+            groups = VectorValuesData(; vector = masked_values(axis.arrangement.groups.vector, mask, nothing)),
+            subgroups = VectorValuesData(; vector = masked_values(axis.arrangement.subgroups.vector, mask, nothing)),
+            arrange_by,
+        ),
     )
 end
 
@@ -1325,11 +1406,11 @@ function compute_heatmap_order(graph::HeatmapGraph)::HeatmapGraphOrder
         nothing
     end
 
-    # An axis copying the order of the other one clusters nothing itself, so it is clustered (and completed) exactly as
-    # the axis it copies from; its own mask only matters when it is displayed.
-    if graph.configuration.rows.reorder == SameOrder
+    # An axis copying the order or tree of the other one is clustered (and completed) exactly as the axis it copies from;
+    # its own mask only matters when it is displayed.
+    if same_source(graph.configuration.rows) !== nothing
         rows_mask = columns_mask
-    elseif graph.configuration.columns.reorder == SameOrder
+    elseif same_source(graph.configuration.columns) !== nothing
         columns_mask = rows_mask
     end
 
@@ -1373,23 +1454,19 @@ end
 
 # The order of the entries of a graph, clustering all of them.
 function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
-    data_rows_arrange_by = prefer_data(graph.data.rows.arrange_by, entries_values(graph))
-    data_columns_arrange_by = prefer_data(graph.data.columns.arrange_by, entries_values(graph))
+    data_rows_arrange_by = prefer_data(graph.data.rows.arrangement.arrange_by, entries_values(graph))
+    data_columns_arrange_by = prefer_data(graph.data.columns.arrangement.arrange_by, entries_values(graph))
     @assert data_rows_arrange_by !== nothing
     @assert data_columns_arrange_by !== nothing
 
-    slant_rows = (
-        graph.configuration.rows.reorder in
-        (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
-    )
-    slant_columns = (
-        graph.configuration.columns.reorder in
-        (SlantedHclust, SlantedPreSquaredHclust, SlantedOrder, SlantedPreSquaredOrder)
-    )
+    rows_sources = axis_sources(graph.data.rows, graph.configuration.rows)
+    columns_sources = axis_sources(graph.data.columns, graph.configuration.columns)
 
-    slant_rows_is_pre_squared = graph.configuration.rows.reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
-    slant_columns_is_pre_squared =
-        graph.configuration.columns.reorder in (SlantedPreSquaredHclust, SlantedPreSquaredOrder)
+    slant_rows = is_slanted_order(rows_sources.order_source)
+    slant_columns = is_slanted_order(columns_sources.order_source)
+
+    slant_rows_is_pre_squared = rows_sources.order_source == SlantedPreSquaredOrder
+    slant_columns_is_pre_squared = columns_sources.order_source == SlantedPreSquaredOrder
 
     if slant_rows &&
        slant_columns &&
@@ -1402,7 +1479,7 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
         slant_columns_order = nothing
 
         if slant_rows
-            if graph.configuration.columns.reorder == SameOrder
+            if columns_sources.order_source == SameOrder
                 slant_rows_order, slant_columns_order =
                     slanted_orders(data_rows_arrange_by; same_order = true, squared_order = !slant_rows_is_pre_squared)
             else
@@ -1412,7 +1489,7 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
         end
 
         if slant_columns
-            if graph.configuration.rows.reorder == SameOrder
+            if rows_sources.order_source == SameOrder
                 slant_rows_order, slant_columns_order = slanted_orders(
                     data_columns_arrange_by;
                     same_order = true,
@@ -1428,55 +1505,51 @@ function compute_clustered_order(graph::HeatmapGraph)::HeatmapGraphOrder
         end
     end
 
-    data_columns_order, data_columns_hclust = finalize_order(;
-        data_order = graph.data.columns.order,
-        data_arrange_by = data_columns_arrange_by,
-        data_groups = graph.data.columns.groups.vector,
-        data_subgroups = graph.data.columns.subgroups.vector,
-        slant_order = slant_columns_order,
-        configuration_reorder = graph.configuration.columns.reorder,
-        configuration_dendogram_size = graph.configuration.columns.dendogram_size,
-        configuration_linkage = graph.configuration.columns.linkage,
-        configuration_metric = graph.configuration.columns.metric,
-    )
+    # The rows `arrange_by` is transposed so that, as for the columns, the distances are between its columns.
+    data_rows_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1))
 
-    data_rows_order, data_rows_hclust = finalize_order(;
-        data_order = graph.data.rows.order,
-        data_arrange_by = PermutedDimsArray(data_rows_arrange_by, (2, 1)),
-        data_groups = graph.data.rows.groups.vector,
-        data_subgroups = graph.data.rows.subgroups.vector,
-        slant_order = slant_rows_order,
-        configuration_reorder = graph.configuration.rows.reorder,
-        configuration_dendogram_size = graph.configuration.rows.dendogram_size,
-        configuration_linkage = graph.configuration.rows.linkage,
-        configuration_metric = graph.configuration.rows.metric,
-    )
-
-    if graph.configuration.rows.reorder == SameOrder
-        @assert data_rows_order === nothing
-        @assert data_rows_hclust === nothing
-        data_rows_order = data_columns_order
-        data_rows_hclust = data_columns_hclust
+    # An axis copying from the other one is finalized after it.
+    if same_source(graph.configuration.rows) !== nothing
+        columns_order, columns_hclust = finalize_order(
+            graph.data.columns,
+            graph.configuration.columns,
+            columns_sources,
+            data_columns_arrange_by,
+            slant_columns_order,
+            nothing,
+            nothing,
+        )
+        rows_order, rows_hclust = finalize_order(
+            graph.data.rows,
+            graph.configuration.rows,
+            rows_sources,
+            data_rows_arrange_by,
+            slant_rows_order,
+            columns_order,
+            columns_hclust,
+        )
+    else
+        rows_order, rows_hclust = finalize_order(
+            graph.data.rows,
+            graph.configuration.rows,
+            rows_sources,
+            data_rows_arrange_by,
+            slant_rows_order,
+            nothing,
+            nothing,
+        )
+        columns_order, columns_hclust = finalize_order(
+            graph.data.columns,
+            graph.configuration.columns,
+            columns_sources,
+            data_columns_arrange_by,
+            slant_columns_order,
+            rows_order,
+            rows_hclust,
+        )
     end
 
-    if graph.configuration.columns.reorder == SameOrder
-        @assert data_columns_order === nothing
-        @assert data_columns_hclust === nothing
-        data_columns_order = data_rows_order
-        data_columns_hclust = data_rows_hclust
-    end
-
-    n_rows, n_columns = size(entries_values(graph))  # NOJET
-
-    # An axis that wasn't reordered is still reported as an explicit permutation, so the order can be used as-is.
-    if data_rows_order === nothing
-        data_rows_order = collect(1:n_rows)
-    end
-    if data_columns_order === nothing
-        data_columns_order = collect(1:n_columns)
-    end
-
-    return HeatmapGraphOrder(data_rows_order, data_rows_hclust, data_columns_order, data_columns_hclust)
+    return HeatmapGraphOrder(rows_order, rows_hclust, columns_order, columns_hclust)
 end
 
 """
@@ -1498,8 +1571,8 @@ Use it to show several graphs in the same order, so they can be compared. Cluste
 order (and, if they use the same groups, they will also have the same gaps):
 
 ```julia
-graph.configuration.columns.reorder = OptimalHclust
-other_graph.data.columns.order = graph.order.columns_order
+graph.configuration.columns.order_source = OptimalTreeReorder
+other_graph.data.columns.entities.order = graph.order.columns_order
 ```
 
 If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order
@@ -1507,9 +1580,8 @@ If the graphs also show a dendogram, give them the tree instead of the order. Th
 refers to the original column indices):
 
 ```julia
-graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.columns.dendogram_size = 0.1
-other_graph.data.columns.order = graph.order.columns_hclust
+other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
 other_graph.configuration.columns.dendogram_size = 0.1
 ```
 """
@@ -1599,110 +1671,76 @@ function displayed_hclust(clusters::Hclust, mask::Union{AbstractVector{Bool}, Bi
     return Hclust(permutedims(reshape(pruned_merges, 2, :)), pruned_heights, pruned_order, clusters.linkage)
 end
 
-function finalize_order(;
-    data_order::Maybe{Union{Hclust, AbstractVector{<:Integer}}},
+# The final order and tree of an axis from its resolved sources: the target order, if the order source names one, then
+# the tree, if one is needed, reordered toward the target unless built around it. The `same_order` and `same_hclust`
+# are the final order and tree of the other axis, for the sources copying from it. The `data_arrange_by` holds the
+# entries of the axis in its columns.
+function finalize_order(
+    axis_data::HeatmapAxisData,
+    axis_configuration::HeatmapAxisConfiguration,
+    sources::AxisSources,
     data_arrange_by::AbstractMatrix{<:Real},
-    data_groups::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
-    data_subgroups::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     slant_order::Maybe{AbstractVector{<:Integer}},
-    configuration_reorder::Maybe{HeatmapReorder},
-    configuration_dendogram_size::Maybe{Real},
-    configuration_linkage::Maybe{HeatmapLinkage},
-    configuration_metric::Maybe{PreMetric},
-)::Tuple{Maybe{AbstractVector{<:Integer}}, Maybe{Hclust}}
-    if configuration_linkage === nothing
-        configuration_linkage = WardLinkage
-    end
+    same_order::Maybe{AbstractVector{<:Integer}},
+    same_hclust::Maybe{Hclust},
+)::Tuple{AbstractVector{<:Integer}, Maybe{Hclust}}
+    tree_source = sources.tree_source
+    order_source = sources.order_source
 
-    if configuration_metric === nothing
-        configuration_metric = Euclidean()
-    end
-
-    if data_order === nothing
-        if configuration_reorder === nothing
-            if configuration_dendogram_size === nothing
-                return (nothing, nothing)
-            else
-                distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-                clusters = ehclust(
-                    distances;
-                    order = collect(1:size(distances, 1)),
-                    linkage = hclust_linkage(configuration_linkage),
-                )
-                return (clusters.order, clusters)
-            end
-
-        elseif configuration_reorder === SameOrder
-            return (nothing, nothing)
-
-        elseif configuration_reorder in (OptimalHclust, RCompatibleHclust)
-            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-            clusters = ehclust(  # NOJET
-                distances;
-                linkage = hclust_linkage(configuration_linkage),
-                groups = data_groups,
-                subgroups = data_subgroups,
-                branchorder = hclust_branchorder(configuration_reorder),
-            )
-            return (clusters.order, clusters)
-
-        elseif configuration_reorder in (SlantedHclust, SlantedPreSquaredHclust)
-            @assert slant_order !== nothing
-            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-            clusters = ehclust(
-                distances;
-                linkage = hclust_linkage(configuration_linkage),
-                groups = data_groups,
-                subgroups = data_subgroups,
-            )
-            clusters = reorder_hclust(clusters, slant_order)
-            return (clusters.order, clusters)
-
-        elseif configuration_reorder in (SlantedOrder, SlantedPreSquaredOrder)
-            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-            clusters = ehclust(distances; order = slant_order, linkage = hclust_linkage(configuration_linkage))
-            return (slant_order, clusters)
-
-        else
-            @assert false
-        end
-
-    elseif data_order isa Hclust
-        if configuration_reorder === nothing
-            return (data_order.order, data_order)
-
-        elseif configuration_reorder in (SlantedHclust, SlantedPreSquaredHclust)
-            @assert slant_order !== nothing
-            clusters = reorder_hclust(data_order, slant_order)
-            return (clusters.order, clusters)
-
-        else
-            @assert false
-        end
-
-    elseif data_order isa AbstractVector
-        if configuration_reorder === nothing
-            if configuration_dendogram_size === nothing
-                return (data_order, nothing)
-            else
-                distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-                clusters = ehclust(distances; order = data_order, linkage = hclust_linkage(configuration_linkage))
-                return (clusters.order, clusters)
-            end
-
-        elseif configuration_reorder === ReorderHclust
-            distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
-            clusters = ehclust(distances; groups = data_groups, subgroups = data_subgroups)
-            clusters = reorder_hclust(clusters, data_order)
-            return (clusters.order, clusters)
-
-        else
-            @assert false
-        end
-
+    if order_source == GivenOrder
+        target_order = axis_data.entities.order
+    elseif order_source == EntryOrder
+        target_order = collect(1:size(data_arrange_by, 2))
+    elseif is_slanted_order(order_source)
+        target_order = slant_order
+    elseif order_source == SameOrder
+        target_order = same_order
     else
-        @assert false
+        @assert is_tree_order(order_source)
+        target_order = nothing
     end
+
+    if tree_source === nothing
+        @assert target_order !== nothing
+        return (target_order, nothing)
+    end
+
+    if tree_source == GivenTree
+        clusters = axis_data.arrangement.hclust
+    elseif tree_source == SameTree
+        clusters = same_hclust
+    else
+        configuration_linkage = axis_configuration.linkage
+        if configuration_linkage === nothing
+            configuration_linkage = WardLinkage
+        end
+        linkage = hclust_linkage(configuration_linkage)
+
+        configuration_metric = axis_configuration.metric
+        if configuration_metric === nothing
+            configuration_metric = Euclidean()
+        end
+        distances = pairwise(configuration_metric, data_arrange_by; dims = 2)
+        if tree_source == OrderTree
+            @assert target_order !== nothing
+            clusters = ehclust(distances; order = target_order, linkage)
+            return (target_order, clusters)
+        end
+        @assert tree_source == ClusteredTree
+        clusters = ehclust(  # NOJET
+            distances;
+            linkage,
+            groups = axis_data.arrangement.groups.vector,
+            subgroups = axis_data.arrangement.subgroups.vector,
+            branchorder = is_tree_reorder(order_source) ? hclust_branchorder(order_source) : nothing,
+        )
+    end
+    @assert clusters !== nothing
+
+    if target_order !== nothing
+        clusters = reorder_hclust(clusters, target_order)
+    end
+    return (clusters.order, clusters)
 end
 
 function hclust_linkage(linkage::HeatmapLinkage)::Symbol
@@ -1721,10 +1759,10 @@ function hclust_linkage(linkage::HeatmapLinkage)::Symbol
     end
 end
 
-function hclust_branchorder(reorder::HeatmapReorder)::Symbol
-    if reorder == RCompatibleHclust
+function hclust_branchorder(order_source::OrderSource)::Symbol
+    if order_source == RCompatibleTreeReorder
         return :r
-    elseif reorder == OptimalHclust
+    elseif order_source == OptimalTreeReorder
         return :optimal
     else
         @assert false
@@ -2005,12 +2043,15 @@ end
 
 # The data of an axis, moved to the other axis of the graph (that is, with its `arrange_by` matrix transposed).
 function flipped_axis_data(axis::HeatmapAxisData)::HeatmapAxisData
+    arrangement = axis.arrangement
     return HeatmapAxisData(;
         entities = axis.entities,
-        order = axis.order,
-        groups = axis.groups,
-        subgroups = axis.subgroups,
-        arrange_by = axis.arrange_by === nothing ? nothing : transpose(axis.arrange_by),
+        arrangement = ArrangementData(;
+            hclust = arrangement.hclust,
+            groups = arrangement.groups,
+            subgroups = arrangement.subgroups,
+            arrange_by = arrangement.arrange_by === nothing ? nothing : transpose(arrangement.arrange_by),
+        ),
         annotations = axis.annotations,
         annotations_order = axis.annotations_order,
     )
@@ -2048,8 +2089,9 @@ function Common.flip_axes!(graph::HeatmapGraph)::HeatmapGraph
     data.cells.hovers = data.cells.hovers === nothing ? nothing : PermutedDimsArray(data.cells.hovers, (2, 1))  # NOJET
     data.rows, data.columns = data.columns, data.rows
     for axis in (data.rows, data.columns)
-        if axis.arrange_by !== nothing
-            axis.arrange_by = transpose(axis.arrange_by)
+        arrangement = axis.arrangement
+        if arrangement.arrange_by !== nothing
+            arrangement.arrange_by = transpose(arrangement.arrange_by)
         end
     end
 

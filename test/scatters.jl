@@ -391,7 +391,7 @@ nested_test("points") do
             end
 
             nested_test("priorities") do
-                graph.data.edges.order = reverse!(collect(1:5))
+                graph.data.edges.entities.order = reverse!(collect(1:5))
                 test_html(graph, "points.edges.categorical.priorities.html")
                 return nothing
             end
@@ -474,7 +474,7 @@ nested_test("points") do
         end
 
         nested_test("priorities") do
-            graph.data.points.order = reverse(collect(1:11))
+            graph.data.points.entities.order = reverse(collect(1:11))
             test_html(graph, "points.points.categorical.priorities.html")
             return nothing
         end
@@ -714,7 +714,7 @@ nested_test("points") do
         end
 
         nested_test("priorities") do
-            graph.data.points.order = sortperm(graph.data.points.colors.vector)
+            graph.data.points.entities.order = sortperm(graph.data.points.colors.vector)
             return test_html(graph, "points.density.priorities.html")
         end
     end
@@ -725,6 +725,12 @@ nested_test("line") do
 
     nested_test("invalid") do
         context = ValidationContext(["graph"])
+
+        # The points of a line are connected in the order given, so an order of them has no meaning.
+        nested_test("order") do
+            graph.data.points.order = reverse(collect(1:11))
+            @test_throws "no effect for specified graph.data.points.order" validate(context, graph)
+        end
 
         nested_test("points_size") do
             graph.configuration.points_size = 6

@@ -76,6 +76,8 @@ SomeGraphs.Sources.bars_entities
 SomeGraphs.Sources.distribution_entities
 SomeGraphs.Sources.rows_entities
 SomeGraphs.Sources.columns_entities
+SomeGraphs.Sources.rows_arrangement
+SomeGraphs.Sources.columns_arrangement
 ```
 
 ## Matrices

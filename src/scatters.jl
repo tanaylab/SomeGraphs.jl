@@ -31,6 +31,7 @@ using KernelDensity
 using NamedArrays
 using PlotlyBase
 
+import ..Common.validate_entities_order
 import ..Utilities.Maybe
 
 """
@@ -149,18 +150,16 @@ end
         colors::VectorValuesData = VectorValuesData()
         sizes::VectorValuesData = VectorValuesData()
         entities::VectorEntitiesData = VectorEntitiesData()
-        order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
-The per-point data of a [`PointsGraphData`](@ref), other than the coordinates: the `colors` and `sizes` values, the
-hovers and mask of the points (`entities`), and the `order` the points are drawn in. It mirrors the `points` of the
-[`PointsGraphConfiguration`](@ref).
+The per-point data of a [`PointsGraphData`](@ref), other than the coordinates: the `colors` and `sizes` values, and the
+names, hovers, mask and order of the points (`entities`). The order is the order the points are drawn in. It mirrors
+the `points` of the [`PointsGraphConfiguration`](@ref).
 """
 @kwdef mutable struct PointsData
     colors::VectorValuesData = VectorValuesData()
     sizes::VectorValuesData = VectorValuesData()
     entities::VectorEntitiesData = VectorEntitiesData()
-    order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 """
@@ -187,12 +186,11 @@ end
         sizes::VectorValuesData = VectorValuesData()
         styles::Maybe{AbstractVector{LineStyle}} = nothing
         entities::VectorEntitiesData = VectorEntitiesData()
-        order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
 The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `points` (given by their indices). The
 `colors`, `sizes` (widths) and `styles` override the `edges` of the [`PointsGraphConfiguration`](@ref) per edge. The
-`entities` hold the hovers and mask of the edges. If `order` is specified, the edges are drawn in that order.
+`entities` hold the names, hovers, mask and order of the edges; the order is the order the edges are drawn in.
 
 !!! note
 
@@ -205,7 +203,6 @@ The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `point
     sizes::VectorValuesData = VectorValuesData()
     styles::Maybe{AbstractVector{LineStyle}} = nothing
     entities::VectorEntitiesData = VectorEntitiesData()
-    order::Maybe{AbstractVector{<:Integer}} = nothing
 end
 
 """
@@ -277,7 +274,7 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     validate_vector_length(context, "points.sizes.vector", points.sizes.vector, "x.vector", n_points)
     validate_vector_length(context, "points.entities.hovers", points.entities.hovers, "x.vector", n_points)
     validate_vector_length(context, "points.entities.mask", points.entities.mask, "x.vector", n_points)
-    validate_vector_length(context, "points.order", points.order, "x.vector", n_points)
+    validate_entities_order(context, "points.entities", points.entities, "x.vector", n_points; is_ordered = true)
 
     borders = data.borders
     validate_vector_is_finite(context, "borders.colors.vector", borders.colors.vector)
@@ -296,7 +293,7 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
     validate_vector_length(context, "edges.styles", edges.styles, "edges.points", n_edges)
     validate_vector_length(context, "edges.entities.hovers", edges.entities.hovers, "edges.points", n_edges)
     validate_vector_length(context, "edges.entities.mask", edges.entities.mask, "edges.points", n_edges)
-    validate_vector_length(context, "edges.order", edges.order, "edges.points", n_edges)
+    validate_entities_order(context, "edges.entities", edges.entities, "edges.points", n_edges; is_ordered = true)
 
     if edges.colors.vector !== nothing && eltype(edges.colors.vector) <: Real
         throw(ArgumentError("continuous colors for edges are not implemented"))
@@ -657,7 +654,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         next_colors_scale_index,
         size_values = numeric_values(points.sizes),
         mask = points.entities.mask,
-        order = points.order,
+        order = points.entities.order,
     )
 
     borders = graph.data.borders
@@ -669,7 +666,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         next_colors_scale_index,
         size_values = numeric_values(borders.sizes),
         mask = borders.mask,
-        order = points.order,
+        order = points.entities.order,
     )
 
     points_hovers = entities_hovers(points.entities)
@@ -684,7 +681,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         next_colors_scale_index,
         size_values = numeric_values(graph.data.edges.sizes),
         mask = graph.data.edges.entities.mask,
-        order = graph.data.edges.order,
+        order = graph.data.edges.entities.order,
     )
 
     edges_points = graph.data.edges.points
@@ -1093,6 +1090,7 @@ function Validations.validate(context::ValidationContext, data::LineGraphData)::
     validate_vector_length(context, "y.vector", data.y.vector, "x.vector", n_points)
     validate_vector_length(context, "points.hovers", data.points.hovers, "x.vector", n_points)
     validate_vector_length(context, "points.mask", data.points.mask, "x.vector", n_points)
+    validate_entities_order(context, "points", data.points, "x.vector", n_points; is_ordered = false)
 
     return nothing
 end
@@ -1353,6 +1351,7 @@ function Validations.validate(context::ValidationContext, line::LineData)::Nothi
     validate_vector_length(context, "y.vector", line.y.vector, "x.vector", n_points)
     validate_vector_length(context, "points.hovers", line.points.hovers, "x.vector", n_points)
     validate_vector_length(context, "points.mask", line.points.mask, "x.vector", n_points)
+    validate_entities_order(context, "points", line.points, "x.vector", n_points; is_ordered = false)
 
     # These color names are used directly as Plotly colors; validate them (an invalid color name would otherwise be
     # silently rendered black by Plotly).

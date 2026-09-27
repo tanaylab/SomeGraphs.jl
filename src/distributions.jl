@@ -32,6 +32,7 @@ using ..Validations
 
 import ..Common.is_categorical_axis
 import ..Common.is_default_axis
+import ..Common.validate_entities_order
 import ..Validations.Maybe
 
 """
@@ -366,6 +367,7 @@ function Validations.validate(context::ValidationContext, distribution::Distribu
 
     validate_vector_length(context, "points.hovers", distribution.points.hovers, "values.vector", n_values)
     validate_vector_length(context, "points.mask", distribution.points.mask, "values.vector", n_values)
+    validate_entities_order(context, "points", distribution.points, "values.vector", n_values; is_ordered = false)
 
     validate_in(context, "color") do
         validate_is_color(context, distribution.color)

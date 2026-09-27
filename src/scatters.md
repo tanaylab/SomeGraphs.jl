@@ -156,7 +156,7 @@ graph.data.y.vector = [
     -0.631083973233279,
 ]
 graph.data.points.colors.vector = points_density(graph.data.x.vector, graph.data.y.vector)
-graph.data.points.order = sortperm(graph.data.points.colors.vector)
+graph.data.points.entities.order = sortperm(graph.data.points.colors.vector)
 graph.configuration.points.colors.palette = "Viridis"
 graph.configuration.points.sizes.fixed = 16
 graph.configuration.figure.width = 200

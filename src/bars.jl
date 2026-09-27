@@ -23,6 +23,7 @@ using NamedArrays
 using PlotlyBase
 
 import ..Common.is_categorical_axis
+import ..Common.validate_entities_order
 import ..Validations.Maybe
 
 """
@@ -163,6 +164,7 @@ function Validations.validate(context::ValidationContext, data::BarsGraphData)::
     validate_vector_length(context, "bars.names", data.bars.names, "values.vector", n_bars)
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.vector", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "values.vector", n_bars)
+    validate_entities_order(context, "bars", data.bars, "values.vector", n_bars; is_ordered = false)
     validate_vector_length(context, "colors.vector", data.colors.vector, "values.vector", n_bars)
     validate_vector_is_finite(context, "colors.vector", data.colors.vector)
 
@@ -479,6 +481,7 @@ function Validations.validate(context::ValidationContext, series::SeriesData)::N
 
     validate_vector_length(context, "bars.hovers", series.bars.hovers, "values.vector", n_bars)
     validate_vector_length(context, "bars.mask", series.bars.mask, "values.vector", n_bars)
+    validate_entities_order(context, "bars", series.bars, "values.vector", n_bars; is_ordered = false)
 
     validate_in(context, "color") do
         validate_is_color(context, series.color)
@@ -550,6 +553,7 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
     validate_vector_length(context, "bars.names", data.bars.names, "series[1].values.vector", n_bars)
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "series[1].values.vector", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "series[1].values.vector", n_bars)
+    validate_entities_order(context, "bars", data.bars, "series[1].values.vector", n_bars; is_ordered = false)
 
     validate_vector_entries(context, "annotations", data.annotations) do _, annotation
         validate(context, annotation, "series[1].values.vector", n_bars)

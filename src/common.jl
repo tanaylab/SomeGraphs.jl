@@ -1573,10 +1573,11 @@ end
         names::Maybe{AbstractVector{<:AbstractString}} = nothing
         hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+        order::Maybe{AbstractVector{<:Integer}} = nothing
     end
 
-The names, hovers and mask of one set of entities of a graph (the points of a points graph, the bars of a bars graph,
-...), shared by all the roles of these entities.
+The names, hovers, mask and order of one set of entities of a graph (the points of a points graph, the bars of a bars
+graph, ...), shared by all the roles of these entities.
 
 The `names` identify the entities. Where the graph has room to label them, they are shown as the tick labels of their
 axis. They are also the first line of the hover of each entity, so the `hovers` are whatever you wish to say about an
@@ -1585,11 +1586,35 @@ entity *in addition* to its name. Hovers are only shown in interactive graphs (o
 The mask hides an arbitrary subset of the entities. Hidden entities are still part of the data: they take part in
 whatever is computed from it (axis ranges, clustering), unless the relevant configuration says otherwise (see
 `include_hidden` in [`AxisConfiguration`](@ref)). They are just not drawn.
+
+The `order` is a permutation of the entities. What it means depends on the graph: the order the points of a scatter
+graph are drawn in, or the layout of an axis of a heatmap. It describes all the entities, hidden ones included. A graph
+which has no use for an order of some entities rejects it rather than ignoring it.
 """
 @kwdef mutable struct VectorEntitiesData
     names::Maybe{AbstractVector{<:AbstractString}} = nothing
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+    order::Maybe{AbstractVector{<:Integer}} = nothing
+end
+
+# Validate the `order` of the `entities` of a `field` of a graph, which has `n_entities` entities as per the `base`
+# field. It is validated where the graph lays these entities out by it (`is_ordered`), and rejected where the graph
+# would ignore it.
+function validate_entities_order(
+    context::ValidationContext,
+    field::AbstractString,
+    entities::VectorEntitiesData,
+    base::AbstractString,
+    n_entities::Integer;
+    is_ordered::Bool,
+)::Nothing
+    if is_ordered
+        validate_vector_length(context, "$(field).order", entities.order, base, n_entities)
+    elseif entities.order !== nothing
+        throw(ArgumentError("no effect for specified $(location(context)).$(field).order"))
+    end
+    return nothing
 end
 
 """

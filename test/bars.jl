@@ -116,6 +116,12 @@ nested_test("bars") do
         end
     end
 
+    # Bars are laid out in the order of their values, so an order of them has no meaning (yet).
+    nested_test("order") do
+        graph.data.bars.order = [4, 3, 2, 1]
+        @test_throws "no effect for specified graph.data.bars.order" validate(ValidationContext(["graph"]), graph)
+    end
+
     for (orientation_name, orientation_value) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
         nested_test(orientation_name) do
             graph.configuration.values_orientation = orientation_value
@@ -388,6 +394,22 @@ nested_test("series_bars") do
             graph.configuration.value_axis.scale.include_hidden = false
             test_html(graph, "series_bars.mask.!hidden.html")
             return nothing
+        end
+    end
+
+    # The bars of a series line up with the bars shared by all the series, so neither may be given an order.
+    nested_test("order") do
+        nested_test("bars") do
+            graph.data.bars.order = reverse(collect(1:11))
+            @test_throws "no effect for specified graph.data.bars.order" validate(ValidationContext(["graph"]), graph)
+        end
+
+        nested_test("series") do
+            graph.data.series[2].bars.order = reverse(collect(1:11))
+            @test_throws "no effect for specified graph.data.series[2].bars.order" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
         end
     end
 

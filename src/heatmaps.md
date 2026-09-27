@@ -13,10 +13,12 @@ SomeGraphs.Heatmaps.HeatmapGraph
 SomeGraphs.Heatmaps.heatmap_graph
 SomeGraphs.Heatmaps.HeatmapGraphData
 SomeGraphs.Heatmaps.HeatmapAxisData
+SomeGraphs.Heatmaps.ArrangementData
 SomeGraphs.Heatmaps.HeatmapGraphConfiguration
 SomeGraphs.Heatmaps.EntriesConfiguration
 SomeGraphs.Heatmaps.HeatmapAxisConfiguration
-SomeGraphs.Heatmaps.HeatmapReorder
+SomeGraphs.Heatmaps.TreeSource
+SomeGraphs.Heatmaps.OrderSource
 SomeGraphs.Heatmaps.HeatmapGraphOrder
 SomeGraphs.Heatmaps.heatmap_order
 SomeGraphs.Heatmaps.reset_order!
@@ -140,8 +142,6 @@ graph = heatmap_graph(;
         ],
     ),
 )
-graph.configuration.rows.reorder = OptimalHclust
-graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
@@ -162,7 +162,7 @@ graph = heatmap_graph(;
     rows = HeatmapAxisData(;
         entities = VectorEntitiesData(; names = ["A", "B", "C", "D"]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))],
-        groups = VectorValuesData([1, 1, 2, 2]),
+        arrangement = ArrangementData(; groups = VectorValuesData([1, 1, 2, 2])),
     ),
     columns = HeatmapAxisData(;
         entities = VectorEntitiesData(; names = ["X", "Y", "Z"]),
@@ -174,11 +174,9 @@ graph = heatmap_graph(;
                 ),
             ),
         ],
-        groups = VectorValuesData(["L", "M", "M"]),
+        arrangement = ArrangementData(; groups = VectorValuesData(["L", "M", "M"])),
     ),
 )
-graph.configuration.rows.reorder = OptimalHclust
-graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
@@ -201,11 +199,13 @@ graph = heatmap_graph(;
     rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = ["A", "B", "C", "D"])),
     columns = HeatmapAxisData(;
         entities = VectorEntitiesData(; names = ["U", "V", "W", "X", "Y", "Z"]),
-        groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
-        subgroups = VectorValuesData(["P", "Q", "P", "R", "R", "S"]),
+        arrangement = ArrangementData(;
+            groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
+            subgroups = VectorValuesData(["P", "Q", "P", "R", "R", "S"]),
+        ),
     ),
 )
-graph.configuration.columns.reorder = OptimalHclust
+graph.configuration.columns.order_source = OptimalTreeReorder
 graph.configuration.columns.subgroups_gap = 1
 using PlotlyDocumenter
 to_documenter(graph.figure)

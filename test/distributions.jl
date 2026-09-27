@@ -323,6 +323,12 @@ nested_test("distribution") do
             @test_throws "ArgumentError: must specify graph.data.distribution.values.vector" graph.figure
         end
 
+        # A distribution has no order to its points, so an order of them has no meaning.
+        nested_test("order") do
+            graph.data.distribution.points.order = reverse(collect(1:length(graph.data.distribution.values.vector)))
+            @test_throws "ArgumentError: no effect for specified graph.data.distribution.points.order" graph.figure
+        end
+
         nested_test("~values") do
             graph.data.distribution.values.vector = ["Foo"]
             @test_throws "ArgumentError: non-numeric graph.data.distribution.values.vector" graph.figure

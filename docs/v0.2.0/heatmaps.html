@@ -276,716 +276,26 @@ end
 <code>entries.colors.scale
 </code> of the configuration.
 </p>
-<p>Valid combinations of the fields controlling order and clustering are:
-</p>
-<table>
-<tr>
-<th style="text-align: left">data 
+<p>The 
 <code>order
-</code>
-</th>
-<th style="text-align: left">data 
-<code>arrange_by
-</code>
-</th>
-<th style="text-align: left">data 
-<code>groups
-</code>
-</th>
-<th style="text-align: left">config 
-<code>reorder
-</code>
-</th>
-<th style="text-align: left">config 
-<code>dendogram_size
-</code>
-</th>
-<th style="text-align: left">config 
-<code>linkage
-</code>
-</th>
-<th style="text-align: left">config 
-<code>metric
-</code>
-</th>
-<th style="text-align: left">result tree
-</th>
-<th style="text-align: left">result order
-</th>
-<th style="text-align: left">notes
-</th>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">Not computed
-</td>
-<td style="text-align: left">Original data order
-</td>
-<td style="text-align: left">Do not cluster, use the original data order (default)
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>ehclust
-</code> of original order with 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>
-</td>
-<td style="text-align: left">Original data order
-</td>
-<td style="text-align: left">Cluster, preserving the original order
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>SameOrder
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">Same as other axis
-</td>
-<td style="text-align: left">Same as other axis
-</td>
-<td style="text-align: left">Square matrices only
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>OptimalHclust
-</code>/ 
-<code>RCompatibleHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
+</code> of the entities of each axis and the 
 <code>hclust
-</code> with 
-<code>linkage
-</code> or 
-<code>WardLinkage
+</code> of its arrangement (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.ArrangementData">
+<code>ArrangementData
 </code>
-</td>
-<td style="text-align: left">
-<code>hclust
-</code> with 
-<code>reorder
+</a>) take part in the layout of the axis as described in 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
+<code>HeatmapAxisConfiguration
 </code>
-</td>
-<td style="text-align: left">Cluster using 
-<code>linkage
-</code> and branch 
-<code>reorder
-</code>
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">Any
-</td>
-<td style="text-align: left">
-<code>OptimalHclust
-</code>/ 
-<code>RCompatibleHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>ehclust
-</code> with 
+</a>. The 
 <code>groups
 </code> and 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>
-</td>
-<td style="text-align: left">
-<code>hclust
-</code> with 
-<code>groups
-</code> and 
-<code>reorder
-</code>
-</td>
-<td style="text-align: left">Cluster using 
-<code>groups
-</code>, 
-<code>linkage
-</code> and branch 
-<code>reorder
-</code>
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>SlantedHclust
-</code>/ 
-<code>SlantedPreSquaredHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>hclust
-</code> with 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>, then 
-<code>reorder_hclust
-</code> by 
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">
-<code>reorder_hclust
-</code> by 
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">Cluster, then slant preserving the tree
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">Any
-</td>
-<td style="text-align: left">
-<code>SlantedHclust
-</code>/ 
-<code>SlantedPreSquaredHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>hclust
-</code> with 
-<code>groups
-</code> and 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>, then 
-<code>reorder_hclust
-</code> by 
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">
-<code>reorder_hclust
-</code> by 
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">Cluster using 
-<code>groups
-</code>, then slant preserving the tree
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>SlantedOrder
-</code>/ 
-<code>SlantedPreSquaredOrder
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>ehclust
-</code> of 
-<code>slanted_orders
-</code> with 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>
-</td>
-<td style="text-align: left">
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">Slant, then cluster preserving the slanted order
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>Hclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>Hclust
-</code> tree
-</td>
-<td style="text-align: left">
-<code>Hclust
-</code> order
-</td>
-<td style="text-align: left">Force a specific tree and order on the data
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>Hclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ 
-<code>AbstractMatrix{&lt;:Real}
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>SlantedHclust
-</code>/ 
-<code>SlantedPreSquaredHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>reorder_hclust
-</code> by 
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">
-<code>reorder_hclust
-</code> by 
-<code>slanted_orders
-</code>
-</td>
-<td style="text-align: left">Slant, preserving a given tree
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>AbstractVector{&lt;:Integer}
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">Not computed
-</td>
-<td style="text-align: left">
-<code>order
-</code> permutation
-</td>
-<td style="text-align: left">Do not cluster, use the specified order
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>AbstractVector{&lt;:Integer}
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">ignored
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>ehclust
-</code> of 
-<code>order
-</code> with 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>
-</td>
-<td style="text-align: left">
-<code>order
-</code> permutation
-</td>
-<td style="text-align: left">Cluster, preserving the specified order
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>AbstractVector{&lt;:Integer}
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">
-<code>ReorderHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>hclust
-</code> with 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>
-</td>
-<td style="text-align: left">
-<code>reorder_hclust
-</code> by data 
-<code>order
-</code>
-</td>
-<td style="text-align: left">Cluster, then reorder branches to be close to 
-<code>order
-</code>
-</td>
-</tr>
-<tr>
-<td style="text-align: left">
-<code>AbstractVector{&lt;:Integer}
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>
-</td>
-<td style="text-align: left">Any
-</td>
-<td style="text-align: left">
-<code>ReorderHclust
-</code>
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>nothing
-</code>/ Any
-</td>
-<td style="text-align: left">
-<code>ehclust
-</code> with 
-<code>groups
-</code> and 
-<code>linkage
-</code> or 
-<code>WardLinkage
-</code>
-</td>
-<td style="text-align: left">
-<code>reorder_hclust
-</code> by data 
-<code>order
-</code>
-</td>
-<td style="text-align: left">Cluster, then reorder branches to be close to 
-<code>order
-</code>
-</td>
-</tr>
-</table>
-<p>All other combinations are invalid. Note:
+<code>subgroups
+</code> of the arrangement constrain a 
+<code>ClusteredTree
+</code>. They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.
 </p>
-<ul>
-<li>
-<p>When calling 
-<code>hclust
-</code> and/or 
-<code>ehclust
-</code> and/or 
-<code>slanted_orders
-</code>, then specifying 
-<code>arrange_by
-</code> will use it instead of the displayed data matrix.
-</p>
-</li>
-<li>
-<p>When calling 
-<code>hclust
-</code> and/or 
-<code>ehclust
-</code>, then specifying a 
-<code>metric
-</code> will be used instead of 
-<code>Euclidean
-</code> to compute the distances matrix.
-</p>
-</li>
-<li>
-<p>Specifying 
-<code>groups
-</code> only impacts the tree and order when computing a new clustering without other order constraints. They can still be specified to denote gaps in the heatmap, even when they do not impact the tree and/or order.
-</p>
-</li>
-</ul>
 </div>
 </section>
 </details>
@@ -1005,10 +315,7 @@ end
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct HeatmapAxisData
     entities::VectorEntitiesData = VectorEntitiesData()
-    order::Maybe{Union{Hclust, AbstractVector{&lt;:Integer}}} = nothing
-    groups::VectorValuesData = VectorValuesData()
-    subgroups::VectorValuesData = VectorValuesData()
-    arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
+    arrangement::ArrangementData = ArrangementData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     annotations_order::Maybe{AbstractVector{&lt;:Integer}} = nothing
 end
@@ -1020,15 +327,56 @@ end
 </code>
 </a>. The 
 <code>entities
-</code> hold the names, hovers and mask of the entries; their names are shown as the tick labels, titled by the axis 
+</code> hold the names, hovers, mask and order of the entries; their names are shown as the tick labels, titled by the axis 
 <code>title
 </code> of the configuration. The 
+<code>arrangement
+</code> holds what else the entries are arranged by. The 
 <code>annotations
 </code> are shown to the side of the axis. If 
 <code>annotations_order
 </code> is specified, they are shown in that order; it describes all the annotations, including the ones that are not 
 <code>is_shown
 </code>.
+</p>
+<p>Hidden entries (see the mask of 
+<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
+<code>VectorEntitiesData
+</code>
+</a>) are not drawn, but they are still part of the data: the clustering sees them, and the order (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
+<code>heatmap_order
+</code>
+</a>) can be given to another graph of the same data, whether or not the two hide the same entries. At least one entry must be shown.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.ArrangementData">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.ArrangementData">
+<code>SomeGraphs.Heatmaps.ArrangementData
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef mutable struct ArrangementData
+    hclust::Maybe{Hclust} = nothing
+    groups::VectorValuesData = VectorValuesData()
+    subgroups::VectorValuesData = VectorValuesData()
+    arrange_by::Maybe{AbstractMatrix{&lt;:Real}} = nothing
+end
+</code>
+</pre>
+<p>The inputs to arranging the entries of one axis of a heatmap, other than the 
+<code>order
+</code> of its entities: a clustering tree, the groups of the entries, and the matrix to cluster them by.
 </p>
 <p>By default, if reordering the entries, this is based on the 
 <code>entries.matrix
@@ -1044,29 +392,21 @@ end
 <code>arrange_by
 </code> matrix should be in row-major layout, but that&#39;s not critical.
 </p>
-<p>Alternatively you can force the order of the entries by specifying the 
+<p>Alternatively you can give the tree of the entries as an 
+<code>hclust
+</code>, and/or the 
 <code>order
-</code> permutation. You can also specify an 
-<code>Hclust
-</code> object as the order. If you ask for a dendogram and did not specify such a clustering, one will be computed.
+</code> of the entities; see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapAxisConfiguration">
+<code>HeatmapAxisConfiguration
+</code>
+</a> for how they take part in the layout.
 </p>
 <p>If 
 <code>groups
 </code> values (numbers or strings, one per entry) are specified, then a gap can be added between entries of different groups. Groups can also be used to constrain the computed clustering. The 
 <code>subgroups
 </code> are a second, finer level of grouping nested in the groups. Neither has a title.
-</p>
-<p>Hidden entries (see the mask of 
-<a href="common.html#SomeGraphs.Common.VectorEntitiesData">
-<code>VectorEntitiesData
-</code>
-</a>) are not drawn, but they are still part of the data: the clustering sees them, and the 
-<code>order
-</code> (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_order">
-<code>heatmap_order
-</code>
-</a>) can be given to another graph of the same data, whether or not the two hide the same entries. At least one entry must be shown.
 </p>
 </div>
 </section>
@@ -1121,9 +461,9 @@ end
 <code>order
 </code> (e.g., for generating other graphs in an identical order). It is computed once, whether the graph&#39;s figure is generated or its order is asked for first.
 </p>
-<div class="admonition is-info" id="Note-540ffd37b290024">
+<div class="admonition is-info" id="Note-3a86ceb3f202edc0">
 <header class="admonition-header">Note
-<a class="admonition-anchor" href="#Note-540ffd37b290024" title="Permalink">
+<a class="admonition-anchor" href="#Note-3a86ceb3f202edc0" title="Permalink">
 </a>
 </header>
 <div class="admonition-body">
@@ -1132,22 +472,22 @@ end
 <code>reset_order!
 </code>
 </a> if anything it was computed from is changed after it was computed - that is, the 
-<code>reorder
+<code>tree_source
+</code>, 
+<code>order_source
 </code>, 
 <code>linkage
-</code> and 
+</code>, 
 <code>metric
+</code> and 
+<code>dendogram_size
 </code> of the axes configuration, and the 
 <code>entries.matrix
-</code> and the 
+</code>, the 
 <code>order
-</code>, 
-<code>arrange_by
-</code>, 
-<code>groups
-</code> and 
-<code>subgroups
-</code> of the axes data. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order of the first grouping unless the cache is reset in between.
+</code> of the axes entities and their 
+<code>arrangement
+</code>. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the order of the first grouping unless the cache is reset in between.
 </p>
 </div>
 </div>
@@ -1199,7 +539,8 @@ end
     show_ticks::Bool = true
     ticks_angle::Maybe{Real} = nothing
     annotations::AnnotationSize = AnnotationSize()
-    reorder::Maybe{HeatmapReorder} = nothing
+    tree_source::Maybe{TreeSource} = nothing
+    order_source::Maybe{OrderSource} = nothing
     linkage::Maybe{HeatmapLinkage} = nothing
     metric::Maybe{PreMetric} = nothing
     include_hidden::Bool = true
@@ -1229,15 +570,395 @@ end
 <code>ticks_angle
 </code> rotates them.
 </p>
-<p>You can use 
-<code>reorder
-</code> to reorder the entries of the axis. When specifying 
+<p>The layout of the axis is an order, and optionally a tree for the dendogram. The 
+<code>tree_source
+</code> says where the tree comes from (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.TreeSource">
+<code>TreeSource
+</code>
+</a>) and the 
+<code>order_source
+</code> says where the order comes from (see 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.OrderSource">
+<code>OrderSource
+</code>
+</a>). A tree is needed when any field depends on one: the dendogram is shown, a 
+<code>tree_source
+</code> is specified, the 
+<code>order_source
+</code> is 
+<code>GivenTreeOrder
+</code> or a tree-reorder, or an 
+<code>hclust
+</code> is given in the arrangement. Otherwise no tree is built, and specifying 
 <code>linkage
-</code>, by default, the clustering uses the 
-<code>Euclidean
-</code> distance metric. You can override this by specifying the 
+</code> or 
 <code>metric
+</code> is an error. Nothing that is specified is ever ignored.
+</p>
+<p>&quot;Toward the target&quot; means the branches of the tree are reordered to be as close as possible to the target order, so the final order is the leaves and only approximates the target. &quot;Around the target&quot; means the tree is built so that its leaves are exactly the target.
+</p>
+<table>
+<tr>
+<th style="text-align: left">tree source
+</th>
+<th style="text-align: left">
+<code>hclust
+</code>
+</th>
+<th style="text-align: left">order source
+</th>
+<th style="text-align: left">
+<code>order
+</code>
+</th>
+<th style="text-align: left">final tree, when needed
+</th>
+<th style="text-align: left">final order
+</th>
+</tr>
+<tr>
+<td style="text-align: left">Given
+</td>
+<td style="text-align: left">required
+</td>
+<td style="text-align: left">
+<code>GivenTreeOrder
+</code>
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">given
+</td>
+<td style="text-align: left">leaves, as is
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Given
+</td>
+<td style="text-align: left">required
+</td>
+<td style="text-align: left">tree-reorder
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">INVALID: Clustering.jl has no public way to reorder the branches of an existing tree
+</td>
+<td style="text-align: left">
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Given
+</td>
+<td style="text-align: left">required
+</td>
+<td style="text-align: left">target-order
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+<td style="text-align: left">given
+</td>
+<td style="text-align: left">leaves, toward the target
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Same
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">
+<code>GivenTreeOrder
+</code>
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">the other axis&#39;s
+</td>
+<td style="text-align: left">leaves, as is
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Same
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">tree-reorder
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">INVALID, as for Given
+</td>
+<td style="text-align: left">
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Same
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">target-order
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+<td style="text-align: left">the other axis&#39;s
+</td>
+<td style="text-align: left">leaves, toward the target
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Clustered
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">tree-reorder
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">clustered
+</td>
+<td style="text-align: left">leaves, reordered
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Clustered
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">target-order
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+<td style="text-align: left">clustered
+</td>
+<td style="text-align: left">leaves, toward the target
+</td>
+</tr>
+<tr>
+<td style="text-align: left">Order
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">target-order
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+<td style="text-align: left">around the target
+</td>
+<td style="text-align: left">the target
+</td>
+</tr>
+<tr>
+<td style="text-align: left">(none)
+</td>
+<td style="text-align: left">forbidden
+</td>
+<td style="text-align: left">target-order
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+<td style="text-align: left">
+</td>
+<td style="text-align: left">the target
+</td>
+</tr>
+<tr>
+<td style="text-align: left">anything else
+</td>
+<td style="text-align: left">
+</td>
+<td style="text-align: left">
+</td>
+<td style="text-align: left">
+</td>
+<td style="text-align: left">INVALID
+</td>
+<td style="text-align: left">
+</td>
+</tr>
+</table>
+<p>The 
+<code>order
+</code> column says which order source requires the 
+<code>order
+</code> data; the other sources forbid it. The invalid remainder is 
+<code>GivenTreeOrder
+</code> without a given or same tree, 
+<code>OrderTree
+</code> with 
+<code>GivenTreeOrder
+</code> or a tree-reorder, which is circular, and a tree-reorder of a given or same tree, which is not implemented.
+</p>
+<p>
+<code>SameOrder
+</code> is a plain target-order. With 
+<code>SameTree
+</code> it copies the layout of the other axis; with 
+<code>OrderTree
+</code> it builds this axis&#39;s tree around the other&#39;s order; with 
+<code>ClusteredTree
+</code> it clusters toward it.
+</p>
+<p>Both sources default to 
+<code>nothing
+</code>, which infers them from what is given:
+</p>
+<table>
+<tr>
+<th style="text-align: left">
+<code>order
+</code> given
+</th>
+<th style="text-align: left">
+<code>hclust
+</code> given
+</th>
+<th style="text-align: left">tree needed
+</th>
+<th style="text-align: left">tree source
+</th>
+<th style="text-align: left">order source
+</th>
+</tr>
+<tr>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">(none)
+</td>
+<td style="text-align: left">
+<code>EntryOrder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">
+<code>ClusteredTree
+</code>
+</td>
+<td style="text-align: left">
+<code>OptimalTreeReorder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">(none)
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">
+<code>OrderTree
+</code>
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">no
+</td>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">always
+</td>
+<td style="text-align: left">
+<code>GivenTree
+</code>
+</td>
+<td style="text-align: left">
+<code>GivenTreeOrder
+</code>
+</td>
+</tr>
+<tr>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">yes
+</td>
+<td style="text-align: left">always
+</td>
+<td style="text-align: left">
+<code>GivenTree
+</code>
+</td>
+<td style="text-align: left">
+<code>GivenOrder
+</code>
+</td>
+</tr>
+</table>
+<p>One source may be inferred while the other is explicit. An 
+<code>order
+</code> with an explicit 
+<code>ClusteredTree
+</code> infers 
+<code>GivenOrder
+</code> (cluster, then toward the given order). An explicit 
+<code>SlantedOrder
+</code> with a dendogram infers 
+<code>OrderTree
+</code>. An explicit 
+<code>SameOrder
+</code> with a tree needed and nothing given infers 
+<code>SameTree
+</code>. An explicit 
+<code>SameTree
+</code> infers 
+<code>SameOrder
 </code>.
+</p>
+<p>A 
+<code>ClusteredTree
+</code> or an 
+<code>OrderTree
+</code> is built using the 
+<code>linkage
+</code> (by default, 
+<code>WardLinkage
+</code>) and the 
+<code>metric
+</code> (by default, 
+<code>Euclidean
+</code>). Neither applies to a 
+<code>GivenTree
+</code> or a 
+<code>SameTree
+</code>, so specifying them for one is an error.
 </p>
 <p>By default, a computed clustering sees all the entries of the axis, hidden ones included, so hiding some entries does not move the rest. Set 
 <code>include_hidden
@@ -1281,9 +1002,7 @@ end
 </p>
 <p>If you specify 
 <code>dendogram_size
-</code>, then you should either specify linkage (for computing a clustering) or must specify 
-<code>Hclust
-</code> order in the data. The dendogram tree will be shown to the side of the data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
+</code>, the tree (see above) is shown to the side of the data. The size is specified in the usual inconvenient units (fractions of the total graph size) because Plotly.
 </p>
 <p>If a dendogram tree is shown, the 
 <code>dendogram_line
@@ -1297,9 +1016,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.HeatmapReorder">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapReorder">
-<code>SomeGraphs.Heatmaps.HeatmapReorder
+<summary id="SomeGraphs.Heatmaps.TreeSource">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.TreeSource">
+<code>SomeGraphs.Heatmaps.TreeSource
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1307,60 +1026,108 @@ end
 </summary>
 <section>
 <div>
-<p>Specify how to reorder the rows and/or columns.
+<p>Specify where the tree of a heatmap axis comes from.
 </p>
 <ul>
 <li>
-<code>OptimalHclust
-</code> orders 
+<code>GivenTree
+</code> uses the 
 <code>hclust
-</code> branches using the (better) Bar-Joseph method.
+</code> of the arrangement.
 </li>
 <li>
-<code>RCompatibleHclust
-</code> orders 
+<code>ClusteredTree
+</code> clusters the data (using the 
+<code>linkage
+</code> and 
+<code>metric
+</code>, and the 
+<code>groups
+</code> and 
+<code>arrange_by
+</code> of the arrangement).
+</li>
+<li>
+<code>OrderTree
+</code> builds a tree around the target order (using 
+<code>ehclust
+</code>), so the leaves are exactly the target order.
+</li>
+<li>
+<code>SameTree
+</code> uses the tree of the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
+</li>
+</ul>
+<p>A tree is needed when any field depends on one: the dendogram is shown, a 
+<code>tree_source
+</code> is specified, the 
+<code>order_source
+</code> is 
+<code>GivenTreeOrder
+</code> or a tree-reorder, or an 
 <code>hclust
-</code> branches in the same (bad) way that 
+</code> is given. Otherwise no tree is built.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Heatmaps.OrderSource">
+<a class="docstring-binding" href="#SomeGraphs.Heatmaps.OrderSource">
+<code>SomeGraphs.Heatmaps.OrderSource
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>Specify where the order of a heatmap axis comes from.
+</p>
+<ul>
+<li>
+<code>GivenTreeOrder
+</code> uses the leaves of the given tree, as they are.
+</li>
+<li>
+<code>OptimalTreeReorder
+</code> and 
+<code>RCompatibleTreeReorder
+</code> are tree-reorders. They reorder the branches of the tree (using the (better) Bar-Joseph method, or in the same (bad) way that 
 <code>R
-</code> does.
+</code> does) and use its leaves.
 </li>
 <li>
-<code>ReorderHclust
-</code> reorders 
-<code>hclust
-</code> branches to be as close as possible to a given order (using 
-<code>reorder_hclust
-</code>).
+<code>GivenOrder
+</code> uses the 
+<code>order
+</code> of the entities.
 </li>
 <li>
-<code>SlantedHclust
-</code> and 
-<code>SlantedPreSquaredHclust
-</code> orders 
-<code>hclust
-</code> branches using 
-<code>Slanter
-</code> (using 
-<code>slanted_orders
-</code> and 
-<code>reorder_hclust
-</code>).
+<code>EntryOrder
+</code> uses the entries as they are.
 </li>
 <li>
 <code>SlantedOrder
 </code> and 
 <code>SlantedPreSquaredOrder
-</code> uses 
+</code> slant the data (using 
 <code>slanted_orders
-</code> (if a tree is needed, uses 
-<code>ehclust
-</code> to create a tree preserving this order).
+</code>).
 </li>
 <li>
 <code>SameOrder
-</code> orders the rows/columns in the same way as the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
+</code> uses the order of the other axis. This can only be applied to square matrices and can&#39;t be specified for both axes.
 </li>
 </ul>
+<p>The last five name a target order. When a tree is needed, the branches of a given, same or clustered tree are reordered toward the target (using 
+<code>reorder_hclust
+</code>), so the final order only approximates the target. An 
+<code>OrderTree
+</code> is built around the target, so the final order is the target.
+</p>
 </div>
 </section>
 </details>
@@ -1459,8 +1226,8 @@ end
 <p>Use it to show several graphs in the same order, so they can be compared. Cluster one of them, then give the rest its order (and, if they use the same groups, they will also have the same gaps):
 </p>
 <pre>
-<code class="language-julia hljs">graph.configuration.columns.reorder = OptimalHclust
-other_graph.data.columns.order = graph.order.columns_order
+<code class="language-julia hljs">graph.configuration.columns.order_source = OptimalTreeReorder
+other_graph.data.columns.entities.order = graph.order.columns_order
 </code>
 </pre>
 <p>If the graphs also show a dendogram, give them the tree instead of the order. This arranges them in the same order 
@@ -1468,9 +1235,8 @@ other_graph.data.columns.order = graph.order.columns_order
 </em> draws the same tree above each of them (this only makes sense if the graphs share the same columns, as the tree refers to the original column indices):
 </p>
 <pre>
-<code class="language-julia hljs">graph.configuration.columns.reorder = OptimalHclust
-graph.configuration.columns.dendogram_size = 0.1
-other_graph.data.columns.order = graph.order.columns_hclust
+<code class="language-julia hljs">graph.configuration.columns.dendogram_size = 0.1
+other_graph.data.columns.arrangement.hclust = graph.order.columns_hclust
 other_graph.configuration.columns.dendogram_size = 0.1
 </code>
 </pre>
@@ -1574,12 +1340,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='3duZprS7h1' class='' style=';'>
+<div id='wzFrGHNEJe' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("3duZprS7h1")
+    const PLOT = document.getElementById("wzFrGHNEJe")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1622,12 +1388,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='qFaLt1xqPh' class='' style=';'>
+<div id='E1k0BXPiro' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("qFaLt1xqPh")
+    const PLOT = document.getElementById("E1k0BXPiro")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1670,12 +1436,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='HIe32JAEaG' class='' style=';'>
+<div id='JTWhvJlop7' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("HIe32JAEaG")
+    const PLOT = document.getElementById("JTWhvJlop7")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1730,12 +1496,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='IBxSWrT6XO' class='' style=';'>
+<div id='jk3aV374l4' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("IBxSWrT6XO")
+    const PLOT = document.getElementById("jk3aV374l4")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1790,20 +1556,18 @@ graph = heatmap_graph(;
         ],
     ),
 )
-graph.configuration.rows.reorder = OptimalHclust
-graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FV2Ccu9QFZ' class='' style=';'>
+<div id='D2ZfSAPb7O' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FV2Ccu9QFZ")
+    const PLOT = document.getElementById("D2ZfSAPb7O")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1845,7 +1609,7 @@ graph = heatmap_graph(;
     rows = HeatmapAxisData(;
         entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;]),
         annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], &quot;score&quot;))],
-        groups = VectorValuesData([1, 1, 2, 2]),
+        arrangement = ArrangementData(; groups = VectorValuesData([1, 1, 2, 2])),
     ),
     columns = HeatmapAxisData(;
         entities = VectorEntitiesData(; names = [&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
@@ -1857,23 +1621,21 @@ graph = heatmap_graph(;
                 ),
             ),
         ],
-        groups = VectorValuesData([&quot;L&quot;, &quot;M&quot;, &quot;M&quot;]),
+        arrangement = ArrangementData(; groups = VectorValuesData([&quot;L&quot;, &quot;M&quot;, &quot;M&quot;])),
     ),
 )
-graph.configuration.rows.reorder = OptimalHclust
-graph.configuration.columns.reorder = OptimalHclust
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ZcC5JCu7Bv' class='' style=';'>
+<div id='QcDrfx8ujf' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ZcC5JCu7Bv")
+    const PLOT = document.getElementById("QcDrfx8ujf")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1915,22 +1677,24 @@ graph = heatmap_graph(;
     rows = HeatmapAxisData(; entities = VectorEntitiesData(; names = [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;, &quot;D&quot;])),
     columns = HeatmapAxisData(;
         entities = VectorEntitiesData(; names = [&quot;U&quot;, &quot;V&quot;, &quot;W&quot;, &quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;]),
-        groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
-        subgroups = VectorValuesData([&quot;P&quot;, &quot;Q&quot;, &quot;P&quot;, &quot;R&quot;, &quot;R&quot;, &quot;S&quot;]),
+        arrangement = ArrangementData(;
+            groups = VectorValuesData([1, 1, 1, 2, 2, 2]),
+            subgroups = VectorValuesData([&quot;P&quot;, &quot;Q&quot;, &quot;P&quot;, &quot;R&quot;, &quot;R&quot;, &quot;S&quot;]),
+        ),
     ),
 )
-graph.configuration.columns.reorder = OptimalHclust
+graph.configuration.columns.order_source = OptimalTreeReorder
 graph.configuration.columns.subgroups_gap = 1
 using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='nRnhYGXTcN' class='' style=';'>
+<div id='4xSWY5oGtw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nRnhYGXTcN")
+    const PLOT = document.getElementById("4xSWY5oGtw")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1988,12 +1752,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='YzJKIH9E5R' class='' style=';'>
+<div id='4I1ZstuQrS' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YzJKIH9E5R")
+    const PLOT = document.getElementById("4I1ZstuQrS")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -2026,6 +1790,12 @@ to_documenter(graph.figure)
 <li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps">
 <code>SomeGraphs.Heatmaps
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.ArrangementData">
+<code>SomeGraphs.Heatmaps.ArrangementData
 </code>
 </a>
 </li>
@@ -2084,8 +1854,14 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapReorder">
-<code>SomeGraphs.Heatmaps.HeatmapReorder
+<a href="heatmaps.html#SomeGraphs.Heatmaps.OrderSource">
+<code>SomeGraphs.Heatmaps.OrderSource
+</code>
+</a>
+</li>
+<li>
+<a href="heatmaps.html#SomeGraphs.Heatmaps.TreeSource">
+<code>SomeGraphs.Heatmaps.TreeSource
 </code>
 </a>
 </li>
