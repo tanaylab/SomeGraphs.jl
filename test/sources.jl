@@ -155,4 +155,109 @@ nested_test("sources") do
             @test_throws MethodError source!(entries_matrix_fields(graph), [5.0, 6.0])
         end
     end
+
+    nested_test("puts") do
+        points = points_graph()
+        heatmap = heatmap_graph()
+        heatmap.data.entries.matrix = [1.0 2.0; 3.0 4.0]
+
+        # A value per entry goes to the values of a role and to a hover line, and only the values half is a vector.
+        nested_test("halves") do
+            put_vector_data!(points.data.x, Float32[1.0, 2.0, 3.0, 4.0]; title = "ignored")
+            @test points.data.x.vector == Float32[1.0, 2.0, 3.0, 4.0]
+            @test points.data.points.entities.hovers === nothing
+
+            put_vector_data!(points_entities(points), Float32[1.0, 2.0, 3.0, 4.0]; title = "X")
+            @test points.data.points.entities.hovers[1] == "X: 1.0"
+            return nothing
+        end
+
+        nested_test("strings") do
+            put_vector_data!(x_axis_vector_fields(points), ["a", "b"]; title = "S")
+            @test points.data.x.vector == ["a", "b"]
+            @test points.data.points.entities.hovers == ["S: a", "S: b"]
+            return nothing
+        end
+
+        nested_test("names") do
+            put_vector_names_data!(x_axis_vector_fields(points), ["a", "b"])
+            @test points.data.points.entities.names == ["a", "b"]
+            @test points.data.x.vector === nothing
+            return nothing
+        end
+
+        nested_test("mask") do
+            put_vector_mask_data!(x_axis_vector_fields(points), [true, false, true, false])
+            @test points.data.points.entities.mask == [true, false, true, false]
+            return nothing
+        end
+
+        nested_test("order") do
+            put_vector_order_data!(x_axis_vector_fields(points), [2, 1, 4, 3])
+            @test points.data.points.entities.order == [2, 1, 4, 3]
+            return nothing
+        end
+
+        nested_test("matrix") do
+            put_matrix_data!(entries_matrix_fields(heatmap), [5.0 6.0; 7.0 8.0]; title = "M")
+            @test heatmap.data.entries.matrix == [5.0 6.0; 7.0 8.0]
+            @test heatmap.data.cells.hovers == ["M: 5.0" "M: 6.0"; "M: 7.0" "M: 8.0"]
+            return nothing
+        end
+
+        # A side of a heatmap reaches its entities and its arrangement; the puts write the entities and pass over the
+        # arrangement.
+        nested_test("side") do
+            side = rows_side(heatmap)
+            put_vector_names_data!(side, ["A", "B"])
+            put_vector_mask_data!(side, [true, false])
+            put_vector_order_data!(side, [2, 1])
+            put_vector_data!(side, Float32[1.0, 2.0]; title = "X")
+            @test heatmap.data.rows.entities.names == ["A", "B"]
+            @test heatmap.data.rows.entities.mask == [true, false]
+            @test heatmap.data.rows.entities.order == [2, 1]
+            @test heatmap.data.rows.entities.hovers == ["X: 1.0", "X: 2.0"]
+            @test heatmap.data.rows.arrangement.groups.vector === nothing
+            @test_throws "can't name the rows and columns of a vector sink" put_matrix_names_data!(side, ["A"], ["B"])
+            return nothing
+        end
+
+        # A configuration leaf is walked and nothing is found.
+        nested_test("configuration") do
+            put_vector_data!(points.configuration.x_axis, [1.0, 2.0])
+            put_matrix_names_data!(heatmap.configuration.entries.colors, ["a", "b"], ["c", "d"])
+            @test points.data.x.vector === nothing
+            @test heatmap.data.rows.entities.names === nothing
+            return nothing
+        end
+
+        # A leaf a put says nothing about (the other shape) is an error.
+        nested_test("mismatched") do
+            @test_throws MethodError put_vector_data!(entries_matrix_fields(heatmap), [1.0, 2.0])
+            @test_throws MethodError put_vector_names_data!(entries_matrix_fields(heatmap), ["a", "b"])
+            @test_throws MethodError put_matrix_data!(x_axis_vector_fields(points), [1.0 2.0; 3.0 4.0])
+            @test_throws "can't name the rows and columns of a vector sink" put_matrix_names_data!(
+                x_axis_vector_fields(points),
+                ["a", "b"],
+                ["c", "d"],
+            )
+            return nothing
+        end
+
+        nested_test("matrix_names") do
+            put_matrix_names_data!(entries_matrix_fields(heatmap).data, ["r1", "r2"], ["c1", "c2"])
+            @test heatmap.data.rows.entities.names == ["r1", "r2"]
+            @test heatmap.data.columns.entities.names == ["c1", "c2"]
+
+            other = heatmap_graph()
+            put_matrix_names_data!(
+                (entries_matrix_fields(other), heatmap.configuration.entries.colors),
+                ["r3", "r4"],
+                ["c3", "c4"],
+            )
+            @test other.data.rows.entities.names == ["r3", "r4"]
+            @test other.data.columns.entities.names == ["c3", "c4"]
+            return nothing
+        end
+    end
 end

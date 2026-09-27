@@ -2171,6 +2171,220 @@ end
 </section>
 </details>
 </article>
+<h2 id="Puts">
+<a class="docs-heading-anchor" href="#Puts">Puts
+</a>
+<a id="Puts-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Puts" title="Permalink">
+</a>
+</h2>
+<p>Generic data sources, putting data a caller already has into any sinks. A specific data source fetches its data and hands it to these, then says how to show it.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_vector_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_vector_data!">
+<code>SomeGraphs.Sources.put_vector_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_vector_data!(
+    sinks::VectorDataSinks,
+    value_per_entry::Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}};
+    title::Maybe{AbstractString} = nothing,
+)::Nothing
+</code>
+</pre>
+<p>Put a 
+<code>value_per_entry
+</code> into the 
+<code>sinks
+</code>: as the values of a role, and as a hover line on the entities.
+</p>
+<p>The 
+<code>title
+</code> prefixes the hover line, as 
+<code>title: value
+</code>. Nothing is configured here, because how to show a value depends on what it is; a specific data source says that in its own configuration put.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_vector_names_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_vector_names_data!">
+<code>SomeGraphs.Sources.put_vector_names_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_vector_names_data!(sinks::VectorDataSinks, name_per_entry::AbstractVector{&lt;:AbstractString})::Nothing
+</code>
+</pre>
+<p>Name the entities of the 
+<code>sinks
+</code> after the 
+<code>name_per_entry
+</code>. Where the graph has room to label the entities, these become their tick labels. They are also the first line of the hover of each entity.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_vector_mask_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_vector_mask_data!">
+<code>SomeGraphs.Sources.put_vector_mask_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_vector_mask_data!(
+    sinks::VectorDataSinks,
+    is_shown_per_entry::Union{AbstractVector{Bool}, BitVector},
+)::Nothing
+</code>
+</pre>
+<p>Hide the entities of the 
+<code>sinks
+</code> which are not shown by the 
+<code>is_shown_per_entry
+</code> mask. Hidden entities are still part of the data, so they take part in whatever is computed from it, unless the relevant configuration says otherwise.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_vector_order_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_vector_order_data!">
+<code>SomeGraphs.Sources.put_vector_order_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_vector_order_data!(
+    sinks::VectorDataSinks,
+    order::AbstractVector{&lt;:Integer},
+)::Nothing
+</code>
+</pre>
+<p>Give the entities of the 
+<code>sinks
+</code> the 
+<code>order
+</code> (a permutation of their indices). What the order means depends on the graph; for a heatmap side, see 
+<code>HeatmapSideConfiguration
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_matrix_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_matrix_data!">
+<code>SomeGraphs.Sources.put_matrix_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_matrix_data!(
+    sinks::MatrixDataSinks,
+    value_per_row_per_column::AbstractMatrix{&lt;:Real};
+    title::Maybe{AbstractString} = nothing,
+)::Nothing
+</code>
+</pre>
+<p>Put a 
+<code>value_per_row_per_column
+</code> into the 
+<code>sinks
+</code>: as the values of the entries, and as a hover line on each entry. The matrix twin of 
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>put_vector_data!
+</code>
+</a>.
+</p>
+<p>The row and the column entities are not written here. They belong to their sides and are sized by one side each, so they are named separately; see 
+<a href="sources.html#SomeGraphs.Sources.put_matrix_names_data!">
+<code>put_matrix_names_data!
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_matrix_names_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_matrix_names_data!">
+<code>SomeGraphs.Sources.put_matrix_names_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_matrix_names_data!(
+    sinks::MatrixDataSinks,
+    name_per_row::AbstractVector{&lt;:AbstractString},
+    name_per_column::AbstractVector{&lt;:AbstractString},
+)::Nothing
+</code>
+</pre>
+<p>Name the rows and the columns of the 
+<code>sinks
+</code> after the 
+<code>name_per_row
+</code> and the 
+<code>name_per_column
+</code>. The matrix twin of 
+<a href="sources.html#SomeGraphs.Sources.put_vector_names_data!">
+<code>put_vector_names_data!
+</code>
+</a>.
+</p>
+<p>The two sides are named together here rather than through 
+<a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
+<code>visit_data_sinks
+</code>
+</a>, which doesn&#39;t walk into them because they are sized by one side each while the entries are sized by both. A vector sink has no rows or columns to name, so it is an error here.
+</p>
+</div>
+</section>
+</details>
+</article>
 <h2 id="Hovers">
 <a class="docs-heading-anchor" href="#Hovers">Hovers
 </a>
@@ -2270,12 +2484,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='zzTBLjNCpB' class='' style=';'>
+<div id='96sdxJCsmz' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("zzTBLjNCpB")
+    const PLOT = document.getElementById("96sdxJCsmz")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -2657,6 +2871,42 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.points_sizes_vector_fields">
 <code>SomeGraphs.Sources.points_sizes_vector_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_matrix_data!">
+<code>SomeGraphs.Sources.put_matrix_data!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_matrix_names_data!">
+<code>SomeGraphs.Sources.put_matrix_names_data!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>SomeGraphs.Sources.put_vector_data!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_vector_mask_data!">
+<code>SomeGraphs.Sources.put_vector_mask_data!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_vector_names_data!">
+<code>SomeGraphs.Sources.put_vector_names_data!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_vector_order_data!">
+<code>SomeGraphs.Sources.put_vector_order_data!
 </code>
 </a>
 </li>

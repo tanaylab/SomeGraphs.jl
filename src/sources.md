@@ -161,6 +161,20 @@ SomeGraphs.Sources.visit_data_sinks
 SomeGraphs.Sources.visit_configuration_sinks
 ```
 
+## Puts
+
+Generic data sources, putting data a caller already has into any sinks. A specific data source fetches its data and
+hands it to these, then says how to show it.
+
+```@docs
+SomeGraphs.Sources.put_vector_data!
+SomeGraphs.Sources.put_vector_names_data!
+SomeGraphs.Sources.put_vector_mask_data!
+SomeGraphs.Sources.put_vector_order_data!
+SomeGraphs.Sources.put_matrix_data!
+SomeGraphs.Sources.put_matrix_names_data!
+```
+
 ## Hovers
 
 ```@docs

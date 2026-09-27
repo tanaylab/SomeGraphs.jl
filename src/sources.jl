@@ -90,6 +90,12 @@ export series_part_fields
 export values_axis_vector_fields
 export x_axis_vector_fields
 export y_axis_vector_fields
+export put_matrix_data!
+export put_matrix_names_data!
+export put_vector_data!
+export put_vector_mask_data!
+export put_vector_names_data!
+export put_vector_order_data!
 
 using ..Common
 using ..Validations
@@ -905,6 +911,261 @@ function visit_configuration_sink(
         visitor(configuration)
     end
     return nothing
+end
+
+"""
+    put_vector_data!(
+        sinks::VectorDataSinks,
+        value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
+        title::Maybe{AbstractString} = nothing,
+    )::Nothing
+
+Put a `value_per_entry` into the `sinks`: as the values of a role, and as a hover line on the entities.
+
+The `title` prefixes the hover line, as `title: value`. Nothing is configured here, because how to show a value depends
+on what it is; a specific data source says that in its own configuration put.
+"""
+function put_vector_data!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
+    title::Maybe{AbstractString} = nothing,
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return put_vector_data!(sink, value_per_entry; title)
+    end
+    return nothing
+end
+
+function put_vector_data!(
+    values::VectorValuesData,
+    value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
+    title::Maybe{AbstractString} = nothing,  # NOLINT
+)::Nothing
+    values.vector = value_per_entry
+    return nothing
+end
+
+function put_vector_data!(
+    entities::VectorEntitiesData,
+    value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
+    title::Maybe{AbstractString} = nothing,
+)::Nothing
+    add_hovers!(entities, hover_strings(value_per_entry); title)
+    return nothing
+end
+
+# The arrangement of a heatmap side is reached through its own views (the groups, the subgroups), not by a value of a
+# role.
+function put_vector_data!(
+    ::ArrangementData,
+    ::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
+    title::Maybe{AbstractString} = nothing,  # NOLINT
+)::Nothing
+    return nothing
+end
+
+"""
+    put_vector_names_data!(sinks::VectorDataSinks, name_per_entry::AbstractVector{<:AbstractString})::Nothing
+
+Name the entities of the `sinks` after the `name_per_entry`. Where the graph has room to label the entities, these
+become their tick labels. They are also the first line of the hover of each entity.
+"""
+function put_vector_names_data!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    name_per_entry::AbstractVector{<:AbstractString},
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return put_vector_names_data!(sink, name_per_entry)
+    end
+    return nothing
+end
+
+function put_vector_names_data!(entities::VectorEntitiesData, name_per_entry::AbstractVector{<:AbstractString})::Nothing
+    entities.names = name_per_entry
+    return nothing
+end
+
+# A name identifies an entity, so it belongs to the entities rather than to any one role's values or to the arrangement.
+function put_vector_names_data!(::Union{VectorValuesData, ArrangementData}, ::AbstractVector{<:AbstractString})::Nothing
+    return nothing
+end
+
+"""
+    put_vector_mask_data!(
+        sinks::VectorDataSinks,
+        is_shown_per_entry::Union{AbstractVector{Bool}, BitVector},
+    )::Nothing
+
+Hide the entities of the `sinks` which are not shown by the `is_shown_per_entry` mask. Hidden entities are still part
+of the data, so they take part in whatever is computed from it, unless the relevant configuration says otherwise.
+"""
+function put_vector_mask_data!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    is_shown_per_entry::Union{AbstractVector{Bool}, BitVector},
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return put_vector_mask_data!(sink, is_shown_per_entry)
+    end
+    return nothing
+end
+
+function put_vector_mask_data!(
+    entities::VectorEntitiesData,
+    is_shown_per_entry::Union{AbstractVector{Bool}, BitVector},
+)::Nothing
+    entities.mask = is_shown_per_entry
+    return nothing
+end
+
+# A mask hides an entity, so it belongs to the entities rather than to any one role's values or to the arrangement.
+function put_vector_mask_data!(
+    ::Union{VectorValuesData, ArrangementData},
+    ::Union{AbstractVector{Bool}, BitVector},
+)::Nothing
+    return nothing
+end
+
+"""
+    put_vector_order_data!(
+        sinks::VectorDataSinks,
+        order::AbstractVector{<:Integer},
+    )::Nothing
+
+Give the entities of the `sinks` the `order` (a permutation of their indices). What the order means depends on the graph;
+for a heatmap side, see `HeatmapSideConfiguration`.
+"""
+function put_vector_order_data!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    order::AbstractVector{<:Integer},
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return put_vector_order_data!(sink, order)
+    end
+    return nothing
+end
+
+function put_vector_order_data!(entities::VectorEntitiesData, order::AbstractVector{<:Integer})::Nothing
+    entities.order = order
+    return nothing
+end
+
+# An order belongs to the entities rather than to any one role's values. It is not one of the other inputs to arranging
+# a heatmap side, which are what the arrangement holds.
+function put_vector_order_data!(::Union{VectorValuesData, ArrangementData}, ::AbstractVector{<:Integer})::Nothing
+    return nothing
+end
+
+"""
+    put_matrix_data!(
+        sinks::MatrixDataSinks,
+        value_per_row_per_column::AbstractMatrix{<:Real};
+        title::Maybe{AbstractString} = nothing,
+    )::Nothing
+
+Put a `value_per_row_per_column` into the `sinks`: as the values of the entries, and as a hover line on each entry. The
+matrix twin of [`put_vector_data!`](@ref).
+
+The row and the column entities are not written here. They belong to their sides and are sized by one side each, so
+they are named separately; see [`put_matrix_names_data!`](@ref).
+"""
+function put_matrix_data!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    value_per_row_per_column::AbstractMatrix{<:Real};
+    title::Maybe{AbstractString} = nothing,
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return put_matrix_data!(sink, value_per_row_per_column; title)
+    end
+    return nothing
+end
+
+function put_matrix_data!(
+    values::MatrixValuesData,
+    value_per_row_per_column::AbstractMatrix{<:Real};
+    title::Maybe{AbstractString} = nothing,  # NOLINT
+)::Nothing
+    values.matrix = value_per_row_per_column
+    return nothing
+end
+
+function put_matrix_data!(
+    entities::MatrixEntitiesData,
+    value_per_row_per_column::AbstractMatrix{<:Real};
+    title::Maybe{AbstractString} = nothing,
+)::Nothing
+    add_hovers!(entities, hover_strings(value_per_row_per_column); title)
+    return nothing
+end
+
+"""
+    put_matrix_names_data!(
+        sinks::MatrixDataSinks,
+        name_per_row::AbstractVector{<:AbstractString},
+        name_per_column::AbstractVector{<:AbstractString},
+    )::Nothing
+
+Name the rows and the columns of the `sinks` after the `name_per_row` and the `name_per_column`. The matrix twin of
+[`put_vector_names_data!`](@ref).
+
+The two sides are named together here rather than through [`visit_data_sinks`](@ref), which doesn't walk into them
+because they are sized by one side each while the entries are sized by both. A vector sink has no rows or columns to
+name, so it is an error here.
+"""
+function put_matrix_names_data!(
+    sinks::Union{Tuple, AbstractVector},
+    name_per_row::AbstractVector{<:AbstractString},
+    name_per_column::AbstractVector{<:AbstractString},
+)::Nothing
+    for sink in sinks
+        put_matrix_names_data!(sink, name_per_row, name_per_column)
+    end
+    return nothing
+end
+
+function put_matrix_names_data!(
+    fields::MatrixFields,
+    name_per_row::AbstractVector{<:AbstractString},
+    name_per_column::AbstractVector{<:AbstractString},
+)::Nothing
+    put_matrix_names_data!(fields.data, name_per_row, name_per_column)
+    return nothing
+end
+
+function put_matrix_names_data!(
+    data_fields::MatrixDataFields,
+    name_per_row::AbstractVector{<:AbstractString},
+    name_per_column::AbstractVector{<:AbstractString},
+)::Nothing
+    put_vector_names_data!(data_fields.rows_entities, name_per_row)
+    put_vector_names_data!(data_fields.columns_entities, name_per_column)
+    return nothing
+end
+
+# A configuration has no rows or columns to name, and the entries or cells of a matrix hold no entities of either.
+function put_matrix_names_data!(
+    ::Union{AbstractConfigurationFields, ConfigurationLeaf, MatrixDataLeaf},
+    ::AbstractVector{<:AbstractString},
+    ::AbstractVector{<:AbstractString},
+)::Nothing
+    return nothing
+end
+
+# A vector sink is admitted by `MatrixDataSinks` since it is a container, but it has no rows or columns to name.
+function put_matrix_names_data!(
+    sinks::Union{VectorFields, VectorDataFields, HeatmapSide},
+    ::AbstractVector{<:AbstractString},
+    ::AbstractVector{<:AbstractString},
+)::Nothing
+    return throw(ArgumentError("can't name the rows and columns of a vector sink: $(typeof(sinks))"))
+end
+
+# The values as the strings a hover shows. Only strings can be a hover, so anything else is converted.
+function hover_strings(value_per_entry::AbstractArray{<:AbstractString})::AbstractArray{<:AbstractString}
+    return value_per_entry
+end
+
+function hover_strings(value_per_entry::AbstractArray{<:Real})::AbstractArray{<:AbstractString}
+    return string.(value_per_entry)
 end
 
 # Which of the `sinks` each half is written into. Either may be empty. A collection is asserted rather than typed,
