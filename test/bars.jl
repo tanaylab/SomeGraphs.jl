@@ -116,10 +116,23 @@ nested_test("bars") do
         end
     end
 
-    # Bars are laid out in the order of their values, so an order of them has no meaning (yet).
+    # The order lays the bars out along the bar axis; it describes all the bars, hidden ones included.
     nested_test("order") do
         graph.data.bars.order = [4, 3, 2, 1]
-        @test_throws "no effect for specified graph.data.bars.order" validate(ValidationContext(["graph"]), graph)
+
+        nested_test("()") do
+            test_html(graph, "bars.order.html")
+            return nothing
+        end
+
+        nested_test("mask") do
+            graph.data.bars.names = ["Foo", "Bar", "Baz", "Vaz"]
+            graph.data.bars.mask = [true, false, true, true]
+            graph.data.colors.vector = [0, 1, 2, 3]
+            graph.data.annotations = [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 1], "score"))]
+            test_html(graph, "bars.order.mask.html")
+            return nothing
+        end
     end
 
     for (orientation_name, orientation_value) in (("vertical", VerticalValues), ("horizontal", HorizontalValues))
@@ -397,11 +410,18 @@ nested_test("series_bars") do
         end
     end
 
-    # The bars of a series line up with the bars shared by all the series, so neither may be given an order.
+    # The shared order lays the bars of every series out along the bar axis. The bars of a series line up with the
+    # shared bars, so they may not be given an order of their own.
     nested_test("order") do
         nested_test("bars") do
             graph.data.bars.order = reverse(collect(1:11))
-            @test_throws "no effect for specified graph.data.bars.order" validate(ValidationContext(["graph"]), graph)
+            graph.data.bars.names = "Foo-" .* string.(collect(0:10))
+            graph.data.bars.mask = [true, true, true, true, true, true, true, true, false, false, false]
+            graph.data.series[2].bars.mask = [true, false, true, true, false, true, true, false, true, true, false]
+            graph.data.annotations =
+                [AnnotationData(; values = VectorValuesData([1, 0.5, 0, 0.5, 1, 0.5, 0, 0.5, 1, 0.5, 0], "score"))]
+            test_html(graph, "series_bars.order.bars.html")
+            return nothing
         end
 
         nested_test("series") do

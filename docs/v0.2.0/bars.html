@@ -264,7 +264,7 @@ end
 <code>values
 </code> are required and numeric, one per bar; their title is the value axis title. The 
 <code>bars
-</code> hold the names, hovers and mask of the bars; their names are shown as the bar axis ticks, and masked bars are left out of the graph. The 
+</code> hold the names, hovers, mask and order of the bars; their names are shown as the bar axis ticks, masked bars are left out of the graph, and the order (if any) is the order of the bars along the bar axis. The 
 <code>colors
 </code> are optional (typically all bars have the same color); their title is the legend title. You can even add annotations to the bars.
 </p>
@@ -386,12 +386,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='65uAeGRVfY' class='' style=';'>
+<div id='WWr7YFSJBo' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("65uAeGRVfY")
+    const PLOT = document.getElementById("WWr7YFSJBo")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -413,12 +413,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='FIs1AGYbRv' class='' style=';'>
+<div id='mQbmT6V8ii' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("FIs1AGYbRv")
+    const PLOT = document.getElementById("mQbmT6V8ii")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","x":0}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -529,7 +529,7 @@ end
 </p>
 <p>All the series must have the same number of bars. The value axis title is the title of the series&#39; values: all the series that give one must give the same. The 
 <code>bars
-</code> hold the names, hovers and mask shared by the bars of all the series; their names are shown as the bar axis ticks, and masked bars are left out of every series. You can even add annotations to the bars.
+</code> hold the names, hovers, mask and order shared by the bars of all the series; their names are shown as the bar axis ticks, masked bars are left out of every series, and the order (if any) is the order of the bars along the bar axis. The bars of each series may add hovers and a mask of their own, but not an order, as they line up with the shared bars. You can even add annotations to the bars.
 </p>
 <p>If 
 <code>order
@@ -680,12 +680,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Ek669J26Dp' class='' style=';'>
+<div id='8QmFqJ6LgL' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Ek669J26Dp")
+    const PLOT = document.getElementById("8QmFqJ6LgL")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -712,12 +712,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='8RbOmvEmiX' class='' style=';'>
+<div id='miRkoXmWDW' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8RbOmvEmiX")
+    const PLOT = document.getElementById("miRkoXmWDW")
     const plot_obj = {"data": [{"showlegend":false,"y":[0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,45.0,50.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"bar","yaxis":"y2","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]},{"showlegend":false,"marker":{"color":[0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0,2.0,0.0,1.0],"coloraxis":"coloraxis"},"y":[1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0],"type":"bar","name":"score","orientation":"v","x":["1","2","3","4","5","6","7","8","9","10","11"]}], "layout": {"showlegend":false,"coloraxis":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false},"paper_bgcolor":"white","bargap":0.02,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"yaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"domain":[0.055,1.0]},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","x":0}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

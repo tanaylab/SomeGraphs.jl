@@ -1588,8 +1588,9 @@ whatever is computed from it (axis ranges, clustering), unless the relevant conf
 `include_hidden` in [`AxisConfiguration`](@ref)). They are just not drawn.
 
 The `order` is a permutation of the entities. What it means depends on the graph: the order the points of a scatter
-graph are drawn in, or the layout of an axis of a heatmap. It describes all the entities, hidden ones included. A graph
-which has no use for an order of some entities rejects it rather than ignoring it.
+graph are drawn in, the order of the bars of a bars graph along the bar axis, or the layout of an axis of a heatmap. It
+describes all the entities, hidden ones included. A graph which has no use for an order of some entities rejects it
+rather than ignoring it.
 """
 @kwdef mutable struct VectorEntitiesData
     names::Maybe{AbstractVector{<:AbstractString}} = nothing

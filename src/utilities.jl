@@ -968,8 +968,16 @@ function masked_values(::Nothing, ::Nothing, ::Any)::Nothing
     return nothing
 end
 
-function masked_values(values::AbstractVector{T}, ::Nothing, ::Any)::AbstractVector{T} where {T}
+function masked_values(values::AbstractVector{T}, ::Nothing, ::Nothing)::AbstractVector{T} where {T}
     return values
+end
+
+function masked_values(
+    values::AbstractVector{T},
+    ::Nothing,
+    order::AbstractVector{<:Integer},
+)::AbstractVector{T} where {T}
+    return values[order]
 end
 
 function masked_values(

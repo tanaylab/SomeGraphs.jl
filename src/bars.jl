@@ -136,9 +136,9 @@ end
 The data for a graph of a single series of bars.
 
 The `values` are required and numeric, one per bar; their title is the value axis title. The `bars` hold the names,
-hovers and mask of the bars; their names are shown as the bar axis ticks, and masked bars are left out of the graph.
-The `colors` are optional (typically all bars have the same color); their title is the legend title. You can even add
-annotations to the bars.
+hovers, mask and order of the bars; their names are shown as the bar axis ticks, masked bars are left out of the graph,
+and the order (if any) is the order of the bars along the bar axis. The `colors` are optional (typically all bars have
+the same color); their title is the legend title. You can even add annotations to the bars.
 
 If `annotations_order` is specified, the annotations are shown in that order. It describes all the annotations,
 including the ones that are not `is_shown`.
@@ -164,7 +164,7 @@ function Validations.validate(context::ValidationContext, data::BarsGraphData)::
     validate_vector_length(context, "bars.names", data.bars.names, "values.vector", n_bars)
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "values.vector", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "values.vector", n_bars)
-    validate_entities_order(context, "bars", data.bars, "values.vector", n_bars; is_ordered = false)
+    validate_entities_order(context, "bars", data.bars, "values.vector", n_bars; is_ordered = true)
     validate_vector_length(context, "colors.vector", data.colors.vector, "values.vector", n_bars)
     validate_vector_is_finite(context, "colors.vector", data.colors.vector)
 
@@ -306,11 +306,12 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     @assert values !== nothing
     n_bars = length(values)
     mask = graph.data.bars.mask
+    order = graph.data.bars.order
 
     # Default names are given before masking so hidden bars do not shift the names of the rest.
     default_names = prefer_data(graph.data.bars.names, string.(1:n_bars))
-    names = masked_values(default_names, mask, nothing)
-    hovers = masked_values(entities_hovers(graph.data.bars), mask, nothing)
+    names = masked_values(default_names, mask, order)
+    hovers = masked_values(entities_hovers(graph.data.bars), mask, order)
 
     next_colors_scale_index = [1]
     colors = configured_colors(;
@@ -330,13 +331,10 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
             n_annotations = length(annotations_data),
             annotation_size = graph.configuration.annotations,
         ),
-        values = masked_values(values, mask, nothing),
+        values = masked_values(values, mask, order),
         value_axis = graph.configuration.value_axis,
         values_orientation = graph.configuration.values_orientation,
-        color = prefer_data(
-            masked_values(colors.final_colors_values, mask, nothing),
-            colors.colors_configuration.fixed,
-        ),
+        color = prefer_data(masked_values(colors.final_colors_values, mask, order), colors.colors_configuration.fixed),
         hovers,
         names,
         show_in_legend = false,
@@ -364,7 +362,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         annotation_size = graph.configuration.annotations,
         entries_hovers = entities_hovers(graph.data.bars),
         mask,
-        order = mask === nothing ? nothing : findall(mask),
+        order = masked_values(collect(1:n_bars), mask, order),
     )
 
     layout = bars_layout(;
@@ -504,9 +502,10 @@ end
 The data for a graph of multiple series of bars, a [`SeriesData`](@ref) per series.
 
 All the series must have the same number of bars. The value axis title is the title of the series' values: all the
-series that give one must give the same. The `bars` hold the names, hovers and mask shared by the bars of all the
-series; their names are shown as the bar axis ticks, and masked bars are left out of every series. You can even add
-annotations to the bars.
+series that give one must give the same. The `bars` hold the names, hovers, mask and order shared by the bars of all
+the series; their names are shown as the bar axis ticks, masked bars are left out of every series, and the order (if
+any) is the order of the bars along the bar axis. The bars of each series may add hovers and a mask of their own, but
+not an order, as they line up with the shared bars. You can even add annotations to the bars.
 
 If `order` is specified, we draw the series in that order. Stacked, this is the order of the stack from its base; with a
 `series_gap`, this is the order of the series' own axes. The `order` describes all the series, including the ones that
@@ -553,7 +552,7 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
     validate_vector_length(context, "bars.names", data.bars.names, "series[1].values.vector", n_bars)
     validate_vector_length(context, "bars.hovers", data.bars.hovers, "series[1].values.vector", n_bars)
     validate_vector_length(context, "bars.mask", data.bars.mask, "series[1].values.vector", n_bars)
-    validate_entities_order(context, "bars", data.bars, "series[1].values.vector", n_bars; is_ordered = false)
+    validate_entities_order(context, "bars", data.bars, "series[1].values.vector", n_bars; is_ordered = true)
 
     validate_vector_entries(context, "annotations", data.annotations) do _, annotation
         validate(context, annotation, "series[1].values.vector", n_bars)
@@ -859,6 +858,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     n_bars = length(first_values)
 
     shared_mask = graph.data.bars.mask
+    shared_order = graph.data.bars.order
     # Default names are given before masking so hidden bars do not shift the names of the rest.
     default_names = prefer_data(graph.data.bars.names, string.(1:n_bars))
 
@@ -885,11 +885,11 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         series_mask = combined_mask(shared_mask, series.bars.mask)
         all_values = numeric_values(series.values)
         @assert all_values !== nothing
-        values = masked_values(all_values, series_mask, nothing)
+        values = masked_values(all_values, series_mask, shared_order)
 
         hovers = joined_hovers(
-            masked_values(entities_hovers(graph.data.bars), series_mask, nothing),
-            masked_values(entities_hovers(series.bars), series_mask, nothing),
+            masked_values(entities_hovers(graph.data.bars), series_mask, shared_order),
+            masked_values(entities_hovers(series.bars), series_mask, shared_order),
         )
         if series.hover !== nothing
             if hovers === nothing
@@ -923,7 +923,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
             color = series.color,
             hovers,
             show_in_legend,
-            names = masked_values(default_names, series_mask, nothing),
+            names = masked_values(default_names, series_mask, shared_order),
             implicit_values_range,
         )
 
@@ -1047,7 +1047,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         annotation_size = graph.configuration.annotations,
         entries_hovers = entities_hovers(graph.data.bars),
         mask = shared_mask,
-        order = shared_mask === nothing ? nothing : findall(shared_mask),
+        order = masked_values(collect(1:n_bars), shared_mask, shared_order),
     )
 
     layout = bars_layout(;

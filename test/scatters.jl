@@ -167,6 +167,23 @@ nested_test("points") do
         end
     end
 
+    # The order is the draw order of the points; the later ones are on top. It applies with or without a mask.
+    nested_test("order") do
+        graph.data.points.entities.order = reverse(collect(1:11))
+        graph.data.points.colors.vector = collect(0:10)
+
+        nested_test("()") do
+            test_html(graph, "points.order.html")
+            return nothing
+        end
+
+        nested_test("mask") do
+            graph.data.points.entities.mask = [true, true, true, true, true, true, false, false, false, false, false]
+            test_html(graph, "points.order.mask.html")
+            return nothing
+        end
+    end
+
     nested_test("hovers") do
         graph.data.points.entities.hovers = ["H: $(index)" for index in 1:11]
         test_html(graph, "points.hovers.html")
