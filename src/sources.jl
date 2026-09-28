@@ -239,7 +239,8 @@ end
     end
 
 The configuration half of a `SizesVectorFields` data source view (see [`VectorFields`](@ref)): the
-[`SizesConfiguration`](@ref) the values are sized by, and its `scale`.
+[`SizesConfiguration`](@ref) the values are sized by, and its `scale`. Sizes are not drawn along an axis, so there are
+no ticks here; the title of the values takes precedence over the `title` of the sizes configuration.
 """
 struct SizesConfigurationFields <: AbstractConfigurationFields
     scale::ScaleConfiguration

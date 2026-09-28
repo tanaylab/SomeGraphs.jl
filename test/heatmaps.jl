@@ -1110,12 +1110,13 @@ nested_test("heatmaps") do
                 return nothing
             end
 
+            # Reversing the order of the tree swaps the two subtrees of every merge.
             nested_test("hclust+order") do
                 graph.data.columns.arrangement.hclust = tree
                 graph.data.columns.entities.order = reverse(tree.order)
                 @test graph.placement.columns.order == reverse(tree.order)
                 @test graph.placement.columns.hclust.order == reverse(tree.order)
-                @test graph.placement.columns.hclust.merges == tree.merges
+                @test graph.placement.columns.hclust.merges == tree.merges[:, [2, 1]]
                 return nothing
             end
 

@@ -1315,6 +1315,7 @@ end
         smallest::Real = 6
         span::Real = 12
         show_legend::Bool = false
+        title::Maybe{AbstractString} = nothing
     end
 
 Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
@@ -1325,9 +1326,12 @@ size with an additional `span` in pixels, and if `log_base` is set the log of th
 is used instead. The `percent` of the `scale` does not apply to sizes and must be left unset.
 
 If `show_legend`, a legend to the side of the graph shows some sizes and the values they stand for (it requires sizes
-data, so it can't be combined with `fixed`). The title of the legend is that of the sizes data. The entries are chosen
-as described in [`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in
-the `colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales.
+data, so it can't be combined with `fixed`). The entries are chosen as described in
+[`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in the
+`colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales.
+
+If `title` is specified, it will be used when showing the legend. However, in some cases the correct title depends on
+the data set, so you can override this in the data.
 """
 @kwdef mutable struct SizesConfiguration <: Validated
     fixed::Maybe{Real} = nothing
@@ -1335,6 +1339,7 @@ the `colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color s
     smallest::Real = 6
     span::Real = 12
     show_legend::Bool = false
+    title::Maybe{AbstractString} = nothing
 end
 
 function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing

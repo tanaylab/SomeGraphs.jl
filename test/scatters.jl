@@ -672,6 +672,20 @@ nested_test("points") do
                 return nothing
             end
 
+            nested_test("configuration") do
+                graph.data.points.sizes.title = nothing
+                graph.configuration.points.sizes.title = "Sizes"
+                test_html(graph, "points.sizes.legend.html")
+                return nothing
+            end
+
+            # The title of the data overrides the title of the configuration.
+            nested_test("override") do
+                graph.configuration.points.sizes.title = "Configuration"
+                test_html(graph, "points.sizes.legend.html")
+                return nothing
+            end
+
             for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
                 nested_test(log_name) do
                     graph.configuration.points.sizes.scale.log_base = log_base
