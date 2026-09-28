@@ -383,7 +383,7 @@ validate_colors(
     colors_data::AbstractMatrix{&lt;:Real},
     colors_configuration_context::ValidationContext,
     colors_configuration::ColorsConfiguration,
-    mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+    mask::Nothing = nothing,
 )::Nothing
 </code>
 </pre>
@@ -399,7 +399,7 @@ validate_colors(
 </p>
 <p>If a 
 <code>mask
-</code> is specified, do not validate colors in the data whose matching value in the mask is false.
+</code> is specified, do not validate colors in the data whose matching value in the mask is false. A mask is not supported for a matrix of colors.
 </p>
 </div>
 </section>
@@ -446,8 +446,10 @@ validate_colors(
     colors_title::Maybe{AbstractString}
     colors_configuration::ColorsConfiguration
     colors_scale_index::Maybe{Integer}
-    original_color_values::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}}
-    final_colors_values::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}}}
+    original_color_values::Maybe{
+        Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}, AbstractMatrix{&lt;:Real}},
+    }
+    final_colors_values::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}, AbstractMatrix{&lt;:Real}}}
     final_colors_range::Maybe{Range}
     scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}}
     show_in_legend::Bool
@@ -485,7 +487,7 @@ end
 </pre>
 <p>Apply the colors configuration to the colors data. The 
 <code>mask
-</code> (if any) marks the shown entities; the hidden ones get no categorical color, and are left out of the implicit range of the colors scale unless the axis 
+</code> (if any) marks the shown entities; the hidden ones get no categorical color, and are left out of the implicit range of the colors scale unless the scale 
 <code>include_hidden
 </code> is set.
 </p>
@@ -513,7 +515,7 @@ end
     annotation_size::AnnotationSize,
     n_annotations::Integer,
     dendogram_size::Maybe{Real} = nothing,
-)::nothing
+)::Nothing
 </code>
 </pre>
 <p>Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations.
@@ -537,7 +539,7 @@ end
 <pre>
 <code class="language-julia hljs">validate_values(
     values_data_context::ValidationContext,
-    values_data::Maybe{AbstractVector{&lt;:Real}}},
+    values_data::Maybe{AbstractVector{&lt;:Real}},
     axis_configuration_context::ValidationContext,
     axis_configuration::AxisConfiguration,
 )::Nothing
@@ -763,7 +765,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Real
+<code class="language-julia hljs">scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Float64
 scale_axis_value(scale_configuration::ScaleConfiguration, value::Nothing; clamp::Bool = true)::Nothing
 </code>
 </pre>
@@ -795,16 +797,18 @@ scale_axis_value(scale_configuration::ScaleConfiguration, value::Nothing; clamp:
 <code class="language-julia hljs">scale_axis_values(
     scale_configuration::ScaleConfiguration,
     values::Maybe{AbstractVector{&lt;:Maybe{Real}}};
-    clamp::Bool = true
+    clamp::Bool = true,
+    copy::Bool = false,
 )::Maybe{AbstractVector{&lt;:Maybe{AbstractFloat}}}
 scale_axis_values(
     scale_configuration::ScaleConfiguration,
-    values::Maybe{AbstractMatrix{&lt;:Maybe{Real}}};
-    clamp::Bool = true
+    values::AbstractMatrix{&lt;:Maybe{Real}};
+    clamp::Bool = true,
+    copy::Bool = false,
 )::Maybe{AbstractMatrix{&lt;:Maybe{AbstractFloat}}}
 </code>
 </pre>
-<p>Scale a vector of 
+<p>Scale a vector (or a matrix) of 
 <code>values
 </code> according to the 
 <code>scale_configuration
@@ -927,6 +931,92 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.SizesLegendEntry">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.SizesLegendEntry">
+<code>SomeGraphs.Utilities.SizesLegendEntry
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef struct SizesLegendEntry
+    value::Real
+    pixel_size::Real
+    label::AbstractString
+end
+</code>
+</pre>
+<p>An entry of the legend of sizes. The 
+<code>value
+</code> includes the 
+<code>log_regularization
+</code> (if any). It is drawn with a symbol of the 
+<code>pixel_size
+</code>, labeled by the 
+<code>label
+</code>. The 
+<code>label
+</code> shows the value the way the ticks of an axis with the same scale do: the value for a linear or a 
+<code>Log10Base
+</code> scale, and the log value (the power) for a 
+<code>Log2Base
+</code> scale.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.sizes_legend_entries">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.sizes_legend_entries">
+<code>SomeGraphs.Utilities.sizes_legend_entries
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">sizes_legend_entries(
+    sizes_configuration::SizesConfiguration,
+    values::AbstractVector{&lt;:Real},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+)::AbstractVector{SizesLegendEntry}
+</code>
+</pre>
+<p>The entries of the legend of the sizes 
+<code>values
+</code>, as mapped by the 
+<code>sizes_configuration
+</code> (see 
+<a href="utilities.html#SomeGraphs.Utilities.scale_size_values">
+<code>scale_size_values
+</code>
+</a>).
+</p>
+<p>The entries are &quot;nice&quot; values, chosen the way ticks are. For a linear scale these are multiples of a step of 1, 2 or 5 times a power of 10. For a 
+<code>Log10Base
+</code> scale these are the digits, or 1, 2 and 5, or the powers of 10 (or of 100 etc.). If the range is too small for these, it uses linear steps instead. For a 
+<code>Log2Base
+</code> scale, these are linear steps of the log values. This uses the finest step whose entries are at least 1 pixel apart, with no more than 6 entries. If fewer than 2 such values fit in the range, the entries are the ends of the range. If all the values are the same, there is a single entry.
+</p>
+<p>If a value was clamped to the 
+<code>minimum
+</code> (or 
+<code>maximum
+</code>) of the scale, the end of the legend is at that value, with a &quot;≤ &quot; (or &quot;≥ &quot;) prefix. It replaces the nearest entry if that is less than 1 pixel away, and is added to the entries otherwise.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.plotly_layout">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_layout">
 <code>SomeGraphs.Utilities.plotly_layout
@@ -942,13 +1032,20 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
     figure_configuration::FigureConfiguration;
     title::Maybe{AbstractString},
     has_legend::Bool,
-    shapes::AbstractVector{Shape},
+    has_hovers::Bool = false,
+    shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
 </code>
 </pre>
 <p>Create a Plotly 
 <code>Layout
-</code> object.
+</code> object. If 
+<code>has_legend
+</code>, the legend is placed at the 1st of the 
+<code>colors_scale_offsets
+</code> of the 
+<code>figure_configuration
+</code>.
 </p>
 </div>
 </section>
@@ -1004,6 +1101,35 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.axis_screen_ticks_angle">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.axis_screen_ticks_angle">
+<code>SomeGraphs.Utilities.axis_screen_ticks_angle
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">axis_screen_ticks_angle(ticks_angle::Nothing, is_vertical_axis::Bool)::Real
+axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
+</code>
+</pre>
+<p>Convert the axis-relative 
+<code>ticks_angle
+</code> (0 = parallel to the axis, ±90 = perpendicular) to the screen angle used by Plotly&#39;s 
+<code>tickangle
+</code> (0 = horizontal). A vertical axis is parallel when standing the text up (bottom-to-top, -90). A 
+<code>nothing
+</code> angle keeps the labels horizontal, the readable orientation for numbers regardless of the axis direction.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.set_layout_axis!">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.set_layout_axis!">
 <code>SomeGraphs.Utilities.set_layout_axis!
@@ -1017,11 +1143,15 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 <pre>
 <code class="language-julia hljs">set_layout_axis!(
     layout::Layout,
-    axis::AbstractString
+    axis::AbstractString,
     axis_configuration::AxisConfiguration;
-    title::Maybe{AbstractString},
-    range::Range,
+    title::Maybe{AbstractString} = nothing,
+    range::Maybe{Range} = nothing,
+    ticks_labels::Maybe{AbstractVector{&lt;:AbstractString}} = nothing,
+    ticks_values::Maybe{AbstractVector{&lt;:Real}} = nothing,
     domain::Maybe{AbstractVector{&lt;:Real}} = nothing,
+    is_tick_axis::Bool = true,
+    is_zeroable::Bool = true,
     is_reversed::Bool = false,
     is_plotly_log::Bool = false,
 )::Nothing
@@ -1036,6 +1166,16 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 </code>. If 
 <code>is_reversed
 </code>, the axis runs backwards (right to left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it shares with the other side.
+</p>
+<p>The 
+<code>ticks_values
+</code> and 
+<code>ticks_labels
+</code> (if any) give explicit ticks. Unless 
+<code>is_tick_axis
+</code>, no ticks are shown at all. Unless 
+<code>is_zeroable
+</code>, the zero line is left to Plotly (otherwise, it is shown for linear scales only).
 </p>
 <p>If 
 <code>is_plotly_log
@@ -1125,7 +1265,7 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
     show_scale::Bool,
     next_colors_scale_offset_index::AbstractVector{&lt;:Integer},
     colors_scale_offsets::AbstractVector{&lt;:Real},
-    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+    side_panels::AbstractVector{SidePanel},
 )::Nothing
 </code>
 </pre>
@@ -1135,20 +1275,22 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 <code>layout
 </code>, as specified by a 
 <code>colors_configuration
-</code>. Since Plotly is dumb when it comes to placement of color scales, the 
-<code>offset
-</code> must be specified manually to avoid overlaps.
+</code>. Since Plotly is dumb when it comes to placement of color scales, a shown scale is placed at the next of the 
+<code>colors_scale_offsets
+</code> (the 
+<code>next_colors_scale_offset_index
+</code>, which this advances) to avoid overlaps.
 </p>
 <p>A shown 
 <code>Log10Base
-</code> scale is drawn as a 
-<a href="utilities.html#SomeGraphs.Utilities.ColorsScaleStrip">
-<code>ColorsScaleStrip
+</code> scale is drawn as a strip 
+<a href="utilities.html#SomeGraphs.Utilities.SidePanel">
+<code>SidePanel
 </code>
 </a> instead, which pushes its heatmap to the 
 <code>traces
 </code> and itself to the 
-<code>colors_scale_strips
+<code>side_panels
 </code>. The strip covers the 
 <code>strip_range
 </code>, which must be given.
@@ -1159,9 +1301,9 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Utilities.ColorsScaleStrip">
-<a class="docstring-binding" href="#SomeGraphs.Utilities.ColorsScaleStrip">
-<code>SomeGraphs.Utilities.ColorsScaleStrip
+<summary id="SomeGraphs.Utilities.SidePanel">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.SidePanel">
+<code>SomeGraphs.Utilities.SidePanel
 </code>
 </a> — 
 <span class="docstring-category">Type
@@ -1170,21 +1312,29 @@ plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">@kwdef struct ColorsScaleStrip
+<code class="language-julia hljs">@kwdef struct SidePanel
     offset_index::Integer
     axis_index::Integer
+    pixel_width::Real
+    pixel_height::Maybe{Real} = nothing
 end
 </code>
 </pre>
-<p>A color scale drawn as a strip (a 1-column heatmap on its own axes) rather than as a Plotly color bar. This is done for a 
+<p>A panel drawn to the side of the graph, on its own X and Y axes (at the 
+<code>axis_index
+</code>), rather than by Plotly. This is the strip of a 
 <code>Log10Base
-</code> scale, since only a Plotly log axis shows the ticks of the real values, and a Plotly color bar can&#39;t be one. The 
+</code> color scale (a 1-column heatmap), since only a Plotly log axis shows the ticks of the real values, and a Plotly color bar can&#39;t be one. It is also the legend of sizes, since the Plotly legend limits the sizes of its symbols. The 
 <code>offset_index
 </code> is that of its entry in the 
 <code>colors_scale_offsets
-</code>, and the 
-<code>axis_index
-</code> is that of the strip&#39;s X and Y axes.
+</code>. The panel is 
+<code>pixel_width
+</code> wide, and is either 
+<code>pixel_height
+</code> high (at the top), or as high as the graph (if this is 
+<code>nothing
+</code>).
 </p>
 </div>
 </section>
@@ -1192,9 +1342,9 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Utilities.place_colors_scale_strips!">
-<a class="docstring-binding" href="#SomeGraphs.Utilities.place_colors_scale_strips!">
-<code>SomeGraphs.Utilities.place_colors_scale_strips!
+<summary id="SomeGraphs.Utilities.place_side_panels!">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.place_side_panels!">
+<code>SomeGraphs.Utilities.place_side_panels!
 </code>
 </a> — 
 <span class="docstring-category">Function
@@ -1203,16 +1353,16 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">place_colors_scale_strips!(;
+<code class="language-julia hljs">place_side_panels!(;
     layout::Layout,
     figure_configuration::FigureConfiguration,
-    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+    side_panels::AbstractVector{SidePanel},
 )::Nothing
 </code>
 </pre>
 <p>Place the 
-<a href="utilities.html#SomeGraphs.Utilities.ColorsScaleStrip">
-<code>ColorsScaleStrip
+<a href="utilities.html#SomeGraphs.Utilities.SidePanel">
+<code>SidePanel
 </code>
 </a>s (if any) of a 
 <code>layout
@@ -1222,7 +1372,7 @@ end
 <code>layout
 </code>.
 </p>
-<p>The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can only place the axes of a strip inside it. We therefore shrink the graph (and the offsets) to make room for the strips.
+<p>The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can only place the axes of a panel inside it. We therefore shrink the graph (and the offsets) to make room for the panels.
 </p>
 </div>
 </section>
@@ -1270,7 +1420,7 @@ end
 <code class="language-julia hljs">@kwdef struct SubGraph
     index::Integer
     n_graphs::Integer
-    gap::Maybe{AbstractFloat}
+    graphs_gap::Maybe{AbstractFloat}
     mirrored::Bool = false
     n_annotations::Integer = 0
     annotation_size::Maybe{AnnotationSize} = nothing
@@ -1283,7 +1433,7 @@ end
 </code> adjacent graphs along some axis. If the 
 <code>index
 </code> is 1, this is the 1st sub-graph (used top initialize some values such as the legend group title). If 
-<code>gap
+<code>graphs_gap
 </code> is 
 <code>nothing
 </code> then the sub-graphs are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap, which affects layout parameters.
@@ -1291,7 +1441,7 @@ end
 <p>If 
 <code>mirrored
 </code>, the sub-graphs are paired - an odd one and the even one following it - and the 
-<code>gap
+<code>graphs_gap
 </code> is only placed between the pairs; the two sub-graphs of a pair are adjacent, meeting at the axis they share. The 
 <code>n_graphs
 </code> must then be even.
@@ -1448,7 +1598,7 @@ end
     bands_scale::Real = 1;
     cross_ref::AbstractString = &quot;x domain&quot;,
     is_plotly_log::Bool = false,
-)::AbstractVector{&lt;:Shape}
+)::Nothing
 </code>
 </pre>
 <p>Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because Plotly.
@@ -1491,7 +1641,7 @@ end
     bands_scale::Real = 1;
     cross_ref::AbstractString = &quot;y domain&quot;,
     is_plotly_log::Bool = false,
-)::AbstractVector{&lt;:Shape}
+)::Nothing
 </code>
 </pre>
 <p>Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
@@ -1533,7 +1683,7 @@ end
     bands_data::BandsData,
     bands_configuration::BandsConfiguration;
     is_plotly_log::Bool = false,
-)::AbstractVector{&lt;:Shape}
+)::Nothing
 </code>
 </pre>
 <p>Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
@@ -1615,13 +1765,17 @@ end
 <pre>
 <code class="language-julia hljs">collect_range!(
     range::MaybeRange,
-    values::Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{&lt;:Maybe{Real}}},
+    values::Maybe{Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{&lt;:Maybe{Real}}}},
 )::Nothing
 </code>
 </pre>
 <p>Expand the 
 <code>range
-</code> to cover the `values.
+</code> to cover the 
+<code>values
+</code> (ignoring 
+<code>nothing
+</code> values).
 </p>
 </div>
 </section>
@@ -1710,11 +1864,11 @@ end
 <code class="language-julia hljs">final_scaled_range(
     implicit_scaled_range::Union{Range, MaybeRange},
     scale_configuration::ScaleConfiguration
-)::Range,
+)::Range
 final_scaled_range(
     implicit_scaled_range::Union{Range, MaybeRange},
     axis_configuration::AxisConfiguration
-)::Range,
+)::Range
 </code>
 </pre>
 <p>Compute the final range given the 
@@ -1749,12 +1903,12 @@ final_scaled_range(
 <div>
 <pre>
 <code class="language-julia hljs">prefer_data(data_value::Any, configuration_value::Any)::Any
-prefer_data(data_values::AbstractVector, index::Integer, configuration_value::Any)::Any
+prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_value::Any)::Any
 </code>
 </pre>
 <p>Return a value to use, prefering the data value (which may be in a vector, where a 
 <code>nothing
-</code> entry also falls back to the configuration value) to the configuration value.
+</code> vector or entry also falls back to the configuration value) to the configuration value.
 </p>
 </div>
 </section>
@@ -1776,12 +1930,6 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.ColorsScaleStrip">
-<code>SomeGraphs.Utilities.ColorsScaleStrip
-</code>
-</a>
-</li>
-<li>
 <a href="utilities.html#SomeGraphs.Utilities.ConfiguredColors">
 <code>SomeGraphs.Utilities.ConfiguredColors
 </code>
@@ -1796,6 +1944,18 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.Range">
 <code>SomeGraphs.Utilities.Range
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.SidePanel">
+<code>SomeGraphs.Utilities.SidePanel
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.SizesLegendEntry">
+<code>SomeGraphs.Utilities.SizesLegendEntry
 </code>
 </a>
 </li>
@@ -1826,6 +1986,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Common.validate_graph">
 <code>SomeGraphs.Common.validate_graph
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.axis_screen_ticks_angle">
+<code>SomeGraphs.Utilities.axis_screen_ticks_angle
 </code>
 </a>
 </li>
@@ -1896,8 +2062,8 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.place_colors_scale_strips!">
-<code>SomeGraphs.Utilities.place_colors_scale_strips!
+<a href="utilities.html#SomeGraphs.Utilities.place_side_panels!">
+<code>SomeGraphs.Utilities.place_side_panels!
 </code>
 </a>
 </li>
@@ -2018,6 +2184,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.shared_values_title">
 <code>SomeGraphs.Utilities.shared_values_title
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.sizes_legend_entries">
+<code>SomeGraphs.Utilities.sizes_legend_entries
 </code>
 </a>
 </li>

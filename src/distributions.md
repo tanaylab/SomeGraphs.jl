@@ -267,7 +267,7 @@ graph = distributions_graph(;
         DistributionData(; values = VectorValuesData([4, 4, 3, 3, 3, 1])),
     ],
 )
-graph.configuration.distributions_gap = 0.05
+graph.configuration.distributions_gap = 0.2
 using PlotlyDocumenter
 to_documenter(graph.figure)
 ```

@@ -444,7 +444,11 @@ end
 <code>paper_color
 </code> (outside the graph&#39;s area, that is, the margins).
 </p>
-<p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any) and each and every color scale, in this order, by specifying an explicit offset. Great fun! The 1st offset (1.02) is where Plotly places them by default.
+<p>If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any), each and every color scale, and each legend of sizes (see 
+<a href="common.html#SomeGraphs.Common.SizesConfiguration">
+<code>SizesConfiguration
+</code>
+</a>), in this order, by specifying an explicit offset. Great fun! The 1st offset (1.02) is where Plotly places them by default.
 </p>
 <p>These 
 <code>colors_scale_offsets
@@ -478,7 +482,9 @@ end
 <code>StackFractions
 </code> normalizes the values so their sum is 1. This can be combined with setting the 
 <code>percent
-</code> field of the relevant 
+</code> of the 
+<code>scale
+</code> of the relevant 
 <a href="common.html#SomeGraphs.Common.AxisConfiguration">
 <code>AxisConfiguration
 </code>
@@ -501,12 +507,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='2Ki42zNC5w' class='' style=';'>
+<div id='iLf83SuRg3' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("2Ki42zNC5w")
+    const PLOT = document.getElementById("iLf83SuRg3")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -529,12 +535,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='NNBp6KYsQA' class='' style=';'>
+<div id='ClzQzvPq6o' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("NNBp6KYsQA")
+    const PLOT = document.getElementById("ClzQzvPq6o")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"height":300,"plot_bgcolor":"white","yaxis":{"showticklabels":false},"legend":{"tracegroupgap":0},"margin":{"l":50,"b":50,"r":50,"t":50},"width":300}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -557,12 +563,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='H4THzw0Znd' class='' style=';'>
+<div id='awxTUE8PBI' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("H4THzw0Znd")
+    const PLOT = document.getElementById("awxTUE8PBI")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"lightgrey","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"lightyellow","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -618,12 +624,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='KxFwQyJVS0' class='' style=';'>
+<div id='mKkWhKF1Pa' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("KxFwQyJVS0")
+    const PLOT = document.getElementById("mKkWhKF1Pa")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":100,"b":250,"r":200,"t":150}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -778,12 +784,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='iy0QA9hCQ8' class='' style=';'>
+<div id='Vmz3j3IIQP' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("iy0QA9hCQ8")
+    const PLOT = document.getElementById("Vmz3j3IIQP")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":false,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -805,12 +811,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='9smf8LDvg6' class='' style=';'>
+<div id='dA0ajnFmNM' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("9smf8LDvg6")
+    const PLOT = document.getElementById("dA0ajnFmNM")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -832,12 +838,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='6Q76yEL8Dp' class='' style=';'>
+<div id='BrOcjhTsOg' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("6Q76yEL8Dp")
+    const PLOT = document.getElementById("BrOcjhTsOg")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"red","showticklabels":true,"zeroline":true,"range":[-0.03,3.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -860,12 +866,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='z7QCckot5h' class='' style=';'>
+<div id='luF0wvJ5E5' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("z7QCckot5h")
+    const PLOT = document.getElementById("luF0wvJ5E5")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,3.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[0.97,4.03]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -887,12 +893,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='NPLVniKos1' class='' style=';'>
+<div id='sqBiEs8RCh' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("NPLVniKos1")
+    const PLOT = document.getElementById("sqBiEs8RCh")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,100.0,100.0,100.0,300.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.0,303.0],"ticksuffix":"<sub>%</sub>"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -953,12 +959,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='BF9I2DGMZG' class='' style=';'>
+<div id='mln04ToEeK' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("BF9I2DGMZG")
+    const PLOT = document.getElementById("mln04ToEeK")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[0.0,0.0,1.0,1.0,1.0,2.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"range":[-0.02,2.02],"tickprefix":"<sub>2</sub>"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -981,12 +987,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='22EMT1N1G7' class='' style=';'>
+<div id='xuGNSdAlXK' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("22EMT1N1G7")
+    const PLOT = document.getElementById("xuGNSdAlXK")
     const plot_obj = {"data": [{"side":"positive","type":"violin","name":"Trace","box":{"visible":false},"spanmode":"hard","orientation":"h","x":[-5.0,-5.0,4.342923104481638e-6,4.342923104481638e-6,4.342923104481638e-6,0.47712270236552273]},{"showlegend":false,"xaxis":"x2","type":"scatter","hoverinfo":"skip","yaxis":"y"}], "layout": {"showlegend":false,"xaxis":{"showgrid":false,"showticklabels":false,"zeroline":false,"range":[-5.0547714,0.5318939]},"paper_bgcolor":"white","xaxis2":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"overlaying":"x","type":"log","range":[-5.0547714,0.5318939],"exponentformat":"SI","side":"bottom"},"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showticklabels":false},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1016,12 +1022,19 @@ to_documenter(graph.figure)
     scale::ScaleConfiguration = ScaleConfiguration()
     smallest::Real = 6
     span::Real = 12
+    show_legend::Bool = false
 end
 </code>
 </pre>
 <p>Configure how to map sizes data to a size in pixels (1/96th of an inch). If 
 <code>fixed
-</code> is specified, it is the size to be used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be specified. The 
+</code> is specified, it is the size to be used, the 
+<code>scale
+</code>, 
+<code>span
+</code> and 
+<code>show_legend
+</code> must be left at their defaults, and no sizes data may be specified. Otherwise, sizes data must be specified. The 
 <code>scale
 </code> maps the sizes data: values at most its 
 <code>minimum
@@ -1035,9 +1048,27 @@ end
 <code>log_base
 </code> is set the log of the values (plus the 
 <code>log_regularization
-</code>) is used instead. Sizes are not drawn along an axis, so there is nothing to label; 
+</code>) is used instead. The 
 <code>percent
-</code> therefore does not apply and must be left unset.
+</code> of the 
+<code>scale
+</code> does not apply to sizes and must be left unset.
+</p>
+<p>If 
+<code>show_legend
+</code>, a legend to the side of the graph shows some sizes and the values they stand for (it requires sizes data, so it can&#39;t be combined with 
+<code>fixed
+</code>). The title of the legend is that of the sizes data. The entries are chosen as described in 
+<a href="utilities.html#SomeGraphs.Utilities.sizes_legend_entries">
+<code>sizes_legend_entries
+</code>
+</a>. The legend takes its place in the 
+<code>colors_scale_offsets
+</code> (see 
+<a href="common.html#SomeGraphs.Common.FigureConfiguration">
+<code>FigureConfiguration
+</code>
+</a>) after the color scales.
 </p>
 </div>
 </section>
@@ -1150,7 +1181,9 @@ end
 </p>
 <p>
 <code>VerticalValues
-</code> - The values are the Y axis (the default).
+</code> - The values are the Y axis.
+</p>
+<p>The default depends on the graph (see its configuration).
 </p>
 </div>
 </section>
@@ -1180,13 +1213,9 @@ end
 <code>low
 </code> and 
 <code>high
-</code> bands are for the &quot;outer&quot; regions (so their lines are at their border, dashed by default) and the 
+</code> bands are for the &quot;outer&quot; regions (so their lines are at their border, dotted and dashed by default) and the 
 <code>middle
 </code> band is for the &quot;inner&quot; region between them (so its line is inside it, solid by default).
-</p>
-<p>If 
-<code>show_legend
-</code>, then a legend showing the bands will be shown.
 </p>
 </div>
 </section>
@@ -1273,8 +1302,8 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct ColorsConfiguration &lt;: Validated
-    fixed::Maybe{AbstractString} = nothing
     palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
+    fixed::Maybe{AbstractString} = nothing
     scale::ScaleConfiguration = ScaleConfiguration()
     show_legend::Bool = false
     title::Maybe{AbstractString} = nothing
@@ -1434,6 +1463,24 @@ end
 <td style="text-align: left">Categorical (7)
 </td>
 </tr>
+<tr>
+<td style="text-align: left">
+<code>nothing
+</code>
+</td>
+<td style="text-align: left">
+<code>AutomaticColors()
+</code>
+</td>
+<td style="text-align: left">str[]
+</td>
+<td style="text-align: left">Restricted(S)
+</td>
+<td style="text-align: left">Any
+</td>
+<td style="text-align: left">Automatic (8)
+</td>
+</tr>
 </table>
 <p>Any other combination of configuration is not allowed.
 </p>
@@ -1463,9 +1510,7 @@ end
 </p>
 <p>
 <strong>Named data (3):
-</strong> The colors data contains explicit color names. An empty color name will prevent the matching data from being plotted. If the 
-<code>fixed
-</code> color is specified, it is ignored.
+</strong> The colors data contains explicit color names. An empty color name will prevent the matching data from being plotted.
 </p>
 <p>
 <strong>Auto scale (4):
@@ -1497,9 +1542,17 @@ end
 <strong>Categorical (7):
 </strong> The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the data or the dictionary will prevent the matching data from being plotted.
 </p>
+<p>
+<strong>Automatic (8):
+</strong> The colors data contains categorical keys, whose colors are picked automatically (see 
+<a href="common.html#SomeGraphs.Common.AutomaticColors">
+<code>AutomaticColors
+</code>
+</a>).
+</p>
 <p>If 
 <code>show_legend
-</code> is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each other); see the 
+</code> is specified, categorical colors (cases 7 and 8 above) will be shown in the legend; numerical colors will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each other); see the 
 <code>colors_scale_offsets
 </code> vector of 
 <a href="common.html#SomeGraphs.Common.FigureConfiguration">
@@ -1529,11 +1582,7 @@ end
 <div>
 <p>A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make it easy to invoke the API from other languages such as Python which do not have the concept of a 
 <code>Pair
-</code>. The 
-<code>legend_title
-</code> is only used if 
-<code>show_legend
-</code> is set in the configuration.
+</code>.
 </p>
 </div>
 </section>
@@ -1751,7 +1800,7 @@ end
 </code> suffix works similarly but applies to the bottom range of the values.
 </p>
 <p>You can combine multiple suffixes together, for example 
-<code>Reds_z:0.2:0.2_o:0.99:magenta
+<code>Reds_z:0.2:0.2_o:0.01:magenta
 </code> or 
 <code>RdBu_r_c:0.2:0.2_o:0.01:magenta_u:0.01:darkgreen
 </code>.
@@ -1893,7 +1942,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">@kwdef mutable struct AnnotationSize
+<code class="language-julia hljs">@kwdef mutable struct AnnotationSize &lt;: Validated
     size::AbstractFloat = 0.05
     gap::AbstractFloat = 0.005
 end
@@ -1966,8 +2015,8 @@ end
 <p>The mask hides an arbitrary subset of the entities. Hidden entities are still part of the data: they take part in whatever is computed from it (axis ranges, clustering), unless the relevant configuration says otherwise (see 
 <code>include_hidden
 </code> in 
-<a href="common.html#SomeGraphs.Common.AxisConfiguration">
-<code>AxisConfiguration
+<a href="common.html#SomeGraphs.Common.ScaleConfiguration">
+<code>ScaleConfiguration
 </code>
 </a>). They are just not drawn.
 </p>

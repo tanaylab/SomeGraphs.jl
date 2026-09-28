@@ -18,6 +18,9 @@ SomeGraphs.Sources.AbstractConfigurationFields
 
 ```@docs
 SomeGraphs.Sources.VectorFields
+SomeGraphs.Sources.AxisVectorFields
+SomeGraphs.Sources.ColorsVectorFields
+SomeGraphs.Sources.SizesVectorFields
 SomeGraphs.Sources.VectorDataFields
 SomeGraphs.Sources.AxisConfigurationFields
 SomeGraphs.Sources.ColorsConfigurationFields

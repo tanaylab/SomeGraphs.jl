@@ -157,11 +157,20 @@ nested_test("common") do
                                """) validate(context, sizes)
         end
 
+        nested_test("!legend") do
+            sizes.fixed = 1
+            sizes.show_legend = true
+            @test_throws chomp("""
+                               ArgumentError: can't specify both sizes.fixed
+                               and sizes.show_legend
+                               """) validate(context, sizes)
+        end
+
         nested_test("~percent") do
             sizes.scale.percent = true
             @test_throws chomp("""
                                ArgumentError: unsupported sizes.scale.percent
-                               (sizes have no labels to add % to)
+                               (sizes are not shown as percents)
                                """) validate(context, sizes)
         end
 

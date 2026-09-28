@@ -211,7 +211,7 @@ to_documenter(graph.figure)
 ```
 
 Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless
-`include_hidden` is disabled in its axis):
+`include_hidden` is disabled in the `scale` of the `entries.colors`):
 
 ```@example
 using SomeGraphs

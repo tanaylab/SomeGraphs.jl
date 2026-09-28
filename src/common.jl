@@ -279,9 +279,9 @@ You can also manually change the `background_color` (inside the graph's area) an
 that is, the margins).
 
 If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
-will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any) and
-each and every color scale, in this order, by specifying an explicit offset. Great fun! The 1st offset (1.02) is where
-Plotly places them by default.
+will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any), each
+and every color scale, and each legend of sizes (see [`SizesConfiguration`](@ref)), in this order, by specifying an
+explicit offset. Great fun! The 1st offset (1.02) is where Plotly places them by default.
 
 These `colors_scale_offsets` are specified in what Plotly calls "paper coordinates" which are singularly unsuitable for
 this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the
@@ -332,7 +332,9 @@ The orientation of the values axis in a distribution(s) or bars graph:
 
 `HorizontalValues` - The values are the X axis
 
-`VerticalValues` - The values are the Y axis (the default).
+`VerticalValues` - The values are the Y axis.
+
+The default depends on the graph (see its configuration).
 """
 @enum ValuesOrientation HorizontalValues VerticalValues
 
@@ -583,10 +585,8 @@ end
     end
 
 Configure the partition of the graph up to three band regions. The `low` and `high` bands are for the "outer" regions
-(so their lines are at their border, dashed by default) and the `middle` band is for the "inner" region between them (so
-its line is inside it, solid by default).
-
-If `show_legend`, then a legend showing the bands will be shown.
+(so their lines are at their border, dotted and dashed by default) and the `middle` band is for the "inner" region
+between them (so its line is inside it, solid by default).
 """
 @kwdef mutable struct BandsConfiguration <: Validated
     low::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DotLine))
@@ -648,8 +648,7 @@ end
 
 """
 A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make
-it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`. The
-`legend_title` is only used if `show_legend` is set in the configuration.
+it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`.
 """
 ContinuousColors =
     Union{AbstractVector{<:Pair{<:Real, <:AbstractString}}, AbstractVector{<:Tuple{<:Real, <:AbstractString}}}
@@ -866,7 +865,7 @@ to the `color`, to denote overflow (too high) values. For example, `Blues_o:0.01
 the bottom 99% of the values range to `Blues`, and the top 1% of the range to magenta. A `_u` suffix works similarly but
 applies to the bottom range of the values.
 
-You can combine multiple suffixes together, for example `Reds_z:0.2:0.2_o:0.99:magenta` or
+You can combine multiple suffixes together, for example `Reds_z:0.2:0.2_o:0.01:magenta` or
 `RdBu_r_c:0.2:0.2_o:0.01:magenta_u:0.01:darkgreen`.
 
 Palettes with suffixes (including `_r`) are computed on the fly and cached for future use.
@@ -1315,27 +1314,34 @@ end
         scale::ScaleConfiguration = ScaleConfiguration()
         smallest::Real = 6
         span::Real = 12
+        show_legend::Bool = false
     end
 
 Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
-used, and none of the other fields should be set (and no sizes data may be specified). Otherwise, sizes data must be
-specified. The `scale` maps the sizes data: values at most its `minimum` (or the minimal value) are mapped to the
-`smallest` size in pixels, values at least its `maximum` (or the maximal value) are mapped to a size with an additional
-`span` in pixels, and if `log_base` is set the log of the values (plus the `log_regularization`) is used instead. Sizes are
-not drawn along an axis, so there is nothing to label; `percent` therefore does not apply and must be left unset.
+used, the `scale`, `span` and `show_legend` must be left at their defaults, and no sizes data may be specified.
+Otherwise, sizes data must be specified. The `scale` maps the sizes data: values at most its `minimum` (or the minimal
+value) are mapped to the `smallest` size in pixels, values at least its `maximum` (or the maximal value) are mapped to a
+size with an additional `span` in pixels, and if `log_base` is set the log of the values (plus the `log_regularization`)
+is used instead. The `percent` of the `scale` does not apply to sizes and must be left unset.
+
+If `show_legend`, a legend to the side of the graph shows some sizes and the values they stand for (it requires sizes
+data, so it can't be combined with `fixed`). The title of the legend is that of the sizes data. The entries are chosen
+as described in [`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in
+the `colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales.
 """
 @kwdef mutable struct SizesConfiguration <: Validated
     fixed::Maybe{Real} = nothing
     scale::ScaleConfiguration = ScaleConfiguration()
     smallest::Real = 6
     span::Real = 12
+    show_legend::Bool = false
 end
 
 function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
     validate_field(context, "scale", sizes_configuration.scale)
 
     if sizes_configuration.scale.percent
-        throw(ArgumentError("unsupported $(location(context)).scale.percent\n" * "(sizes have no labels to add % to)"))
+        throw(ArgumentError("unsupported $(location(context)).scale.percent\n" * "(sizes are not shown as percents)"))
     end
 
     if sizes_configuration.fixed !== nothing
@@ -1348,6 +1354,14 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
             throw(
                 ArgumentError(
                     "can't specify both $(location(context)).fixed\n" * "and any of $(location(context)).(scale,span)",
+                ),
+            )
+        end
+
+        if sizes_configuration.show_legend
+            throw(
+                ArgumentError(
+                    "can't specify both $(location(context)).fixed\n" * "and $(location(context)).show_legend",
                 ),
             )
         end
@@ -1372,8 +1386,8 @@ end
 
 """
     @kwdef mutable struct ColorsConfiguration <: Validated
-        fixed::Maybe{AbstractString} = nothing
         palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
+        fixed::Maybe{AbstractString} = nothing
         scale::ScaleConfiguration = ScaleConfiguration()
         show_legend::Bool = false
         title::Maybe{AbstractString} = nothing
@@ -1390,6 +1404,7 @@ Configure how to color some data. Supported combinations of configuration and da
 | `nothing`  | palette name                   | num[]       | Any           | Any           | Named scale (5)  |
 | `nothing`  | (value::num, color::str)[]     | num[]       | Any           | Any           | Manual scale (6) |
 | `nothing`  | Dict{value::str => color::str} | str[]       | Restricted(S) | Any           | Categorical (7)  |
+| `nothing`  | `AutomaticColors()`            | str[]       | Restricted(S) | Any           | Automatic (8)    |
 
 Any other combination of configuration is not allowed.
 
@@ -1400,7 +1415,7 @@ Any other combination of configuration is not allowed.
 **Auto fixed (2):** All the data entities will be given the same color, chosen automatically by Plotly.
 
 **Named data (3):** The colors data contains explicit color names. An empty color name will prevent the matching data from being
-plotted. If the `fixed` color is specified, it is ignored.
+plotted.
 
 **Auto scale (4):** The colors data (transformed by the `scale`) will be shown in a color scale chosen by Plotly.
 
@@ -1414,9 +1429,12 @@ empty.
 **Categorical (7):** The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the
 data or the dictionary will prevent the matching data from being plotted.
 
-If `show_legend` is specified, categorical colors (case 7 above) will be shown in the legend; numerical colors will be
-shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to each
-other); see the `colors_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
+**Automatic (8):** The colors data contains categorical keys, whose colors are picked automatically (see
+[`AutomaticColors`](@ref)).
+
+If `show_legend` is specified, categorical colors (cases 7 and 8 above) will be shown in the legend; numerical colors
+will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to
+each other); see the `colors_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
 
 If `title` is specified, it will be used when showing the legend (whatever it is). However, in some cases the correct
 title depends on the data set, so you can override this in the data.
@@ -1552,8 +1570,8 @@ If stacking elements, how to do so:
 
 `StackValues` just adds the raw values on top of each other.
 
-`StackFractions` normalizes the values so their sum is 1. This can be combined with setting the `percent` field of the
-relevant [`AxisConfiguration`](@ref) to display percents.
+`StackFractions` normalizes the values so their sum is 1. This can be combined with setting the `percent` of the `scale`
+of the relevant [`AxisConfiguration`](@ref) to display percents.
 """
 @enum Stacking StackValues StackFractions
 
@@ -1593,7 +1611,7 @@ entity *in addition* to its name. Hovers are only shown in interactive graphs (o
 
 The mask hides an arbitrary subset of the entities. Hidden entities are still part of the data: they take part in
 whatever is computed from it (axis ranges, clustering), unless the relevant configuration says otherwise (see
-`include_hidden` in [`AxisConfiguration`](@ref)). They are just not drawn.
+`include_hidden` in [`ScaleConfiguration`](@ref)). They are just not drawn.
 
 The `order` is a permutation of the entities. What it means depends on the graph: the order the points of a scatter
 graph are drawn in, the order of the bars of a bars graph along the bar axis, or the layout of an axis of a heatmap. It
@@ -1773,7 +1791,7 @@ function Validations.validate(
 end
 
 """
-    @kwdef mutable struct AnnotationSize
+    @kwdef mutable struct AnnotationSize <: Validated
         size::AbstractFloat = 0.05
         gap::AbstractFloat = 0.005
     end
@@ -1787,13 +1805,13 @@ sizes are in the usual inconvenient units (fraction of the overall graph size), 
 end
 
 function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
-    validate_in(context, "annotation_size") do
+    validate_in(context, "size") do
         validate_is_above(context, annotation_size.size, 0)
         validate_is_below(context, annotation_size.size, 1)
         return nothing
     end
 
-    validate_in(context, "gap_size") do
+    validate_in(context, "gap") do
         validate_is_at_least(context, annotation_size.gap, 0)
         validate_is_below(context, annotation_size.gap, 1)
         return nothing

@@ -343,7 +343,11 @@ end
 <a href="common.html#SomeGraphs.Common.VectorEntitiesData">
 <code>VectorEntitiesData
 </code>
-</a>) are not drawn, but they are still part of the data: the clustering sees them, and the order (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see 
+</a>) are not drawn, but they are still part of the data: the clustering sees them (unless the 
+<code>include_hidden
+</code> of the side configuration is 
+<code>false
+</code>), and the order (a permutation or a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see 
 <a href="heatmaps.html#SomeGraphs.Heatmaps.heatmap_placement">
 <code>heatmap_placement
 </code>
@@ -402,9 +406,9 @@ end
 <code>placement
 </code> (e.g., for generating other graphs in an identical placement). It is computed once, whether the graph&#39;s figure is generated or its placement is asked for first.
 </p>
-<div class="admonition is-info" id="Note-1a16dd135bccf08b">
+<div class="admonition is-info" id="Note-efa495c9b0131bc7">
 <header class="admonition-header">Note
-<a class="admonition-anchor" href="#Note-1a16dd135bccf08b" title="Permalink">
+<a class="admonition-anchor" href="#Note-efa495c9b0131bc7" title="Permalink">
 </a>
 </header>
 <div class="admonition-body">
@@ -420,13 +424,19 @@ end
 <code>linkage
 </code>, 
 <code>metric
-</code> and 
+</code>, 
 <code>dendogram_size
+</code> and 
+<code>include_hidden
 </code> of the sides configuration, and the 
 <code>entries.matrix
 </code>, the 
 <code>order
-</code> of the sides entities and their 
+</code> (and, when not 
+<code>include_hidden
+</code>, the 
+<code>mask
+</code>) of the sides entities and their 
 <code>arrangement
 </code>. The groups are easy to forget: they constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the placement of the first grouping unless the cache is reset in between.
 </p>
@@ -456,7 +466,9 @@ end
 </pre>
 <p>Configure the entries of a heatmap. The 
 <code>colors
-</code> map the values of the entries to colors. Due to Plotly&#39;s limitations, only continuous color palettes are supported.
+</code> map the values of the entries to colors. Due to Plotly&#39;s limitations, only continuous color palettes are supported, and a 
+<code>fixed
+</code> color can&#39;t be specified.
 </p>
 </div>
 </section>
@@ -507,9 +519,13 @@ end
 <code>show_ticks
 </code> to 
 <code>false
-</code> to leave them unlabelled, which is what a side holding thousands of entries wants; the names are still the first line of each hover. By default the labels are shown parallel to the axis, and 
+</code> to leave them unlabelled, which is what a side holding thousands of entries wants; the names are still the first line of each hover. By default the labels are shown horizontally, and 
 <code>ticks_angle
-</code> rotates them.
+</code> rotates them (relative to the axis, as in 
+<a href="common.html#SomeGraphs.Common.AxisConfiguration">
+<code>AxisConfiguration
+</code>
+</a>).
 </p>
 <p>The layout of the side is an order, and optionally a tree for the dendogram. The 
 <code>tree_source
@@ -927,7 +943,17 @@ end
 <code>subgroups_gap
 </code> works the same way, and defaults to 
 <code>nothing
-</code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+</code> because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps. A 
+<code>subgroups_gap
+</code> requires subgroups.
+</p>
+<p>Groups (or subgroups) which have no effect are rejected: if the side is not clustered, they must be shown with a gap. Likewise, an 
+<code>arrange_by
+</code> matrix (in the 
+<a href="heatmaps.html#SomeGraphs.Heatmaps.HeatmapSideData">
+<code>HeatmapSideData
+</code>
+</a>) must have an effect.
 </p>
 <p>A gap of a fixed number of entries is invisible in a side holding thousands of them, and is most of a side holding a few dozen. The 
 <code>total_gaps_fraction
@@ -1259,12 +1285,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='lDvBui36nn' class='' style=';'>
+<div id='YM0V2rZa0Y' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("lDvBui36nn")
+    const PLOT = document.getElementById("YM0V2rZa0Y")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1307,12 +1333,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='TJh3PqbNpS' class='' style=';'>
+<div id='z9KZHbrhwG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("TJh3PqbNpS")
+    const PLOT = document.getElementById("z9KZHbrhwG")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1355,12 +1381,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='skUeuGj6R2' class='' style=';'>
+<div id='TaNN1PGQZu' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("skUeuGj6R2")
+    const PLOT = document.getElementById("TaNN1PGQZu")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1415,12 +1441,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='s27fEtsrMT' class='' style=';'>
+<div id='IJe9Q8oNTo' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("s27fEtsrMT")
+    const PLOT = document.getElementById("IJe9Q8oNTo")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1481,12 +1507,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ucIpWPGbRq' class='' style=';'>
+<div id='rb4v7aJuUt' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ucIpWPGbRq")
+    const PLOT = document.getElementById("rb4v7aJuUt")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1549,12 +1575,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='OAmGhrDlpP' class='' style=';'>
+<div id='bEfaTRB3x3' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("OAmGhrDlpP")
+    const PLOT = document.getElementById("bEfaTRB3x3")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1608,12 +1634,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='bzAsrkd5e3' class='' style=';'>
+<div id='iQlAPHOhyV' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("bzAsrkd5e3")
+    const PLOT = document.getElementById("iQlAPHOhyV")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1651,7 +1677,11 @@ to_documenter(graph.figure)
 
 <p>Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless 
 <code>include_hidden
-</code> is disabled in its axis):
+</code> is disabled in the 
+<code>scale
+</code> of the 
+<code>entries.colors
+</code>):
 </p>
 <pre>
 <code class="language-julia hljs">using SomeGraphs
@@ -1671,12 +1701,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='SZEU3ljDw1' class='' style=';'>
+<div id='2Q0ya3SawU' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("SZEU3ljDw1")
+    const PLOT = document.getElementById("2Q0ya3SawU")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A

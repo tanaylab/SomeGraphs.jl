@@ -59,7 +59,7 @@ an integer indicates accessing a vector or matrix element.
 ValidationContext = Vector{Union{AbstractString, Integer}}
 
 """
-    stringify_context(context::ValidationContext)::AbstractString
+    location(context::ValidationContext)::AbstractString
 
 Convert a [`ValidationContext`](@ref) to a string for error messages.
 """
@@ -104,9 +104,9 @@ A common type for objects that support validation, that is, that one can invoke 
 abstract type Validated end
 
 """
-    validate(context::ValidationContext, value::Validated)::Nothing end
-    validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
-    validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing end
+    validate(context::ValidationContext, value::Validated)::Nothing
+    validate(context::ValidationContext, value::Validated, extra::Any)::Nothing
+    validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing
 
 Validate the `value` which was accessed via the `context`, possibly using some `extra` informative. Will throw
 `ArgumentError` if the value isn't valid.
@@ -424,9 +424,10 @@ end
 """
     validate_matrix_size(
         context::ValidationContext,
-        matrix::Maybe{AbstractMatrix},
         field::AbstractString,
-        expected_size::Tuple{Integer, Integer}
+        matrix::Maybe{AbstractMatrix},
+        base_field::AbstractString,
+        expected_size::Tuple{Integer, Integer},
     )::Nothing
 
 Validate that a `field` containing `matrix` has (if it is specified) the `expected_size` of a `base_field`.

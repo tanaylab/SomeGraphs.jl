@@ -222,7 +222,7 @@
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">stringify_context(context::ValidationContext)::AbstractString
+<code class="language-julia hljs">location(context::ValidationContext)::AbstractString
 </code>
 </pre>
 <p>Convert a 
@@ -248,9 +248,9 @@
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">validate(context::ValidationContext, value::Validated)::Nothing end
-validate(context::ValidationContext, value::Validated, extra::Any)::Nothing end
-validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing end
+<code class="language-julia hljs">validate(context::ValidationContext, value::Validated)::Nothing
+validate(context::ValidationContext, value::Validated, extra::Any)::Nothing
+validate(context::ValidationContext, value::Validated, extra::Any, another::Any)::Nothing
 </code>
 </pre>
 <p>Validate the 
@@ -722,9 +722,10 @@ validate_field(context::ValidationContext, field::AbstractString, value::Validat
 <pre>
 <code class="language-julia hljs">validate_matrix_size(
     context::ValidationContext,
-    matrix::Maybe{AbstractMatrix},
     field::AbstractString,
-    expected_size::Tuple{Integer, Integer}
+    matrix::Maybe{AbstractMatrix},
+    base_field::AbstractString,
+    expected_size::Tuple{Integer, Integer},
 )::Nothing
 </code>
 </pre>

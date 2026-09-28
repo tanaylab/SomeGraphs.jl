@@ -135,7 +135,8 @@ Configure one side (the rows or the columns) of a heatmap. The `title` is shown 
 
 The entries are labelled by their names from the [`HeatmapSideData`](@ref), if they have any. Set `show_ticks` to
 `false` to leave them unlabelled, which is what a side holding thousands of entries wants; the names are still the
-first line of each hover. By default the labels are shown parallel to the axis, and `ticks_angle` rotates them.
+first line of each hover. By default the labels are shown horizontally, and `ticks_angle` rotates them (relative to the
+axis, as in [`AxisConfiguration`](@ref)).
 
 The layout of the side is an order, and optionally a tree for the dendogram. The `tree_source` says where the tree comes
 from (see [`TreeSource`](@ref)) and the `order_source` says where the order comes from (see [`OrderSource`](@ref)). A
@@ -198,7 +199,11 @@ between adjacent entries of different groups. A gap of `nothing` will not be sho
 
 If subgroups are also specified, they are a second, finer level of grouping nested in the groups; each group is
 contiguous, and within it each subgroup is contiguous. Their `subgroups_gap` works the same way, and defaults to
-`nothing` because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps.
+`nothing` because the usual reason to specify subgroups is to constrain the clustering rather than to show gaps. A
+`subgroups_gap` requires subgroups.
+
+Groups (or subgroups) which have no effect are rejected: if the side is not clustered, they must be shown with a gap.
+Likewise, an `arrange_by` matrix (in the [`HeatmapSideData`](@ref)) must have an effect.
 
 A gap of a fixed number of entries is invisible in a side holding thousands of them, and is most of a side holding a
 few dozen. The `total_gaps_fraction` fixes this. The gaps are widened together, keeping their ratio, until they take
@@ -282,7 +287,7 @@ end
     end
 
 Configure the entries of a heatmap. The `colors` map the values of the entries to colors. Due to Plotly's limitations,
-only continuous color palettes are supported.
+only continuous color palettes are supported, and a `fixed` color can't be specified.
 """
 @kwdef mutable struct EntriesConfiguration <: Validated
     colors::ColorsConfiguration = ColorsConfiguration()
@@ -327,11 +332,11 @@ figure is generated or its placement is asked for first.
 !!! note
 
     Nothing detects that the cache went stale. Call [`reset_placement!`](@ref) if anything it was computed from is
-    changed after it was computed - that is, the `tree_source`, `order_source`, `linkage`, `metric` and
-    `dendogram_size` of the sides configuration, and the `entries.matrix`, the `order` of the sides entities and their
-    `arrangement`. The groups are easy to forget: they constrain the clustering, so saving the same graph twice,
-    grouped differently each time, silently reuses the placement of the first grouping unless the cache is reset in
-    between.
+    changed after it was computed - that is, the `tree_source`, `order_source`, `linkage`, `metric`, `dendogram_size`
+    and `include_hidden` of the sides configuration, and the `entries.matrix`, the `order` (and, when not
+    `include_hidden`, the `mask`) of the sides entities and their `arrangement`. The groups are easy to forget: they
+    constrain the clustering, so saving the same graph twice, grouped differently each time, silently reuses the
+    placement of the first grouping unless the cache is reset in between.
 """
 @kwdef mutable struct HeatmapGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -366,7 +371,8 @@ entries. If `annotations_order` is specified, they are shown in that order; it d
 including the ones that are not `is_shown`.
 
 Hidden entries (see the mask of [`VectorEntitiesData`](@ref)) are not drawn, but they are still part of the data: the
-clustering sees them, and the order (a permutation or a tree) always describes all the entries, hidden ones included.
+clustering sees them (unless the `include_hidden` of the side configuration is `false`), and the order (a permutation
+or a tree) always describes all the entries, hidden ones included.
 This way the order computed for one graph (see [`heatmap_placement`](@ref)) can be given to another graph of the same data,
 whether or not the two hide the same entries. At least one entry must be shown.
 """
@@ -1188,7 +1194,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     )
 
     next_colors_scale_offset_index = [Int(has_legend)]
-    colors_scale_strips = ColorsScaleStrip[]
+    side_panels = SidePanel[]
 
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
@@ -1202,7 +1208,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             show_scale = colors.show_scale,
             next_colors_scale_offset_index,
             colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-            colors_scale_strips,
+            side_panels,
         )
     end
 
@@ -1276,7 +1282,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                         show_scale = annotation_colors.show_scale,
                         next_colors_scale_offset_index,
                         colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-                        colors_scale_strips,
+                        side_panels,
                     )
                 end
             end
@@ -1314,7 +1320,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         layout["bargap"] = 0
     end
 
-    place_colors_scale_strips!(; layout, figure_configuration = graph.configuration.figure, colors_scale_strips)
+    place_side_panels!(; layout, figure_configuration = graph.configuration.figure, side_panels)
 
     return plotly_figure(traces, layout)
 end

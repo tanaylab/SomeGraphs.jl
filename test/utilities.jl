@@ -136,6 +136,142 @@ nested_test("utilities") do
         end
     end
 
+    nested_test("sizes_legend_entries") do
+        sizes_configuration = SizesConfiguration()
+
+        function test_entries(values, labels, pixel_sizes)::Nothing
+            entries = sizes_legend_entries(sizes_configuration, values)
+            @test [entry.label for entry in entries] == labels
+            test_same_values([entry.pixel_size for entry in entries], pixel_sizes)
+            return nothing
+        end
+
+        nested_test("linear") do
+            nested_test("()") do
+                return test_entries(
+                    collect(0:100),
+                    ["0", "20", "40", "60", "80", "100"],
+                    [6, 8.4, 10.8, 13.2, 15.6, 18],
+                )
+            end
+
+            nested_test("decimals") do
+                return test_entries(
+                    [3.2, 4.1],
+                    ["3.2", "3.4", "3.6", "3.8", "4.0"],
+                    6 .+ 12 .* ([3.2, 3.4, 3.6, 3.8, 4.0] .- 3.2) ./ 0.9,
+                )
+            end
+
+            # The common prefix of the values costs no decimal places.
+            nested_test("prefix") do
+                return test_entries(
+                    [1000.12, 1000.61],
+                    ["1000.2", "1000.3", "1000.4", "1000.5", "1000.6"],
+                    6 .+ 12 .* ([1000.2, 1000.3, 1000.4, 1000.5, 1000.6] .- 1000.12) ./ (1000.61 - 1000.12),
+                )
+            end
+
+            nested_test("negative") do
+                return test_entries([-5, 5], ["-4", "-2", "0", "2", "4"], [7.2, 9.6, 12, 14.4, 16.8])
+            end
+
+            nested_test("small") do
+                return test_entries(
+                    [0.00001, 0.00005],
+                    ["0.00001", "0.00002", "0.00003", "0.00004", "0.00005"],
+                    [6, 9, 12, 15, 18],
+                )
+            end
+
+            # The entries must be at least 1 pixel apart.
+            nested_test("span") do
+                sizes_configuration.span = 3
+                return test_entries(collect(0:10), ["0", "5", "10"], [6, 7.5, 9])
+            end
+
+            nested_test("single") do
+                return test_entries([3.14159], ["3.14"], [6])
+            end
+
+            nested_test("minimum") do
+                sizes_configuration.scale.minimum = 20
+                return test_entries(collect(0:100), ["≤ 20", "40", "60", "80", "100"], [6, 9, 12, 15, 18])
+            end
+
+            # Nothing is below the minimum, so it is not marked as clamped.
+            nested_test("!clamped") do
+                sizes_configuration.scale.minimum = 0
+                return test_entries(
+                    collect(0:100),
+                    ["0", "20", "40", "60", "80", "100"],
+                    [6, 8.4, 10.8, 13.2, 15.6, 18],
+                )
+            end
+        end
+
+        nested_test("log10") do
+            sizes_configuration.scale.log_base = Log10Base
+
+            nested_test("decades") do
+                return test_entries([1, 100], ["1", "10", "100"], [6, 12, 18])
+            end
+
+            nested_test("si") do
+                return test_entries([1, 1e6], ["1", "100", "10k", "1M"], [6, 10, 14, 18])
+            end
+
+            nested_test("digits") do
+                return test_entries([1, 5], ["1", "2", "3", "4", "5"], 6 .+ 12 .* log10.([1, 2, 3, 4, 5]) ./ log10(5))
+            end
+
+            # Within less than a decade, the steps are linear.
+            nested_test("linear") do
+                return test_entries(
+                    [20, 30],
+                    ["20", "22", "24", "26", "28", "30"],
+                    6 .+ 12 .* log10.([20, 22, 24, 26, 28, 30] ./ 20) ./ log10(1.5),
+                )
+            end
+
+            # The values include the regularization, as on an axis.
+            nested_test("regularization") do
+                sizes_configuration.scale.log_regularization = 1
+                return test_entries(collect(0:100), ["1", "10", "100"], 6 .+ 12 .* log10.([1, 10, 100]) ./ log10(101))
+            end
+
+            nested_test("maximum") do
+                sizes_configuration.scale.maximum = 5
+                return test_entries(
+                    [1, 10],
+                    ["1", "2", "3", "4", "≥ 5"],
+                    6 .+ 12 .* log10.([1, 2, 3, 4, 5]) ./ log10(5),
+                )
+            end
+        end
+
+        nested_test("log2") do
+            sizes_configuration.scale.log_base = Log2Base
+
+            nested_test("powers") do
+                return test_entries(
+                    [1, 1000],
+                    ["<sub>2</sub>0", "<sub>2</sub>2", "<sub>2</sub>4", "<sub>2</sub>6", "<sub>2</sub>8"],
+                    6 .+ 12 .* [0, 2, 4, 6, 8] ./ log2(1000),
+                )
+            end
+
+            # The steps are of the log values, so they may be fractional powers of 2.
+            nested_test("fractions") do
+                return test_entries(
+                    [3, 5],
+                    ["<sub>2</sub>1.6", "<sub>2</sub>1.8", "<sub>2</sub>2.0", "<sub>2</sub>2.2"],
+                    6 .+ 12 .* ([1.6, 1.8, 2.0, 2.2] .- log2(3)) ./ (log2(5) - log2(3)),
+                )
+            end
+        end
+    end
+
     nested_test("values") do
         data_context = ValidationContext(["values_data"])
         configuration_context = ValidationContext(["axis_configuration"])

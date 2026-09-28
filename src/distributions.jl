@@ -52,7 +52,7 @@ Possible styles for visualizing a distribution:
 
 `HistogramDistribution` - a histogram of the distribution.
 
-'CumulativeDistribution' - a cumulative distribution (aka "CDF"). This one allows for additional configuration options.
+`CumulativeDistribution` - a cumulative distribution (aka "CDF"). This one allows for additional configuration options.
 """
 @enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution BoxOutliersDistribution CurveBoxDistribution ViolinBoxDistribution HistogramDistribution CumulativeDistribution
 
@@ -69,8 +69,9 @@ Configure the style of the distribution(s) in a graph.
 
 The `values_orientation` will determine the overall orientation of the graph.
 
-The `line.color` is chosen automatically by default. When showing multiple distributions, you can override it per each
-one in the [`DistributionsGraphData`](@ref). By default, the distribution is filled. Plotly only allows for solid lines
+The `line.color` is chosen automatically by default. You can override it by the `color` of the
+[`DistributionData`](@ref) (per distribution, when showing multiple ones). By default, the distribution is filled.
+Plotly only allows for solid lines
 for distributions, and always fills histogram plots without any line.
 
 If `normalize` is set, the density axis shows the fraction of the entries instead of their count; this is only allowed
@@ -150,7 +151,8 @@ end
 
 Configure a graph for showing a single distribution. The `density_axis` configures the inner density axis (the bin
 counts for a `HistogramDistribution`, the cumulative scale for a `CumulativeDistribution`); it must be left at its
-default for the other styles, which have no meaningful density scale. The `cumulative_bands` are only used if the
+default for the other styles, which have no meaningful density scale. The `density_axis` can't have a `log_base`, and
+its `percent` requires the `distribution.normalize`. The `cumulative_bands` are only used if the
 `distribution.style` is `CumulativeDistribution`; their offsets are always in fractions (between 0 and 1) regardless of
 the `distribution.normalize` and `density_axis.scale.percent` settings.
 """
@@ -232,15 +234,19 @@ end
 Configure a graph for showing multiple distributions.
 
 This is similar to [`DistributionGraphConfiguration`](@ref), with additions to deal with having multiple distributions.
-The `density_axis` configures the inner density axis exactly as in the single-distribution graph.
+The `density_axis` configures the inner density axis as in the single-distribution graph, except for its `title`. The
+inner density axis is titled by the `density_axis_title` of the data. With a gap, the `density_axis.title` is a fallback
+title of the cross-series names axis instead, so it can't be combined with a `series_axis.title`.
 
-If `distributions_gap` is set to `nothing`, overlay the distributions on top of each other. Otherwise, the distributions
-are plotted next to each other, with the `distributions_gap` specified as a fraction of the used graph size. If zero the
-graphs will be adjacent, if 1 then the gaps will be the same size as the graphs.
+If `distributions_gap` is set to `nothing`, overlay the distributions on top of each other; this can't be done for the
+box styles. Otherwise, the distributions are plotted next to each other, with the `distributions_gap` specified as a
+fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the
+graphs.
 
 When there is a gap, the `series_axis` configures the cross-series names axis (the per-series names shown next to the
 sub-graphs). Only its `show_ticks` (whether to show the names), `ticks_angle` (by default the names are shown parallel
-to the axis, as if they were its title) and `title` are used; the numeric and grid fields are not applicable.
+to the axis, as if they were its title) and `title` are used; the numeric and grid fields are not applicable. Without a
+gap, the `series_axis` must be left at its default.
 """
 @kwdef mutable struct DistributionsGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()

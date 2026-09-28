@@ -278,7 +278,9 @@ end
 <code>show_legend
 </code> is set for the relevant colors configuration (you can&#39;t specify 
 <code>show_legend
-</code> if the colors data contains explicit color names).
+</code> if the colors data contains explicit color names). Similarly, the sizes titles are used for the legends of sizes, if 
+<code>show_legend
+</code> is set for the relevant sizes configuration.
 </p>
 <p>The 
 <code>edges
@@ -412,13 +414,15 @@ end
 <code>points
 </code> (given by their indices). The 
 <code>colors
-</code>, 
+</code> and 
 <code>sizes
-</code> (widths) and 
+</code> (widths) override the 
+<code>edges
+</code>, and the 
 <code>styles
 </code> override the 
-<code>edges
-</code> of the 
+<code>edges_style
+</code>, of the 
 <a href="scatters.html#SomeGraphs.Scatters.PointsGraphConfiguration">
 <code>PointsGraphConfiguration
 </code>
@@ -459,7 +463,8 @@ end
     y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     points::ScattersConfiguration = ScattersConfiguration()
     borders::ScattersConfiguration = ScattersConfiguration()
-    edges::ScattersConfiguration = ScattersConfiguration(sizes = SizesConfiguration(smallest = 2))
+    edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2))
+    edges_style::LineStyle = SolidLine
     edges_over_points::Bool = true
     vertical_bands::BandsConfiguration = BandsConfiguration()
     horizontal_bands::BandsConfiguration = BandsConfiguration()
@@ -481,11 +486,13 @@ end
 <a href="scatters.html#SomeGraphs.Scatters.PointsGraphData">
 <code>PointsGraphData
 </code>
-</a> contains either the 
-<code>borders_colors
-</code> and/or 
-<code>borders_sizes
-</code>. This allows displaying some additional data per point.
+</a> contains the 
+<code>borders
+</code> colors, sizes and/or mask, or if the 
+<code>borders
+</code> specifies a 
+<code>fixed
+</code> color or size. This allows displaying some additional data per point.
 </p>
 <p>Using the 
 <code>vertical_bands
@@ -495,11 +502,13 @@ end
 <code>diagonal_bands
 </code> you can partition the graph into regions. The 
 <code>diagonal_bands
-</code> can only be used if both axes are linear or both axes are in (the same) log scale. They are parallel to the X = Y line. For linear axes, the offset is additive, (Y = X + offset). For log scale axes, the offset is multiplicative (Y = X * offset), and the offset must be positive. This is a rare case where we must break orthogonality between flags, as switching between linear and log scales must be accompanied by patching the diagonal band offsets to match.
+</code> can only be used if both axes are linear or both axes are in (the same) log scale, and both axes have the same 
+<code>percent
+</code>. They are parallel to the X = Y line. For linear axes, the offset is additive, (Y = X + offset). For log scale axes, the offset is multiplicative (Y = X * offset), and the offset must be positive. This is a rare case where we must break orthogonality between flags, as switching between linear and log scales must be accompanied by patching the diagonal band offsets to match.
 </p>
-<div class="admonition is-info" id="Note-5bb10cc6f3e99dc1">
+<div class="admonition is-info" id="Note-b7c048da15f4ad9">
 <header class="admonition-header">Note
-<a class="admonition-anchor" href="#Note-5bb10cc6f3e99dc1" title="Permalink">
+<a class="admonition-anchor" href="#Note-b7c048da15f4ad9" title="Permalink">
 </a>
 </header>
 <div class="admonition-body">
@@ -507,13 +516,13 @@ end
 <code>show_legend
 </code> here. Instead you probably want to set the 
 <code>show_legend
-</code> of the 
+</code> of the colors and/or sizes of the 
 <code>points
 </code>, 
 <code>borders
 </code> and/or 
 <code>edges
-</code>. There&#39;s no way to create a legend for sizes or edge styles.
+</code>. There&#39;s no way to create a legend for edge styles.
 </p>
 </div>
 </div>
@@ -546,7 +555,7 @@ end
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct ScattersConfiguration &lt;: Validated
     colors::ColorsConfiguration = ColorsConfiguration()
-    sizes::SizesConfiguration() = SizesConfiguration()
+    sizes::SizesConfiguration = SizesConfiguration()
 end
 </code>
 </pre>
@@ -569,12 +578,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='Fz4ajMMJa5' class='' style=';'>
+<div id='cY7xkG3aP2' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("Fz4ajMMJa5")
+    const PLOT = document.getElementById("cY7xkG3aP2")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -596,12 +605,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='NvKuqyAyP2' class='' style=';'>
+<div id='IyNhQyJZYd' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("NvKuqyAyP2")
+    const PLOT = document.getElementById("IyNhQyJZYd")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"scatter","x":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -623,12 +632,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='PfojWQ2bL3' class='' style=';'>
+<div id='ajeICkwK2N' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("PfojWQ2bL3")
+    const PLOT = document.getElementById("ajeICkwK2N")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0],"type":"scatter","x":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -651,12 +660,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='cdlpX9w0lU' class='' style=';'>
+<div id='fXziHxR4Sl' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("cdlpX9w0lU")
+    const PLOT = document.getElementById("fXziHxR4Sl")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":"black","size":7,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -681,12 +690,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='gneJlnwgqm' class='' style=';'>
+<div id='QE1WF604OU' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("gneJlnwgqm")
+    const PLOT = document.getElementById("QE1WF604OU")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[0.0,49.0],"type":"scatter","x":[0.0,70.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[1.0,64.0],"type":"scatter","x":[10.0,80.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[4.0,81.0],"type":"scatter","x":[20.0,90.0]},{"showlegend":false,"mode":"lines","line":{"color":"darkgrey","width":2},"y":[9.0,100.0],"type":"scatter","x":[30.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -710,12 +719,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ne1FYGAn1c' class='' style=';'>
+<div id='hoB3chRoWy' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ne1FYGAn1c")
+    const PLOT = document.getElementById("hoB3chRoWy")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"shapes":[{"line":{"color":null,"dash":"dot"},"x0":24.0,"type":"line","y0":-1.0,"y1":76.0,"yref":"y","xref":"x","x1":101.0},{"line":{"color":null,"dash":null},"x0":-1.0,"type":"line","y0":-1.0,"y1":101.0,"yref":"y","xref":"x","x1":101.0},{"line":{"color":null,"dash":"dash"},"x0":-1.0,"type":"line","y0":24.0,"y1":101.0,"yref":"y","xref":"x","x1":76.0}],"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -743,12 +752,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='1v3Pz5V92Q' class='' style=';'>
+<div id='NUM6zVAC6Z' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("1v3Pz5V92Q")
+    const PLOT = document.getElementById("NUM6zVAC6Z")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"size":6,"showscale":false},"y":[1.0,2.0,5.000000000000001,10.0,17.0,26.0,37.0,49.99999999999999,64.99999999999999,82.0,101.00000000000001],"type":"scatter","x":[1.0,11.000000000000002,21.0,30.999999999999996,40.99999999999999,50.999999999999986,61.000000000000014,70.99999999999999,81.0,91.00000000000001,101.00000000000001]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"type":"log","range":[-0.020043213,2.0243645],"exponentformat":"SI"},"shapes":[{"line":{"color":null,"dash":"dot"},"x0":3.8195902704969447,"type":"line","y0":0.9548976,"y1":26.44261976825114,"yref":"y","xref":"x","x1":105.77048},{"line":{"color":null,"dash":null},"x0":0.9548975676242362,"type":"line","y0":0.9548976,"y1":105.77048,"yref":"y","xref":"x","x1":105.7704790730046},{"line":{"color":null,"dash":"dash"},"x0":0.9548976,"type":"line","y0":3.8195902704969447,"y1":105.77048,"yref":"y","xref":"x","x1":26.44261976825114}],"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":false,"type":"log","range":[-0.020043213,2.0243645],"exponentformat":"SI"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -850,12 +859,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='zxR8Atm6vC' class='' style=';'>
+<div id='llcJDNdpWG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("zxR8Atm6vC")
+    const PLOT = document.getElementById("llcJDNdpWG")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.04597381898914943,0.0481604328843933,0.0656634995106035,0.06840273959934044,0.06928854494884965,0.07026497106948723,0.07179339753276118,0.07408380410388196,0.08003334489911244,0.09455735213727383,0.09512792759744461,0.09647551309633987,0.09732083832407809,0.11359008702086229,0.12431086777251661,0.13723939393744086,0.14127929680724177,0.14162603791877504,0.1433299322228685,0.1486389182029193],"coloraxis":"coloraxis","size":16,"showscale":false},"y":[0.6968047575410379,1.306115558967419,1.7053341710917538,-2.173777902643006,0.11865114901055787,0.6519383169746722,-1.7758801658517032,0.9034430051864035,0.3216029374844889,1.1177946117474804,0.5019767811414706,-1.0092288051861404,-0.6077449865370641,-0.4180196978042471,0.5007984744043152,-0.6584463274588279,-0.1764741545510277,0.28862095432807144,-0.631083973233279,-0.5131646448399668],"type":"scatter","x":[-2.3942962323946806,-1.612316716623975,-0.0683194741744384,0.2619998741581797,1.1476690271171557,1.74273570356108,0.016185972979333094,1.3005476302710504,-1.067372097104871,-0.05131680407322392,-0.6295842065710322,-1.1403772919081927,-1.2696818434826393,0.3990906575326256,0.21199888259395777,-0.6991502371264332,0.2698393176826803,0.015375662421357001,-0.3156364801379863,-0.3294624837610639]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.04597382,"colorscale":[[0.0,"#440154"],[0.0625,"#48186a"],[0.125,"#472d7b"],[0.1875,"#424086"],[0.25,"#3b528b"],[0.3125,"#33638d"],[0.375,"#2c728e"],[0.4375,"#26828e"],[0.5,"#21918c"],[0.5625,"#1fa088"],[0.625,"#28ae80"],[0.6875,"#3fbc73"],[0.75,"#5ec962"],[0.8125,"#84d44b"],[0.875,"#addc30"],[0.9375,"#d8e219"],[1.0,"#fde725"]],"cmax":0.14863892,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.06,3.06]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"height":200,"legend":{"tracegroupgap":0},"yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-3.06,3.06]},"plot_bgcolor":"white","margin":{"l":50,"b":50,"r":50,"t":50},"width":200}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1032,12 +1041,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='6ePNM5wNQ5' class='' style=';'>
+<div id='Zl6P61JMzS' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("6ePNM5wNQ5")
+    const PLOT = document.getElementById("Zl6P61JMzS")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1059,12 +1068,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='a79SFRUw9C' class='' style=';'>
+<div id='j0JEUCijom' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("a79SFRUw9C")
+    const PLOT = document.getElementById("j0JEUCijom")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines+markers","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1086,12 +1095,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='8onWMEqg8l' class='' style=';'>
+<div id='HxRvbPseFr' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("8onWMEqg8l")
+    const PLOT = document.getElementById("HxRvbPseFr")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"tozeroy","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1313,6 +1322,7 @@ end
     horizontal_bands::BandsConfiguration = BandsConfiguration()
     diagonal_bands::BandsConfiguration = BandsConfiguration()
     show_legend::Bool = false
+    stacking::Maybe{Stacking} = nothing
 end
 </code>
 </pre>
@@ -1324,13 +1334,17 @@ end
 </code>
 </a>, with the addition of 
 <code>show_legend
-</code>. If this is set, then the data must specify the title to use for each line.
+</code>. If this is set, then the data must specify the 
+<code>name
+</code> of each shown line.
 </p>
 <p>If 
 <code>stacking
 </code> is specified, we stack the values on top of each other. Stacking can&#39;t be combined with a log 
 <code>y_axis
-</code>.
+</code>. Stacking inserts points into the lines, so the points of the lines can&#39;t have names or hovers. With 
+<code>StackFractions
+</code>, the (scaled) values must not be negative.
 </p>
 </div>
 </section>
@@ -1354,12 +1368,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='07oekllw6B' class='' style=';'>
+<div id='iUuwQJW6rQ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("07oekllw6B")
+    const PLOT = document.getElementById("iUuwQJW6rQ")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"none","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,0.0],"type":"scatter","fill":"none","x":[0.0,90.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1386,12 +1400,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='n6t2CJ8WQ9' class='' style=';'>
+<div id='EkjkwQ5BOq' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("n6t2CJ8WQ9")
+    const PLOT = document.getElementById("EkjkwQ5BOq")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"tozeroy","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,0.0],"type":"scatter","fill":"tozeroy","x":[0.0,90.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1419,12 +1433,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='K493V8EHMW' class='' style=';'>
+<div id='AhSIuA4pRp' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("K493V8EHMW")
+    const PLOT = document.getElementById("AhSIuA4pRp")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","fill":"tozeroy","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,44.444443,38.88889,33.333332,27.777779,22.222221,16.666666,11.111111,5.5555553,0.0,0.0,0.0],"type":"scatter","fill":"tonexty","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,90.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1452,12 +1466,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='xGn8csGAEg' class='' style=';'>
+<div id='UIeoycxAq5' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("xGn8csGAEg")
+    const PLOT = document.getElementById("UIeoycxAq5")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","groupnorm":"fraction","fill":"tozeroy","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[50.0,44.444443,38.88889,33.333332,27.777779,22.222221,16.666666,11.111111,5.5555553,0.0,0.0,0.0],"type":"scatter","groupnorm":"fraction","fill":"tonexty","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,90.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-0.01,1.01]},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1486,12 +1500,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='VsET2FCPbV' class='' style=';'>
+<div id='FklLpCTMqa' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("VsET2FCPbV")
+    const PLOT = document.getElementById("FklLpCTMqa")
     const plot_obj = {"data": [{"showlegend":false,"mode":"lines","y":[0.0,100.0,400.0,900.0,1600.0,2500.0,3600.0,4900.0,6400.0,8100.0,10000.0],"type":"scatter","groupnorm":"percent","fill":"tozeroy","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]},{"showlegend":false,"mode":"lines","y":[5000.0,4444.4443,3888.889,3333.3333,2777.7778,2222.2222,1666.6666,1111.1111,555.55554,0.0,0.0,0.0],"type":"scatter","groupnorm":"percent","fill":"tonexty","stackgroup":"stacked","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,90.0,90.0,100.0]}], "layout": {"showlegend":false,"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"ticksuffix":"<sub>%</sub>"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

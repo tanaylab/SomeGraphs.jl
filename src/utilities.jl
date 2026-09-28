@@ -8,7 +8,6 @@ export axis_ticks_prefix
 export axis_ticks_suffix
 export collect_hidden_range!
 export collect_range!
-export ColorsScaleStrip
 export configured_colors
 export ConfiguredColors
 export displayed_annotations
@@ -26,7 +25,7 @@ export plotly_figure
 export plotly_layout
 export plotly_line_dash
 export plotly_sub_graph_axes
-export place_colors_scale_strips!
+export place_side_panels!
 export plotly_sub_graph_domain
 export prefer_data
 export push_diagonal_bands_shapes
@@ -41,6 +40,9 @@ export set_layout_axis!
 export set_layout_colorscale!
 export set_layout_twin_log_axis!
 export shared_values_title
+export SidePanel
+export sizes_legend_entries
+export SizesLegendEntry
 export SubGraph
 export validate_axis_sizes
 export validate_colors
@@ -179,14 +181,15 @@ end
         colors_data::AbstractMatrix{<:Real},
         colors_configuration_context::ValidationContext,
         colors_configuration::ColorsConfiguration,
-        mask::Maybe{Union{AbstractVector{Bool},BitVector}} = nothing,
+        mask::Nothing = nothing,
     )::Nothing
 
 Validate that the `colors_data` from the `colors_data_context` is valid and consistent with the `colors_configuration`
 from the `colors_configuration_context`. For example, if the color configuration contains a categorical color mapping,
 this will validate that all the color names in the data are valid keys of this mapping.
 
-If a `mask` is specified, do not validate colors in the data whose matching value in the mask is false.
+If a `mask` is specified, do not validate colors in the data whose matching value in the mask is false. A mask is not
+supported for a matrix of colors.
 """
 function validate_colors(
     colors_data_context::ValidationContext,
@@ -385,7 +388,7 @@ end
 """
     validate_values(
         values_data_context::ValidationContext,
-        values_data::Maybe{AbstractVector{<:Real}}},
+        values_data::Maybe{AbstractVector{<:Real}},
         axis_configuration_context::ValidationContext,
         axis_configuration::AxisConfiguration,
     )::Nothing
@@ -419,10 +422,12 @@ end
         figure_configuration::FigureConfiguration;
         title::Maybe{AbstractString},
         has_legend::Bool,
-        shapes::AbstractVector{Shape},
+        has_hovers::Bool = false,
+        shapes::Maybe{AbstractVector{Shape}} = nothing,
     )::Layout
 
-Create a Plotly `Layout` object.
+Create a Plotly `Layout` object. If `has_legend`, the legend is placed at the 1st of the `colors_scale_offsets` of the
+`figure_configuration`.
 """
 function plotly_layout(
     figure_configuration::FigureConfiguration;
@@ -453,9 +458,14 @@ function plotly_layout(
     )
 end
 
-# Convert the axis-relative `ticks_angle` (0 = parallel to the axis, ±90 = perpendicular) to the screen angle used by
-# Plotly's `tickangle` (0 = horizontal). A vertical axis is parallel when standing the text up (bottom-to-top, -90).
-# A `nothing` angle keeps the labels horizontal, the readable orientation for numbers regardless of the axis direction.
+"""
+    axis_screen_ticks_angle(ticks_angle::Nothing, is_vertical_axis::Bool)::Real
+    axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
+
+Convert the axis-relative `ticks_angle` (0 = parallel to the axis, ±90 = perpendicular) to the screen angle used by
+Plotly's `tickangle` (0 = horizontal). A vertical axis is parallel when standing the text up (bottom-to-top, -90). A
+`nothing` angle keeps the labels horizontal, the readable orientation for numbers regardless of the axis direction.
+"""
 function axis_screen_ticks_angle(::Nothing, ::Bool)::Real
     return 0
 end
@@ -471,11 +481,15 @@ end
 """
     set_layout_axis!(
         layout::Layout,
-        axis::AbstractString
+        axis::AbstractString,
         axis_configuration::AxisConfiguration;
-        title::Maybe{AbstractString},
-        range::Range,
+        title::Maybe{AbstractString} = nothing,
+        range::Maybe{Range} = nothing,
+        ticks_labels::Maybe{AbstractVector{<:AbstractString}} = nothing,
+        ticks_values::Maybe{AbstractVector{<:Real}} = nothing,
         domain::Maybe{AbstractVector{<:Real}} = nothing,
+        is_tick_axis::Bool = true,
+        is_zeroable::Bool = true,
         is_reversed::Bool = false,
         is_plotly_log::Bool = false,
     )::Nothing
@@ -483,6 +497,9 @@ end
 Add a Plotly `axis` in a `layout` using the `axis_configuration`. If `is_reversed`, the axis runs backwards (right to
 left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it
 shares with the other side.
+
+The `ticks_values` and `ticks_labels` (if any) give explicit ticks. Unless `is_tick_axis`, no ticks are shown at all.
+Unless `is_zeroable`, the zero line is left to Plotly (otherwise, it is shown for linear scales only).
 
 If `is_plotly_log`, a `Log10Base` axis is a Plotly log axis, which picks its own ticks for the real (not log) values.
 The coordinates on such an axis must be given by [`plotly_axis_values`](@ref). The `range` is still the scaled (log)
@@ -634,19 +651,24 @@ function plotly_axis(prefix::AbstractString, ::Nothing; short::Bool = false, for
 end
 
 """
-    @kwdef struct ColorsScaleStrip
+    @kwdef struct SidePanel
         offset_index::Integer
         axis_index::Integer
+        pixel_width::Real
+        pixel_height::Maybe{Real} = nothing
     end
 
-A color scale drawn as a strip (a 1-column heatmap on its own axes) rather than as a Plotly color bar. This is done for a
-`Log10Base` scale, since only a Plotly log axis shows the ticks of the real values, and a Plotly color bar can't be one.
-The `offset_index` is that of its entry in the `colors_scale_offsets`, and the `axis_index` is that of the strip's X and
-Y axes.
+A panel drawn to the side of the graph, on its own X and Y axes (at the `axis_index`), rather than by Plotly. This is
+the strip of a `Log10Base` color scale (a 1-column heatmap), since only a Plotly log axis shows the ticks of the real
+values, and a Plotly color bar can't be one. It is also the legend of sizes, since the Plotly legend limits the sizes of
+its symbols. The `offset_index` is that of its entry in the `colors_scale_offsets`. The panel is `pixel_width` wide, and
+is either `pixel_height` high (at the top), or as high as the graph (if this is `nothing`).
 """
-@kwdef struct ColorsScaleStrip
+@kwdef struct SidePanel
     offset_index::Integer
     axis_index::Integer
+    pixel_width::Real
+    pixel_height::Maybe{Real} = nothing
 end
 
 # The index of the X and Y axes of the strip of a color scale is this plus the index of the color scale.
@@ -679,14 +701,15 @@ const PLOTLY_COLORS_SCALE_OUTLINE_WIDTH = 1
         show_scale::Bool,
         next_colors_scale_offset_index::AbstractVector{<:Integer},
         colors_scale_offsets::AbstractVector{<:Real},
-        colors_scale_strips::AbstractVector{ColorsScaleStrip},
+        side_panels::AbstractVector{SidePanel},
     )::Nothing
 
 Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. Since Plotly is dumb when it comes to
-placement of color scales, the `offset` must be specified manually to avoid overlaps.
+placement of color scales, a shown scale is placed at the next of the `colors_scale_offsets` (the
+`next_colors_scale_offset_index`, which this advances) to avoid overlaps.
 
-A shown `Log10Base` scale is drawn as a [`ColorsScaleStrip`](@ref) instead, which pushes its heatmap to the `traces`
-and itself to the `colors_scale_strips`. The strip covers the `strip_range`, which must be given.
+A shown `Log10Base` scale is drawn as a strip [`SidePanel`](@ref) instead, which pushes its heatmap to the `traces`
+and itself to the `side_panels`. The strip covers the `strip_range`, which must be given.
 """
 function set_layout_colorscale!(;
     layout::Layout,
@@ -700,7 +723,7 @@ function set_layout_colorscale!(;
     show_scale::Bool,
     next_colors_scale_offset_index::AbstractVector{<:Integer},
     colors_scale_offsets::AbstractVector{<:Real},
-    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+    side_panels::AbstractVector{SidePanel},
 )::Nothing
     is_strip = show_scale && colors_configuration.scale.log_base === Log10Base
 
@@ -750,7 +773,7 @@ function set_layout_colorscale!(;
             strip_range,
             title,
             offset_index = next_colors_scale_offset_index[1],
-            colors_scale_strips,
+            side_panels,
         )
     end
 
@@ -771,10 +794,12 @@ function push_colors_scale_strip!(;
     strip_range::Range,
     title::Maybe{AbstractString},
     offset_index::Integer,
-    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+    side_panels::AbstractVector{SidePanel},
 )::Nothing
     axis_index = COLORS_SCALE_STRIP_AXIS_BASE + colors_scale_index
-    push!(colors_scale_strips, ColorsScaleStrip(; offset_index, axis_index))
+    # Plotly draws the outline of a color bar around its thickness, but we draw it inside the domain of the strip.
+    pixel_width = PLOTLY_COLORS_SCALE_THICKNESS + 2 * PLOTLY_COLORS_SCALE_OUTLINE_WIDTH
+    push!(side_panels, SidePanel(; offset_index, axis_index, pixel_width))
 
     scaled_steps = collect(range(strip_range.minimum, strip_range.maximum; length = COLORS_SCALE_STRIP_STEPS))
     push!(
@@ -824,24 +849,24 @@ function push_colors_scale_strip!(;
 end
 
 """
-    place_colors_scale_strips!(;
+    place_side_panels!(;
         layout::Layout,
         figure_configuration::FigureConfiguration,
-        colors_scale_strips::AbstractVector{ColorsScaleStrip},
+        side_panels::AbstractVector{SidePanel},
     )::Nothing
 
-Place the [`ColorsScaleStrip`](@ref)s (if any) of a `layout` at their `colors_scale_offsets`. This must be called after
+Place the [`SidePanel`](@ref)s (if any) of a `layout` at their `colors_scale_offsets`. This must be called after
 everything else was added to the `layout`.
 
 The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can
-only place the axes of a strip inside it. We therefore shrink the graph (and the offsets) to make room for the strips.
+only place the axes of a panel inside it. We therefore shrink the graph (and the offsets) to make room for the panels.
 """
-function place_colors_scale_strips!(;
+function place_side_panels!(;
     layout::Layout,
     figure_configuration::FigureConfiguration,
-    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+    side_panels::AbstractVector{SidePanel},
 )::Nothing
-    if isempty(colors_scale_strips)
+    if isempty(side_panels)
         return nothing
     end
 
@@ -849,8 +874,6 @@ function place_colors_scale_strips!(;
         prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH) - figure_configuration.margins.left -
         figure_configuration.margins.right
     pad = PLOTLY_COLORS_SCALE_PAD / graph_width
-    # Plotly draws the outline of a color bar around its thickness, but we draw it inside the domain of the strip.
-    thickness = (PLOTLY_COLORS_SCALE_THICKNESS + 2 * PLOTLY_COLORS_SCALE_OUTLINE_WIDTH) / graph_width
 
     graph_height =
         prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
@@ -858,12 +881,12 @@ function place_colors_scale_strips!(;
     vertical_pad = PLOTLY_COLORS_SCALE_PAD / graph_height
 
     offsets = figure_configuration.colors_scale_offsets
-    scale = maximum([offsets[strip.offset_index + 1] for strip in colors_scale_strips]) + pad + thickness
+    scale = maximum([offsets[panel.offset_index + 1] + pad + panel.pixel_width / graph_width for panel in side_panels])
 
-    strips_x_axes = Set([Symbol(plotly_axis("x", strip.axis_index)) for strip in colors_scale_strips])
+    panels_x_axes = Set([Symbol(plotly_axis("x", panel.axis_index)) for panel in side_panels])
     for (key, value) in layout.fields
         name = String(key)
-        if startswith(name, "xaxis") && !(key in strips_x_axes) && !haskey(value, :overlaying)
+        if startswith(name, "xaxis") && !(key in panels_x_axes) && !haskey(value, :overlaying)
             domain = get(value, :domain, nothing)
             value[:domain] = domain === nothing ? [0, 1 / scale] : domain ./ scale
         elseif startswith(name, "coloraxis") && get(value, :colorbar, nothing) !== nothing
@@ -873,10 +896,16 @@ function place_colors_scale_strips!(;
         end
     end
 
-    for strip in colors_scale_strips
-        offset = offsets[strip.offset_index + 1]
-        layout[plotly_axis("x", strip.axis_index)][:domain] = [offset + pad, offset + pad + thickness] ./ scale
-        layout[plotly_axis("y", strip.axis_index)][:domain] = [vertical_pad, 1 - vertical_pad]
+    for panel in side_panels
+        offset = offsets[panel.offset_index + 1]
+        width = panel.pixel_width / graph_width
+        layout[plotly_axis("x", panel.axis_index)][:domain] = [offset + pad, offset + pad + width] ./ scale
+        if panel.pixel_height === nothing
+            layout[plotly_axis("y", panel.axis_index)][:domain] = [vertical_pad, 1 - vertical_pad]
+        else
+            height = min(panel.pixel_height / graph_height, 1 - 2 * vertical_pad)
+            layout[plotly_axis("y", panel.axis_index)][:domain] = [1 - vertical_pad - height, 1 - vertical_pad]
+        end
     end
 
     return nothing
@@ -955,7 +984,7 @@ function axis_ticks_suffix(scale_configuration::ScaleConfiguration)::Maybe{Abstr
 end
 
 """
-    scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Real
+    scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Float64
     scale_axis_value(scale_configuration::ScaleConfiguration, value::Nothing; clamp::Bool = true)::Nothing
 
 Scale a single `value` according to the `scale_configuration`. This deals with log scales and percent scaling. By
@@ -997,17 +1026,19 @@ end
     scale_axis_values(
         scale_configuration::ScaleConfiguration,
         values::Maybe{AbstractVector{<:Maybe{Real}}};
-        clamp::Bool = true
+        clamp::Bool = true,
+        copy::Bool = false,
     )::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
     scale_axis_values(
         scale_configuration::ScaleConfiguration,
-        values::Maybe{AbstractMatrix{<:Maybe{Real}}};
-        clamp::Bool = true
+        values::AbstractMatrix{<:Maybe{Real}};
+        clamp::Bool = true,
+        copy::Bool = false,
     )::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
 
-Scale a vector of `values` according to the `scale_configuration`. This deals with log scales and percent scaling. By
-default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so it can be
-safely modified further without impacting the original data).
+Scale a vector (or a matrix) of `values` according to the `scale_configuration`. This deals with log scales and percent
+scaling. By default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so
+it can be safely modified further without impacting the original data).
 """
 function scale_axis_values(
     scale_configuration::ScaleConfiguration,
@@ -1103,11 +1134,11 @@ end
     final_scaled_range(
         implicit_scaled_range::Union{Range, MaybeRange},
         scale_configuration::ScaleConfiguration
-    )::Range,
+    )::Range
     final_scaled_range(
         implicit_scaled_range::Union{Range, MaybeRange},
         axis_configuration::AxisConfiguration
-    )::Range,
+    )::Range
 
 Compute the final range given the `implicit_scaled_range` computed from the values and the explicit `minimum` and
 `maximum` of the `scale_configuration`. Given an `axis_configuration`, the range is also grown by its
@@ -1312,6 +1343,38 @@ function scale_size_values(
         return nothing
     end
 
+    sizes_mapping = SizesMapping(sizes_configuration, values, mask)
+
+    scale_configuration = sizes_configuration.scale
+    if scale_configuration.minimum !== nothing
+        values = max.(values, scale_configuration.minimum)
+    end
+    if scale_configuration.maximum !== nothing
+        values = min.(values, scale_configuration.maximum)
+    end
+
+    scaled_values = scale_axis_values(scale_configuration, values; clamp = false)
+    @assert scaled_values !== nothing
+
+    return [pixel_size(sizes_mapping, scaled_value) for scaled_value in scaled_values]
+end
+
+# How the scaled values of sizes map to pixel sizes, for a specific sizes data.
+struct SizesMapping
+    sizes_configuration::SizesConfiguration
+    minimum_value::Real
+    scaled_minimum_value::Real
+    scaled_maximum_value::Real
+    is_single_value::Bool
+    is_minimum_clamped::Bool
+    is_maximum_clamped::Bool
+end
+
+function SizesMapping(
+    sizes_configuration::SizesConfiguration,
+    values::AbstractVector{<:Real},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::SizesMapping
     scale_configuration = sizes_configuration.scale
     ranged_values = range_values(scale_configuration, values, mask)
 
@@ -1320,32 +1383,306 @@ function scale_size_values(
 
     if scale_configuration.minimum !== nothing
         minimum_value = scale_configuration.minimum
-        values = max.(values, scale_configuration.minimum)
+        is_minimum_clamped = any(values .< minimum_value)
     else
         minimum_value = minimum(ranged_values)
+        is_minimum_clamped = false
     end
 
     if scale_configuration.maximum !== nothing
         maximum_value = scale_configuration.maximum
-        values = min.(values, scale_configuration.maximum)
+        is_maximum_clamped = any(values .> maximum_value)
     else
         maximum_value = maximum(ranged_values)
+        is_maximum_clamped = false
     end
 
-    if maximum_value == minimum_value
+    is_single_value = maximum_value == minimum_value
+    if is_single_value
         maximum_value += 1
     end
 
-    scaled_minimum_value = scale_axis_value(scale_configuration, minimum_value; clamp = false)
-    scaled_maximum_value = scale_axis_value(scale_configuration, maximum_value; clamp = false)
-    scaled_values = scale_axis_values(scale_configuration, values; clamp = false)
-    @assert scaled_values !== nothing
+    return SizesMapping(
+        sizes_configuration,
+        minimum_value,
+        scale_axis_value(scale_configuration, minimum_value; clamp = false),
+        scale_axis_value(scale_configuration, maximum_value; clamp = false),
+        is_single_value,
+        is_minimum_clamped,
+        is_maximum_clamped,
+    )
+end
 
-    return [
-        sizes_configuration.smallest +
-        sizes_configuration.span * (scaled_value - scaled_minimum_value) /
-        (scaled_maximum_value - scaled_minimum_value) for scaled_value in scaled_values
-    ]
+function pixel_size(sizes_mapping::SizesMapping, scaled_value::Real)::Real
+    sizes_configuration = sizes_mapping.sizes_configuration
+    return sizes_configuration.smallest +
+           sizes_configuration.span * (scaled_value - sizes_mapping.scaled_minimum_value) /
+           (sizes_mapping.scaled_maximum_value - sizes_mapping.scaled_minimum_value)
+end
+
+"""
+    @kwdef struct SizesLegendEntry
+        value::Real
+        pixel_size::Real
+        label::AbstractString
+    end
+
+An entry of the legend of sizes. The `value` includes the `log_regularization` (if any). It is drawn with a symbol of
+the `pixel_size`, labeled by the `label`. The `label` shows the value the way the ticks of an axis with the same scale
+do: the value for a linear or a `Log10Base` scale, and the log value (the power) for a `Log2Base` scale.
+"""
+@kwdef struct SizesLegendEntry
+    value::Real
+    pixel_size::Real
+    label::AbstractString
+end
+
+# The minimal difference in pixels between the sizes of consecutive entries of the legend of sizes.
+const SIZES_LEGEND_MINIMAL_PIXELS_GAP = 1
+
+# The maximal number of entries in the legend of sizes (not counting the ends added for clamped values).
+const SIZES_LEGEND_MAXIMAL_ENTRIES = 6
+
+"""
+    sizes_legend_entries(
+        sizes_configuration::SizesConfiguration,
+        values::AbstractVector{<:Real},
+        mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+    )::AbstractVector{SizesLegendEntry}
+
+The entries of the legend of the sizes `values`, as mapped by the `sizes_configuration` (see [`scale_size_values`](@ref)).
+
+The entries are "nice" values, chosen the way ticks are. For a linear scale these are multiples of a step of 1, 2 or 5
+times a power of 10. For a `Log10Base` scale these are the digits, or 1, 2 and 5, or the powers of 10 (or of 100 etc.).
+If the range is too small for these, it uses linear steps instead. For a `Log2Base` scale, these are linear steps of the
+log values. This uses the finest step whose entries are at least 1 pixel apart, with no more than 6 entries. If fewer
+than 2 such values fit in the range, the entries are the ends of the range. If all the values are the same, there is a
+single entry.
+
+If a value was clamped to the `minimum` (or `maximum`) of the scale, the end of the legend is at that value, with a "≤ "
+(or "≥ ") prefix. It replaces the nearest entry if that is less than 1 pixel away, and is added to the entries
+otherwise.
+"""
+function sizes_legend_entries(
+    sizes_configuration::SizesConfiguration,
+    values::AbstractVector{<:Real},
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
+)::AbstractVector{SizesLegendEntry}
+    sizes_mapping = SizesMapping(sizes_configuration, values, mask)
+    scale_configuration = sizes_configuration.scale
+
+    # A single value has no step to take the decimal places from, so it is shown with (up to) 3 significant digits.
+    if sizes_mapping.is_single_value
+        scaled_value = sizes_mapping.scaled_minimum_value
+        value = legend_value(scale_configuration, scaled_value)
+        places = value == 0 ? 0 : max(0, 2 - floor(Int, log10(abs(value))))
+        while places > 0 && round(value; digits = places - 1) == round(value; digits = places)
+            places -= 1
+        end
+        return [sizes_legend_entry(sizes_mapping, scaled_value, places)]
+    end
+
+    chosen = nothing
+    for candidate in sizes_legend_candidates(sizes_mapping)
+        if length(candidate) < 2
+            break
+        end
+        pixel_sizes = [pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
+        if length(candidate) <= SIZES_LEGEND_MAXIMAL_ENTRIES &&
+           minimum(diff(pixel_sizes)) >= SIZES_LEGEND_MINIMAL_PIXELS_GAP
+            chosen = candidate
+            break
+        end
+    end
+
+    # Too few nice values fit in the range, so show its ends, rounded to the decimal place of their difference.
+    if chosen === nothing
+        difference =
+            legend_value(scale_configuration, sizes_mapping.scaled_maximum_value) -
+            legend_value(scale_configuration, sizes_mapping.scaled_minimum_value)
+        places = max(0, -floor(Int, log10(difference)))
+        chosen = [(sizes_mapping.scaled_minimum_value, places), (sizes_mapping.scaled_maximum_value, places)]
+    end
+
+    entries = [sizes_legend_entry(sizes_mapping, scaled_value, places) for (scaled_value, places) in chosen]
+
+    if sizes_mapping.is_minimum_clamped
+        clamp_sizes_legend_end!(;
+            entries,
+            sizes_mapping,
+            scaled_value = sizes_mapping.scaled_minimum_value,
+            places = chosen[1][2],
+            prefix = "≤ ",
+            is_first = true,
+        )
+    end
+    if sizes_mapping.is_maximum_clamped
+        clamp_sizes_legend_end!(;
+            entries,
+            sizes_mapping,
+            scaled_value = sizes_mapping.scaled_maximum_value,
+            places = chosen[end][2],
+            prefix = "≥ ",
+            is_first = false,
+        )
+    end
+
+    return entries
+end
+
+# The candidate entries of the legend of sizes, from the finest to the coarsest. Each is a vector of the scaled values
+# of the entries, and the number of decimal places to show for each.
+function sizes_legend_candidates(sizes_mapping::SizesMapping)::AbstractVector{<:AbstractVector{Tuple{Float64, Int}}}
+    scale_configuration = sizes_mapping.sizes_configuration.scale
+    scaled_minimum = sizes_mapping.scaled_minimum_value
+    scaled_maximum = sizes_mapping.scaled_maximum_value
+
+    if scale_configuration.log_base === Log10Base
+        # Within less than a decade, linear steps of the real values are nicer (as Plotly does for its log axes).
+        if scaled_maximum - scaled_minimum >= 1
+            return log10_candidates(scaled_minimum, scaled_maximum)
+        end
+        linear_candidates = linear_candidates_of(exp10(scaled_minimum), exp10(scaled_maximum))
+        return [[(log10(value), places) for (value, places) in candidate] for candidate in linear_candidates]
+    else
+        # Linear steps of the scaled values: the values themselves, or the log values of a `Log2Base` scale.
+        return linear_candidates_of(scaled_minimum, scaled_maximum)
+    end
+end
+
+# Candidates of multiples of steps of 1, 2 or 5 times a power of 10, in a range, from the finest to the coarsest (until
+# there are less than 2 multiples in the range).
+function linear_candidates_of(
+    minimum_value::Real,
+    maximum_value::Real,
+)::AbstractVector{<:AbstractVector{Tuple{Float64, Int}}}
+    candidates = Vector{Tuple{Float64, Int}}[]
+    power = floor(Int, log10(maximum_value - minimum_value)) - 3
+    while true
+        for multiplier in (1, 2, 5)
+            step = multiplier * exp10(power)
+            first_index = ceil(Int, minimum_value / step - 1e-9)
+            last_index = floor(Int, maximum_value / step + 1e-9)
+            if last_index - first_index + 1 < 2
+                return candidates
+            end
+            places = max(0, -power)
+            push!(candidates, [(index * step, places) for index in first_index:last_index])
+        end
+        power += 1
+    end
+end
+
+# Candidates of "nice" values of a `Log10Base` scale (the digits, then 1, 2 and 5, then the powers of 10, then of 100,
+# etc.) in a range of log values, from the finest to the coarsest (until there are less than 2 values in the range).
+function log10_candidates(
+    scaled_minimum::Real,
+    scaled_maximum::Real,
+)::AbstractVector{<:AbstractVector{Tuple{Float64, Int}}}
+    candidates = Vector{Tuple{Float64, Int}}[]
+    first_power = floor(Int, scaled_minimum)
+    last_power = ceil(Int, scaled_maximum)
+
+    for multipliers in ((1, 2, 3, 4, 5, 6, 7, 8, 9), (1, 2, 5))
+        candidate = [
+            (log10(multiplier) + power, max(0, -power)) for power in first_power:last_power for
+            multiplier in multipliers if scaled_minimum - 1e-9 <= log10(multiplier) + power <= scaled_maximum + 1e-9
+        ]
+        push!(candidates, candidate)
+    end
+
+    powers_step = 1
+    while true
+        candidate = [
+            (Float64(power), max(0, -power)) for power in first_power:last_power if
+            power % powers_step == 0 && scaled_minimum - 1e-9 <= power <= scaled_maximum + 1e-9
+        ]
+        if length(candidate) < 2
+            return candidates
+        end
+        push!(candidates, candidate)
+        powers_step += 1
+    end
+end
+
+# The value shown for a scaled value of sizes: the real value for a linear or a `Log10Base` scale, and the log value
+# for a `Log2Base` scale, the same as the ticks of an axis with the same scale.
+function legend_value(scale_configuration::ScaleConfiguration, scaled_value::Real)::Real
+    if scale_configuration.log_base === Log10Base
+        return exp10(scaled_value)
+    else
+        return scaled_value
+    end
+end
+
+function sizes_legend_entry(sizes_mapping::SizesMapping, scaled_value::Real, places::Integer)::SizesLegendEntry
+    scale_configuration = sizes_mapping.sizes_configuration.scale
+    if scale_configuration.log_base === Log2Base
+        value = exp2(scaled_value)
+    else
+        value = legend_value(scale_configuration, scaled_value)
+    end
+    return SizesLegendEntry(;
+        value,
+        pixel_size = pixel_size(sizes_mapping, scaled_value),
+        label = sizes_legend_label(scale_configuration, legend_value(scale_configuration, scaled_value), places),
+    )
+end
+
+# The SI suffixes for the powers of 1000, as used by Plotly log axes (with `exponentformat = "SI"`).
+const SI_SUFFIXES = ("k", "M", "G", "T", "P", "E")
+
+function sizes_legend_label(scale_configuration::ScaleConfiguration, value::Real, places::Integer)::AbstractString
+    if scale_configuration.log_base === Log10Base
+        thousands = min(floor(Int, log10(abs(value)) / 3), length(SI_SUFFIXES))
+        if thousands > 0
+            return decimal_text(value / exp10(3 * thousands), max(0, places - 3 * thousands)) * SI_SUFFIXES[thousands]
+        else
+            return decimal_text(value, places)
+        end
+    elseif scale_configuration.log_base === Log2Base
+        return axis_ticks_prefix(scale_configuration) * decimal_text(value, places)
+    else
+        @assert scale_configuration.log_base === nothing
+        return decimal_text(value, places)
+    end
+end
+
+# The text of a `value` with exactly this number of decimal `places` (never in scientific notation).
+function decimal_text(value::Real, places::Integer)::AbstractString
+    digits = string(round(Int, abs(value) * exp10(places)))
+    sign = value < 0 && digits != "0" ? "-" : ""
+    if places == 0
+        return sign * digits
+    else
+        digits = lpad(digits, places + 1, '0')
+        return sign * digits[1:(end - places)] * "." * digits[(end - places + 1):end]
+    end
+end
+
+# Make an end of the legend of sizes (the 1st entry if `is_first`, the last otherwise) be at a clamped value, with a
+# `prefix`. If the nearest entry is too close to it, it is replaced; otherwise, the end is added next to it.
+function clamp_sizes_legend_end!(;
+    entries::AbstractVector{SizesLegendEntry},
+    sizes_mapping::SizesMapping,
+    scaled_value::Real,
+    places::Integer,
+    prefix::AbstractString,
+    is_first::Bool,
+)::Nothing
+    nearest_index = is_first ? 1 : length(entries)
+    end_entry = sizes_legend_entry(sizes_mapping, scaled_value, places)
+    end_entry = SizesLegendEntry(; end_entry.value, end_entry.pixel_size, label = prefix * end_entry.label)
+
+    if abs(entries[nearest_index].pixel_size - end_entry.pixel_size) < SIZES_LEGEND_MINIMAL_PIXELS_GAP
+        entries[nearest_index] = end_entry
+    elseif is_first
+        pushfirst!(entries, end_entry)
+    else
+        push!(entries, end_entry)
+    end
+
+    return nothing
 end
 
 """
@@ -1377,7 +1714,7 @@ end
         bands_scale::Real = 1;
         cross_ref::AbstractString = "y domain",
         is_plotly_log::Bool = false,
-    )::AbstractVector{<:Shape}
+    )::Nothing
 
 Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
 
@@ -1499,7 +1836,7 @@ end
         bands_scale::Real = 1;
         cross_ref::AbstractString = "x domain",
         is_plotly_log::Bool = false,
-    )::AbstractVector{<:Shape}
+    )::Nothing
 
 Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because
 Plotly.
@@ -1628,7 +1965,7 @@ end
         bands_data::BandsData,
         bands_configuration::BandsConfiguration;
         is_plotly_log::Bool = false,
-    )::AbstractVector{<:Shape}
+    )::Nothing
 
 Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
 
@@ -1990,10 +2327,10 @@ end
 
 """
     prefer_data(data_value::Any, configuration_value::Any)::Any
-    prefer_data(data_values::AbstractVector, index::Integer, configuration_value::Any)::Any
+    prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_value::Any)::Any
 
-Return a value to use, prefering the data value (which may be in a vector, where a `nothing` entry also falls back to
-the configuration value) to the configuration value.
+Return a value to use, prefering the data value (which may be in a vector, where a `nothing` vector or entry also falls
+back to the configuration value) to the configuration value.
 """
 function prefer_data(data_value::Any, configuration_value::Any)::Any
     if data_value === nothing
@@ -2030,10 +2367,10 @@ end
 """
     collect_range!(
         range::MaybeRange,
-        values::Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{<:Maybe{Real}}},
+        values::Maybe{Union{Tuple{Vararg{Maybe{Real}}}, AbstractVector{<:Maybe{Real}}}},
     )::Nothing
 
-Expand the `range` to cover the `values.
+Expand the `range` to cover the `values` (ignoring `nothing` values).
 """
 function collect_range!(
     range::MaybeRange,
@@ -2104,7 +2441,7 @@ end
     @kwdef struct SubGraph
         index::Integer
         n_graphs::Integer
-        gap::Maybe{AbstractFloat}
+        graphs_gap::Maybe{AbstractFloat}
         mirrored::Bool = false
         n_annotations::Integer = 0
         annotation_size::Maybe{AnnotationSize} = nothing
@@ -2112,13 +2449,13 @@ end
     end
 
 Identify one sub-graph out of a set of `n_graphs` adjacent graphs along some axis. If the `index` is 1, this is the 1st
-sub-graph (used top initialize some values such as the legend group title). If `gap` is `nothing` then the sub-graphs
-are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with this gap,
-which affects layout parameters.
+sub-graph (used top initialize some values such as the legend group title). If `graphs_gap` is `nothing` then the
+sub-graphs are plotted on top of each other, which affects axis parameters; otherwise, the sub-graphs are plotted with
+this gap, which affects layout parameters.
 
-If `mirrored`, the sub-graphs are paired - an odd one and the even one following it - and the `gap` is only placed
-between the pairs; the two sub-graphs of a pair are adjacent, meeting at the axis they share. The `n_graphs` must then
-be even.
+If `mirrored`, the sub-graphs are paired - an odd one and the even one following it - and the `graphs_gap` is only
+placed between the pairs; the two sub-graphs of a pair are adjacent, meeting at the axis they share. The `n_graphs`
+must then be even.
 
 This also supports `n_annotations` (of the other axis) with `annotation_size` (along this axis). If the index is
 negative, it is the (negated) index of an annotation (of the other axis).
@@ -2269,7 +2606,7 @@ end
         annotation_size::AnnotationSize,
         n_annotations::Integer,
         dendogram_size::Maybe{Real} = nothing,
-    )::nothing
+    )::Nothing
 
 Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations.
 """
@@ -2388,8 +2725,10 @@ end
         colors_title::Maybe{AbstractString}
         colors_configuration::ColorsConfiguration
         colors_scale_index::Maybe{Integer}
-        original_color_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
-        final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}}}
+        original_color_values::Maybe{
+            Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}},
+        }
+        final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}}}
         final_colors_range::Maybe{Range}
         scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
         show_in_legend::Bool
@@ -2422,7 +2761,7 @@ end
     )::ConfiguredColors
 
 Apply the colors configuration to the colors data. The `mask` (if any) marks the shown entities; the hidden ones get no
-categorical color, and are left out of the implicit range of the colors scale unless the axis `include_hidden` is set.
+categorical color, and are left out of the implicit range of the colors scale unless the scale `include_hidden` is set.
 """
 function configured_colors(;
     colors_configuration::ColorsConfiguration,

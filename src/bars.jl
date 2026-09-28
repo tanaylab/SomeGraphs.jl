@@ -64,7 +64,8 @@ Configure a graph for showing a single series of bars.
 By default the values are the `y` axis (`VerticalValues`). You can flip the axes using the `values_orientation`. You can
 specify bands for this axis using `value_bands`. The `bars` configure the bars themselves (see
 [`BarsConfiguration`](@ref)). The `colors` is used to control the color of the bars (if not specified, chosen
-automatically by Plotly), in combination with the data bar colors (if any). The `annotations` are the sizes of the
+automatically by Plotly), in combination with the data bar colors (if any). A bars graph has no legend, so `show_legend`
+can only be combined with continuous colors (shown in a color scale). The `annotations` are the sizes of the
 annotations shown next to the bars.
 
 The `bar_axis` shows the names of the bars. Only its `show_ticks`, `ticks_angle` and `title` apply, as the rest have no
@@ -138,7 +139,7 @@ The data for a graph of a single series of bars.
 The `values` are required and numeric, one per bar; their title is the value axis title. The `bars` hold the names,
 hovers, mask and order of the bars; their names are shown as the bar axis ticks, masked bars are left out of the graph,
 and the order (if any) is the order of the bars along the bar axis. The `colors` are optional (typically all bars have
-the same color); their title is the legend title. You can even add annotations to the bars.
+the same color); their title is the title of the color scale. You can even add annotations to the bars.
 
 If `annotations_order` is specified, the annotations are shown in that order. It describes all the annotations,
 including the ones that are not `is_shown`.
@@ -395,16 +396,16 @@ end
 
 Configure a graph for showing multiple series of bars.
 
-This expands on [`BarsGraphConfiguration`](@ref) by adding optional `stacking` for stacking the bars of the different
-series on top of each other. Alternatively, specifying a `series_gap` will plot each series in its own separate
-sub-graph. The `series_gap` is specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1
-then the gaps will be the same size as the graphs. If neither is specified, then the bars will be shown in groups
-(adjacent to each other) with the `bars.gap` between the groups. The colors of the bars are those of their series.
-Stacking can't be combined with a log `value_axis`.
+This is similar to [`BarsGraphConfiguration`](@ref), without the `colors` and `value_bands` (the colors of the bars are
+those of their series), and with an optional `stacking` for stacking the bars of the different series on top of each
+other. Alternatively, specifying a `series_gap` will plot each series in its own separate sub-graph; stacking can't be
+combined with a `series_gap`. The `series_gap` is specified as a fraction of the used graph size, which must be less
+than one. If zero the graphs will be adjacent. If neither is specified, then the bars will be shown in groups (adjacent
+to each other) with the `bars.gap` between the groups. Stacking can't be combined with a log `value_axis`.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
 bars show their sizes rather than their differences. Setting an explicit `value_axis.scale.minimum` (or `maximum`)
-overrides this. A log scale never reaches zero, so there a bar is measured from the smallest value shown.
+overrides this. A log scale never reaches zero, so there a bar is measured from the bottom of the axis.
 
 If `mirrored`, the series are read in pairs, so their number must be even. The 1st series of each pair grows to the left
 (or down) and the 2nd to the right (or up), away from the bar axis they share - a butterfly graph. Each pair therefore
@@ -466,7 +467,8 @@ end
 
 One series of a [`SeriesBarsGraphData`](@ref). The `values` are required and numeric, one per bar; their title is the
 value axis title shared by all the series. The `bars` hold the hovers and mask of the bars of this series alone. The
-`name` is shown in the legend (or, if using `series_gap`, as the title of the series' own axis). The `hover` (if any) is
+`name` is shown in the legend (or, if using `series_gap`, as the title of the series' own axis; the names can't then be
+combined with a title of the values). The `hover` (if any) is
 prefixed to the hover of each bar of the series. A series which is not `is_shown` is left out of the graph. All the bars
 of a series have the same `color`; a `nothing` means the color is chosen automatically by Plotly.
 """
@@ -515,7 +517,9 @@ All the series must have the same number of bars. The value axis title is the ti
 series that give one must give the same. The `bars` hold the names, hovers, mask and order shared by the bars of all
 the series; their names are shown as the bar axis ticks, masked bars are left out of every series, and the order (if
 any) is the order of the bars along the bar axis. The bars of each series may add hovers and a mask of their own, but
-not an order, as they line up with the shared bars. You can even add annotations to the bars.
+not an order, as they line up with the shared bars. When stacking, a series can't have a mask of its own, and with
+`StackFractions` the (scaled) values must not be negative. At least one series must be `is_shown`. You can even add
+annotations to the bars.
 
 If `order` is specified, we draw the series in that order. Stacked, this is the order of the stack from its base; with a
 `series_gap`, this is the order of the series' own axes. The `order` describes all the series, including the ones that
@@ -1489,7 +1493,7 @@ function bars_layout(;
     end
 
     next_colors_scale_offset_index = [Int(has_legend)]
-    colors_scale_strips = ColorsScaleStrip[]
+    side_panels = SidePanel[]
 
     # The bar axis is drawn against the 1st axis of the other direction, which is the 1st annotation when there is one.
     # That is where the names belong for any other graph - outside everything - but a mirrored pair puts its
@@ -1523,7 +1527,7 @@ function bars_layout(;
             show_scale = colors.show_scale,
             next_colors_scale_offset_index,
             colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-            colors_scale_strips,
+            side_panels,
         )
     end
 
@@ -1561,7 +1565,7 @@ function bars_layout(;
                 show_scale = annotation_colors.show_scale,
                 next_colors_scale_offset_index,
                 colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-                colors_scale_strips,
+                side_panels,
             )
         end
     end
@@ -1571,7 +1575,7 @@ function bars_layout(;
         layout["yaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
     end
 
-    place_colors_scale_strips!(; layout, figure_configuration = graph.configuration.figure, colors_scale_strips)
+    place_side_panels!(; layout, figure_configuration = graph.configuration.figure, side_panels)
 
     return layout
 end

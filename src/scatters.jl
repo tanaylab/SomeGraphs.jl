@@ -37,7 +37,7 @@ import ..Utilities.Maybe
 """
     @kwdef mutable struct ScattersConfiguration <: Validated
         colors::ColorsConfiguration = ColorsConfiguration()
-        sizes::SizesConfiguration() = SizesConfiguration()
+        sizes::SizesConfiguration = SizesConfiguration()
     end
 
 Configure points (or borders, which are just larger points drawn under the actual points) or edges in a scatter graph.
@@ -62,7 +62,8 @@ end
         y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         points::ScattersConfiguration = ScattersConfiguration()
         borders::ScattersConfiguration = ScattersConfiguration()
-        edges::ScattersConfiguration = ScattersConfiguration(sizes = SizesConfiguration(smallest = 2))
+        edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2))
+        edges_style::LineStyle = SolidLine
         edges_over_points::Bool = true
         vertical_bands::BandsConfiguration = BandsConfiguration()
         horizontal_bands::BandsConfiguration = BandsConfiguration()
@@ -74,11 +75,12 @@ Configure a graph for showing a scatter of points and/or edges.
 If `edges_over_points` is set, the edges will be plotted above the points; otherwise, the points will be plotted above
 the edges. Edges are plotted using the `edges_style` unless the styles are specified in the data.
 
-The `borders` is used if the [`PointsGraphData`](@ref) contains either the `borders_colors` and/or `borders_sizes`.
-This allows displaying some additional data per point.
+The `borders` is used if the [`PointsGraphData`](@ref) contains the `borders` colors, sizes and/or mask, or if the
+`borders` specifies a `fixed` color or size. This allows displaying some additional data per point.
 
 Using the `vertical_bands`, `horizontal_bands` and/or `diagonal_bands` you can partition the graph into regions. The
-`diagonal_bands` can only be used if both axes are linear or both axes are in (the same) log scale. They are parallel to
+`diagonal_bands` can only be used if both axes are linear or both axes are in (the same) log scale, and both axes have
+the same `percent`. They are parallel to
 the X = Y line. For linear axes, the offset is additive, (Y = X + offset). For log scale axes, the offset is
 multiplicative (Y = X * offset), and the offset must be positive. This is a rare case where we must break orthogonality
 between flags, as switching between linear and log scales must be accompanied by patching the diagonal band offsets to
@@ -86,8 +88,8 @@ match.
 
 !!! note
 
-    There is no `show_legend` here. Instead you probably want to set the `show_legend` of the `points`, `borders` and/or
-    `edges`. There's no way to create a legend for sizes or edge styles.
+    There is no `show_legend` here. Instead you probably want to set the `show_legend` of the colors and/or sizes of the
+    `points`, `borders` and/or `edges`. There's no way to create a legend for edge styles.
 
 !!! note
 
@@ -189,7 +191,8 @@ end
     end
 
 The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `points` (given by their indices). The
-`colors`, `sizes` (widths) and `styles` override the `edges` of the [`PointsGraphConfiguration`](@ref) per edge. The
+`colors` and `sizes` (widths) override the `edges`, and the `styles` override the `edges_style`, of the
+[`PointsGraphConfiguration`](@ref) per edge. The
 `entities` hold the names, hovers, mask and order of the edges; the order is the order the edges are drawn in.
 
 !!! note
@@ -226,7 +229,8 @@ hovers and masks. Colors can be explicit color names if no `palette` is specifie
 are either numeric values or category names depending on the type of palette specified. Sizes are the diameter in
 pixels (1/96th of an inch); border sizes are added to the point sizes. The colors titles are used for the legends, if
 `show_legend` is set for the relevant colors configuration (you can't specify `show_legend` if the colors data
-contains explicit color names).
+contains explicit color names). Similarly, the sizes titles are used for the legends of sizes, if `show_legend` is set
+for the relevant sizes configuration.
 
 The `edges` draw straight lines between pairs of points; see [`EdgesData`](@ref).
 
@@ -496,6 +500,21 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         graph.data.edges.entities.mask,
     )
 
+    for (name, sizes_data, sizes_configuration) in (
+        ("points", graph.data.points.sizes, graph.configuration.points.sizes),
+        ("borders", graph.data.borders.sizes, graph.configuration.borders.sizes),
+        ("edges", graph.data.edges.sizes, graph.configuration.edges.sizes),
+    )
+        if sizes_configuration.show_legend && sizes_data.vector === nothing
+            throw(
+                ArgumentError(
+                    "must specify graph.data.$(name).sizes.vector\n" *
+                    "for graph.configuration.$(name).sizes.show_legend",
+                ),
+            )
+        end
+    end
+
     if graph.configuration.diagonal_bands.low.offset !== nothing ||
        graph.configuration.diagonal_bands.middle.offset !== nothing ||
        graph.configuration.diagonal_bands.high.offset !== nothing ||
@@ -553,10 +572,19 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         end
     end
 
-    if Int(has_legend) + n_colors_scales > length(graph.configuration.figure.colors_scale_offsets)
+    n_sizes_legends = count(
+        sizes_configuration.show_legend for sizes_configuration in
+        (graph.configuration.points.sizes, graph.configuration.borders.sizes, graph.configuration.edges.sizes)
+    )
+
+    if Int(has_legend) + n_colors_scales + n_sizes_legends > length(graph.configuration.figure.colors_scale_offsets)
         text =  # UNTESTED
-            "insufficient number of graph.figure.colors_scale_offsets: $(length(graph.figure.colors_scale_offsets))\n" *
+            "insufficient number of graph.configuration.figure.colors_scale_offsets: " *
+            "$(length(graph.configuration.figure.colors_scale_offsets))\n" *
             "is not enough for the shown color scales: $(n_colors_scales)"
+        if n_sizes_legends > 0  # UNTESTED
+            text *= "\nand the shown sizes legends: $(n_sizes_legends)"  # UNTESTED
+        end
         if has_legend  # UNTESTED
             text *= "\nfollowing a legend"  # UNTESTED
         end
@@ -596,6 +624,8 @@ end
     legend_group::AbstractString
     pixel_size::Maybe{Real}
     pixel_sizes::Maybe{AbstractVector{<:Real}}
+    sizes_title::Maybe{AbstractString}
+    sizes_legend_entries::Maybe{AbstractVector{SizesLegendEntry}}
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}}
     order::Maybe{AbstractVector{<:Integer}}
 end
@@ -606,6 +636,7 @@ function configured_scatters(;
     colors_title::Maybe{AbstractString},
     colors_values::Maybe{Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     next_colors_scale_index::AbstractVector{<:Integer},
+    sizes_title::Maybe{AbstractString},
     size_values::Maybe{AbstractVector{<:Real}},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
     order::Maybe{AbstractVector{<:Integer}},
@@ -628,13 +659,30 @@ function configured_scatters(;
         pixel_sizes = nothing
     end
 
+    if scatters_configuration.sizes.show_legend
+        @assert size_values !== nothing
+        sizes_legend = sizes_legend_entries(scatters_configuration.sizes, size_values, mask)
+    else
+        sizes_legend = nothing
+    end
+
     show_in_legend =
         scatters_configuration.colors.show_legend && (
             scatters_configuration.colors.palette isa CategoricalColors ||
             scatters_configuration.colors.palette isa AutomaticColors
         )
 
-    return ConfiguredScatters(; colors, show_in_legend, legend_group, pixel_size, pixel_sizes, mask, order)
+    return ConfiguredScatters(;
+        colors,
+        show_in_legend,
+        legend_group,
+        pixel_size,
+        pixel_sizes,
+        sizes_title,
+        sizes_legend_entries = sizes_legend,
+        mask,
+        order,
+    )
 end
 
 function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
@@ -658,6 +706,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         colors_title = prefer_data(points.colors.title, graph.configuration.points.colors.title),
         colors_values = points.colors.vector,
         next_colors_scale_index,
+        sizes_title = points.sizes.title,
         size_values = numeric_values(points.sizes),
         mask = points.entities.mask,
         order = points.entities.order,
@@ -670,6 +719,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         colors_title = prefer_data(borders.colors.title, graph.configuration.borders.colors.title),
         colors_values = borders.colors.vector,
         next_colors_scale_index,
+        sizes_title = borders.sizes.title,
         size_values = numeric_values(borders.sizes),
         mask = borders.mask,
         order = points.entities.order,
@@ -685,6 +735,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         colors_title = prefer_data(graph.data.edges.colors.title, graph.configuration.edges.colors.title),
         colors_values = graph.data.edges.colors.vector,
         next_colors_scale_index,
+        sizes_title = graph.data.edges.sizes.title,
         size_values = numeric_values(graph.data.edges.sizes),
         mask = graph.data.edges.entities.mask,
         order = graph.data.edges.entities.order,
@@ -758,7 +809,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     )
 
     next_colors_scale_offset_index = [Int(has_legend)]
-    colors_scale_strips = ColorsScaleStrip[]
+    side_panels = SidePanel[]
 
     for configured in (configured_points, configured_borders, configured_edges)
         if configured.colors.colors_scale_index !== nothing
@@ -773,14 +824,183 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                 show_scale = configured.colors.show_scale,
                 next_colors_scale_offset_index,
                 colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-                colors_scale_strips,
+                side_panels,
             )
         end
     end
 
-    place_colors_scale_strips!(; layout, figure_configuration = graph.configuration.figure, colors_scale_strips)
+    reference_pixel_size = prefer_data(configured_points.pixel_size, graph.configuration.points.sizes.smallest)
+    for (kind, configured) in ((:points, configured_points), (:borders, configured_borders), (:edges, configured_edges))
+        if configured.sizes_legend_entries !== nothing
+            push_sizes_legend!(;
+                layout,
+                traces,
+                configured,
+                kind,
+                reference_pixel_size,
+                offset_index = next_colors_scale_offset_index[1],
+                side_panels,
+            )
+            next_colors_scale_offset_index[1] += 1
+        end
+    end
+
+    place_side_panels!(; layout, figure_configuration = graph.configuration.figure, side_panels)
 
     return plotly_figure(traces, layout)
+end
+
+# The index of the X and Y axes of the legend of sizes is this plus 1 for points, 2 for borders or 3 for edges.
+const SIZES_LEGEND_AXIS_BASE = 90
+
+# The color of the symbols in the legend of sizes. It is neutral, since the sizes do not depend on the colors.
+const SIZES_LEGEND_COLOR = "grey"
+
+# The vertical gap between the rows of the legend of sizes, and the smallest height of a row (to fit the label), in
+# pixels.
+const SIZES_LEGEND_ROWS_GAP = 4
+const SIZES_LEGEND_SMALLEST_ROW = 12
+
+# The smallest width of the legend of sizes (the same as the Plotly color bars), in pixels.
+const SIZES_LEGEND_SMALLEST_WIDTH = 30
+
+# The width of the legend of sizes of edges, as a multiple of the largest edge width.
+const SIZES_LEGEND_EDGE_LENGTH = 3
+
+# Push the traces and the axes of the legend of sizes of points, borders or edges (the `kind`) as a side panel. A border
+# is shown as a ring around a point of the `reference_pixel_size`, the same way the borders are drawn.
+function push_sizes_legend!(;
+    layout::Layout,
+    traces::AbstractVector{GenericTrace},
+    configured::ConfiguredScatters,
+    kind::Symbol,
+    reference_pixel_size::Real,
+    offset_index::Integer,
+    side_panels::AbstractVector{SidePanel},
+)::Nothing
+    entries = configured.sizes_legend_entries
+    @assert entries !== nothing
+    n_entries = length(entries)
+
+    axis_index = SIZES_LEGEND_AXIS_BASE + (kind == :points ? 1 : kind == :borders ? 2 : 3)
+    xaxis = plotly_axis("x", axis_index; short = true)
+    yaxis = plotly_axis("y", axis_index; short = true)
+
+    # The entries are in increasing order of size, so the largest is at the top.
+    ys = collect(1:n_entries)
+    pixel_sizes = [entry.pixel_size for entry in entries]
+
+    if kind == :points
+        symbols_pixel_sizes = pixel_sizes
+        push!(
+            traces,
+            scatter(;
+                x = fill(0.5, n_entries),
+                y = ys,
+                mode = "markers",
+                marker_size = pixel_sizes,
+                marker_color = SIZES_LEGEND_COLOR,
+                xaxis,
+                yaxis,
+                hoverinfo = "skip",
+                showlegend = false,
+            ),
+        )
+
+    elseif kind == :borders
+        symbols_pixel_sizes = pixel_sizes .+ reference_pixel_size
+        for (marker_sizes, marker_color) in ((symbols_pixel_sizes, SIZES_LEGEND_COLOR), (reference_pixel_size, "white"))
+            push!(
+                traces,
+                scatter(;
+                    x = fill(0.5, n_entries),
+                    y = ys,
+                    mode = "markers",
+                    marker_size = marker_sizes,
+                    marker_color,
+                    xaxis,
+                    yaxis,
+                    hoverinfo = "skip",
+                    showlegend = false,
+                ),
+            )
+        end
+
+    else
+        @assert kind == :edges
+        symbols_pixel_sizes = pixel_sizes
+        for (y, pixel_size) in zip(ys, pixel_sizes)
+            push!(
+                traces,
+                scatter(;
+                    x = [0.1, 0.9],
+                    y = [y, y],
+                    mode = "lines",
+                    line_width = pixel_size,
+                    line_color = SIZES_LEGEND_COLOR,
+                    xaxis,
+                    yaxis,
+                    hoverinfo = "skip",
+                    showlegend = false,
+                ),
+            )
+        end
+    end
+
+    push!(
+        traces,
+        scatter(;
+            x = fill(1.0, n_entries),
+            y = ys,
+            mode = "text",
+            text = [entry.label for entry in entries],
+            textposition = "middle right",
+            # The labels are to the right of the panel, as the tick labels of a Plotly color bar.
+            cliponaxis = false,
+            xaxis,
+            yaxis,
+            hoverinfo = "skip",
+            showlegend = false,
+        ),
+    )
+
+    largest_pixel_size = maximum(symbols_pixel_sizes)
+    row_pixels = max(largest_pixel_size, SIZES_LEGEND_SMALLEST_ROW) + SIZES_LEGEND_ROWS_GAP
+    # An edge is shown as a line, which is much longer than it is wide.
+    pixel_width = kind == :edges ? SIZES_LEGEND_EDGE_LENGTH * largest_pixel_size : largest_pixel_size
+    push!(
+        side_panels,
+        SidePanel(;
+            offset_index,
+            axis_index,
+            pixel_width = max(pixel_width, SIZES_LEGEND_SMALLEST_WIDTH),
+            pixel_height = n_entries * row_pixels,
+        ),
+    )
+
+    # The title is on top of the legend, as it is on top of a Plotly color bar.
+    layout[plotly_axis("x", axis_index)] = Dict(
+        :anchor => yaxis,
+        :range => [0, 1],
+        :side => "top",
+        :title => configured.sizes_title,
+        :ticks => "",
+        :showticklabels => false,
+        :showgrid => false,
+        :zeroline => false,
+        :fixedrange => true,
+    )
+    layout[plotly_axis("y", axis_index)] = Dict(
+        :anchor => xaxis,
+        :range => [0.5, n_entries + 0.5],
+        :ticks => "",
+        :showticklabels => false,
+        :showgrid => false,
+        :zeroline => false,
+        :fixedrange => true,
+    )
+
+    return nothing
 end
 
 function add_pixel_sizes(configured_points::ConfiguredScatters, configured_borders::ConfiguredScatters)::Nothing
@@ -1261,14 +1481,17 @@ end
         horizontal_bands::BandsConfiguration = BandsConfiguration()
         diagonal_bands::BandsConfiguration = BandsConfiguration()
         show_legend::Bool = false
+        stacking::Maybe{Stacking} = nothing
     end
 
 Configure a graph for showing multiple lines.
 
 This is similar to [`LineGraphConfiguration`](@ref), with the addition of `show_legend`. If this is set, then the data
-must specify the title to use for each line.
+must specify the `name` of each shown line.
 
 If `stacking` is specified, we stack the values on top of each other. Stacking can't be combined with a log `y_axis`.
+Stacking inserts points into the lines, so the points of the lines can't have names or hovers. With `StackFractions`,
+the (scaled) values must not be negative.
 """
 @kwdef mutable struct LinesGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()

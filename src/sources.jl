@@ -197,7 +197,7 @@ end
 Abstract interface for the configuration half of `AbstractFields`. Every concrete type says how the values are mapped
 to the range they are shown in, and most have additional fields as appropriate for the specific configuration. A role
 drawn along an axis has an `axis::AxisConfiguration`; a role shown as colors or sizes is not drawn along an axis, so it
-has only a `scale::ScaleConfiguration`.
+has a `scale::ScaleConfiguration` (and the colors or sizes configuration it is the scale of).
 """
 abstract type AbstractConfigurationFields end
 
@@ -221,7 +221,7 @@ end
 
 The configuration half of a `ColorsVectorFields` data source view (see [`VectorFields`](@ref)): the
 [`ColorsConfiguration`](@ref) the values are colored by, and its `scale`. Colors are not drawn along an axis, so there
-is no title or ticks here; the colors title is the title of the values.
+are no ticks here; the title of the values takes precedence over the `title` of the colors configuration.
 """
 struct ColorsConfigurationFields <: AbstractConfigurationFields
     scale::ScaleConfiguration
@@ -286,7 +286,8 @@ abstract type AbstractFields end
     SizesVectorFields = VectorFields{SizesConfigurationFields}
 
 A data source view of one role of a graph whose entities are a vector: the `data` (a [`VectorDataFields`](@ref)) and
-the `configuration` (whose `axis` is an [`AxisConfiguration`](@ref), whatever else it holds). A function writing into
+the `configuration` (an [`AxisConfigurationFields`](@ref), [`ColorsConfigurationFields`](@ref) or
+[`SizesConfigurationFields`](@ref)). A function writing into
 such a view fills the role from some source of data, and works the same on the X coordinates of points, the values of
 bars, the colors of either, and so on. The views are `AxisVectorFields` for values shown along an axis, `ColorsVectorFields` for
 values shown as colors (see [`ColorsConfigurationFields`](@ref)) and `SizesVectorFields` for values shown as sizes (see
@@ -298,8 +299,19 @@ struct VectorFields{Configuration} <: AbstractFields
     configuration::Configuration
 end
 
+"""
+A [`VectorFields`](@ref) of values shown along an axis.
+"""
 AxisVectorFields = VectorFields{AxisConfigurationFields}
+
+"""
+A [`VectorFields`](@ref) of values shown as colors.
+"""
 ColorsVectorFields = VectorFields{ColorsConfigurationFields}
+
+"""
+A [`VectorFields`](@ref) of values shown as sizes.
+"""
 SizesVectorFields = VectorFields{SizesConfigurationFields}
 
 function VectorFields(values::VectorValuesData, entities::VectorEntitiesData, configuration::Any)::VectorFields
@@ -1231,8 +1243,8 @@ end
 """
     fill_arrangement!(sinks::VectorDataSinks, source::Union{HeatmapSide, ArrangementData})::Nothing
 
-Fill the arrangement of the `sinks` (that is, of the sides of a heatmap among them) with a copy of the tree, groups,
-subgroups and `arrange_by` matrix of the arrangement of the `source`.
+Fill the arrangement of the `sinks` (that is, of the sides of a heatmap among them) with the tree, and a copy of the
+groups, subgroups and `arrange_by` matrix, of the arrangement of the `source`.
 """
 function fill_arrangement!(sinks::VectorDataSinks, side::HeatmapSide)::Nothing
     return fill_arrangement!(sinks, side_data(side).arrangement)

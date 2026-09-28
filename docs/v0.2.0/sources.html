@@ -207,9 +207,9 @@
 <code>AbstractFields
 </code>. Every concrete type says how the values are mapped to the range they are shown in, and most have additional fields as appropriate for the specific configuration. A role drawn along an axis has an 
 <code>axis::AxisConfiguration
-</code>; a role shown as colors or sizes is not drawn along an axis, so it has only a 
+</code>; a role shown as colors or sizes is not drawn along an axis, so it has a 
 <code>scale::ScaleConfiguration
-</code>.
+</code> (and the colors or sizes configuration it is the scale of).
 </p>
 </div>
 </section>
@@ -262,13 +262,19 @@ SizesVectorFields = VectorFields{SizesConfigurationFields}
 </code>
 </a>) and the 
 <code>configuration
-</code> (whose 
-<code>axis
-</code> is an 
-<a href="common.html#SomeGraphs.Common.AxisConfiguration">
-<code>AxisConfiguration
+</code> (an 
+<a href="sources.html#SomeGraphs.Sources.AxisConfigurationFields">
+<code>AxisConfigurationFields
 </code>
-</a>, whatever else it holds). A function writing into such a view fills the role from some source of data, and works the same on the X coordinates of points, the values of bars, the colors of either, and so on. The views are 
+</a>, 
+<a href="sources.html#SomeGraphs.Sources.ColorsConfigurationFields">
+<code>ColorsConfigurationFields
+</code>
+</a> or 
+<a href="sources.html#SomeGraphs.Sources.SizesConfigurationFields">
+<code>SizesConfigurationFields
+</code>
+</a>). A function writing into such a view fills the role from some source of data, and works the same on the X coordinates of points, the values of bars, the colors of either, and so on. The views are 
 <code>AxisVectorFields
 </code> for values shown along an axis, 
 <code>ColorsVectorFields
@@ -287,6 +293,72 @@ SizesVectorFields = VectorFields{SizesConfigurationFields}
 </code>, 
 <code>colors_vector_fields
 </code>, ...), whose names follow the path of the values in the data of the graph.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.AxisVectorFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.AxisVectorFields">
+<code>SomeGraphs.Sources.AxisVectorFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A 
+<a href="sources.html#SomeGraphs.Sources.VectorFields">
+<code>VectorFields
+</code>
+</a> of values shown along an axis.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.ColorsVectorFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.ColorsVectorFields">
+<code>SomeGraphs.Sources.ColorsVectorFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A 
+<a href="sources.html#SomeGraphs.Sources.VectorFields">
+<code>VectorFields
+</code>
+</a> of values shown as colors.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.SizesVectorFields">
+<a class="docstring-binding" href="#SomeGraphs.Sources.SizesVectorFields">
+<code>SomeGraphs.Sources.SizesVectorFields
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<p>A 
+<a href="sources.html#SomeGraphs.Sources.VectorFields">
+<code>VectorFields
+</code>
+</a> of values shown as sizes.
 </p>
 </div>
 </section>
@@ -404,7 +476,9 @@ end
 </code>
 </a> the values are colored by, and its 
 <code>scale
-</code>. Colors are not drawn along an axis, so there is no title or ticks here; the colors title is the title of the values.
+</code>. Colors are not drawn along an axis, so there are no ticks here; the title of the values takes precedence over the 
+<code>title
+</code> of the colors configuration.
 </p>
 </div>
 </section>
@@ -2513,9 +2587,9 @@ end
 </pre>
 <p>Fill the arrangement of the 
 <code>sinks
-</code> (that is, of the sides of a heatmap among them) with a copy of the tree, groups, subgroups and 
+</code> (that is, of the sides of a heatmap among them) with the tree, and a copy of the groups, subgroups and 
 <code>arrange_by
-</code> matrix of the arrangement of the 
+</code> matrix, of the arrangement of the 
 <code>source
 </code>.
 </p>
@@ -2768,12 +2842,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='ephfEOghEr' class='' style=';'>
+<div id='BZaQJpBTMB' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ephfEOghEr")
+    const PLOT = document.getElementById("BZaQJpBTMB")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -2865,8 +2939,20 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.AxisVectorFields">
+<code>SomeGraphs.Sources.AxisVectorFields
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.ColorsConfigurationFields">
 <code>SomeGraphs.Sources.ColorsConfigurationFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.ColorsVectorFields">
+<code>SomeGraphs.Sources.ColorsVectorFields
 </code>
 </a>
 </li>
@@ -2957,6 +3043,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.SizesConfigurationFields">
 <code>SomeGraphs.Sources.SizesConfigurationFields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.SizesVectorFields">
+<code>SomeGraphs.Sources.SizesVectorFields
 </code>
 </a>
 </li>

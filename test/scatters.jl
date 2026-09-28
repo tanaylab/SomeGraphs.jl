@@ -14,6 +14,14 @@ nested_test("points") do
             @test_throws "ArgumentError: non-numeric graph.data.points.sizes.vector" validate(context, graph)
         end
 
+        nested_test("!sizes") do
+            graph.configuration.points.sizes.show_legend = true
+            @test_throws chomp("""
+                               ArgumentError: must specify graph.data.points.sizes.vector
+                               for graph.configuration.points.sizes.show_legend
+                               """) validate(context, graph)
+        end
+
         nested_test("finite") do
             nested_test("x") do
                 graph.data.x.vector = Float32[0, 1, 2, 3, 4, NaN, 6, 7, 8, 9, 10]
@@ -475,8 +483,18 @@ nested_test("points") do
 
         nested_test("sizes") do
             graph.data.edges.sizes.vector = collect(1:5)
-            test_html(graph, "points.edges.sizes.html")
-            return nothing
+
+            nested_test("()") do
+                test_html(graph, "points.edges.sizes.html")
+                return nothing
+            end
+
+            nested_test("legend") do
+                graph.data.edges.sizes.title = "Edges"
+                graph.configuration.edges.sizes.show_legend = true
+                test_html(graph, "points.edges.sizes.legend.html")
+                return nothing
+            end
         end
     end
 
@@ -639,8 +657,51 @@ nested_test("points") do
 
     nested_test("sizes") do
         graph.data.points.sizes.vector = collect(0:10)
-        test_html(graph, "points.sizes.html")
-        return nothing
+
+        nested_test("()") do
+            test_html(graph, "points.sizes.html")
+            return nothing
+        end
+
+        nested_test("legend") do
+            graph.configuration.points.sizes.show_legend = true
+            graph.data.points.sizes.title = "Sizes"
+
+            nested_test("()") do
+                test_html(graph, "points.sizes.legend.html")
+                return nothing
+            end
+
+            for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+                nested_test(log_name) do
+                    graph.configuration.points.sizes.scale.log_base = log_base
+                    graph.configuration.points.sizes.scale.log_regularization = 1
+                    test_html(graph, "points.sizes.legend.$(log_name).html")
+                    return nothing
+                end
+            end
+
+            # The values below the minimum are clamped to it, so the smallest entry is at the minimum.
+            nested_test("minimum") do
+                graph.configuration.points.sizes.scale.minimum = 3
+                test_html(graph, "points.sizes.legend.minimum.html")
+                return nothing
+            end
+
+            # The legend of sizes takes the slot after a strip (of log colors) and a color bar (of linear colors).
+            nested_test("colors") do
+                graph.data.points.colors.vector = collect(0:10)
+                graph.configuration.points.colors.scale.log_base = Log10Base
+                graph.configuration.points.colors.scale.log_regularization = 1
+                graph.configuration.points.colors.show_legend = true
+                graph.data.points.colors.title = "Colors"
+                graph.data.borders.colors.vector = collect(0:10)
+                graph.configuration.borders.colors.show_legend = true
+                graph.data.borders.colors.title = "Borders"
+                test_html(graph, "points.sizes.legend.colors.html")
+                return nothing
+            end
+        end
     end
 
     nested_test("borders") do
@@ -693,6 +754,14 @@ nested_test("points") do
             nested_test("()") do
                 graph.data.borders.sizes.vector = collect(0:10)
                 test_html(graph, "points.borders.sizes.html")
+                return nothing
+            end
+
+            nested_test("legend") do
+                graph.data.borders.sizes.vector = collect(0:10)
+                graph.data.borders.sizes.title = "Borders"
+                graph.configuration.borders.sizes.show_legend = true
+                test_html(graph, "points.borders.sizes.legend.html")
                 return nothing
             end
 
