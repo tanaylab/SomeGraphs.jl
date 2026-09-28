@@ -2,25 +2,25 @@
 <head><meta charset="utf-8" /></head>
 <body>
 <div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
-    <script type="text/javascript">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_SVG"></script>
+<script type="text/javascript">
 window.PlotlyConfig = {MathJaxConfig: 'local'};
 </script>
 <script src="https://cdn.plot.ly/plotly-2.33.0.min.js"></script>
 
-    <div
-        id=id-1
-        class="plotly-graph-div"
-        style="height:100%; width:100%;">
-    </div>
-    <script type="text/javascript">
-        
-        window.PLOTLYENV = window.PLOTLYENV || {}
-        
-        if (document.getElementById('id-1')) {
-    Plotly.newPlot(
-        'id-1',
-        [{"scalegroup":"Distributions",
+<div
+id=id-1
+class="plotly-graph-div"
+style="height:100%; width:100%;">
+</div>
+<script type="text/javascript">
+
+window.PLOTLYENV = window.PLOTLYENV || {}
+
+if (document.getElementById('id-1')) {
+Plotly.newPlot(
+'id-1',
+[{"scalegroup":"Distributions",
 "x0":0.0,
 "y":[1.8750612633917,2.720159303405957,2.7403626894942437,2.7781512503836434,2.792391689498254,2.8195439355418688,2.832508912706236,2.845098040014257,2.8573324964312685,2.8750612633917,2.8750612633917,2.88930170250631,2.9111576087399764,2.9111576087399764,2.9370161074648142,2.9508514588885464,2.963787827345555,2.9777236052888476,3.0,3.010723865391773,3.060697840353612,3.0791812460476247,3.2041199826559246,3.3201462861110542,3.3483048630481607,3.3664229572259727],
 "type":"violin",
@@ -36,8 +36,18 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "box":{"visible":true},
 "spanmode":"hard",
 "orientation":"v",
-"side":"positive"}],
-        {"showlegend":false,
+"side":"positive"},
+{"showlegend":false,
+"xaxis":"x",
+"type":"scatter",
+"hoverinfo":"skip",
+"yaxis":"y2"},
+{"showlegend":false,
+"xaxis":"x2",
+"type":"scatter",
+"hoverinfo":"skip",
+"yaxis":"y2"}],
+{"showlegend":false,
 "xaxis":{"showticklabels":false,
 "domain":[0.0,0.475]},
 "paper_bgcolor":"white",
@@ -47,26 +57,33 @@ window.PlotlyConfig = {MathJaxConfig: 'local'};
 "data":{}},
 "legend":{"tracegroupgap":0},
 "plot_bgcolor":"white",
-"yaxis":{"showgrid":true,
+"yaxis":{"showgrid":false,
+"showticklabels":false,
+"zeroline":false,
+"range":[1.8601477,3.3813365]},
+"yaxis2":{"showgrid":true,
 "gridcolor":"lightgrey",
 "showticklabels":true,
 "zeroline":false,
+"overlaying":"y",
+"type":"log",
 "range":[1.8601477,3.3813365],
-"tickprefix":"<sub>10</sub>",
-"ticksuffix":"<sub>%</sub>"},
+"exponentformat":"SI",
+"ticksuffix":"<sub>%</sub>",
+"side":"left"},
 "margin":{"l":50,
 "b":50,
 "r":50,
 "t":50}},
-        {"editable":false,
+{"editable":false,
 "responsive":true,
 "staticPlot":false,
 "scrollZoom":true},
-    )
+)
 }
 
-        
-    </script>
+
+</script>
 </div>
 
 </body>

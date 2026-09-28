@@ -553,7 +553,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         end
     end
 
-    if n_colors_scales > length(graph.configuration.figure.colors_scale_offsets)
+    if Int(has_legend) + n_colors_scales > length(graph.configuration.figure.colors_scale_offsets)
         text =  # UNTESTED
             "insufficient number of graph.figure.colors_scale_offsets: $(length(graph.figure.colors_scale_offsets))\n" *
             "is not enough for the shown color scales: $(n_colors_scales)"
@@ -567,6 +567,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
 end
 
 @kwdef struct ScaledData
+    scale_configuration::ScaleConfiguration
     values::AbstractVector{<:Real}
     range::Range
 end
@@ -581,7 +582,12 @@ function scaled_data(
     ranged_values = range_values(axis_configuration.scale, scaled_values, mask)
     implicit_scaled_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
     scaled_range = final_scaled_range(implicit_scaled_range, axis_configuration)
-    return ScaledData(; values = scaled_values, range = scaled_range)
+    return ScaledData(; scale_configuration = axis_configuration.scale, values = scaled_values, range = scaled_range)
+end
+
+# The Plotly coordinates of (some of) the scaled values.
+function plotly_values(scaled_data::ScaledData, values::AbstractVector{<:Real})::AbstractVector{<:Real}
+    return plotly_axis_values(scaled_data.scale_configuration, values; is_plotly_log = true)
 end
 
 @kwdef mutable struct ConfiguredScatters
@@ -716,7 +722,8 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         graph.configuration.x_axis,
         scaled_points_xs.range,
         graph.data.vertical_bands,
-        graph.configuration.vertical_bands,
+        graph.configuration.vertical_bands;
+        is_plotly_log = true,
     )
 
     push_horizontal_bands_shapes(
@@ -724,7 +731,8 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         graph.configuration.y_axis,
         scaled_points_ys.range,
         graph.data.horizontal_bands,
-        graph.configuration.horizontal_bands,
+        graph.configuration.horizontal_bands;
+        is_plotly_log = true,
     )
 
     push_diagonal_bands_shapes(
@@ -733,7 +741,8 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         scaled_points_xs.range,
         scaled_points_ys.range,
         graph.data.diagonal_bands,
-        graph.configuration.diagonal_bands,
+        graph.configuration.diagonal_bands;
+        is_plotly_log = true,
     )
 
     has_legend =
@@ -749,11 +758,13 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     )
 
     next_colors_scale_offset_index = [Int(has_legend)]
+    colors_scale_strips = ColorsScaleStrip[]
 
     for configured in (configured_points, configured_borders, configured_edges)
         if configured.colors.colors_scale_index !== nothing
             set_layout_colorscale!(;
                 layout,
+                traces,
                 colors_scale_index = configured.colors.colors_scale_index,
                 colors_configuration = configured.colors.colors_configuration,
                 scaled_colors_palette = configured.colors.scaled_colors_palette,
@@ -762,9 +773,12 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                 show_scale = configured.colors.show_scale,
                 next_colors_scale_offset_index,
                 colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+                colors_scale_strips,
             )
         end
     end
+
+    place_colors_scale_strips!(; layout, figure_configuration = graph.configuration.figure, colors_scale_strips)
 
     return plotly_figure(traces, layout)
 end
@@ -837,8 +851,14 @@ function push_edge_traces!(;
             end
 
             edge_trace = scatter(;  # NOJET
-                x = [scaled_points_xs.values[from_point], scaled_points_xs.values[to_point]],
-                y = [scaled_points_ys.values[from_point], scaled_points_ys.values[to_point]],
+                x = plotly_values(
+                    scaled_points_xs,
+                    [scaled_points_xs.values[from_point], scaled_points_xs.values[to_point]],
+                ),
+                y = plotly_values(
+                    scaled_points_ys,
+                    [scaled_points_ys.values[from_point], scaled_points_ys.values[to_point]],
+                ),
                 line_width = prefer_data(configured_edges.pixel_sizes, edge_index, configured_edges.pixel_size),
                 line_color = prefer_data(
                     prefer_data(
@@ -997,8 +1017,8 @@ function push_points_trace!(;
     push!(  # NOJET
         traces,
         scatter(;
-            x = masked_values(scaled_points_xs.values, mask, order),
-            y = masked_values(scaled_points_ys.values, mask, order),
+            x = plotly_values(scaled_points_xs, masked_values(scaled_points_xs.values, mask, order)),
+            y = plotly_values(scaled_points_ys, masked_values(scaled_points_ys.values, mask, order)),
             text = hovers,
             marker_size = prefer_data(
                 masked_values(configured_points.pixel_sizes, mask, order),
@@ -1146,24 +1166,44 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
 
     traces = Vector{GenericTrace}()
 
+    shown_points_xs = ScaledData(;
+        scale_configuration = scaled_points_xs.scale_configuration,
+        values = masked_values(scaled_points_xs.values, mask, nothing),
+        range = scaled_points_xs.range,
+    )
+    shown_points_ys = ScaledData(;
+        scale_configuration = scaled_points_ys.scale_configuration,
+        values = masked_values(scaled_points_ys.values, mask, nothing),
+        range = scaled_points_ys.range,
+    )
+
+    if graph.configuration.line.is_filled
+        fill_mode = fill_to_bottom_mode!(;
+            traces,
+            y_axis = graph.configuration.y_axis,
+            scaled_points_xs = shown_points_xs,
+            scaled_ys_range = scaled_points_ys.range,
+        )
+    else
+        fill_mode = nothing
+    end
+
     push_line_trace!(;
         traces,
-        scaled_points_xs = ScaledData(;
-            values = masked_values(scaled_points_xs.values, mask, nothing),
-            range = scaled_points_xs.range,
-        ),
-        scaled_points_ys = ScaledData(;
-            values = masked_values(scaled_points_ys.values, mask, nothing),
-            range = scaled_points_ys.range,
-        ),
+        scaled_points_xs = shown_points_xs,
+        scaled_points_ys = shown_points_ys,
         hovers,
-        line_color = graph.configuration.line.color,
+        line_color = pinned_line_color(
+            graph.configuration.line.color,
+            1,
+            graph.configuration.line.is_filled && is_fill_baseline_needed(graph.configuration.y_axis),
+        ),
         line_width = graph.configuration.line.width,
         line_style = graph.configuration.line.style,
         mode = graph.configuration.show_points ? "lines+markers" : "lines",
         points_size = graph.configuration.points_size,
         points_color = graph.configuration.points_color,
-        fill = graph.configuration.line.is_filled ? "tozeroy" : nothing,
+        fill = fill_mode,
     )
 
     shapes = Shape[]
@@ -1173,7 +1213,8 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         graph.configuration.x_axis,
         scaled_points_xs.range,
         graph.data.vertical_bands,
-        graph.configuration.vertical_bands,
+        graph.configuration.vertical_bands;
+        is_plotly_log = true,
     )
 
     push_horizontal_bands_shapes(
@@ -1181,7 +1222,8 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         graph.configuration.y_axis,
         scaled_points_ys.range,
         graph.data.horizontal_bands,
-        graph.configuration.horizontal_bands,
+        graph.configuration.horizontal_bands;
+        is_plotly_log = true,
     )
 
     push_diagonal_bands_shapes(
@@ -1190,7 +1232,8 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         scaled_points_xs.range,
         scaled_points_ys.range,
         graph.data.diagonal_bands,
-        graph.configuration.diagonal_bands,
+        graph.configuration.diagonal_bands;
+        is_plotly_log = true,
     )
 
     layout = scatters_layout(;
@@ -1225,7 +1268,7 @@ Configure a graph for showing multiple lines.
 This is similar to [`LineGraphConfiguration`](@ref), with the addition of `show_legend`. If this is set, then the data
 must specify the title to use for each line.
 
-If `stacking` is specified, we stack the values on top of each other.
+If `stacking` is specified, we stack the values on top of each other. Stacking can't be combined with a log `y_axis`.
 """
 @kwdef mutable struct LinesGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
@@ -1701,10 +1744,28 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     for (position, line_index) in enumerate(lines_indices)
         line = lines[line_index]
 
-        if graph.configuration.stacking === nothing
-            fill_mode = !graph.configuration.line.is_filled ? "none" : "tozeroy"
+        line_points_xs = ScaledData(;
+            scale_configuration = graph.configuration.x_axis.scale,
+            values = scaled_lines_points_xs[position],
+            range = scaled_xs_range,
+        )
+        line_points_ys = ScaledData(;
+            scale_configuration = graph.configuration.y_axis.scale,
+            values = scaled_lines_points_ys[position],
+            range = scaled_ys_range,
+        )
+
+        if !graph.configuration.line.is_filled
+            fill_mode = "none"
+        elseif graph.configuration.stacking === nothing
+            fill_mode = fill_to_bottom_mode!(;
+                traces,
+                y_axis = graph.configuration.y_axis,
+                scaled_points_xs = line_points_xs,
+                scaled_ys_range,
+            )
         else
-            fill_mode = !graph.configuration.line.is_filled ? "none" : position == 1 ? "tozeroy" : "tonexty"
+            fill_mode = position == 1 ? "tozeroy" : "tonexty"
         end
 
         hovers = lines_points_hovers[position]
@@ -1719,11 +1780,17 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
 
         push_line_trace!(;
             traces,
-            scaled_points_xs = ScaledData(; values = scaled_lines_points_xs[position], range = scaled_xs_range),
-            scaled_points_ys = ScaledData(; values = scaled_lines_points_ys[position], range = scaled_ys_range),
+            scaled_points_xs = line_points_xs,
+            scaled_points_ys = line_points_ys,
             hovers,
             name = line.name,
-            line_color = prefer_data(line.color, graph.configuration.line.color),
+            line_color = pinned_line_color(
+                prefer_data(line.color, graph.configuration.line.color),
+                position,
+                graph.configuration.line.is_filled &&
+                graph.configuration.stacking === nothing &&
+                is_fill_baseline_needed(graph.configuration.y_axis),
+            ),
             line_width = prefer_data(line.width, graph.configuration.line.width),
             line_style = prefer_data(line.style, graph.configuration.line.style),
             mode = graph.configuration.show_points ? "lines+markers" : "lines",
@@ -1743,7 +1810,8 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         graph.configuration.x_axis,
         scaled_xs_range,
         graph.data.vertical_bands,
-        graph.configuration.vertical_bands,
+        graph.configuration.vertical_bands;
+        is_plotly_log = true,
     )
 
     push_horizontal_bands_shapes(
@@ -1751,7 +1819,8 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         graph.configuration.y_axis,
         scaled_ys_range,
         graph.data.horizontal_bands,
-        graph.configuration.horizontal_bands,
+        graph.configuration.horizontal_bands;
+        is_plotly_log = true,
     )
 
     push_diagonal_bands_shapes(
@@ -1760,7 +1829,8 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         scaled_xs_range,
         scaled_ys_range,
         graph.data.diagonal_bands,
-        graph.configuration.diagonal_bands,
+        graph.configuration.diagonal_bands;
+        is_plotly_log = true,
     )
 
     layout = scatters_layout(;
@@ -1875,6 +1945,52 @@ function unify_lines_points(
     end
 end
 
+# Plotly's default colors, which it gives in turn to each trace that doesn't specify one. A fill baseline (see
+# `fill_to_bottom_mode!`) takes one of these too, so we pin the color of each line to the default it would have had.
+const PLOTLY_DEFAULT_COLORS =
+    ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"]
+
+# Whether filling a line down to the bottom of the Y axis needs a baseline trace (see `fill_to_bottom_mode!`).
+function is_fill_baseline_needed(y_axis::AxisConfiguration)::Bool
+    return y_axis.scale.log_base === Log2Base
+end
+
+# The color of the line at `position`. If `is_pinned` and it has none, this is the Plotly default it would have had.
+function pinned_line_color(line_color::Maybe{AbstractString}, position::Integer, is_pinned::Bool)::Maybe{AbstractString}
+    if line_color === nothing && is_pinned
+        return PLOTLY_DEFAULT_COLORS[mod1(position, length(PLOTLY_DEFAULT_COLORS))]
+    else
+        return line_color
+    end
+end
+
+# The Plotly fill mode for filling a line down to the bottom of the Y axis. Plotly's `tozeroy` fills down to zero, which
+# is the bottom of a Plotly log axis, but is the scaled value of 1 on a `Log2Base` axis. There we push an invisible
+# baseline trace at the bottom of the axis, and fill down to it instead.
+function fill_to_bottom_mode!(;
+    traces::AbstractVector{GenericTrace},
+    y_axis::AxisConfiguration,
+    scaled_points_xs::ScaledData,
+    scaled_ys_range::Range,
+)::AbstractString
+    if is_fill_baseline_needed(y_axis)
+        push!(
+            traces,
+            scatter(;
+                x = plotly_values(scaled_points_xs, scaled_points_xs.values),
+                y = fill(scaled_ys_range.minimum, length(scaled_points_xs.values)),
+                mode = "lines",
+                line_width = 0,
+                hoverinfo = "skip",
+                showlegend = false,
+            ),
+        )
+        return "tonexty"
+    else
+        return "tozeroy"
+    end
+end
+
 function push_line_trace!(;
     traces::AbstractVector{GenericTrace},
     scaled_points_xs::ScaledData,
@@ -1898,8 +2014,8 @@ function push_line_trace!(;
     push!(  # NOJET
         traces,
         scatter(;
-            x = scaled_points_xs.values,
-            y = scaled_points_ys.values,
+            x = plotly_values(scaled_points_xs, scaled_points_xs.values),
+            y = plotly_values(scaled_points_ys, scaled_points_ys.values),
             text = hovers,
             hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
             marker_size = points_size,
@@ -1953,6 +2069,7 @@ function scatters_layout(;
         graph.configuration.x_axis;
         title = prefer_data(x_axis_title, graph.configuration.x_axis.title),
         range = scaled_xs_range,
+        is_plotly_log = true,
     )
 
     set_layout_axis!(
@@ -1961,6 +2078,7 @@ function scatters_layout(;
         graph.configuration.y_axis;
         title = prefer_data(y_axis_title, graph.configuration.y_axis.title),
         range = scaled_ys_range,
+        is_plotly_log = true,
     )
 
     return layout

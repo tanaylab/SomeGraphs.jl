@@ -572,10 +572,23 @@ nested_test("heatmaps") do
     end
 
     nested_test("log") do
-        graph.configuration.entries.colors.scale.log_base = Log2Base
-        graph.configuration.entries.colors.scale.log_regularization = 1
-        test_html(graph, "heatmap.log2.html")
-        return nothing
+        for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+            nested_test(log_name) do
+                graph.configuration.entries.colors.scale.log_base = log_base
+                graph.configuration.entries.colors.scale.log_regularization = 1
+
+                nested_test("()") do
+                    test_html(graph, "heatmap.$(log_name).html")
+                    return nothing
+                end
+
+                nested_test("legend") do
+                    graph.configuration.entries.colors.show_legend = true
+                    test_html(graph, "heatmap.$(log_name).legend.html")
+                    return nothing
+                end
+            end
+        end
     end
 
     nested_test("legend") do
@@ -605,6 +618,18 @@ nested_test("heatmaps") do
             graph.data.rows.annotations[1].colors.show_legend = true
             test_html(graph, "heatmap.annotations.automatic.html")
             return nothing
+        end
+
+        nested_test("log") do
+            for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+                nested_test(log_name) do
+                    graph.data.columns.annotations[1].colors.scale.log_base = log_base
+                    graph.data.columns.annotations[1].colors.scale.log_regularization = 1
+                    graph.data.columns.annotations[1].colors.show_legend = true
+                    test_html(graph, "heatmap.annotations.$(log_name).html")
+                    return nothing
+                end
+            end
         end
 
         nested_test("arrangement") do

@@ -1188,10 +1188,12 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     )
 
     next_colors_scale_offset_index = [Int(has_legend)]
+    colors_scale_strips = ColorsScaleStrip[]
 
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
             layout,
+            traces,
             colors_scale_index = colors.colors_scale_index,
             colors_configuration = colors.colors_configuration,
             scaled_colors_palette = colors.scaled_colors_palette,
@@ -1200,6 +1202,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             show_scale = colors.show_scale,
             next_colors_scale_offset_index,
             colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+            colors_scale_strips,
         )
     end
 
@@ -1263,14 +1266,17 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                 if annotation_colors.colors_scale_index !== nothing
                     set_layout_colorscale!(;
                         layout,
+                        traces,
                         colors_scale_index = annotation_colors.colors_scale_index,
                         colors_configuration = annotation_data.colors,
                         scaled_colors_palette = annotation_colors.scaled_colors_palette,
                         range = nothing,
+                        strip_range = annotation_colors.final_colors_range,
                         title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                         show_scale = annotation_colors.show_scale,
                         next_colors_scale_offset_index,
                         colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+                        colors_scale_strips,
                     )
                 end
             end
@@ -1307,6 +1313,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if n_rows_annotations > 0 || n_columns_annotations > 0
         layout["bargap"] = 0
     end
+
+    place_colors_scale_strips!(; layout, figure_configuration = graph.configuration.figure, colors_scale_strips)
 
     return plotly_figure(traces, layout)
 end

@@ -8,6 +8,7 @@ export axis_ticks_prefix
 export axis_ticks_suffix
 export collect_hidden_range!
 export collect_range!
+export ColorsScaleStrip
 export configured_colors
 export ConfiguredColors
 export displayed_annotations
@@ -19,10 +20,13 @@ export axis_screen_ticks_angle
 export masked_values
 export numeric_values
 export plotly_axis
+export plotly_axis_value
+export plotly_axis_values
 export plotly_figure
 export plotly_layout
 export plotly_line_dash
 export plotly_sub_graph_axes
+export place_colors_scale_strips!
 export plotly_sub_graph_domain
 export prefer_data
 export push_diagonal_bands_shapes
@@ -35,6 +39,7 @@ export scale_axis_values
 export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
+export set_layout_twin_log_axis!
 export shared_values_title
 export SubGraph
 export validate_axis_sizes
@@ -429,6 +434,7 @@ function plotly_layout(
     return Layout(;  # NOJET
         title,
         showlegend = has_legend,
+        legend_x = has_legend ? figure_configuration.colors_scale_offsets[1] : nothing,
         legend_itemdoubleclick = has_legend ? false : nothing,
         legend_tracegroupgap = 0,
         hoverlabel_align = has_hovers ? "left" : nothing,
@@ -471,11 +477,16 @@ end
         range::Range,
         domain::Maybe{AbstractVector{<:Real}} = nothing,
         is_reversed::Bool = false,
+        is_plotly_log::Bool = false,
     )::Nothing
 
 Add a Plotly `axis` in a `layout` using the `axis_configuration`. If `is_reversed`, the axis runs backwards (right to
 left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it
 shares with the other side.
+
+If `is_plotly_log`, a `Log10Base` axis is a Plotly log axis, which picks its own ticks for the real (not log) values.
+The coordinates on such an axis must be given by [`plotly_axis_values`](@ref). The `range` is still the scaled (log)
+range.
 """
 function set_layout_axis!(
     layout::Layout,
@@ -489,12 +500,15 @@ function set_layout_axis!(
     is_tick_axis::Bool = true,
     is_zeroable::Bool = true,
     is_reversed::Bool = false,
+    is_plotly_log::Bool = false,
 )::Nothing
     show_ticks = is_tick_axis && axis_configuration.show_ticks
+    is_log_axis = is_plotly_log && axis_configuration.scale.log_base === Log10Base
     screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, startswith(axis, "y"))
     # Plotly runs an axis backwards when its range is given in descending order.
     layout[axis] = Dict(
         :title => title,
+        :type => is_log_axis ? "log" : nothing,
         :range => if range === nothing
             nothing
         elseif is_reversed
@@ -505,14 +519,78 @@ function set_layout_axis!(
         :showgrid => axis_configuration.show_grid,
         :gridcolor => axis_configuration.show_grid ? axis_configuration.grid_color : nothing,
         :showticklabels => show_ticks,
-        :tickprefix => show_ticks ? axis_ticks_prefix(axis_configuration.scale) : nothing,
+        :tickprefix => (show_ticks && !is_log_axis) ? axis_ticks_prefix(axis_configuration.scale) : nothing,
         :ticksuffix => show_ticks ? axis_ticks_suffix(axis_configuration.scale) : nothing,
+        :exponentformat => (show_ticks && is_log_axis) ? "SI" : nothing,
         :tickvals => show_ticks ? ticks_values : nothing,
         :ticktext => show_ticks ? ticks_labels : nothing,
         :tickangle => (show_ticks && screen_ticks_angle != 0) ? screen_ticks_angle : nothing,
         :zeroline => is_zeroable ? axis_configuration.scale.log_base === nothing : nothing,
         :domain => domain,
     )
+    return nothing
+end
+
+"""
+    set_layout_twin_log_axis!(;
+        layout::Layout,
+        traces::AbstractVector{GenericTrace},
+        letter::AbstractString,
+        twin_index::Integer,
+        axis_configuration::AxisConfiguration,
+        title::Maybe{AbstractString},
+        range::Range,
+        n_cross_axes::Integer = 1,
+    )::Nothing
+
+Add the 1st Plotly `letter` axis in a `layout` for a `Log10Base` `axis_configuration`, for traces that must be given
+the scaled (log) values. This is needed when Plotly computes something from the values (such as a histogram), since it
+would compute it from the real values on a Plotly log axis.
+
+The 1st axis is a hidden linear axis, which the traces use. A twin Plotly log axis (at the `twin_index`) is drawn over
+it, with the same range, so it shows the ticks of the real values. Plotly only draws an axis (and its grid) in the
+sub-graphs where a trace uses it, so this also pushes an empty trace to the `traces` for each of the `n_cross_axes` of
+the other letter.
+"""
+function set_layout_twin_log_axis!(;
+    layout::Layout,
+    traces::AbstractVector{GenericTrace},
+    letter::AbstractString,
+    twin_index::Integer,
+    axis_configuration::AxisConfiguration,
+    title::Maybe{AbstractString},
+    range::Range,
+    n_cross_axes::Integer = 1,
+)::Nothing
+    @assert axis_configuration.scale.log_base === Log10Base
+    @assert letter in ("x", "y")
+    other_letter = letter == "x" ? "y" : "x"
+
+    axis = plotly_axis(letter, 1)
+    set_layout_axis!(layout, axis, axis_configuration; range, is_tick_axis = false)  # NOJET
+    layout[axis][:showgrid] = false
+    layout[axis][:gridcolor] = nothing
+
+    twin_axis = plotly_axis(letter, twin_index)
+    set_layout_axis!(layout, twin_axis, axis_configuration; title, range, is_plotly_log = true)  # NOJET
+    layout[twin_axis][:overlaying] = letter
+    layout[twin_axis][:side] = letter == "x" ? "bottom" : "left"
+
+    for cross_axis_index in 1:n_cross_axes
+        push!(
+            traces,
+            scatter(;
+                x = Float64[],
+                y = Float64[],
+                Symbol("$(letter)axis") => plotly_axis(letter, twin_index; short = true),
+                Symbol("$(other_letter)axis") =>
+                    plotly_axis(other_letter, cross_axis_index; short = true, force = true),
+                hoverinfo = "skip",
+                showlegend = false,
+            ),
+        )
+    end
+
     return nothing
 end
 
@@ -556,31 +634,76 @@ function plotly_axis(prefix::AbstractString, ::Nothing; short::Bool = false, for
 end
 
 """
+    @kwdef struct ColorsScaleStrip
+        offset_index::Integer
+        axis_index::Integer
+    end
+
+A color scale drawn as a strip (a 1-column heatmap on its own axes) rather than as a Plotly color bar. This is done for a
+`Log10Base` scale, since only a Plotly log axis shows the ticks of the real values, and a Plotly color bar can't be one.
+The `offset_index` is that of its entry in the `colors_scale_offsets`, and the `axis_index` is that of the strip's X and
+Y axes.
+"""
+@kwdef struct ColorsScaleStrip
+    offset_index::Integer
+    axis_index::Integer
+end
+
+# The index of the X and Y axes of the strip of a color scale is this plus the index of the color scale.
+const COLORS_SCALE_STRIP_AXIS_BASE = 80
+
+# The number of color steps in the strip of a color scale.
+const COLORS_SCALE_STRIP_STEPS = 200
+
+# Plotly's defaults for the width of a graph, and the thickness and padding of a color bar, in pixels. The strips of the
+# color scales use the same thickness and padding as the Plotly color bars.
+const PLOTLY_DEFAULT_WIDTH = 700
+const PLOTLY_DEFAULT_HEIGHT = 450
+const PLOTLY_COLORS_SCALE_THICKNESS = 30
+const PLOTLY_COLORS_SCALE_PAD = 10
+
+# Plotly's default outline of a color bar.
+const PLOTLY_COLORS_SCALE_OUTLINE_COLOR = "#444"
+const PLOTLY_COLORS_SCALE_OUTLINE_WIDTH = 1
+
+"""
     set_layout_colorscale!(;
         layout::Layout,
+        traces::AbstractVector{GenericTrace},
         colors_scale_index::Integer,
         colors_configuration::ColorsConfiguration,
         scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
-        offset::Maybe{Real},
         range::Maybe{Range} = nothing,
+        strip_range::Maybe{Range} = range,
         title::Maybe{AbstractString},
         show_scale::Bool,
+        next_colors_scale_offset_index::AbstractVector{<:Integer},
+        colors_scale_offsets::AbstractVector{<:Real},
+        colors_scale_strips::AbstractVector{ColorsScaleStrip},
     )::Nothing
 
 Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. Since Plotly is dumb when it comes to
 placement of color scales, the `offset` must be specified manually to avoid overlaps.
+
+A shown `Log10Base` scale is drawn as a [`ColorsScaleStrip`](@ref) instead, which pushes its heatmap to the `traces`
+and itself to the `colors_scale_strips`. The strip covers the `strip_range`, which must be given.
 """
 function set_layout_colorscale!(;
     layout::Layout,
+    traces::AbstractVector{GenericTrace},
     colors_scale_index::Integer,
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
     range::Maybe{Range} = nothing,
+    strip_range::Maybe{Range} = range,
     title::Maybe{AbstractString},
     show_scale::Bool,
     next_colors_scale_offset_index::AbstractVector{<:Integer},
     colors_scale_offsets::AbstractVector{<:Real},
+    colors_scale_strips::AbstractVector{ColorsScaleStrip},
 )::Nothing
+    is_strip = show_scale && colors_configuration.scale.log_base === Log10Base
+
     if colors_configuration.palette isa CategoricalColors
         @assert false
 
@@ -601,28 +724,159 @@ function set_layout_colorscale!(;
     end
 
     layout[plotly_axis("color", colors_scale_index)] = Dict(
-        :showscale => show_scale,
+        :showscale => show_scale && !is_strip,
         :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range.minimum,
         :cmax => range === nothing ? nothing : range.maximum,
-        :colorbar => if !show_scale
+        :colorbar => if !show_scale || is_strip
             nothing
         else
             Dict(
                 :title => Dict(:text => title),
-                :x => if next_colors_scale_offset_index[1] == 0
-                    nothing
-                else
-                    colors_scale_offsets[next_colors_scale_offset_index[1]]
-                end,
+                :x => colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
                 :tickprefix => axis_ticks_prefix(colors_configuration.scale),
                 :ticksuffix => axis_ticks_suffix(colors_configuration.scale),
             )
         end,
     )
 
+    if is_strip
+        @assert strip_range !== nothing
+        push_colors_scale_strip!(;
+            layout,
+            traces,
+            colors_scale_index,
+            colors_configuration,
+            strip_range,
+            title,
+            offset_index = next_colors_scale_offset_index[1],
+            colors_scale_strips,
+        )
+    end
+
     if show_scale
         next_colors_scale_offset_index[1] += 1
+    end
+
+    return nothing
+end
+
+# Push the heatmap and the axes of the strip of a `Log10Base` color scale. The heatmap uses the same Plotly color axis
+# as the colored traces, so it has the same colors. Its domain is set later, when all the strips are known.
+function push_colors_scale_strip!(;
+    layout::Layout,
+    traces::AbstractVector{GenericTrace},
+    colors_scale_index::Integer,
+    colors_configuration::ColorsConfiguration,
+    strip_range::Range,
+    title::Maybe{AbstractString},
+    offset_index::Integer,
+    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+)::Nothing
+    axis_index = COLORS_SCALE_STRIP_AXIS_BASE + colors_scale_index
+    push!(colors_scale_strips, ColorsScaleStrip(; offset_index, axis_index))
+
+    scaled_steps = collect(range(strip_range.minimum, strip_range.maximum; length = COLORS_SCALE_STRIP_STEPS))
+    push!(
+        traces,
+        heatmap(;
+            z = reshape(scaled_steps, COLORS_SCALE_STRIP_STEPS, 1),
+            x = [0],
+            y = plotly_axis_values(colors_configuration.scale, scaled_steps; is_plotly_log = true),
+            coloraxis = plotly_axis("color", colors_scale_index),
+            xaxis = plotly_axis("x", axis_index; short = true),
+            yaxis = plotly_axis("y", axis_index; short = true),
+            hoverinfo = "skip",
+        ),
+    )
+
+    # The title is on top of the strip, as it is on top of a Plotly color bar.
+    layout[plotly_axis("x", axis_index)] = Dict(
+        :anchor => plotly_axis("y", axis_index; short = true),
+        :side => "top",
+        :title => title,
+        :ticks => "",
+        :showticklabels => false,
+        :showgrid => false,
+        :zeroline => false,
+        :fixedrange => true,
+        :showline => true,
+        :mirror => true,
+        :linecolor => PLOTLY_COLORS_SCALE_OUTLINE_COLOR,
+        :linewidth => PLOTLY_COLORS_SCALE_OUTLINE_WIDTH,
+    )
+    layout[plotly_axis("y", axis_index)] = Dict(
+        :anchor => plotly_axis("x", axis_index; short = true),
+        :type => "log",
+        :range => [strip_range.minimum, strip_range.maximum],
+        :side => "right",
+        :exponentformat => "SI",
+        :ticksuffix => axis_ticks_suffix(colors_configuration.scale),
+        :showgrid => false,
+        :fixedrange => true,
+        :showline => true,
+        :mirror => true,
+        :linecolor => PLOTLY_COLORS_SCALE_OUTLINE_COLOR,
+        :linewidth => PLOTLY_COLORS_SCALE_OUTLINE_WIDTH,
+    )
+
+    return nothing
+end
+
+"""
+    place_colors_scale_strips!(;
+        layout::Layout,
+        figure_configuration::FigureConfiguration,
+        colors_scale_strips::AbstractVector{ColorsScaleStrip},
+    )::Nothing
+
+Place the [`ColorsScaleStrip`](@ref)s (if any) of a `layout` at their `colors_scale_offsets`. This must be called after
+everything else was added to the `layout`.
+
+The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can
+only place the axes of a strip inside it. We therefore shrink the graph (and the offsets) to make room for the strips.
+"""
+function place_colors_scale_strips!(;
+    layout::Layout,
+    figure_configuration::FigureConfiguration,
+    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+)::Nothing
+    if isempty(colors_scale_strips)
+        return nothing
+    end
+
+    graph_width =
+        prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH) - figure_configuration.margins.left -
+        figure_configuration.margins.right
+    pad = PLOTLY_COLORS_SCALE_PAD / graph_width
+    # Plotly draws the outline of a color bar around its thickness, but we draw it inside the domain of the strip.
+    thickness = (PLOTLY_COLORS_SCALE_THICKNESS + 2 * PLOTLY_COLORS_SCALE_OUTLINE_WIDTH) / graph_width
+
+    graph_height =
+        prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
+        figure_configuration.margins.bottom
+    vertical_pad = PLOTLY_COLORS_SCALE_PAD / graph_height
+
+    offsets = figure_configuration.colors_scale_offsets
+    scale = maximum([offsets[strip.offset_index + 1] for strip in colors_scale_strips]) + pad + thickness
+
+    strips_x_axes = Set([Symbol(plotly_axis("x", strip.axis_index)) for strip in colors_scale_strips])
+    for (key, value) in layout.fields
+        name = String(key)
+        if startswith(name, "xaxis") && !(key in strips_x_axes) && !haskey(value, :overlaying)
+            domain = get(value, :domain, nothing)
+            value[:domain] = domain === nothing ? [0, 1 / scale] : domain ./ scale
+        elseif startswith(name, "coloraxis") && get(value, :colorbar, nothing) !== nothing
+            value[:colorbar][:x] /= scale
+        elseif key == :legend && get(value, :x, nothing) !== nothing
+            value[:x] /= scale
+        end
+    end
+
+    for strip in colors_scale_strips
+        offset = offsets[strip.offset_index + 1]
+        layout[plotly_axis("x", strip.axis_index)][:domain] = [offset + pad, offset + pad + thickness] ./ scale
+        layout[plotly_axis("y", strip.axis_index)][:domain] = [vertical_pad, 1 - vertical_pad]
     end
 
     return nothing
@@ -677,7 +931,8 @@ Return the prefix for the ticks of a `scale_configuration`.
 """
 function axis_ticks_prefix(scale_configuration::ScaleConfiguration)::Maybe{AbstractString}
     if scale_configuration.log_base == Log10Base
-        return "<sub>10</sub>"
+        # A `Log10Base` scale is shown on a Plotly log axis, whose ticks need no prefix.
+        @assert false
     elseif scale_configuration.log_base == Log2Base
         return "<sub>2</sub>"
     else
@@ -791,6 +1046,48 @@ function scale_axis_values(
             return scale_axis_value(scale_configuration, value; clamp)
         end
         return scale.(values)
+    end
+end
+
+"""
+    plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Real; is_plotly_log::Bool)::Real
+    plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing; is_plotly_log::Bool)::Nothing
+
+Convert a single `scaled_value` (as returned by [`scale_axis_value`](@ref)) to the coordinate Plotly expects. If
+`is_plotly_log`, a `Log10Base` axis is a Plotly log axis (see [`set_layout_axis!`](@ref)), which expects the real (not
+log) value. Otherwise, this returns the scaled value.
+"""
+function plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Real; is_plotly_log::Bool)::Real
+    if is_plotly_log && scale_configuration.log_base === Log10Base
+        return exp10(scaled_value)
+    else
+        return scaled_value
+    end
+end
+
+function plotly_axis_value(::ScaleConfiguration, ::Nothing; is_plotly_log::Bool)::Nothing  # NOLINT
+    return nothing
+end
+
+"""
+    plotly_axis_values(
+        scale_configuration::ScaleConfiguration,
+        scaled_values::AbstractVector{<:Maybe{Real}};
+        is_plotly_log::Bool,
+    )::AbstractVector{<:Maybe{Real}}
+
+Convert a vector of `scaled_values` (as returned by [`scale_axis_values`](@ref)) to the coordinates Plotly expects. See
+[`plotly_axis_value`](@ref).
+"""
+function plotly_axis_values(
+    scale_configuration::ScaleConfiguration,
+    scaled_values::AbstractVector{<:Maybe{Real}};
+    is_plotly_log::Bool,
+)::AbstractVector{<:Maybe{Real}}
+    if is_plotly_log && scale_configuration.log_base === Log10Base
+        return plotly_axis_value.(Ref(scale_configuration), scaled_values; is_plotly_log)
+    else
+        return scaled_values
     end
 end
 
@@ -1079,12 +1376,15 @@ end
         bands_configuration::BandsConfiguration,
         bands_scale::Real = 1;
         cross_ref::AbstractString = "y domain",
+        is_plotly_log::Bool = false,
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
 
 The bands stretch across the whole of the `cross_ref` axis. When the graph is split into sub-graphs, push the bands
 once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them.
+
+If `is_plotly_log`, the coordinates are for a Plotly log axis (see [`plotly_axis_value`](@ref)).
 """
 function push_vertical_bands_shapes(
     shapes::AbstractVector{Shape},
@@ -1094,7 +1394,12 @@ function push_vertical_bands_shapes(
     bands_configuration::BandsConfiguration,
     bands_scale::Real = 1;
     cross_ref::AbstractString = "y domain",
+    is_plotly_log::Bool = false,
 )::Nothing
+    function plotly_value(scaled_value::Real)::Real
+        return plotly_axis_value(axis_configuration.scale, scaled_value; is_plotly_log)
+    end
+
     scaled_low_offset =
         scale_axis_value(axis_configuration.scale, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
     scaled_middle_offset = scale_axis_value(
@@ -1116,8 +1421,8 @@ function push_vertical_bands_shapes(
                     "line";
                     line_color = band_configuration.line.color,
                     line_dash = plotly_line_dash(band_configuration.line.style),
-                    x0 = scaled_offset * bands_scale,
-                    x1 = scaled_offset * bands_scale,
+                    x0 = plotly_value(scaled_offset * bands_scale),
+                    x1 = plotly_value(scaled_offset * bands_scale),
                     xref = "x",
                     y0 = 0,
                     y1 = 1,
@@ -1135,8 +1440,8 @@ function push_vertical_bands_shapes(
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
                 layer = "below",
-                x0 = scaled_values_range.minimum,
-                x1 = scaled_low_offset * bands_scale,
+                x0 = plotly_value(scaled_values_range.minimum),
+                x1 = plotly_value(scaled_low_offset * bands_scale),
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -1153,8 +1458,8 @@ function push_vertical_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.middle.line.color),
                 line_width = 0,
-                x0 = scaled_low_offset * bands_scale,
-                x1 = scaled_high_offset * bands_scale,
+                x0 = plotly_value(scaled_low_offset * bands_scale),
+                x1 = plotly_value(scaled_high_offset * bands_scale),
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -1171,8 +1476,8 @@ function push_vertical_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
-                x0 = scaled_high_offset * bands_scale,
-                x1 = scaled_values_range.maximum,
+                x0 = plotly_value(scaled_high_offset * bands_scale),
+                x1 = plotly_value(scaled_values_range.maximum),
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -1193,6 +1498,7 @@ end
         bands_configuration::BandsConfiguration,
         bands_scale::Real = 1;
         cross_ref::AbstractString = "x domain",
+        is_plotly_log::Bool = false,
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting horizontal bands. These shapes need to be placed in the layout and not the traces because
@@ -1200,6 +1506,8 @@ Plotly.
 
 The bands stretch across the whole of the `cross_ref` axis. When the graph is split into sub-graphs, push the bands
 once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them.
+
+If `is_plotly_log`, the coordinates are for a Plotly log axis (see [`plotly_axis_value`](@ref)).
 """
 function push_horizontal_bands_shapes(
     shapes::AbstractVector{Shape},
@@ -1209,7 +1517,12 @@ function push_horizontal_bands_shapes(
     bands_configuration::BandsConfiguration,
     bands_scale::Real = 1;
     cross_ref::AbstractString = "x domain",
+    is_plotly_log::Bool = false,
 )::Nothing
+    function plotly_value(scaled_value::Real)::Real
+        return plotly_axis_value(axis_configuration.scale, scaled_value; is_plotly_log)
+    end
+
     scaled_low_offset =
         scale_axis_value(axis_configuration.scale, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
     scaled_middle_offset = scale_axis_value(
@@ -1231,8 +1544,8 @@ function push_horizontal_bands_shapes(
                     "line";
                     line_color = band_configuration.line.color,
                     line_dash = plotly_line_dash(band_configuration.line.style),
-                    y0 = scaled_offset * bands_scale,
-                    y1 = scaled_offset * bands_scale,
+                    y0 = plotly_value(scaled_offset * bands_scale),
+                    y1 = plotly_value(scaled_offset * bands_scale),
                     yref = "y",
                     x0 = 0,
                     x1 = 1,
@@ -1250,8 +1563,8 @@ function push_horizontal_bands_shapes(
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
                 layer = "below",
-                y0 = scaled_values_range.minimum,
-                y1 = scaled_low_offset * bands_scale,
+                y0 = plotly_value(scaled_values_range.minimum),
+                y1 = plotly_value(scaled_low_offset * bands_scale),
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -1268,8 +1581,8 @@ function push_horizontal_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.middle.line.color),
                 line_width = 0,
-                y0 = scaled_low_offset * bands_scale,
-                y1 = scaled_high_offset * bands_scale,
+                y0 = plotly_value(scaled_low_offset * bands_scale),
+                y1 = plotly_value(scaled_high_offset * bands_scale),
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -1286,8 +1599,8 @@ function push_horizontal_bands_shapes(
                 layer = "below",
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
-                y0 = scaled_high_offset * bands_scale,
-                y1 = scaled_values_range.maximum,
+                y0 = plotly_value(scaled_high_offset * bands_scale),
+                y1 = plotly_value(scaled_values_range.maximum),
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -1309,15 +1622,17 @@ end
 """
     push_diagonal_bands_shapes(
         shapes::AbstractVector{Shape},
-        x_axis_configuration::AxisConfiguration,
-        y_axis_configuration::AxisConfiguration,
+        axis_configuration::AxisConfiguration,
         x_scaled_values_range::Range,
         y_scaled_values_range::Range,
         bands_data::BandsData,
-        bands_configuration::BandsConfiguration
+        bands_configuration::BandsConfiguration;
+        is_plotly_log::Bool = false,
     )::AbstractVector{<:Shape}
 
 Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+
+If `is_plotly_log`, the coordinates are for Plotly log axes (see [`plotly_axis_value`](@ref)).
 """
 function push_diagonal_bands_shapes(
     shapes::AbstractVector{Shape},
@@ -1325,11 +1640,13 @@ function push_diagonal_bands_shapes(
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     bands_data::BandsData,
-    bands_configuration::BandsConfiguration,
+    bands_configuration::BandsConfiguration;
+    is_plotly_log::Bool = false,
 )::Nothing
     low_band_points = push_diagonal_bands_line(
         shapes,
         axis_configuration,
+        is_plotly_log,
         x_scaled_values_range,
         y_scaled_values_range,
         bands_data.low_offset,
@@ -1338,6 +1655,7 @@ function push_diagonal_bands_shapes(
     push_diagonal_bands_line(
         shapes,
         axis_configuration,
+        is_plotly_log,
         x_scaled_values_range,
         y_scaled_values_range,
         bands_data.middle_offset,
@@ -1346,6 +1664,7 @@ function push_diagonal_bands_shapes(
     high_band_points = push_diagonal_bands_line(
         shapes,
         axis_configuration,
+        is_plotly_log,
         x_scaled_values_range,
         y_scaled_values_range,
         bands_data.high_offset,
@@ -1355,6 +1674,8 @@ function push_diagonal_bands_shapes(
     if low_band_points !== nothing && bands_configuration.low.line.is_filled
         push_diagonal_bands_low_fill(
             shapes,
+            axis_configuration,
+            is_plotly_log,
             x_scaled_values_range,
             y_scaled_values_range,
             low_band_points,
@@ -1365,6 +1686,8 @@ function push_diagonal_bands_shapes(
     if low_band_points !== nothing && high_band_points !== nothing && bands_configuration.middle.line.is_filled
         push_diagonal_bands_middle_fill(
             shapes,
+            axis_configuration,
+            is_plotly_log,
             x_scaled_values_range,
             y_scaled_values_range,
             low_band_points,
@@ -1376,17 +1699,22 @@ function push_diagonal_bands_shapes(
     if high_band_points !== nothing && bands_configuration.high.line.is_filled
         push_diagonal_bands_high_fill(
             shapes,
+            axis_configuration,
+            is_plotly_log,
             x_scaled_values_range,
             y_scaled_values_range,
             high_band_points,
             bands_configuration.high,
         )
     end
+
+    return nothing
 end
 
 function push_diagonal_bands_line(
     shapes::AbstractVector{Shape},
     axis_configuration::AxisConfiguration,
+    is_plotly_log::Bool,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     data_offset::Maybe{Real},
@@ -1407,11 +1735,11 @@ function push_diagonal_bands_line(
                 "line";
                 line_color = band_configuration.line.color,
                 line_dash = plotly_line_dash(band_configuration.line.style),
-                y0 = start_point.point.y,
-                y1 = end_point.point.y,
+                y0 = plotly_axis_value(axis_configuration.scale, start_point.point.y; is_plotly_log),
+                y1 = plotly_axis_value(axis_configuration.scale, end_point.point.y; is_plotly_log),
                 yref = "y",
-                x0 = start_point.point.x,
-                x1 = end_point.point.x,
+                x0 = plotly_axis_value(axis_configuration.scale, start_point.point.x; is_plotly_log),
+                x1 = plotly_axis_value(axis_configuration.scale, end_point.point.x; is_plotly_log),
                 xref = "x",
             ),
         )
@@ -1502,12 +1830,14 @@ end
 
 function push_diagonal_bands_low_fill(
     shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    is_plotly_log::Bool,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     band_points::Tuple{BandPoint, BandPoint},
     band_configuration::BandConfiguration,
 )::Nothing
-    path_parts = AbstractString[]
+    path_parts = PathParts(; scale_configuration = axis_configuration.scale, is_plotly_log)
 
     to_bottom_right(path_parts, x_scaled_values_range, y_scaled_values_range)
     if band_points[1].side == Left
@@ -1525,12 +1855,14 @@ end
 
 function push_diagonal_bands_high_fill(
     shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    is_plotly_log::Bool,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     band_points::Tuple{BandPoint, BandPoint},
     band_configuration::BandConfiguration,
 )::Nothing
-    path_parts = AbstractString[]
+    path_parts = PathParts(; scale_configuration = axis_configuration.scale, is_plotly_log)
 
     to_top_left(path_parts, x_scaled_values_range, y_scaled_values_range)
     if band_points[1].side == Bottom
@@ -1548,13 +1880,15 @@ end
 
 function push_diagonal_bands_middle_fill(
     shapes::AbstractVector{Shape},
+    axis_configuration::AxisConfiguration,
+    is_plotly_log::Bool,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     low_band_points::Tuple{BandPoint, BandPoint},
     high_band_points::Tuple{BandPoint, BandPoint},
     band_configuration::BandConfiguration,
 )::Nothing
-    path_parts = AbstractString[]
+    path_parts = PathParts(; scale_configuration = axis_configuration.scale, is_plotly_log)
 
     to_start_point(path_parts, high_band_points)
     to_end_point(path_parts, high_band_points)
@@ -1571,70 +1905,58 @@ function push_diagonal_bands_middle_fill(
     return nothing
 end
 
-function to_start_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing
-    push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(band_points[1].point.x))
-    push!(path_parts, string(band_points[1].point.y))
+# The parts of a Plotly SVG path, given scaled points and emitting them as Plotly coordinates.
+@kwdef struct PathParts
+    scale_configuration::ScaleConfiguration
+    is_plotly_log::Bool
+    parts::Vector{AbstractString} = AbstractString[]
+end
+
+function to_point(path_parts::PathParts, x::Real, y::Real)::Nothing
+    push!(path_parts.parts, isempty(path_parts.parts) ? "M" : "L")
+    for value in (x, y)
+        plotly_value = plotly_axis_value(path_parts.scale_configuration, value; path_parts.is_plotly_log)
+        push!(path_parts.parts, string(plotly_value))
+    end
     return nothing
 end
 
-function to_end_point(path_parts::AbstractVector{<:AbstractString}, band_points::Tuple{BandPoint, BandPoint})::Nothing
-    push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(band_points[2].point.x))
-    push!(path_parts, string(band_points[2].point.y))
+function to_start_point(path_parts::PathParts, band_points::Tuple{BandPoint, BandPoint})::Nothing
+    to_point(path_parts, band_points[1].point.x, band_points[1].point.y)
     return nothing
 end
 
-function to_bottom_left(
-    path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::Range,
-    y_scaled_values_range::Range,
-)::Nothing
-    push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range.minimum))
-    push!(path_parts, string(y_scaled_values_range.minimum))
+function to_end_point(path_parts::PathParts, band_points::Tuple{BandPoint, BandPoint})::Nothing
+    to_point(path_parts, band_points[2].point.x, band_points[2].point.y)
     return nothing
 end
 
-function to_bottom_right(
-    path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::Range,
-    y_scaled_values_range::Range,
-)::Nothing
-    push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range.maximum))
-    push!(path_parts, string(y_scaled_values_range.minimum))
+function to_bottom_left(path_parts::PathParts, x_scaled_values_range::Range, y_scaled_values_range::Range)::Nothing
+    to_point(path_parts, x_scaled_values_range.minimum, y_scaled_values_range.minimum)
     return nothing
 end
 
-function to_top_left(
-    path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::Range,
-    y_scaled_values_range::Range,
-)::Nothing
-    push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range.minimum))
-    push!(path_parts, string(y_scaled_values_range.maximum))
+function to_bottom_right(path_parts::PathParts, x_scaled_values_range::Range, y_scaled_values_range::Range)::Nothing
+    to_point(path_parts, x_scaled_values_range.maximum, y_scaled_values_range.minimum)
     return nothing
 end
 
-function to_top_right(
-    path_parts::AbstractVector{<:AbstractString},
-    x_scaled_values_range::Range,
-    y_scaled_values_range::Range,
-)::Nothing
-    push!(path_parts, isempty(path_parts) ? "M" : "L")
-    push!(path_parts, string(x_scaled_values_range.maximum))
-    push!(path_parts, string(y_scaled_values_range.maximum))
+function to_top_left(path_parts::PathParts, x_scaled_values_range::Range, y_scaled_values_range::Range)::Nothing
+    to_point(path_parts, x_scaled_values_range.minimum, y_scaled_values_range.maximum)
+    return nothing
+end
+
+function to_top_right(path_parts::PathParts, x_scaled_values_range::Range, y_scaled_values_range::Range)::Nothing
+    to_point(path_parts, x_scaled_values_range.maximum, y_scaled_values_range.maximum)
     return nothing
 end
 
 function push_fill_path(
     shapes::AbstractVector{Shape},
-    path_parts::AbstractVector{<:AbstractString},
+    path_parts::PathParts,
     band_configuration::BandConfiguration,
 )::Nothing
-    push!(path_parts, "Z")
+    push!(path_parts.parts, "Z")
 
     push!(
         shapes,
@@ -1642,7 +1964,7 @@ function push_fill_path(
             "path";
             layer = "below",
             fillcolor = fill_color(band_configuration.line.color),
-            path = join(path_parts, " "),
+            path = join(path_parts.parts, " "),
             line_width = 0,
             yref = "y",
             xref = "x",

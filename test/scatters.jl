@@ -319,28 +319,81 @@ nested_test("points") do
     end
 
     nested_test("log") do
-        graph.configuration.x_axis.scale.log_base = Log10Base
-        graph.configuration.x_axis.scale.log_regularization = 1
-        graph.configuration.y_axis.scale.log_base = Log10Base
-        graph.configuration.y_axis.scale.log_regularization = 1
+        for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+            nested_test(log_name) do
+                graph.configuration.x_axis.scale.log_base = log_base
+                graph.configuration.x_axis.scale.log_regularization = 1
+                graph.configuration.y_axis.scale.log_base = log_base
+                graph.configuration.y_axis.scale.log_regularization = 1
 
-        nested_test("()") do
-            test_html(graph, "points.log.html")
-            return nothing
-        end
+                nested_test("()") do
+                    test_html(graph, "points.$(log_name).html")
+                    return nothing
+                end
 
-        nested_test("diagonal") do
-            graph.configuration.diagonal_bands.low.offset = 1 / sqrt(10)
-            graph.configuration.diagonal_bands.middle.offset = 1
-            graph.configuration.diagonal_bands.high.offset = sqrt(10)
-            test_html(graph, "points.log.diagonal.html")
-            return nothing
-        end
+                nested_test("bands") do
+                    graph.configuration.vertical_bands.low.offset = 5
+                    graph.configuration.vertical_bands.middle.offset = 20
+                    graph.configuration.vertical_bands.high.offset = 50
+                    graph.configuration.horizontal_bands.low.offset = 5
+                    graph.configuration.horizontal_bands.middle.offset = 20
+                    graph.configuration.horizontal_bands.high.offset = 50
 
-        nested_test("hovers") do
-            graph.data.points.entities.hovers = ["H: $(index)" for index in 1:11]
-            test_html(graph, "points.log.hovers.html")
-            return nothing
+                    nested_test("()") do
+                        test_html(graph, "points.$(log_name).bands.html")
+                        return nothing
+                    end
+
+                    nested_test("fill") do
+                        graph.configuration.vertical_bands.low.line.is_filled = true
+                        graph.configuration.vertical_bands.middle.line.is_filled = true
+                        graph.configuration.vertical_bands.high.line.is_filled = true
+                        graph.configuration.horizontal_bands.low.line.is_filled = true
+                        graph.configuration.horizontal_bands.middle.line.is_filled = true
+                        graph.configuration.horizontal_bands.high.line.is_filled = true
+
+                        graph.configuration.vertical_bands.low.line.color = "green"
+                        graph.configuration.vertical_bands.middle.line.color = "red"
+                        graph.configuration.vertical_bands.high.line.color = "blue"
+                        graph.configuration.horizontal_bands.low.line.color = "green"
+                        graph.configuration.horizontal_bands.middle.line.color = "red"
+                        graph.configuration.horizontal_bands.high.line.color = "blue"
+
+                        test_html(graph, "points.$(log_name).bands.fill.html")
+                        return nothing
+                    end
+                end
+
+                nested_test("diagonal") do
+                    graph.configuration.diagonal_bands.low.offset = 1 / sqrt(10)
+                    graph.configuration.diagonal_bands.middle.offset = 1
+                    graph.configuration.diagonal_bands.high.offset = sqrt(10)
+
+                    nested_test("()") do
+                        test_html(graph, "points.$(log_name).diagonal.html")
+                        return nothing
+                    end
+
+                    nested_test("fill") do
+                        graph.configuration.diagonal_bands.low.line.is_filled = true
+                        graph.configuration.diagonal_bands.middle.line.is_filled = true
+                        graph.configuration.diagonal_bands.high.line.is_filled = true
+
+                        graph.configuration.diagonal_bands.low.line.color = "green"
+                        graph.configuration.diagonal_bands.middle.line.color = "red"
+                        graph.configuration.diagonal_bands.high.line.color = "blue"
+
+                        test_html(graph, "points.$(log_name).diagonal.fill.html")
+                        return nothing
+                    end
+                end
+
+                nested_test("hovers") do
+                    graph.data.points.entities.hovers = ["H: $(index)" for index in 1:11]
+                    test_html(graph, "points.$(log_name).hovers.html")
+                    return nothing
+                end
+            end
         end
     end
 
@@ -459,6 +512,55 @@ nested_test("points") do
             graph.configuration.points.colors.show_legend = true
             test_html(graph, "points.continuous.legend.html")
             return nothing
+        end
+
+        nested_test("log") do
+            for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+                nested_test(log_name) do
+                    graph.configuration.points.colors.scale.log_base = log_base
+                    graph.configuration.points.colors.scale.log_regularization = 1
+
+                    nested_test("()") do
+                        test_html(graph, "points.continuous.$(log_name).html")
+                        return nothing
+                    end
+
+                    nested_test("legend") do
+                        graph.configuration.points.colors.show_legend = true
+                        graph.data.points.colors.title = "Colors"
+
+                        nested_test("()") do
+                            test_html(graph, "points.continuous.$(log_name).legend.html")
+                            return nothing
+                        end
+
+                        nested_test("width") do
+                            graph.configuration.figure.width = 900
+                            test_html(graph, "points.continuous.$(log_name).legend.width.html")
+                            return nothing
+                        end
+
+                        # A strip for the log colors, followed by a color bar for the linear borders colors.
+                        nested_test("borders") do
+                            graph.data.borders.colors.vector = collect(0:10)
+                            graph.configuration.borders.colors.show_legend = true
+                            graph.data.borders.colors.title = "Borders"
+                            test_html(graph, "points.continuous.$(log_name).legend.borders.html")
+                            return nothing
+                        end
+
+                        # A legend for the categorical borders colors, followed by a strip for the log colors.
+                        nested_test("categorical") do
+                            graph.data.borders.colors.vector =
+                                ["Foo", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo"]
+                            graph.configuration.borders.colors.palette = Dict("Foo" => "red", "Bar" => "green")
+                            graph.configuration.borders.colors.show_legend = true
+                            test_html(graph, "points.continuous.$(log_name).legend.categorical.html")
+                            return nothing
+                        end
+                    end
+                end
+            end
         end
     end
 
@@ -875,6 +977,28 @@ nested_test("line") do
         return nothing
     end
 
+    nested_test("log") do
+        for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+            nested_test(log_name) do
+                graph.configuration.x_axis.scale.log_base = log_base
+                graph.configuration.x_axis.scale.log_regularization = 1
+                graph.configuration.y_axis.scale.log_base = log_base
+                graph.configuration.y_axis.scale.log_regularization = 1
+
+                nested_test("()") do
+                    test_html(graph, "line.$(log_name).html")
+                    return nothing
+                end
+
+                nested_test("fill") do
+                    graph.configuration.line.is_filled = true
+                    test_html(graph, "line.$(log_name).fill.html")
+                    return nothing
+                end
+            end
+        end
+    end
+
     nested_test("points") do
         graph.configuration.show_points = true
 
@@ -977,6 +1101,28 @@ nested_test("lines") do
     nested_test("()") do
         test_html(graph, "lines.html")
         return nothing
+    end
+
+    nested_test("log") do
+        for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+            nested_test(log_name) do
+                graph.configuration.x_axis.scale.log_base = log_base
+                graph.configuration.x_axis.scale.log_regularization = 1
+                graph.configuration.y_axis.scale.log_base = log_base
+                graph.configuration.y_axis.scale.log_regularization = 1
+
+                nested_test("()") do
+                    test_html(graph, "lines.$(log_name).html")
+                    return nothing
+                end
+
+                nested_test("fill") do
+                    graph.configuration.line.is_filled = true
+                    test_html(graph, "lines.$(log_name).fill.html")
+                    return nothing
+                end
+            end
+        end
     end
 
     nested_test("fields") do

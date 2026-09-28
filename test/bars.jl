@@ -178,6 +178,19 @@ nested_test("bars") do
                         test_html(graph, "bars.$(orientation_name).colors.continuous.legend.html")
                         return nothing
                     end
+
+                    nested_test("log") do
+                        for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+                            nested_test(log_name) do
+                                graph.configuration.colors.scale.log_base = log_base
+                                graph.configuration.colors.scale.log_regularization = 1
+                                graph.configuration.colors.show_legend = true
+                                graph.data.colors.title = "Colors"
+                                test_html(graph, "bars.$(orientation_name).colors.continuous.$(log_name).legend.html")
+                                return nothing
+                            end
+                        end
+                    end
                 end
 
                 nested_test("categorical") do
@@ -227,6 +240,38 @@ nested_test("bars") do
 
                 test_html(graph, "bars.$(orientation_name).value_fills.html")
                 return nothing
+            end
+
+            nested_test("log") do
+                for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+                    nested_test(log_name) do
+                        # A value below 1, to show the bars grow from the bottom of the axis.
+                        graph.data.values.vector = [0.5, 3, 40, 700]
+                        graph.configuration.value_axis.scale.log_base = log_base
+
+                        nested_test("()") do
+                            test_html(graph, "bars.$(orientation_name).$(log_name).html")
+                            return nothing
+                        end
+
+                        nested_test("value_fills") do
+                            graph.configuration.value_bands.low.offset = 2
+                            graph.data.value_bands.middle_offset = 20
+                            graph.configuration.value_bands.high.offset = 200
+
+                            graph.configuration.value_bands.low.line.is_filled = true
+                            graph.configuration.value_bands.middle.line.is_filled = true
+                            graph.configuration.value_bands.high.line.is_filled = true
+
+                            graph.configuration.value_bands.low.line.color = "green"
+                            graph.configuration.value_bands.middle.line.color = "red"
+                            graph.configuration.value_bands.high.line.color = "blue"
+
+                            test_html(graph, "bars.$(orientation_name).$(log_name).value_fills.html")
+                            return nothing
+                        end
+                    end
+                end
             end
 
             nested_test("annotations") do
@@ -518,6 +563,16 @@ nested_test("series_bars") do
                                """) validate(ValidationContext(["graph"]), graph)
         end
 
+        nested_test("log") do
+            graph.configuration.stacking = StackValues
+            graph.configuration.value_axis.scale.log_base = Log10Base
+            graph.configuration.value_axis.scale.log_regularization = 1
+            @test_throws "can't specify both graph.configuration.stacking and graph.configuration.value_axis.scale.log_base" validate(
+                ValidationContext(["graph"]),
+                graph,
+            )
+        end
+
         nested_test("~order") do
             graph.data.order = [1]
             @test_throws chomp("""
@@ -707,6 +762,17 @@ nested_test("series_bars") do
                         graph.configuration.stacking = StackFractions
                         test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.fractions.html")
                         return nothing
+                    end
+
+                    nested_test("log") do
+                        for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
+                            nested_test(log_name) do
+                                graph.configuration.value_axis.scale.log_base = log_base
+                                graph.configuration.value_axis.scale.log_regularization = 1
+                                test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.$(log_name).html")
+                                return nothing
+                            end
+                        end
                     end
                 end
             end

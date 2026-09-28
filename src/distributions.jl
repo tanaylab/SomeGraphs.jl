@@ -726,15 +726,9 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     )
     collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
 
-    return plotly_figure(
-        traces,
-        distribution_layout(;
-            graph = graph,
-            implicit_values_range,
-            has_legend = false,
-            has_hovers = hovers !== nothing,
-        ),
-    )
+    layout =
+        distribution_layout(; graph, traces, implicit_values_range, has_legend = false, has_hovers = hovers !== nothing)
+    return plotly_figure(traces, layout)
 end
 
 function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
@@ -779,7 +773,8 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
         collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
     end
 
-    return plotly_figure(traces, distribution_layout(; graph = graph, implicit_values_range, has_legend, has_hovers))
+    layout = distribution_layout(; graph, traces, implicit_values_range, has_legend, has_hovers)
+    return plotly_figure(traces, layout)
 end
 
 # The (descending, normalized, percent) flags controlling the cumulative density axis, taken from the `distribution` and
@@ -967,6 +962,7 @@ end
 
 function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
+    traces::AbstractVector{GenericTrace},
     implicit_values_range::MaybeRange,
     has_legend::Bool,
     has_hovers::Bool,
@@ -1019,13 +1015,28 @@ function distribution_layout(;
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
 
-    set_layout_axis!(
-        layout,
-        "$(value_axis_letter)axis",
-        graph.configuration.value_axis;
-        title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
-        range = scaled_values_range,
-    )
+    # Plotly computes the distributions (bins, densities, quartiles) from the values it is given, so it must be given
+    # the scaled (log) values even when showing the ticks of the real values.
+    if graph.configuration.value_axis.scale.log_base === Log10Base
+        set_layout_twin_log_axis!(;
+            layout,
+            traces,
+            letter = value_axis_letter,
+            twin_index = 2,
+            axis_configuration = graph.configuration.value_axis,
+            title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
+            range = scaled_values_range,
+            n_cross_axes = n_sub_graphs,
+        )
+    else
+        set_layout_axis!(
+            layout,
+            "$(value_axis_letter)axis",
+            graph.configuration.value_axis;
+            title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
+            range = scaled_values_range,
+        )
+    end
 
     if graph.configuration.distribution.style == CumulativeDistribution
         if graph isa DistributionGraph

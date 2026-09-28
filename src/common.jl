@@ -266,7 +266,7 @@ end
         height::Maybe{Int} = nothing
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
-        colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
+        colors_scale_offsets::AbstractVector{<:Real} = [1.02, 1.2, 1.4, 1.6, 1.8, 2.0]
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -279,8 +279,9 @@ You can also manually change the `background_color` (inside the graph's area) an
 that is, the margins).
 
 If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
-will happily place them all on top of each other. We therefore need to tell it how to position each and every color
-scale (except the 1st one if there's no legend) by specifying an explicit offset. Great fun!
+will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any) and
+each and every color scale, in this order, by specifying an explicit offset. Great fun! The 1st offset (1.02) is where
+Plotly places them by default.
 
 These `colors_scale_offsets` are specified in what Plotly calls "paper coordinates" which are singularly unsuitable for
 this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the
@@ -289,7 +290,7 @@ interactive graph will definitely misbehave). We provide a vector of hopefully r
 optimal results you will need to manually tweak these to match your specific graph. In 21st century, when "AI" is a
 thing. Sigh.
 
-We provide "too many" (5) offsets here. Normally a graph displays one color scale, but in theory it can have any number
+We provide "too many" (6) offsets here. Normally a graph displays one color scale, but in theory it can have any number
 (e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that
 requires more offsets.
 """
@@ -299,7 +300,7 @@ requires more offsets.
     height::Maybe{Int} = nothing
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
-    colors_scale_offsets::AbstractVector{<:Real} = [1.2, 1.4, 1.6, 1.8, 2.0]
+    colors_scale_offsets::AbstractVector{<:Real} = [1.02, 1.2, 1.4, 1.6, 1.8, 2.0]
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -338,9 +339,13 @@ The orientation of the values axis in a distribution(s) or bars graph:
 """
 Supported bases for taking the log of values (when log scaling is enabled):
 
-  - `Log10Base` converts values to their log (base 10).
+  - `Log10Base` converts values to their log (base 10). The ticks show the real values (such as 1, 10, 100 or 1, 2, 5,
+    10), using SI suffixes (such as 10k or 1M). Plotly picks the ticks, so they adapt to the size of the graph and to
+    zooming.
 
-  - `Log2Base` converts values to their log (base 2).
+  - `Log2Base` converts values to their log (base 2). The ticks show the log values, with a subscript 2 prefix.
+
+Stacking can't be combined with a log scale.
 """
 @enum LogBase Log10Base Log2Base
 

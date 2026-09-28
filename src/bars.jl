@@ -367,6 +367,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     layout = bars_layout(;
         graph,
+        traces,
         has_tick_names = graph.data.bars.names !== nothing,
         has_legend = false,
         has_hovers = hovers !== nothing,
@@ -399,6 +400,7 @@ series on top of each other. Alternatively, specifying a `series_gap` will plot 
 sub-graph. The `series_gap` is specified as a fraction of the used graph size. If zero the graphs will be adjacent, if 1
 then the gaps will be the same size as the graphs. If neither is specified, then the bars will be shown in groups
 (adjacent to each other) with the `bars.gap` between the groups. The colors of the bars are those of their series.
+Stacking can't be combined with a log `value_axis`.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
 bars show their sizes rather than their differences. Setting an explicit `value_axis.scale.minimum` (or `maximum`)
@@ -439,6 +441,14 @@ function Validations.validate(context::ValidationContext, configuration::SeriesB
                             can't specify both $(location(context)).stacking
                             and $(location(context)).series_gap
                             """))
+    end
+
+    if configuration.stacking !== nothing && configuration.value_axis.scale.log_base !== nothing
+        throw(
+            ArgumentError(
+                "can't specify both $(location(context)).stacking and $(location(context)).value_axis.scale.log_base",
+            ),
+        )
     end
 
     return nothing
@@ -1052,6 +1062,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     layout = bars_layout(;
         graph,
+        traces,
         has_tick_names = graph.data.bars.names !== nothing,
         has_legend = show_in_legend,
         has_hovers,
@@ -1063,6 +1074,10 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     return plotly_figure(traces, layout)
 end
+
+# Plotly grows a bar from zero, which is the scaled value of 1 on a `Log2Base` axis. A base far below any scaled value
+# grows it from the bottom of the axis instead. Plotly still hovers the value (the base plus the length of the bar).
+const FAR_BARS_BASE = -1.0e6
 
 function push_bar_trace!(;
     traces::Vector{GenericTrace},
@@ -1089,12 +1104,20 @@ function push_bar_trace!(;
         names = [string(index) for index in 1:length(scaled_values)]
     end
 
+    plotly_values = plotly_axis_values(value_axis.scale, scaled_values; is_plotly_log = true)
+    if value_axis.scale.log_base === Log2Base
+        base = FAR_BARS_BASE
+        plotly_values = plotly_values .- base
+    else
+        base = nothing
+    end
+
     if values_orientation == VerticalValues
         xs = names
-        ys = scaled_values
+        ys = plotly_values
         orientation = "v"
     elseif values_orientation == HorizontalValues
-        xs = scaled_values
+        xs = plotly_values
         ys = names
         orientation = "h"
     else
@@ -1108,6 +1131,7 @@ function push_bar_trace!(;
             y = ys,
             x0,
             y0,
+            base,
             xaxis = plotly_axis("x", xaxis_index; short = true),
             yaxis = plotly_axis("y", yaxis_index; short = true),
             name,
@@ -1319,6 +1343,7 @@ end
 
 function bars_layout(;
     graph::Union{BarsGraph, SeriesBarsGraph},
+    traces::AbstractVector{GenericTrace},
     has_tick_names::Bool,
     has_legend::Bool,
     has_hovers::Bool = false,
@@ -1346,7 +1371,8 @@ function bars_layout(;
                 graph.configuration.value_axis,
                 scaled_values_range,
                 graph.data.value_bands,
-                graph.configuration.value_bands,
+                graph.configuration.value_bands;
+                is_plotly_log = true,
             )
         else
             push_vertical_bands_shapes(
@@ -1354,7 +1380,8 @@ function bars_layout(;
                 graph.configuration.value_axis,
                 scaled_values_range,
                 graph.data.value_bands,
-                graph.configuration.value_bands,
+                graph.configuration.value_bands;
+                is_plotly_log = true,
             )
         end
     end
@@ -1420,6 +1447,7 @@ function bars_layout(;
             domain = plotly_sub_graph_domain(
                 SubGraph(; index = 1, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size),
             ),
+            is_plotly_log = true,
         )
     else
         @assert graph isa SeriesBarsGraph
@@ -1455,11 +1483,13 @@ function bars_layout(;
                 ),
                 # Mirrored, the 1st axis of each pair grows away from the shared bar axis, which is to its right.
                 is_reversed = mirrored && value_axis_position % 2 == 1,
+                is_plotly_log = true,
             )
         end
     end
 
     next_colors_scale_offset_index = [Int(has_legend)]
+    colors_scale_strips = ColorsScaleStrip[]
 
     # The bar axis is drawn against the 1st axis of the other direction, which is the 1st annotation when there is one.
     # That is where the names belong for any other graph - outside everything - but a mirrored pair puts its
@@ -1484,6 +1514,7 @@ function bars_layout(;
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
             layout,
+            traces,
             colors_scale_index = colors.colors_scale_index,
             colors_configuration = colors.colors_configuration,
             scaled_colors_palette = colors.scaled_colors_palette,
@@ -1492,6 +1523,7 @@ function bars_layout(;
             show_scale = colors.show_scale,
             next_colors_scale_offset_index,
             colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+            colors_scale_strips,
         )
     end
 
@@ -1519,14 +1551,17 @@ function bars_layout(;
         if annotation_colors.colors_scale_index !== nothing
             set_layout_colorscale!(;
                 layout,
+                traces,
                 colors_scale_index = annotation_colors.colors_scale_index,
                 colors_configuration = annotation_data.colors,
                 scaled_colors_palette = annotation_colors.scaled_colors_palette,
                 range = nothing,
+                strip_range = annotation_colors.final_colors_range,
                 title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                 show_scale = annotation_colors.show_scale,
                 next_colors_scale_offset_index,
                 colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
+                colors_scale_strips,
             )
         end
     end
@@ -1535,6 +1570,8 @@ function bars_layout(;
         layout["xaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
         layout["yaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
     end
+
+    place_colors_scale_strips!(; layout, figure_configuration = graph.configuration.figure, colors_scale_strips)
 
     return layout
 end

@@ -820,6 +820,79 @@ scale_axis_values(
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.plotly_axis_value">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_axis_value">
+<code>SomeGraphs.Utilities.plotly_axis_value
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Real; is_plotly_log::Bool)::Real
+plotly_axis_value(scale_configuration::ScaleConfiguration, scaled_value::Nothing; is_plotly_log::Bool)::Nothing
+</code>
+</pre>
+<p>Convert a single 
+<code>scaled_value
+</code> (as returned by 
+<a href="utilities.html#SomeGraphs.Utilities.scale_axis_value">
+<code>scale_axis_value
+</code>
+</a>) to the coordinate Plotly expects. If 
+<code>is_plotly_log
+</code>, a 
+<code>Log10Base
+</code> axis is a Plotly log axis (see 
+<a href="utilities.html#SomeGraphs.Utilities.set_layout_axis!">
+<code>set_layout_axis!
+</code>
+</a>), which expects the real (not log) value. Otherwise, this returns the scaled value.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.plotly_axis_values">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_axis_values">
+<code>SomeGraphs.Utilities.plotly_axis_values
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_axis_values(
+    scale_configuration::ScaleConfiguration,
+    scaled_values::AbstractVector{&lt;:Maybe{Real}};
+    is_plotly_log::Bool,
+)::AbstractVector{&lt;:Maybe{Real}}
+</code>
+</pre>
+<p>Convert a vector of 
+<code>scaled_values
+</code> (as returned by 
+<a href="utilities.html#SomeGraphs.Utilities.scale_axis_values">
+<code>scale_axis_values
+</code>
+</a>) to the coordinates Plotly expects. See 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_value">
+<code>plotly_axis_value
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.scale_size_values">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.scale_size_values">
 <code>SomeGraphs.Utilities.scale_size_values
@@ -950,6 +1023,7 @@ scale_axis_values(
     range::Range,
     domain::Maybe{AbstractVector{&lt;:Real}} = nothing,
     is_reversed::Bool = false,
+    is_plotly_log::Bool = false,
 )::Nothing
 </code>
 </pre>
@@ -962,6 +1036,65 @@ scale_axis_values(
 </code>. If 
 <code>is_reversed
 </code>, the axis runs backwards (right to left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it shares with the other side.
+</p>
+<p>If 
+<code>is_plotly_log
+</code>, a 
+<code>Log10Base
+</code> axis is a Plotly log axis, which picks its own ticks for the real (not log) values. The coordinates on such an axis must be given by 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_values">
+<code>plotly_axis_values
+</code>
+</a>. The 
+<code>range
+</code> is still the scaled (log) range.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.set_layout_twin_log_axis!">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.set_layout_twin_log_axis!">
+<code>SomeGraphs.Utilities.set_layout_twin_log_axis!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">set_layout_twin_log_axis!(;
+    layout::Layout,
+    traces::AbstractVector{GenericTrace},
+    letter::AbstractString,
+    twin_index::Integer,
+    axis_configuration::AxisConfiguration,
+    title::Maybe{AbstractString},
+    range::Range,
+    n_cross_axes::Integer = 1,
+)::Nothing
+</code>
+</pre>
+<p>Add the 1st Plotly 
+<code>letter
+</code> axis in a 
+<code>layout
+</code> for a 
+<code>Log10Base
+</code> 
+<code>axis_configuration
+</code>, for traces that must be given the scaled (log) values. This is needed when Plotly computes something from the values (such as a histogram), since it would compute it from the real values on a Plotly log axis.
+</p>
+<p>The 1st axis is a hidden linear axis, which the traces use. A twin Plotly log axis (at the 
+<code>twin_index
+</code>) is drawn over it, with the same range, so it shows the ticks of the real values. Plotly only draws an axis (and its grid) in the sub-graphs where a trace uses it, so this also pushes an empty trace to the 
+<code>traces
+</code> for each of the 
+<code>n_cross_axes
+</code> of the other letter.
 </p>
 </div>
 </section>
@@ -982,13 +1115,17 @@ scale_axis_values(
 <pre>
 <code class="language-julia hljs">set_layout_colorscale!(;
     layout::Layout,
+    traces::AbstractVector{GenericTrace},
     colors_scale_index::Integer,
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}},
-    offset::Maybe{Real},
     range::Maybe{Range} = nothing,
+    strip_range::Maybe{Range} = range,
     title::Maybe{AbstractString},
     show_scale::Bool,
+    next_colors_scale_offset_index::AbstractVector{&lt;:Integer},
+    colors_scale_offsets::AbstractVector{&lt;:Real},
+    colors_scale_strips::AbstractVector{ColorsScaleStrip},
 )::Nothing
 </code>
 </pre>
@@ -1001,6 +1138,91 @@ scale_axis_values(
 </code>. Since Plotly is dumb when it comes to placement of color scales, the 
 <code>offset
 </code> must be specified manually to avoid overlaps.
+</p>
+<p>A shown 
+<code>Log10Base
+</code> scale is drawn as a 
+<a href="utilities.html#SomeGraphs.Utilities.ColorsScaleStrip">
+<code>ColorsScaleStrip
+</code>
+</a> instead, which pushes its heatmap to the 
+<code>traces
+</code> and itself to the 
+<code>colors_scale_strips
+</code>. The strip covers the 
+<code>strip_range
+</code>, which must be given.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.ColorsScaleStrip">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.ColorsScaleStrip">
+<code>SomeGraphs.Utilities.ColorsScaleStrip
+</code>
+</a> — 
+<span class="docstring-category">Type
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">@kwdef struct ColorsScaleStrip
+    offset_index::Integer
+    axis_index::Integer
+end
+</code>
+</pre>
+<p>A color scale drawn as a strip (a 1-column heatmap on its own axes) rather than as a Plotly color bar. This is done for a 
+<code>Log10Base
+</code> scale, since only a Plotly log axis shows the ticks of the real values, and a Plotly color bar can&#39;t be one. The 
+<code>offset_index
+</code> is that of its entry in the 
+<code>colors_scale_offsets
+</code>, and the 
+<code>axis_index
+</code> is that of the strip&#39;s X and Y axes.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.place_colors_scale_strips!">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.place_colors_scale_strips!">
+<code>SomeGraphs.Utilities.place_colors_scale_strips!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">place_colors_scale_strips!(;
+    layout::Layout,
+    figure_configuration::FigureConfiguration,
+    colors_scale_strips::AbstractVector{ColorsScaleStrip},
+)::Nothing
+</code>
+</pre>
+<p>Place the 
+<a href="utilities.html#SomeGraphs.Utilities.ColorsScaleStrip">
+<code>ColorsScaleStrip
+</code>
+</a>s (if any) of a 
+<code>layout
+</code> at their 
+<code>colors_scale_offsets
+</code>. This must be called after everything else was added to the 
+<code>layout
+</code>.
+</p>
+<p>The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can only place the axes of a strip inside it. We therefore shrink the graph (and the offsets) to make room for the strips.
 </p>
 </div>
 </section>
@@ -1225,6 +1447,7 @@ end
     bands_configuration::BandsConfiguration,
     bands_scale::Real = 1;
     cross_ref::AbstractString = &quot;x domain&quot;,
+    is_plotly_log::Bool = false,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
@@ -1233,6 +1456,14 @@ end
 <p>The bands stretch across the whole of the 
 <code>cross_ref
 </code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them.
+</p>
+<p>If 
+<code>is_plotly_log
+</code>, the coordinates are for a Plotly log axis (see 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_value">
+<code>plotly_axis_value
+</code>
+</a>).
 </p>
 </div>
 </section>
@@ -1259,6 +1490,7 @@ end
     bands_configuration::BandsConfiguration,
     bands_scale::Real = 1;
     cross_ref::AbstractString = &quot;y domain&quot;,
+    is_plotly_log::Bool = false,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
@@ -1267,6 +1499,14 @@ end
 <p>The bands stretch across the whole of the 
 <code>cross_ref
 </code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them.
+</p>
+<p>If 
+<code>is_plotly_log
+</code>, the coordinates are for a Plotly log axis (see 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_value">
+<code>plotly_axis_value
+</code>
+</a>).
 </p>
 </div>
 </section>
@@ -1287,16 +1527,24 @@ end
 <pre>
 <code class="language-julia hljs">push_diagonal_bands_shapes(
     shapes::AbstractVector{Shape},
-    x_axis_configuration::AxisConfiguration,
-    y_axis_configuration::AxisConfiguration,
+    axis_configuration::AxisConfiguration,
     x_scaled_values_range::Range,
     y_scaled_values_range::Range,
     bands_data::BandsData,
-    bands_configuration::BandsConfiguration
+    bands_configuration::BandsConfiguration;
+    is_plotly_log::Bool = false,
 )::AbstractVector{&lt;:Shape}
 </code>
 </pre>
 <p>Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+</p>
+<p>If 
+<code>is_plotly_log
+</code>, the coordinates are for Plotly log axes (see 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_value">
+<code>plotly_axis_value
+</code>
+</a>).
 </p>
 </div>
 </section>
@@ -1528,6 +1776,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.ColorsScaleStrip">
+<code>SomeGraphs.Utilities.ColorsScaleStrip
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.ConfiguredColors">
 <code>SomeGraphs.Utilities.ConfiguredColors
 </code>
@@ -1642,8 +1896,26 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.place_colors_scale_strips!">
+<code>SomeGraphs.Utilities.place_colors_scale_strips!
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.plotly_axis">
 <code>SomeGraphs.Utilities.plotly_axis
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_value">
+<code>SomeGraphs.Utilities.plotly_axis_value
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis_values">
+<code>SomeGraphs.Utilities.plotly_axis_values
 </code>
 </a>
 </li>
@@ -1734,6 +2006,12 @@ prefer_data(data_values::AbstractVector, index::Integer, configuration_value::An
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.set_layout_colorscale!">
 <code>SomeGraphs.Utilities.set_layout_colorscale!
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.set_layout_twin_log_axis!">
+<code>SomeGraphs.Utilities.set_layout_twin_log_axis!
 </code>
 </a>
 </li>

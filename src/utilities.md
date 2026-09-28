@@ -21,12 +21,17 @@ SomeGraphs.Utilities.entities_hovers
 SomeGraphs.Utilities.displayed_annotations
 SomeGraphs.Utilities.scale_axis_value
 SomeGraphs.Utilities.scale_axis_values
+SomeGraphs.Utilities.plotly_axis_value
+SomeGraphs.Utilities.plotly_axis_values
 SomeGraphs.Utilities.scale_size_values
 SomeGraphs.Utilities.plotly_layout
 SomeGraphs.Utilities.axis_ticks_prefix
 SomeGraphs.Utilities.axis_ticks_suffix
 SomeGraphs.Utilities.set_layout_axis!
+SomeGraphs.Utilities.set_layout_twin_log_axis!
 SomeGraphs.Utilities.set_layout_colorscale!
+SomeGraphs.Utilities.ColorsScaleStrip
+SomeGraphs.Utilities.place_colors_scale_strips!
 SomeGraphs.Utilities.plotly_line_dash
 SomeGraphs.Utilities.SubGraph
 SomeGraphs.Utilities.plotly_sub_graph_axes
