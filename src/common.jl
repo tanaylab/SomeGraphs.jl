@@ -35,6 +35,7 @@ export MatrixValuesData
 export NAMED_COLOR_SCALES
 export PlotlyFigure
 export ScaleConfiguration
+export SidePlacement
 export SizesConfiguration
 export SolidLine
 export StackFractions
@@ -1649,6 +1650,27 @@ level of grouping nested in the groups. Neither has a title.
     groups::VectorValuesData = VectorValuesData()
     subgroups::VectorValuesData = VectorValuesData()
     arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
+end
+
+"""
+    struct SidePlacement
+        order::AbstractVector{<:Integer}
+        hclust::Maybe{Hclust}
+    end
+
+Where the entries of one side of a heatmap were put: their final `order`, and the tree they were put by, if one was
+needed.
+
+  - `order` is the order of the entries of the data, that is, the index of the original entry shown at each position.
+    This is always a permutation of `1:n_entries`, which for a side that isn't reordered at all is the identity.
+  - `hclust` is the tree of the entries, or `nothing` if no tree was needed (see `TreeSource`).
+
+These describe the order of the data, not the order it is displayed in; applying the `origin` is up to whoever shows
+the graph, as is skipping the hidden entries (the order and the tree include them).
+"""
+struct SidePlacement
+    order::AbstractVector{<:Integer}
+    hclust::Maybe{Hclust}
 end
 
 """

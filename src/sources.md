@@ -171,8 +171,32 @@ SomeGraphs.Sources.put_vector_data!
 SomeGraphs.Sources.put_vector_names_data!
 SomeGraphs.Sources.put_vector_mask_data!
 SomeGraphs.Sources.put_vector_order_data!
+SomeGraphs.Sources.put_vector_tree_data!
 SomeGraphs.Sources.put_matrix_data!
 SomeGraphs.Sources.put_matrix_names_data!
+```
+
+## Copying Sides
+
+A side of a heatmap is a data source too, for laying out another heatmap the same way. Each of these copies one part
+of a side, so the two graphs stay independent afterwards. All but the placement are plain copies of inputs; the
+placement is computed, so copying it is special (see [`fill_placement!`](@ref)).
+
+```@docs
+SomeGraphs.Sources.fill_side!
+SomeGraphs.Sources.fill_entities!
+SomeGraphs.Sources.fill_arrangement!
+SomeGraphs.Sources.fill_annotations!
+SomeGraphs.Sources.fill_configuration!
+SomeGraphs.Sources.fill_placement!
+```
+
+**Example:**
+
+Show a second heatmap of other values with the rows laid out, grouped and annotated as in the first:
+
+```julia
+fill_side!(rows_side(other), rows_side(graph))
 ```
 
 ## Hovers

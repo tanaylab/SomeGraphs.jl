@@ -18,7 +18,6 @@ SomeGraphs.Heatmaps.EntriesConfiguration
 SomeGraphs.Heatmaps.HeatmapSideConfiguration
 SomeGraphs.Heatmaps.TreeSource
 SomeGraphs.Heatmaps.OrderSource
-SomeGraphs.Heatmaps.SidePlacement
 SomeGraphs.Heatmaps.HeatmapGraphPlacement
 SomeGraphs.Heatmaps.heatmap_placement
 SomeGraphs.Heatmaps.reset_placement!

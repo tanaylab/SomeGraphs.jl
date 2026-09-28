@@ -2305,6 +2305,36 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.put_vector_tree_data!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.put_vector_tree_data!">
+<code>SomeGraphs.Sources.put_vector_tree_data!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">put_vector_tree_data!(sinks::VectorDataSinks, hclust::Maybe{Hclust})::Nothing
+</code>
+</pre>
+<p>Give the arrangement of the 
+<code>sinks
+</code> (that is, of the sides of a heatmap among them) the 
+<code>hclust
+</code> tree of its entries. The twin of 
+<a href="sources.html#SomeGraphs.Sources.put_vector_order_data!">
+<code>put_vector_order_data!
+</code>
+</a> for the tree.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Sources.put_matrix_data!">
 <a class="docstring-binding" href="#SomeGraphs.Sources.put_matrix_data!">
 <code>SomeGraphs.Sources.put_matrix_data!
@@ -2385,6 +2415,260 @@ end
 </section>
 </details>
 </article>
+<h2 id="Copying-Sides">
+<a class="docs-heading-anchor" href="#Copying-Sides">Copying Sides
+</a>
+<a id="Copying-Sides-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Copying-Sides" title="Permalink">
+</a>
+</h2>
+<p>A side of a heatmap is a data source too, for laying out another heatmap the same way. Each of these copies one part of a side, so the two graphs stay independent afterwards. All but the placement are plain copies of inputs; the placement is computed, so copying it is special (see 
+<a href="sources.html#SomeGraphs.Sources.fill_placement!">
+<code>fill_placement!
+</code>
+</a>).
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fill_side!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fill_side!">
+<code>SomeGraphs.Sources.fill_side!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_side!(target::HeatmapSide, source::HeatmapSide)::Nothing
+</code>
+</pre>
+<p>Fill the 
+<code>target
+</code> side with a copy of everything about the 
+<code>source
+</code> side: its entities, arrangement, annotations and configuration, then its computed placement. This lays out the 
+<code>target
+</code> exactly as the 
+<code>source
+</code>, even when the data of the two graphs differ.
+</p>
+<p>The placement comes last because 
+<a href="sources.html#SomeGraphs.Sources.fill_placement!">
+<code>fill_placement!
+</code>
+</a> is not a plain copy. It turns the computed placement of the 
+<code>source
+</code> into inputs of the 
+<code>target
+</code>, and clears the copied inputs which then have no effect.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fill_entities!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fill_entities!">
+<code>SomeGraphs.Sources.fill_entities!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_entities!(sinks::VectorDataSinks, source::Union{HeatmapSide, VectorEntitiesData})::Nothing
+</code>
+</pre>
+<p>Fill the entities of the 
+<code>sinks
+</code> with a copy of the names, hovers, mask and order of the entities of the 
+<code>source
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fill_arrangement!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fill_arrangement!">
+<code>SomeGraphs.Sources.fill_arrangement!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_arrangement!(sinks::VectorDataSinks, source::Union{HeatmapSide, ArrangementData})::Nothing
+</code>
+</pre>
+<p>Fill the arrangement of the 
+<code>sinks
+</code> (that is, of the sides of a heatmap among them) with a copy of the tree, groups, subgroups and 
+<code>arrange_by
+</code> matrix of the arrangement of the 
+<code>source
+</code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fill_annotations!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fill_annotations!">
+<code>SomeGraphs.Sources.fill_annotations!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_annotations!(target::HeatmapSide, source::HeatmapSide)::Nothing
+</code>
+</pre>
+<p>Fill the annotations of the 
+<code>target
+</code> side with a copy of the annotations of the 
+<code>source
+</code> side, and of the order they are shown in.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fill_configuration!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fill_configuration!">
+<code>SomeGraphs.Sources.fill_configuration!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_configuration!(target::HeatmapSide, source::HeatmapSide)::Nothing
+</code>
+</pre>
+<p>Fill the configuration of the 
+<code>target
+</code> side with a copy of the configuration of the 
+<code>source
+</code> side.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fill_placement!">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fill_placement!">
+<code>SomeGraphs.Sources.fill_placement!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fill_placement!(target::HeatmapSide, source::Union{HeatmapSide, SidePlacement})::Nothing
+</code>
+</pre>
+<p>Fill the 
+<code>target
+</code> side with the computed placement of the 
+<code>source
+</code>: its final order into the 
+<code>order
+</code> of the entities, and its tree (if any) into the 
+<code>hclust
+</code> of the arrangement. The 
+<code>target
+</code> is then placed exactly as the 
+<code>source
+</code> was, without clustering or slanting anything.
+</p>
+<p>Unlike the other fills, this does not copy an input of the graph. It copies what the inputs of the 
+<code>source
+</code> computed, and turns it into inputs of the 
+<code>target
+</code>. The inputs of the 
+<code>target
+</code> which computed its own placement then have no effect, and giving an input with no effect is an error (see 
+<code>HeatmapSideConfiguration
+</code>). So this also clears them:
+</p>
+<ul>
+<li>The 
+<code>tree_source
+</code>, 
+<code>order_source
+</code>, 
+<code>linkage
+</code> and 
+<code>metric
+</code> of the configuration of the 
+<code>target
+</code>. The sources are inferred from the given order and tree instead.
+</li>
+<li>The 
+<code>arrange_by
+</code> matrix of the arrangement of the 
+<code>target
+</code>, which nothing is clustered by.
+</li>
+<li>The 
+<code>groups
+</code> of the arrangement of the 
+<code>target
+</code> if its configuration has no 
+<code>groups_gap
+</code>, and likewise the 
+<code>subgroups
+</code> if it has no 
+<code>subgroups_gap
+</code>. Groups which are drawn as gaps are kept.
+</li>
+</ul>
+<p>Since what is cleared depends on the configuration of the 
+<code>target
+</code>, fill it first when filling both (as 
+<a href="sources.html#SomeGraphs.Sources.fill_side!">
+<code>fill_side!
+</code>
+</a> does).
+</p>
+</div>
+</section>
+</details>
+</article>
+<p>
+<strong>Example:
+</strong>
+</p>
+<p>Show a second heatmap of other values with the rows laid out, grouped and annotated as in the first:
+</p>
+<pre>
+<code class="language-julia hljs">fill_side!(rows_side(other), rows_side(graph))
+</code>
+</pre>
 <h2 id="Hovers">
 <a class="docs-heading-anchor" href="#Hovers">Hovers
 </a>
@@ -2484,12 +2768,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='96sdxJCsmz' class='' style=';'>
+<div id='uUv3iSzoE8' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("96sdxJCsmz")
+    const PLOT = document.getElementById("uUv3iSzoE8")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
 <br>Y: 0
 <br>Color: 0","X: 10
@@ -2851,6 +3135,42 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.fill_annotations!">
+<code>SomeGraphs.Sources.fill_annotations!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.fill_arrangement!">
+<code>SomeGraphs.Sources.fill_arrangement!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.fill_configuration!">
+<code>SomeGraphs.Sources.fill_configuration!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.fill_entities!">
+<code>SomeGraphs.Sources.fill_entities!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.fill_placement!">
+<code>SomeGraphs.Sources.fill_placement!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.fill_side!">
+<code>SomeGraphs.Sources.fill_side!
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.line_part_fields">
 <code>SomeGraphs.Sources.line_part_fields
 </code>
@@ -2907,6 +3227,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.put_vector_order_data!">
 <code>SomeGraphs.Sources.put_vector_order_data!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.put_vector_tree_data!">
+<code>SomeGraphs.Sources.put_vector_tree_data!
 </code>
 </a>
 </li>

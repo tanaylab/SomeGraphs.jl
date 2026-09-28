@@ -32,7 +32,6 @@ export RCompatibleTreeReorder
 export reset_placement!
 export SameOrder
 export SameTree
-export SidePlacement
 export SingleLinkage
 export SlantedOrder
 export SlantedPreSquaredOrder
@@ -98,27 +97,6 @@ Specify the linkage to use when performing hierarchical clustering (`hclust` / `
 Specify where the origin (row 1 column 1) should be displayed. The Plotly default is `HeatmapBottomLeft`.
 """
 @enum HeatmapOrigin HeatmapTopLeft HeatmapTopRight HeatmapBottomLeft HeatmapBottomRight
-
-"""
-    struct SidePlacement
-        order::AbstractVector{<:Integer}
-        hclust::Maybe{Hclust}
-    end
-
-Where the entries of one side of a heatmap were put: their final `order`, and the tree they were put by, if one was
-needed.
-
-  - `order` is the order of the entries of the data, that is, the index of the original entry shown at each position.
-    This is always a permutation of `1:n_entries`, which for a side that isn't reordered at all is the identity.
-  - `hclust` is the tree of the entries, or `nothing` if no tree was needed (see [`TreeSource`](@ref)).
-
-These describe the order of the data, not the order it is displayed in; applying the `origin` is up to whoever shows
-the graph, as is skipping the hidden entries (the order and the tree include them).
-"""
-struct SidePlacement
-    order::AbstractVector{<:Integer}
-    hclust::Maybe{Hclust}
-end
 
 """
     struct HeatmapGraphPlacement
@@ -630,6 +608,10 @@ end
 function Sources.side_placement(side::HeatmapSide)::SidePlacement
     placement = heatmap_placement(side.graph)
     return side.is_rows ? placement.rows : placement.columns
+end
+
+function Sources.reset_side_placement!(side::HeatmapSide)::Nothing
+    return reset_placement!(side.graph)
 end
 
 """

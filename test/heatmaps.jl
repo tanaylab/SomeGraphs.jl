@@ -1198,6 +1198,122 @@ nested_test("heatmaps") do
         end
     end
 
+    # Copying a side of one heatmap onto a side of another, which lays it out the same way even for other values.
+    nested_test("fill") do
+        # Columns 1 and 3 are close, as are 2 and 4, so a clustering pairs them.
+        base = heatmap_graph(; entries = MatrixValuesData(Float32[0 5 1 6; 0 5 1 6; 0 5 1 6]))
+        base.data.columns.entities.names = ["A", "B", "C", "D"]
+        base.data.columns.entities.hovers = ["a", "b", "c", "d"]
+        base.data.columns.arrangement.groups.vector = [1, 1, 2, 2]
+        base.data.columns.arrangement.subgroups.vector = ["P", "Q", "R", "S"]
+        base.data.columns.arrangement.arrange_by = Float32[0 5 1 6]
+        push!(base.data.columns.annotations, AnnotationData(; values = VectorValuesData([1, 2, 3, 4], "score")))
+        base.configuration.columns.tree_source = ClusteredTree
+        base.configuration.columns.order_source = OptimalTreeReorder
+        base.configuration.columns.linkage = CompleteLinkage
+        base.configuration.columns.dendogram_size = 0.1
+
+        other = heatmap_graph(; entries = MatrixValuesData(Float32[9 8 7 6; 5 4 3 2; 1 0 1 0]))
+
+        nested_test("side") do
+            fill_side!(columns_side(other), columns_side(base))
+            validate(ValidationContext(["other"]), other)
+
+            @test other.placement.columns.order == base.placement.columns.order
+            @test other.placement.columns.hclust.merges == base.placement.columns.hclust.merges
+            @test other.data.columns.entities.names == ["A", "B", "C", "D"]
+            @test other.data.columns.entities.names !== base.data.columns.entities.names
+            @test other.data.columns.annotations[1].values.vector == [1, 2, 3, 4]
+            @test other.data.columns.annotations[1] !== base.data.columns.annotations[1]
+            @test other.configuration.columns.dendogram_size == 0.1
+
+            # The inputs which computed the placement of the base have no effect on the other, so they are cleared. The
+            # groups are drawn as gaps, so they are kept; the subgroups only constrained the clustering.
+            @test other.configuration.columns.tree_source === nothing
+            @test other.configuration.columns.order_source === nothing
+            @test other.configuration.columns.linkage === nothing
+            @test other.data.columns.arrangement.arrange_by === nothing
+            @test other.data.columns.arrangement.groups.vector == [1, 1, 2, 2]
+            @test other.data.columns.arrangement.subgroups.vector === nothing
+
+            # The base is left as it was.
+            @test base.configuration.columns.tree_source == ClusteredTree
+            @test base.data.columns.arrangement.subgroups.vector == ["P", "Q", "R", "S"]
+            return nothing
+        end
+
+        # Groups not drawn as gaps only constrained the clustering of the base, so they are cleared too.
+        nested_test("!groups_gap") do
+            base.configuration.columns.groups_gap = nothing
+            fill_side!(columns_side(other), columns_side(base))
+            validate(ValidationContext(["other"]), other)
+            @test other.data.columns.arrangement.groups.vector === nothing
+            @test other.placement.columns.order == base.placement.columns.order
+            return nothing
+        end
+
+        # A side is copied onto the other side of the same (square) graph.
+        nested_test("same") do
+            square = heatmap_graph(; entries = MatrixValuesData(Float32[0 5 1; 0 5 1; 0 5 1]))
+            square.configuration.columns.order_source = OptimalTreeReorder
+            columns_order = square.placement.columns.order
+            fill_side!(rows_side(square), columns_side(square))
+            @test square.placement.rows.order == columns_order
+            @test square.placement.columns.order == columns_order
+            return nothing
+        end
+
+        nested_test("entities") do
+            base.data.columns.entities.order = [4, 3, 2, 1]
+            fill_entities!(columns_side(other), columns_side(base))
+            @test other.data.columns.entities.names == ["A", "B", "C", "D"]
+            @test other.data.columns.entities.hovers == ["a", "b", "c", "d"]
+            @test other.data.columns.entities.order == [4, 3, 2, 1]
+            return nothing
+        end
+
+        nested_test("arrangement") do
+            fill_arrangement!(columns_side(other), columns_side(base))
+            @test other.data.columns.arrangement.groups.vector == [1, 1, 2, 2]
+            @test other.data.columns.arrangement.subgroups.vector == ["P", "Q", "R", "S"]
+            @test other.data.columns.arrangement.arrange_by == Float32[0 5 1 6]
+            @test other.data.columns.arrangement.groups !== base.data.columns.arrangement.groups
+            return nothing
+        end
+
+        nested_test("configuration") do
+            fill_configuration!(columns_side(other), columns_side(base))
+            @test other.configuration.columns.tree_source == ClusteredTree
+            @test other.configuration.columns.linkage == CompleteLinkage
+            @test other.configuration.columns.dendogram_line !== base.configuration.columns.dendogram_line
+            return nothing
+        end
+
+        # The placement given as is, and replacing a placement already computed.
+        nested_test("placement") do
+            @test other.placement.columns.order == 1:4
+            fill_placement!(columns_side(other), base.placement.columns)
+            @test other.placement.columns.order == base.placement.columns.order
+            @test other.data.columns.arrangement.hclust === base.placement.columns.hclust
+            return nothing
+        end
+
+        # A placement without a tree gives the order alone.
+        nested_test("order") do
+            fill_placement!(columns_side(other), SidePlacement([4, 3, 2, 1], nothing))
+            @test other.data.columns.arrangement.hclust === nothing
+            @test other.placement.columns.order == [4, 3, 2, 1]
+            return nothing
+        end
+
+        nested_test("tree") do
+            put_vector_tree_data!(columns_side(other), base.placement.columns.hclust)
+            @test other.data.columns.arrangement.hclust === base.placement.columns.hclust
+            @test other.placement.columns.order == base.placement.columns.order
+            return nothing
+        end
+    end
+
     # The distinct labels of the entries, in the order they appear in, which has one entry per label if (and only if)
     # each label covers a contiguous range of the order.
     function labels_in_order(order::AbstractVector{<:Integer}, label_per_entry::AbstractVector)::Vector

@@ -1075,55 +1075,6 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Heatmaps.SidePlacement">
-<a class="docstring-binding" href="#SomeGraphs.Heatmaps.SidePlacement">
-<code>SomeGraphs.Heatmaps.SidePlacement
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">struct SidePlacement
-    order::AbstractVector{&lt;:Integer}
-    hclust::Maybe{Hclust}
-end
-</code>
-</pre>
-<p>Where the entries of one side of a heatmap were put: their final 
-<code>order
-</code>, and the tree they were put by, if one was needed.
-</p>
-<ul>
-<li>
-<code>order
-</code> is the order of the entries of the data, that is, the index of the original entry shown at each position. This is always a permutation of 
-<code>1:n_entries
-</code>, which for a side that isn&#39;t reordered at all is the identity.
-</li>
-<li>
-<code>hclust
-</code> is the tree of the entries, or 
-<code>nothing
-</code> if no tree was needed (see 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.TreeSource">
-<code>TreeSource
-</code>
-</a>).
-</li>
-</ul>
-<p>These describe the order of the data, not the order it is displayed in; applying the 
-<code>origin
-</code> is up to whoever shows the graph, as is skipping the hidden entries (the order and the tree include them).
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
 <summary id="SomeGraphs.Heatmaps.HeatmapGraphPlacement">
 <a class="docstring-binding" href="#SomeGraphs.Heatmaps.HeatmapGraphPlacement">
 <code>SomeGraphs.Heatmaps.HeatmapGraphPlacement
@@ -1142,7 +1093,7 @@ end
 </code>
 </pre>
 <p>The computed 
-<a href="heatmaps.html#SomeGraphs.Heatmaps.SidePlacement">
+<a href="common.html#SomeGraphs.Common.SidePlacement">
 <code>SidePlacement
 </code>
 </a> of the rows and of the columns of a heatmap graph, as returned by 
@@ -1308,12 +1259,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='64uoLb7xkZ' class='' style=';'>
+<div id='xXETTunTWG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("64uoLb7xkZ")
+    const PLOT = document.getElementById("xXETTunTWG")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1356,12 +1307,12 @@ using PlotlyDocumenter
 to_documenter(flipped.figure)
 </code>
 </pre>
-<div id='a7ZrEBe20F' class='' style=';'>
+<div id='MjNC4CIuum' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("a7ZrEBe20F")
+    const PLOT = document.getElementById("MjNC4CIuum")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1404,12 +1355,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='XjZ0oMwIQZ' class='' style=';'>
+<div id='iH3MqXEAZV' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("XjZ0oMwIQZ")
+    const PLOT = document.getElementById("iH3MqXEAZV")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X
 <br>A","X
 <br>B","X
@@ -1464,12 +1415,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='vtVlRK1Ba7' class='' style=';'>
+<div id='FHXYzqkjRZ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("vtVlRK1Ba7")
+    const PLOT = document.getElementById("FHXYzqkjRZ")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A
 <br>X","A
 <br>Y","A
@@ -1530,12 +1481,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='JTL7cq1cB5' class='' style=';'>
+<div id='25xx0sEjjw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("JTL7cq1cB5")
+    const PLOT = document.getElementById("25xx0sEjjw")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A
 <br>Z","A
 <br>X","A
@@ -1598,12 +1549,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='dd82ir0VjX' class='' style=';'>
+<div id='huHRYG4pVw' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("dd82ir0VjX")
+    const PLOT = document.getElementById("huHRYG4pVw")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A
 <br>X","","A
 <br>Z","A
@@ -1657,12 +1608,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='0B8HWsIC7v' class='' style=';'>
+<div id='9wjOkSGrgx' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("0B8HWsIC7v")
+    const PLOT = document.getElementById("9wjOkSGrgx")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A
 <br>W","A
 <br>U","","A
@@ -1720,12 +1671,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='63XE2RjTiR' class='' style=';'>
+<div id='LmGODzDFoW' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("63XE2RjTiR")
+    const PLOT = document.getElementById("LmGODzDFoW")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A
 <br>X","A
 <br>Y","A
@@ -1818,12 +1769,6 @@ to_documenter(graph.figure)
 <li>
 <a href="heatmaps.html#SomeGraphs.Heatmaps.OrderSource">
 <code>SomeGraphs.Heatmaps.OrderSource
-</code>
-</a>
-</li>
-<li>
-<a href="heatmaps.html#SomeGraphs.Heatmaps.SidePlacement">
-<code>SomeGraphs.Heatmaps.SidePlacement
 </code>
 </a>
 </li>

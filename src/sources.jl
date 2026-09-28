@@ -90,16 +90,24 @@ export series_part_fields
 export values_axis_vector_fields
 export x_axis_vector_fields
 export y_axis_vector_fields
+export fill_annotations!
+export fill_arrangement!
+export fill_configuration!
+export fill_entities!
+export fill_placement!
+export fill_side!
 export put_matrix_data!
 export put_matrix_names_data!
 export put_vector_data!
 export put_vector_mask_data!
 export put_vector_names_data!
 export put_vector_order_data!
+export put_vector_tree_data!
 
 using ..Common
 using ..Validations
 
+import Clustering.Hclust  # NOLINT
 import ..Validations.Maybe
 
 """
@@ -1158,6 +1166,218 @@ function put_matrix_names_data!(
 )::Nothing
     return throw(ArgumentError("can't name the rows and columns of a vector sink: $(typeof(sinks))"))
 end
+
+"""
+    put_vector_tree_data!(sinks::VectorDataSinks, hclust::Maybe{Hclust})::Nothing
+
+Give the arrangement of the `sinks` (that is, of the sides of a heatmap among them) the `hclust` tree of its entries.
+The twin of [`put_vector_order_data!`](@ref) for the tree.
+"""
+function put_vector_tree_data!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    hclust::Maybe{Hclust},
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return put_vector_tree_data!(sink, hclust)
+    end
+    reset_sides_placement!(sinks)
+    return nothing
+end
+
+function put_vector_tree_data!(arrangement::ArrangementData, hclust::Maybe{Hclust})::Nothing
+    arrangement.hclust = hclust
+    return nothing
+end
+
+# A tree arranges the entries of a heatmap side, so it belongs to the arrangement rather than to the values of a role or
+# to the entities.
+function put_vector_tree_data!(::Union{VectorValuesData, VectorEntitiesData}, ::Maybe{Hclust})::Nothing
+    return nothing
+end
+
+"""
+    fill_entities!(sinks::VectorDataSinks, source::Union{HeatmapSide, VectorEntitiesData})::Nothing
+
+Fill the entities of the `sinks` with a copy of the names, hovers, mask and order of the entities of the `source`.
+"""
+function fill_entities!(sinks::VectorDataSinks, side::HeatmapSide)::Nothing
+    return fill_entities!(sinks, side_data(side).entities)
+end
+
+function fill_entities!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    source::VectorEntitiesData,
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return fill_entities!(sink, source)
+    end
+    reset_sides_placement!(sinks)
+    return nothing
+end
+
+function fill_entities!(entities::VectorEntitiesData, source::VectorEntitiesData)::Nothing
+    entities.names = copy_or_nothing(source.names)
+    entities.hovers = copy_or_nothing(source.hovers)
+    entities.mask = copy_or_nothing(source.mask)
+    entities.order = copy_or_nothing(source.order)
+    return nothing
+end
+
+# The entities are all that is filled.
+function fill_entities!(::Union{VectorValuesData, ArrangementData}, ::VectorEntitiesData)::Nothing
+    return nothing
+end
+
+"""
+    fill_arrangement!(sinks::VectorDataSinks, source::Union{HeatmapSide, ArrangementData})::Nothing
+
+Fill the arrangement of the `sinks` (that is, of the sides of a heatmap among them) with a copy of the tree, groups,
+subgroups and `arrange_by` matrix of the arrangement of the `source`.
+"""
+function fill_arrangement!(sinks::VectorDataSinks, side::HeatmapSide)::Nothing
+    return fill_arrangement!(sinks, side_data(side).arrangement)
+end
+
+function fill_arrangement!(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+    source::ArrangementData,
+)::Nothing
+    visit_data_sinks(sinks) do sink
+        return fill_arrangement!(sink, source)
+    end
+    reset_sides_placement!(sinks)
+    return nothing
+end
+
+function fill_arrangement!(arrangement::ArrangementData, source::ArrangementData)::Nothing
+    arrangement.hclust = source.hclust
+    arrangement.groups = deepcopy(source.groups)
+    arrangement.subgroups = deepcopy(source.subgroups)
+    arrangement.arrange_by = copy_or_nothing(source.arrange_by)
+    return nothing
+end
+
+# The arrangement is all that is filled.
+function fill_arrangement!(::Union{VectorValuesData, VectorEntitiesData}, ::ArrangementData)::Nothing
+    return nothing
+end
+
+"""
+    fill_annotations!(target::HeatmapSide, source::HeatmapSide)::Nothing
+
+Fill the annotations of the `target` side with a copy of the annotations of the `source` side, and of the order they
+are shown in.
+"""
+function fill_annotations!(target::HeatmapSide, source::HeatmapSide)::Nothing
+    target_data = side_data(target)
+    source_data = side_data(source)
+    target_data.annotations = [deepcopy(annotation) for annotation in source_data.annotations]
+    target_data.annotations_order = copy_or_nothing(source_data.annotations_order)
+    return nothing
+end
+
+"""
+    fill_configuration!(target::HeatmapSide, source::HeatmapSide)::Nothing
+
+Fill the configuration of the `target` side with a copy of the configuration of the `source` side.
+"""
+function fill_configuration!(target::HeatmapSide, source::HeatmapSide)::Nothing
+    target_configuration = side_configuration(target)
+    source_configuration = side_configuration(source)
+    for field in fieldnames(typeof(source_configuration))
+        setfield!(target_configuration, field, deepcopy(getfield(source_configuration, field)))
+    end
+    reset_side_placement!(target)
+    return nothing
+end
+
+"""
+    fill_placement!(target::HeatmapSide, source::Union{HeatmapSide, SidePlacement})::Nothing
+
+Fill the `target` side with the computed placement of the `source`: its final order into the `order` of the entities,
+and its tree (if any) into the `hclust` of the arrangement. The `target` is then placed exactly as the `source` was,
+without clustering or slanting anything.
+
+Unlike the other fills, this does not copy an input of the graph. It copies what the inputs of the `source` computed,
+and turns it into inputs of the `target`. The inputs of the `target` which computed its own placement then have no
+effect, and giving an input with no effect is an error (see `HeatmapSideConfiguration`). So this also clears them:
+
+  - The `tree_source`, `order_source`, `linkage` and `metric` of the configuration of the `target`. The sources are
+    inferred from the given order and tree instead.
+  - The `arrange_by` matrix of the arrangement of the `target`, which nothing is clustered by.
+  - The `groups` of the arrangement of the `target` if its configuration has no `groups_gap`, and likewise the
+    `subgroups` if it has no `subgroups_gap`. Groups which are drawn as gaps are kept.
+
+Since what is cleared depends on the configuration of the `target`, fill it first when filling both (as
+[`fill_side!`](@ref) does).
+"""
+function fill_placement!(target::HeatmapSide, side::HeatmapSide)::Nothing
+    return fill_placement!(target, side_placement(side))
+end
+
+function fill_placement!(target::HeatmapSide, placement::SidePlacement)::Nothing
+    data = side_data(target)
+    data.entities.order = copy(placement.order)
+
+    arrangement = data.arrangement
+    arrangement.hclust = placement.hclust
+    arrangement.arrange_by = nothing
+
+    configuration = side_configuration(target)
+    configuration.tree_source = nothing
+    configuration.order_source = nothing
+    configuration.linkage = nothing
+    configuration.metric = nothing
+    if configuration.groups_gap === nothing
+        arrangement.groups.vector = nothing
+    end
+    if configuration.subgroups_gap === nothing
+        arrangement.subgroups.vector = nothing
+    end
+
+    reset_side_placement!(target)
+    return nothing
+end
+
+"""
+    fill_side!(target::HeatmapSide, source::HeatmapSide)::Nothing
+
+Fill the `target` side with a copy of everything about the `source` side: its entities, arrangement, annotations and
+configuration, then its computed placement. This lays out the `target` exactly as the `source`, even when the data of
+the two graphs differ.
+
+The placement comes last because [`fill_placement!`](@ref) is not a plain copy. It turns the computed placement of the
+`source` into inputs of the `target`, and clears the copied inputs which then have no effect.
+"""
+function fill_side!(target::HeatmapSide, source::HeatmapSide)::Nothing
+    # The placement is taken before the copies, which reset the cached placement of the graph of the `target`. That may
+    # be the graph of the `source`, when copying one side of a graph onto the other.
+    placement = side_placement(source)
+    fill_entities!(target, source)
+    fill_arrangement!(target, source)
+    fill_annotations!(target, source)
+    fill_configuration!(target, source)
+    fill_placement!(target, placement)
+    return nothing
+end
+
+# A copy of the `values`, if any, so the filled graph does not share them with the source.
+function copy_or_nothing(values::Maybe{AbstractArray})::Maybe{AbstractArray}
+    return values === nothing ? nothing : copy(values)
+end
+
+# The sides of a heatmap among the `sinks`, whose placement is recomputed from their data on next use.
+function reset_sides_placement!(sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector})::Nothing
+    for sink in (sinks isa Union{Tuple, AbstractVector} ? sinks : (sinks,))
+        if sink isa HeatmapSide
+            reset_side_placement!(sink)
+        end
+    end
+    return nothing
+end
+
+# Forget the cached placement of the graph of a heatmap `side`.
+function reset_side_placement! end
 
 # The values as the strings a hover shows. Only strings can be a hover, so anything else is converted.
 function hover_strings(value_per_entry::AbstractArray{<:AbstractString})::AbstractArray{<:AbstractString}
