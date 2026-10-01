@@ -16,7 +16,7 @@
 <script data-outdated-warner src="assets/warner.js">
 </script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/>
@@ -80,6 +80,66 @@
 <li>
 <a class="tocitem" href="heatmaps.html">Heatmaps
 </a>
+</li>
+<li class="is-active">
+<a class="tocitem" href="sources.html">Sources
+</a>
+<ul class="internal">
+<li>
+<a class="tocitem" href="#Vectors">
+<span>Vectors
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Types">
+<span>Types
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Matrices">
+<span>Matrices
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Parts">
+<span>Parts
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Sinks">
+<span>Sinks
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Puts">
+<span>Puts
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Copying-Sides">
+<span>Copying Sides
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Hovers">
+<span>Hovers
+</span>
+</a>
+</li>
+<li>
+<a class="tocitem" href="#Index">
+<span>Index
+</span>
+</a>
+</li>
+</ul>
 </li>
 <li>
 <a class="tocitem" href="utilities.html">Utilities
@@ -2144,7 +2204,7 @@ end
 <section>
 <div>
 <p>What a data source writing a value per entity accepts: every 
-<a href="sources.html#Sinks">
+<a href="sources.html#SomeGraphs.Sources.Sinks">
 <code>Sinks
 </code>
 </a> but a 
@@ -2170,7 +2230,7 @@ end
 <section>
 <div>
 <p>What a data source writing a value per row per column accepts: every 
-<a href="sources.html#Sinks">
+<a href="sources.html#SomeGraphs.Sources.Sinks">
 <code>Sinks
 </code>
 </a> but a 
@@ -2844,37 +2904,13 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='YQDZ7gOM87' class='' style=';'>
+<div id='6RyNOssuGe' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("YQDZ7gOM87")
-    const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0
-<br>Y: 0
-<br>Color: 0","X: 10
-<br>Y: 1
-<br>Color: 1","X: 20
-<br>Y: 4
-<br>Color: 2","X: 30
-<br>Y: 9
-<br>Color: 3","X: 40
-<br>Y: 16
-<br>Color: 4","X: 50
-<br>Y: 25
-<br>Color: 5","X: 60
-<br>Y: 36
-<br>Color: 6","X: 70
-<br>Y: 49
-<br>Color: 7","X: 80
-<br>Y: 64
-<br>Color: 8","X: 90
-<br>Y: 81
-<br>Color: 9","X: 100
-<br>Y: 100
-<br>Color: 10"],"hovertemplate":"%{text}
-<extra>
-</extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    const PLOT = document.getElementById("6RyNOssuGe")
+    const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
     // If width is not specified, set it to 100%
@@ -3423,6 +3459,12 @@ to_documenter(graph.figure)
 </ul>
 </article>
 <nav class="docs-footer">
+<a class="docs-footer-prevpage" href="heatmaps.html">« Heatmaps
+</a>
+<a class="docs-footer-nextpage" href="utilities.html">Utilities »
+</a>
+<div class="flexbox-break">
+</div>
 <p class="footer-message">Powered by 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
 </a> and the 
@@ -3467,7 +3509,7 @@ to_documenter(graph.figure)
 <hr/>
 <p>This document was generated with 
 <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl
-</a> version 1.17.0. Using Julia version 1.12.6.
+</a> version 1.19.0. Using Julia version 1.12.6.
 </p>
 </section>
 <footer class="modal-card-foot">

@@ -1,0 +1,13 @@
+# The package-specific documentation settings, read by `deps/document.jl`.
+
+pages = [
+    "index.md",
+    "validations.md",
+    "common.md",
+    "distributions.md",
+    "scatters.md",
+    "bars.md",
+    "heatmaps.md",
+    "sources.md",
+    "utilities.md",
+]

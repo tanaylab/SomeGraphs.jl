@@ -1,5 +1,9 @@
 """
 Wrappers around Plotly to generate some types of graphs.
+
+The included modules are:
+
+![](assets/modules.svg)
 """
 module SomeGraphs
 
