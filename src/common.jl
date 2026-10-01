@@ -67,9 +67,9 @@ import ..Validations.Maybe
 """
 The type of a rendered graph which Julia knows how to display.
 
-A plotly figure contains everything needed to display an interactive graph (or generate a static one on disk). It can also be
-converted to a JSON string for handing it over to a different programming language (e.g., to be used to display the
-interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
+A plotly figure contains everything needed to display an interactive graph (or generate a static one on disk). It can
+also be converted to a JSON string for handing it over to a different programming language (e.g., to be used to display
+the interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
 """
 PlotlyFigure = Plot
 
@@ -144,7 +144,7 @@ Validate that the combination of data and configuration in a graph is valid, aft
 isn't invoked manually, instead it is called by the overall `validate` of the graph. It is provided (with a default
 empty implementation) to allow for type-specific validations.
 """
-function validate_graph(::Graph)::Maybe{AbstractString}
+function validate_graph(::Graph)::Maybe{AbstractString}  # UNTESTED
     return nothing
 end
 
@@ -275,8 +275,8 @@ Generic configuration that applies to the whole figure. Each complete [`Abstract
 The optional `width` and `height` are in pixels, that is, 1/96 of an inch. The `margins` are specified in the same
 units.
 
-You can also manually change the `background_color` (inside the graph's area) and `paper_color` (outside the graph's area,
-that is, the margins).
+You can also manually change the `background_color` (inside the graph's area) and `paper_color` (outside the graph's
+area, that is, the margins).
 
 If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
 will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any), each
@@ -403,7 +403,8 @@ function Validations.validate(context::ValidationContext, scale_configuration::S
         if scale_configuration.log_regularization != 0
             throw(
                 ArgumentError(
-                    "non-zero non-log $(location(context)).log_regularization: $(scale_configuration.log_regularization)",
+                    "non-zero non-log $(location(context)).log_regularization: " *
+                    "$(scale_configuration.log_regularization)",
                 ),
             )
         end
@@ -449,8 +450,8 @@ ends). This keeps round markers at the extreme values from being clipped by the 
 
 The `show_ticks` and/or `show_grid` can be disabled for a cleaner (though less informative) graph appearance. By default
 the grid lines are shown in `lightgrey`. The `ticks_angle` rotates the tick labels and is measured relative to the axis
-(between -90 and 90): 0 keeps the text parallel to the axis and ±90 stands it perpendicular, positive being clockwise. By
-default (`nothing`) the labels are horizontal, which is the readable orientation for numbers regardless of the axis
+(between -90 and 90): 0 keeps the text parallel to the axis and ±90 stands it perpendicular, positive being clockwise.
+By default (`nothing`) the labels are horizontal, which is the readable orientation for numbers regardless of the axis
 direction.
 
 If `title` is specified, it will be shown next to the axis. However, in some cases the correct title depends on the data
@@ -850,9 +851,9 @@ absolute values.
 
 A `_r` suffix specifies reversing the order of the scale.
 
-You can also append a final `_z:<value_fraction>:<color_fraction>` suffix to the name. This will map values in the bottom
-0..`value_fraction` of the range to white, and map the rest of the values to the top `color_fraction`..1 range of the
-scale. For example, `Blues_z:0.3:0.2` will color the bottom 30% of the values in white, and color the top 70% of the
+You can also append a final `_z:<value_fraction>:<color_fraction>` suffix to the name. This will map values in the
+bottom 0..`value_fraction` of the range to white, and map the rest of the values to the top `color_fraction`..1 range of
+the scale. For example, `Blues_z:0.3:0.2` will color the bottom 30% of the values in white, and color the top 70% of the
 values to the top 80% of the `Blues` scale.
 
 A `_c:<value_fraction>:<color_fraction>` works similarly to the `_z` suffix, except that the fractions are centered on
@@ -1413,26 +1414,27 @@ Configure how to color some data. Supported combinations of configuration and da
 
 Any other combination of configuration is not allowed.
 
-**Restricted Scale:** The `scale` can't specify `log_base`, `percent`, `minimum`, `maximum` as they make no sense in this case.
+**Restricted Scale:** The `scale` can't specify `log_base`, `percent`, `minimum`, `maximum` as they make no sense in
+this case.
 
 **Named fixed (1):** All the data entities will be given the same `fixed` color.
 
 **Auto fixed (2):** All the data entities will be given the same color, chosen automatically by Plotly.
 
-**Named data (3):** The colors data contains explicit color names. An empty color name will prevent the matching data from being
-plotted.
+**Named data (3):** The colors data contains explicit color names. An empty color name will prevent the matching data
+from being plotted.
 
 **Auto scale (4):** The colors data (transformed by the `scale`) will be shown in a color scale chosen by Plotly.
 
 **Named scale (5):** The colors data (transformed by the `scale`) will be shown using the named standard Plotly
 [color scale](https://plotly.com/python/builtin-colorscales/) (see [`NAMED_COLOR_SCALES`](@ref)).
 
-**Manual scale (6):** The colors data (transformed by the `scale`) will be shown using the specified palette (whose values will also be
-transformed by the `scale`). The values must be in non-decreasing order, and the overall range of values must not be
-empty.
+**Manual scale (6):** The colors data (transformed by the `scale`) will be shown using the specified palette (whose
+values will also be transformed by the `scale`). The values must be in non-decreasing order, and the overall range of
+values must not be empty.
 
-**Categorical (7):** The colors data contains valid value keys of the categorical colors dictionary. An empty color name in the
-data or the dictionary will prevent the matching data from being plotted.
+**Categorical (7):** The colors data contains valid value keys of the categorical colors dictionary. An empty color name
+in the data or the dictionary will prevent the matching data from being plotted.
 
 **Automatic (8):** The colors data contains categorical keys, whose colors are picked automatically (see
 [`AutomaticColors`](@ref)).

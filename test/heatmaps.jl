@@ -58,6 +58,18 @@ nested_test("heatmaps") do
 
         @test rows_arrangement(graph) === graph.data.rows.arrangement
         @test columns_arrangement(graph) === graph.data.columns.arrangement
+        @test rows_entities(graph) === graph.data.rows.entities
+        @test columns_entities(graph) === graph.data.columns.entities
+
+        # The names `Clustering.hclust` knows the linkages and the branch orders by.
+        hclust_linkage = SomeGraphs.Heatmaps.hclust_linkage
+        @test hclust_linkage(SingleLinkage) == :single
+        @test hclust_linkage(AverageLinkage) == :average
+        @test hclust_linkage(CompleteLinkage) == :complete
+        @test hclust_linkage(WardLinkage) == :ward
+        @test hclust_linkage(WardPreSquaredLinkage) == :ward_presquared
+        @test SomeGraphs.Heatmaps.hclust_branchorder(RCompatibleTreeReorder) == :r
+        @test SomeGraphs.Heatmaps.hclust_branchorder(OptimalTreeReorder) == :optimal
 
         for (side, data, configuration, placement) in (
             (rows_side(graph), graph.data.rows, graph.configuration.rows, graph.placement.rows),
@@ -134,10 +146,8 @@ nested_test("heatmaps") do
 
         nested_test("categorical") do
             graph.configuration.entries.colors.palette = Dict("Foo" => "red", "Bar" => "green")
-            @test_throws "ArgumentError: can't specify heatmap categorical graph.configuration.entries.colors.palette" validate(
-                ValidationContext(["graph"]),
-                graph,
-            )
+            message = "ArgumentError: can't specify heatmap categorical graph.configuration.entries.colors.palette"
+            @test_throws message validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("annotation") do
@@ -1324,6 +1334,13 @@ nested_test("heatmaps") do
             return nothing
         end
 
+        # The placement taken from another side.
+        nested_test("side_placement") do
+            fill_placement!(columns_side(other), columns_side(base))
+            @test other.placement.columns.order == base.placement.columns.order
+            return nothing
+        end
+
         # A placement without a tree gives the order alone.
         nested_test("order") do
             fill_placement!(columns_side(other), SidePlacement([4, 3, 2, 1], nothing))
@@ -1409,18 +1426,16 @@ nested_test("heatmaps") do
         nested_test("invalid") do
             nested_test("groups") do
                 graph.data.columns.arrangement.groups.vector = nothing
-                @test_throws "ArgumentError: can't specify heatmap graph.data.columns.arrangement.subgroups.vector without columns.arrangement.groups.vector" validate(
-                    ValidationContext(["graph"]),
-                    graph,
-                )
+                message =
+                    "ArgumentError: can't specify " *
+                    "heatmap graph.data.columns.arrangement.subgroups.vector without columns.arrangement.groups.vector"
+                @test_throws message validate(ValidationContext(["graph"]), graph)
             end
 
             nested_test("effect") do
                 graph.configuration.columns.order_source = nothing
-                @test_throws "ArgumentError: no effect for specified graph.data.columns.arrangement.subgroups.vector" validate(
-                    ValidationContext(["graph"]),
-                    graph,
-                )
+                message = "ArgumentError: no effect for specified graph.data.columns.arrangement.subgroups.vector"
+                @test_throws message validate(ValidationContext(["graph"]), graph)
             end
 
             nested_test("gap") do
@@ -1434,10 +1449,8 @@ nested_test("heatmaps") do
 
             nested_test("title") do
                 graph.data.columns.arrangement.groups.title = "Groups"
-                @test_throws "ArgumentError: can't specify heatmap graph.data.columns.arrangement.groups.title" validate(
-                    ValidationContext(["graph"]),
-                    graph,
-                )
+                message = "ArgumentError: can't specify heatmap graph.data.columns.arrangement.groups.title"
+                @test_throws message validate(ValidationContext(["graph"]), graph)
             end
         end
     end

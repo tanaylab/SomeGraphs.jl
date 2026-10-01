@@ -138,7 +138,13 @@ end
 """
     validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
     validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
-    validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any, another::Any)::Nothing
+    validate_field(
+        context::ValidationContext,
+        field::AbstractString,
+        value::Validated,
+        extra::Any,
+        another::Any,
+    )::Nothing
 
 Validate the `value` of a `field`.
 """
@@ -281,7 +287,8 @@ end
         expected_length::Integer
     )::Nothing
 
-Validate that a `field` containing a `vector` has (if it is specified) the `expected_length` of an `expected_base` field.
+Validate that a `field` containing a `vector` has (if it is specified) the `expected_length` of an `expected_base`
+field.
 """
 function validate_vector_length(
     context::ValidationContext,

@@ -222,10 +222,10 @@ function test_distributions(  # UNTESTED
                         graph.configuration.distributions_gap = nothing
 
                         if contains(kind, "box")
-                            @test_throws "overlay (no graph.configuration.distributions_gap specified) for box distributions" validate(
-                                ValidationContext(["graph"]),
-                                graph,
-                            )
+                            message =
+                                "overlay (no graph.configuration.distributions_gap " *
+                                "specified) for box distributions"
+                            @test_throws message validate(ValidationContext(["graph"]), graph)
                         else
                             nested_test("()") do
                                 test_html(graph, "$(plurality).$(kind).$(name).!gap.html")
@@ -272,6 +272,10 @@ nested_test("distribution") do
     nested_test("show") do
         @test "$(graph)" ==
               "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .figure to show the graph)"
+    end
+
+    nested_test("entities") do
+        @test distribution_entities(graph) === graph.data.distribution.points
     end
 
     nested_test("fields") do
@@ -536,6 +540,11 @@ nested_test("distributions") do
         # The entities are offered as `entities` whatever the part calls them.
         @test part.entities === graph.data.distributions[2].points
         @test part.points === graph.data.distributions[2].points
+        @test (:graph, :data, :index, :entities) ⊆ propertynames(part)
+        @test !(:points in propertynames(part))
+
+        # A distribution has only a values role.
+        @test_throws "ArgumentError: no x role for DistributionData" part.x
 
         # A role pairs the values and entities of the part with the axis they are shown along.
         @test part.values.data.values === graph.data.distributions[2].values

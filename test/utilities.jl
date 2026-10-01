@@ -12,6 +12,22 @@ function test_same_values(
 end
 
 nested_test("utilities") do
+    nested_test("plotly_figure") do
+        figure = plotly_figure(SomeGraphs.Utilities.scatter(; x = [1, 2]), SomeGraphs.Utilities.Layout())
+        @test length(figure.data) == 1
+    end
+
+    nested_test("plotly_axis_value") do
+        @test plotly_axis_value(ScaleConfiguration(), nothing; is_plotly_log = false) === nothing
+    end
+
+    # A percent scale takes its log after converting the offset to percents.
+    nested_test("scale_axis_offset") do
+        scale_axis_offset = SomeGraphs.Utilities.scale_axis_offset
+        @test scale_axis_offset(ScaleConfiguration(; percent = true, log_base = Log10Base), 0.1) ≈ 1.0
+        @test scale_axis_offset(ScaleConfiguration(; log_base = Log10Base), 10.0) ≈ 1.0
+    end
+
     nested_test("scale_axis_values") do
         values = [1, nothing]
 

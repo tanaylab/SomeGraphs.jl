@@ -1,6 +1,10 @@
 nested_test("bars") do
     graph = bars_graph(; values = VectorValuesData(collect(0:3) .- 1))
 
+    nested_test("entities") do
+        @test bars_entities(graph) === graph.data.bars
+    end
+
     nested_test("invalid") do
         nested_test("legend") do
             graph.configuration.colors.show_legend = true
@@ -362,6 +366,10 @@ nested_test("series_bars") do
         series = [SeriesData(; values = VectorValuesData(foos)), SeriesData(; values = VectorValuesData(bars))],
     )
 
+    nested_test("entities") do
+        @test bars_entities(graph) === graph.data.bars
+    end
+
     nested_test("nothing") do
         graph.data.series[1].name = "Foo"
         graph.data.series[2].color = "red"
@@ -567,10 +575,9 @@ nested_test("series_bars") do
             graph.configuration.stacking = StackValues
             graph.configuration.value_axis.scale.log_base = Log10Base
             graph.configuration.value_axis.scale.log_regularization = 1
-            @test_throws "can't specify both graph.configuration.stacking and graph.configuration.value_axis.scale.log_base" validate(
-                ValidationContext(["graph"]),
-                graph,
-            )
+            message =
+                "can't specify both " * "graph.configuration.stacking and graph.configuration.value_axis.scale.log_base"
+            @test_throws message validate(ValidationContext(["graph"]), graph)
         end
 
         nested_test("~order") do

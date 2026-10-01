@@ -86,7 +86,16 @@ The last five name a target order. When a tree is needed, the branches of a give
 toward the target (using `reorder_hclust`), so the final order only approximates the target. An `OrderTree` is built
 around the target, so the final order is the target.
 """
-@enum OrderSource GivenTreeOrder OptimalTreeReorder RCompatibleTreeReorder GivenOrder EntryOrder SlantedOrder SlantedPreSquaredOrder SameOrder
+@enum OrderSource begin
+    GivenTreeOrder
+    OptimalTreeReorder
+    RCompatibleTreeReorder
+    GivenOrder
+    EntryOrder
+    SlantedOrder
+    SlantedPreSquaredOrder
+    SameOrder
+end
 
 """
 Specify the linkage to use when performing hierarchical clustering (`hclust` / `ehclust`). The default is `WardLinkage`.
@@ -187,10 +196,11 @@ One source may be inferred while the other is explicit. An `order` with an expli
 A `ClusteredTree` or an `OrderTree` is built using the `linkage` (by default, `WardLinkage`) and the `metric` (by
 default, `Euclidean`). Neither applies to a `GivenTree` or a `SameTree`, so specifying them for one is an error.
 
-By default, a computed clustering sees all the entries of the side, hidden ones included, so hiding some entries does not
-move the rest. Set `include_hidden` to `false` to cluster the shown entries only. Either way the resulting order and
-tree (see [`heatmap_placement`](@ref)) describe all the entries; when the hidden ones were left out of the clustering, they
-come last, joined to the root of the tree. This has no effect on an `Hclust` given in the data, which is used as is.
+By default, a computed clustering sees all the entries of the side, hidden ones included, so hiding some entries does
+not move the rest. Set `include_hidden` to `false` to cluster the shown entries only. Either way the resulting order and
+tree (see [`heatmap_placement`](@ref)) describe all the entries; when the hidden ones were left out of the clustering,
+they come last, joined to the root of the tree. This has no effect on an `Hclust` given in the data, which is used as
+is.
 
 If groups are specified for the entries in the [`HeatmapSideData`](@ref), they can be used to constrain the clustering,
 and/or to create visible gaps in the heatmap (between entries of different groups). The `groups_gap` is the number of
@@ -371,10 +381,10 @@ entries. If `annotations_order` is specified, they are shown in that order; it d
 including the ones that are not `is_shown`.
 
 Hidden entries (see the mask of [`VectorEntitiesData`](@ref)) are not drawn, but they are still part of the data: the
-clustering sees them (unless the `include_hidden` of the side configuration is `false`), and the order (a permutation
-or a tree) always describes all the entries, hidden ones included.
-This way the order computed for one graph (see [`heatmap_placement`](@ref)) can be given to another graph of the same data,
-whether or not the two hide the same entries. At least one entry must be shown.
+clustering sees them (unless the `include_hidden` of the side configuration is `false`), and the order (a permutation or
+a tree) always describes all the entries, hidden ones included. This way the order computed for one graph (see
+[`heatmap_placement`](@ref)) can be given to another graph of the same data, whether or not the two hide the same
+entries. At least one entry must be shown.
 """
 @kwdef mutable struct HeatmapSideData
     entities::VectorEntitiesData = VectorEntitiesData()
@@ -1963,8 +1973,8 @@ function expand_z_matrix(
         n_expanded_columns = length(expanded_columns_mask)
     end
 
-    # The gap entries are `missing` (serialized as JSON `null`) rather than `NaN`: Plotly renders both as blank gaps, but
-    # the JSON writer used by `to_html` rejects `NaN`.
+    # The gap entries are `missing` (serialized as JSON `null`) rather than `NaN`: Plotly renders both as blank gaps,
+    # but the JSON writer used by `to_html` rejects `NaN`.
     expanded_z = Matrix{Union{eltype(z), Missing}}(undef, n_expanded_rows, n_expanded_columns)
     expanded_z .= missing
     expanded_z[expanded_rows_mask, expanded_columns_mask] .= z

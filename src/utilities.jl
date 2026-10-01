@@ -612,7 +612,12 @@ function set_layout_twin_log_axis!(;
 end
 
 """
-    plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false, force::Bool = false)::Maybe{AbstractString}
+    plotly_axis(
+        prefix::AbstractString,
+        index::Maybe{Integer};
+        short::Bool = false,
+        force::Bool = false,
+    )::Maybe{AbstractString}
 
 Return the Plotly axis name for a given index. If `short` just use the `prefix`, otherwise add `axis`. If `force` give a
 result even for the 1st (typically implicit, unnamed) axis.
@@ -1450,7 +1455,8 @@ const SIZES_LEGEND_MAXIMAL_ENTRIES = 6
         mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing,
     )::AbstractVector{SizesLegendEntry}
 
-The entries of the legend of the sizes `values`, as mapped by the `sizes_configuration` (see [`scale_size_values`](@ref)).
+The entries of the legend of the sizes `values`, as mapped by the `sizes_configuration` (see
+[`scale_size_values`](@ref)).
 
 The entries are "nice" values, chosen the way ticks are. For a linear scale these are multiples of a step of 1, 2 or 5
 times a power of 10. For a `Log10Base` scale these are the digits, or 1, 2 and 5, or the powers of 10 (or of 100 etc.).
@@ -2728,7 +2734,9 @@ end
         original_color_values::Maybe{
             Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}},
         }
-        final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}}}
+        final_colors_values::Maybe{
+            Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}},
+        }
         final_colors_range::Maybe{Range}
         scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
         show_in_legend::Bool

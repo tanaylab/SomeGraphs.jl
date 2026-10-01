@@ -65,7 +65,7 @@ struct ResultFile
     content::AbstractString
 end
 
-function Base.show(io::IO, result_file::ResultFile)::Nothing
+function Base.show(io::IO, result_file::ResultFile)::Nothing  # UNTESTED
     print(io, result_file.path)
     return nothing
 end

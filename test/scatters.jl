@@ -1,6 +1,20 @@
 nested_test("points") do
     graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 
+    nested_test("entities") do
+        @test edges_entities(graph) === graph.data.edges.entities
+    end
+
+    nested_test("flip_axes") do
+        x, y = graph.data.x, graph.data.y
+        flipped = flip_axes(graph)
+        @test flipped.data.x === y
+        @test flipped.data.y === x
+        @test flip_axes!(graph) === graph
+        @test graph.data.x === y
+        @test graph.data.y === x
+    end
+
     nested_test("invalid") do
         context = ValidationContext(["graph"])
 
@@ -52,18 +66,18 @@ nested_test("points") do
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " *
+                        "graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)"
+                    @test_throws message validate(context, graph)
                 end
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " *
+                        "graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)"
+                    @test_throws message validate(context, graph)
                 end
             end
 
@@ -72,18 +86,16 @@ nested_test("points") do
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " * "graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)"
+                    @test_throws message validate(context, graph)
                 end
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " * "graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)"
+                    @test_throws message validate(context, graph)
                 end
             end
         end
@@ -925,6 +937,20 @@ end
 nested_test("line") do
     graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 
+    nested_test("entities") do
+        @test points_entities(graph) === graph.data.points
+    end
+
+    nested_test("flip_axes") do
+        x, y = graph.data.x, graph.data.y
+        flipped = flip_axes(graph)
+        @test flipped.data.x === y
+        @test flipped.data.y === x
+        @test flip_axes!(graph) === graph
+        @test graph.data.x === y
+        @test graph.data.y === x
+    end
+
     nested_test("invalid") do
         context = ValidationContext(["graph"])
 
@@ -959,18 +985,18 @@ nested_test("line") do
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " *
+                        "graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)"
+                    @test_throws message validate(context, graph)
                 end
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " *
+                        "graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)"
+                    @test_throws message validate(context, graph)
                 end
             end
 
@@ -979,18 +1005,16 @@ nested_test("line") do
 
                 nested_test("configuration") do
                     graph.configuration.diagonal_bands.middle.offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " * "graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)"
+                    @test_throws message validate(context, graph)
                 end
 
                 nested_test("data") do
                     graph.data.diagonal_bands.middle_offset = 1
-                    @test_throws "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
-                        context,
-                        graph,
-                    )
+                    message =
+                        "diagonal bands require " * "graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)"
+                    @test_throws message validate(context, graph)
                 end
             end
         end
@@ -1113,16 +1137,24 @@ nested_test("lines") do
         ],
     )
 
+    nested_test("flip_axes") do
+        x, y = graph.data.lines[1].x, graph.data.lines[1].y
+        flipped = flip_axes(graph)
+        @test flipped.data.lines[1].x === y
+        @test flipped.data.lines[1].y === x
+        @test flip_axes!(graph) === graph
+        @test graph.data.lines[1].x === y
+        @test graph.data.lines[1].y === x
+    end
+
     nested_test("invalid") do
         context = ValidationContext(["graph"])
 
         nested_test("log") do
             graph.configuration.stacking = StackFractions
             graph.configuration.y_axis.scale.log_base = Log10Base
-            @test_throws "can't specify both graph.configuration.stacking and graph.configuration.y_axis.scale.log_base" validate(
-                context,
-                graph,
-            )
+            message = "can't specify both graph.configuration.stacking and graph.configuration.y_axis.scale.log_base"
+            @test_throws message validate(context, graph)
         end
 
         nested_test("negative") do

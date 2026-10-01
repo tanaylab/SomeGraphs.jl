@@ -54,7 +54,16 @@ Possible styles for visualizing a distribution:
 
 `CumulativeDistribution` - a cumulative distribution (aka "CDF"). This one allows for additional configuration options.
 """
-@enum DistributionStyle CurveDistribution ViolinDistribution BoxDistribution BoxOutliersDistribution CurveBoxDistribution ViolinBoxDistribution HistogramDistribution CumulativeDistribution
+@enum DistributionStyle begin
+    CurveDistribution
+    ViolinDistribution
+    BoxDistribution
+    BoxOutliersDistribution
+    CurveBoxDistribution
+    ViolinBoxDistribution
+    HistogramDistribution
+    CumulativeDistribution
+end
 
 """
     @kwdef mutable struct DistributionConfiguration <: Validated

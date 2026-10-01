@@ -1083,13 +1083,16 @@ end
 # grows it from the bottom of the axis instead. Plotly still hovers the value (the base plus the length of the bar).
 const FAR_BARS_BASE = -1.0e6
 
+# The color of the bars: a single color, or a color value per bar.
+BarsColor = Union{AbstractVector{<:Union{Real, Missing}}, AbstractVector{<:AbstractString}, AbstractString}
+
 function push_bar_trace!(;
     traces::Vector{GenericTrace},
     values::AbstractVector{<:Real},
     value_axis::AxisConfiguration,
     basis_sub_graph::Maybe{SubGraph} = nothing,
     values_orientation::ValuesOrientation,
-    color::Maybe{Union{AbstractVector{<:Union{Real, Missing}}, AbstractVector{<:AbstractString}, AbstractString}} = nothing,
+    color::Maybe{BarsColor} = nothing,
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing,
     names::Maybe{AbstractVector{<:AbstractString}} = nothing,
     name::Maybe{AbstractString} = nothing,

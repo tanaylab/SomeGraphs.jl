@@ -117,10 +117,10 @@ import ..Validations.Maybe
         [title::Maybe{AbstractString} = nothing]
     )::Nothing
 
-Add a line to the hover of each of the `entities`: the `hovers` entry of the entity (a vector for [`VectorEntitiesData`](@ref),
-a matrix for [`MatrixEntitiesData`](@ref)), prefixed by the `title` (if any) as `title: hover`. The lines of several
-calls are joined by `<br>`, in the order of the calls. All the `hovers` given to the same entities must be of the same
-size.
+Add a line to the hover of each of the `entities`: the `hovers` entry of the entity (a vector for
+[`VectorEntitiesData`](@ref), a matrix for [`MatrixEntitiesData`](@ref)), prefixed by the `title` (if any) as
+`title: hover`. The lines of several calls are joined by `<br>`, in the order of the calls. All the `hovers` given to
+the same entities must be of the same size.
 """
 function add_hovers!(
     entities::Union{VectorEntitiesData, MatrixEntitiesData},
@@ -155,10 +155,10 @@ end
         entities::VectorEntitiesData
     end
 
-The data half of a data source view (see [`VectorFields`](@ref)): the [`VectorValuesData`](@ref) of one role of a graph (the
-X coordinates of its points, their colors, ...) and the [`VectorEntitiesData`](@ref) of the entities these values belong to.
-Both are the graph's own objects, so writing into them changes the graph. Several roles of the same entities (say, the
-X, Y, colors and sizes of points) share one `entities`, so hovers added through any of them are seen by all.
+The data half of a data source view (see [`VectorFields`](@ref)): the [`VectorValuesData`](@ref) of one role of a graph
+(the X coordinates of its points, their colors, ...) and the [`VectorEntitiesData`](@ref) of the entities these values
+belong to. Both are the graph's own objects, so writing into them changes the graph. Several roles of the same entities
+(say, the X, Y, colors and sizes of points) share one `entities`, so hovers added through any of them are seen by all.
 
 A source which only writes values, a title and hovers takes a `VectorDataFields`. The data half of every
 [`VectorFields`](@ref) is one, and so is a view of a role that has no configuration to speak of (the names of the bars,
@@ -286,12 +286,12 @@ abstract type AbstractFields end
     ColorsVectorFields = VectorFields{ColorsConfigurationFields}
     SizesVectorFields = VectorFields{SizesConfigurationFields}
 
-A data source view of one role of a graph whose entities are a vector: the `data` (a [`VectorDataFields`](@ref)) and
-the `configuration` (an [`AxisConfigurationFields`](@ref), [`ColorsConfigurationFields`](@ref) or
-[`SizesConfigurationFields`](@ref)). A function writing into
-such a view fills the role from some source of data, and works the same on the X coordinates of points, the values of
-bars, the colors of either, and so on. The views are `AxisVectorFields` for values shown along an axis, `ColorsVectorFields` for
-values shown as colors (see [`ColorsConfigurationFields`](@ref)) and `SizesVectorFields` for values shown as sizes (see
+A data source view of one role of a graph whose entities are a vector: the `data` (a [`VectorDataFields`](@ref)) and the
+`configuration` (an [`AxisConfigurationFields`](@ref), [`ColorsConfigurationFields`](@ref) or
+[`SizesConfigurationFields`](@ref)). A function writing into such a view fills the role from some source of data, and
+works the same on the X coordinates of points, the values of bars, the colors of either, and so on. The views are
+`AxisVectorFields` for values shown along an axis, `ColorsVectorFields` for values shown as colors (see
+[`ColorsConfigurationFields`](@ref)) and `SizesVectorFields` for values shown as sizes (see
 [`SizesConfigurationFields`](@ref)). They are obtained from a graph by the accessor functions (`x_axis_vector_fields`,
 `colors_vector_fields`, ...), whose names follow the path of the values in the data of the graph.
 """
@@ -688,24 +688,25 @@ function add_distribution! end
 """
     add_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
 
-Append an annotation to the entities of a graph (the bars) and return its index (for `annotations_colors_vector_fields`). Whatever
-the `annotation` leaves at its defaults can be set later, through the view.
+Append an annotation to the entities of a graph (the bars) and return its index (for
+`annotations_colors_vector_fields`). Whatever the `annotation` leaves at its defaults can be set later, through the
+view.
 """
 function add_annotation! end
 
 """
     add_rows_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
 
-Append an annotation to the rows of a graph and return its index (for `rows_annotations_colors_vector_fields`). Whatever the
-`annotation` leaves at its defaults can be set later, through the view.
+Append an annotation to the rows of a graph and return its index (for `rows_annotations_colors_vector_fields`). Whatever
+the `annotation` leaves at its defaults can be set later, through the view.
 """
 function add_rows_annotation! end
 
 """
     add_columns_annotation!(graph, [annotation::AnnotationData = AnnotationData()])::Int
 
-Append an annotation to the columns of a graph and return its index (for `columns_annotations_colors_vector_fields`). Whatever the
-`annotation` leaves at its defaults can be set later, through the view.
+Append an annotation to the columns of a graph and return its index (for `columns_annotations_colors_vector_fields`).
+Whatever the `annotation` leaves at its defaults can be set later, through the view.
 """
 function add_columns_annotation! end
 
@@ -1052,8 +1053,8 @@ end
         order::AbstractVector{<:Integer},
     )::Nothing
 
-Give the entities of the `sinks` the `order` (a permutation of their indices). What the order means depends on the graph;
-for a heatmap side, see `HeatmapSideConfiguration`.
+Give the entities of the `sinks` the `order` (a permutation of their indices). What the order means depends on the
+graph; for a heatmap side, see `HeatmapSideConfiguration`.
 """
 function put_vector_order_data!(
     sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},

@@ -310,7 +310,13 @@ validate(context::ValidationContext, value::Validated, extra::Any, another::Any)
 <pre>
 <code class="language-julia hljs">validate_field(context::ValidationContext, field::AbstractString, value::Validated)::Nothing
 validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any)::Nothing
-validate_field(context::ValidationContext, field::AbstractString, value::Validated, extra::Any, another::Any)::Nothing
+validate_field(
+    context::ValidationContext,
+    field::AbstractString,
+    value::Validated,
+    extra::Any,
+    another::Any,
+)::Nothing
 </code>
 </pre>
 <p>Validate the 

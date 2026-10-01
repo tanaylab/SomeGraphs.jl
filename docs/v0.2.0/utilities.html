@@ -449,7 +449,9 @@ validate_colors(
     original_color_values::Maybe{
         Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}, AbstractMatrix{&lt;:Real}},
     }
-    final_colors_values::Maybe{Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}, AbstractMatrix{&lt;:Real}}}
+    final_colors_values::Maybe{
+        Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}, AbstractMatrix{&lt;:Real}},
+    }
     final_colors_range::Maybe{Range}
     scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}}
     show_in_legend::Bool
@@ -1530,7 +1532,12 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">plotly_axis(prefix::AbstractString, index::Maybe{Integer}; short::Bool = false, force::Bool = false)::Maybe{AbstractString}
+<code class="language-julia hljs">plotly_axis(
+    prefix::AbstractString,
+    index::Maybe{Integer};
+    short::Bool = false,
+    force::Bool = false,
+)::Maybe{AbstractString}
 </code>
 </pre>
 <p>Return the Plotly axis name for a given index. If 
