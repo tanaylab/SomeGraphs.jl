@@ -157,6 +157,10 @@ end
 The per-point data of a [`PointsGraphData`](@ref), other than the coordinates: the `colors` and `sizes` values, and the
 names, hovers, mask and order of the points (`entities`). The order is the order the points are drawn in. It mirrors
 the `points` of the [`PointsGraphConfiguration`](@ref).
+
+In the rendered figure, the points may be split between several traces (e.g., one per category of colors). Each trace
+holds the (1-based) index of the entity of each of its points in its `customdata`. This allows mapping a selection in an
+interactive figure back to the entities.
 """
 @kwdef mutable struct PointsData
     colors::VectorValuesData = VectorValuesData()
@@ -1233,12 +1237,17 @@ function push_points_trace!(;
 
     hovers = masked_values(points_hovers, mask, order)
 
+    # The (1-based) index of the entity of each point of the trace, so a selection can be mapped back to the entities.
+    n_points = length(scaled_points_xs.values)
+    indices = masked_values(collect(1:n_points), mask, order)
+
     show_in_legend = configured_points.colors.show_in_legend
     push!(  # NOJET
         traces,
         scatter(;
             x = plotly_values(scaled_points_xs, masked_values(scaled_points_xs.values, mask, order)),
             y = plotly_values(scaled_points_ys, masked_values(scaled_points_ys.values, mask, order)),
+            customdata = indices,
             text = hovers,
             marker_size = prefer_data(
                 masked_values(configured_points.pixel_sizes, mask, order),
