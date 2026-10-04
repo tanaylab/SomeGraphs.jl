@@ -510,6 +510,88 @@ nested_test("points") do
         end
     end
 
+    nested_test("selection") do
+        nested_test("box") do
+            graph.data.selection.box = (25, 75, 5, 50)
+            test_html(graph, "points.selection.box.html")
+            return nothing
+        end
+
+        nested_test("polygon") do
+            graph.data.selection.polygon = [(10, 0), (90, 40), (70, 90), (0, 30)]
+            test_html(graph, "points.selection.polygon.html")
+            return nothing
+        end
+
+        nested_test("log") do
+            graph.configuration.x_axis.scale.log_base = Log10Base
+            graph.configuration.y_axis.scale.log_base = Log2Base
+            graph.configuration.x_axis.scale.log_regularization = 1
+            graph.configuration.y_axis.scale.log_regularization = 1
+            graph.data.selection.polygon = [(10, 0), (90, 40), (70, 90), (0, 30)]
+            test_html(graph, "points.selection.log.html")
+            return nothing
+        end
+
+        nested_test("flip_axes") do
+            nested_test("box") do
+                graph.data.selection.box = (25, 75, 5, 50)
+                @test flip_axes(graph).data.selection.box == (5, 50, 25, 75)
+                @test flip_axes!(graph).data.selection.box == (5, 50, 25, 75)
+            end
+
+            nested_test("polygon") do
+                graph.data.selection.polygon = [(10, 0), (90, 40), (70, 90)]
+                @test flip_axes(graph).data.selection.polygon == [(0, 10), (40, 90), (90, 70)]
+                @test flip_axes!(graph).data.selection.polygon == [(0, 10), (40, 90), (90, 70)]
+            end
+        end
+
+        nested_test("invalid") do
+            context = ValidationContext(["graph"])
+
+            nested_test("both") do
+                graph.data.selection.box = (25, 75, 5, 50)
+                graph.data.selection.polygon = [(10, 0), (90, 40), (70, 90)]
+                @test_throws chomp("""
+                                   ArgumentError: can't specify both graph.data.selection.box
+                                   and graph.data.selection.polygon
+                                   """) validate(context, graph)
+            end
+
+            nested_test("finite") do
+                graph.data.selection.box = (NaN, 75, 5, 50)
+                @test_throws "ArgumentError: non-finite graph.data.selection.box[1]: NaN" validate(context, graph)
+            end
+
+            nested_test("range") do
+                graph.data.selection.box = (25, 75, 50, 5)
+                @test_throws chomp("""
+                                   ArgumentError: range low limit graph.data.selection.box[3]: 50
+                                   is above high limit graph.data.selection.box[4]: 5
+                                   """) validate(context, graph)
+            end
+
+            nested_test("vertices") do
+                graph.data.selection.polygon = [(10, 0), (90, 40)]
+                @test_throws chomp("""
+                                   ArgumentError: too few vertices in graph.data.selection.polygon: 2
+                                   is not at least: 3
+                                   """) validate(context, graph)
+            end
+
+            nested_test("log") do
+                graph.configuration.y_axis.scale.log_base = Log10Base
+                graph.configuration.y_axis.scale.log_regularization = 1
+                graph.data.selection.polygon = [(10, -1), (90, 40), (70, 90)]
+                @test_throws (
+                    "ArgumentError: too low " *
+                    "(graph.data.selection.polygon[1].y + graph.configuration.y_axis.scale.log_regularization)"
+                ) validate(context, graph)
+            end
+        end
+    end
+
     nested_test("continuous") do
         graph.data.points.colors.vector = collect(0:10)
 

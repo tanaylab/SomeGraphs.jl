@@ -15,6 +15,7 @@ SomeGraphs.Scatters.PointsGraphData
 SomeGraphs.Scatters.PointsData
 SomeGraphs.Scatters.BordersData
 SomeGraphs.Scatters.EdgesData
+SomeGraphs.Scatters.SelectionData
 SomeGraphs.Scatters.PointsGraphConfiguration
 SomeGraphs.Scatters.ScattersConfiguration
 ```
@@ -69,6 +70,32 @@ graph = points_graph(;
     x = VectorValuesData(collect(0:10) .* 10),
     y = VectorValuesData(collect(0:10) .^ 2),
     edges = EdgesData(; points = [(1, 8), (2, 9), (3, 10), (4, 11)]),
+)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Selection (box):
+
+```@example
+using SomeGraphs
+graph = points_graph(;
+    x = VectorValuesData(collect(0:10) .* 10),
+    y = VectorValuesData(collect(0:10) .^ 2),
+    selection = SelectionData(; box = (25, 75, 5, 50)),
+)
+using PlotlyDocumenter
+to_documenter(graph.figure)
+```
+
+Selection (polygon):
+
+```@example
+using SomeGraphs
+graph = points_graph(;
+    x = VectorValuesData(collect(0:10) .* 10),
+    y = VectorValuesData(collect(0:10) .^ 2),
+    selection = SelectionData(; polygon = [(10, 0), (90, 40), (70, 90), (0, 30)]),
 )
 using PlotlyDocumenter
 to_documenter(graph.figure)

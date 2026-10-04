@@ -17,6 +17,7 @@ export PointsGraph
 export PointsGraphConfiguration
 export PointsGraphData
 export ScattersConfiguration
+export SelectionData
 export line_graph
 export lines_graph
 export points_density
@@ -213,6 +214,27 @@ The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `point
 end
 
 """
+    @kwdef mutable struct SelectionData
+        box::Maybe{Tuple{Real, Real, Real, Real}} = nothing
+        polygon::Maybe{AbstractVector{<:Tuple{Real, Real}}} = nothing
+    end
+
+The selection of a [`PointsGraphData`](@ref): an area of the graph. The area is either a `box` (the minimal X, maximal
+X, minimal Y and maximal Y), or a `polygon` (the X and Y of each of its vertices), but not both. The coordinates are in
+the same units as the `x` and `y` data, like the offsets of [`BandsData`](@ref).
+
+The area is rendered as a Plotly selection, so Plotly draws its outline and highlights the points inside it. A polygon's
+edges are straight lines in the drawn graph, which they wouldn't be in the original units if an axis is in log scale.
+
+Selecting points in an interactive figure does not change this field; the new selection is available through the
+interactive figure's own API (e.g., Plotly's `FigureWidget.on_selection`).
+"""
+@kwdef mutable struct SelectionData
+    box::Maybe{Tuple{Real, Real, Real, Real}} = nothing
+    polygon::Maybe{AbstractVector{<:Tuple{Real, Real}}} = nothing
+end
+
+"""
     @kwdef mutable struct PointsGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
         x::VectorValuesData = VectorValuesData()
@@ -223,6 +245,7 @@ end
         vertical_bands::BandsData = BandsData()
         horizontal_bands::BandsData = BandsData()
         diagonal_bands::BandsData = BandsData()
+        selection::SelectionData = SelectionData()
     end
 
 The data for a scatter graph of points.
@@ -237,6 +260,8 @@ contains explicit color names). Similarly, the sizes titles are used for the leg
 for the relevant sizes configuration.
 
 The `edges` draw straight lines between pairs of points; see [`EdgesData`](@ref).
+
+The `selection` marks an area of the graph and the points inside it; see [`SelectionData`](@ref).
 
 The masks of the points, borders and edges allow disabling an arbitrary subset of them. This is often more convenient
 than excluding the data from the arrays. This is also useful for defining points which are only used to draw edges
@@ -260,6 +285,7 @@ other category. We therefore compute an overall priority for each category as th
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
+    selection::SelectionData = SelectionData()
 end
 
 function Validations.validate(context::ValidationContext, data::PointsGraphData)::Nothing
@@ -317,6 +343,60 @@ function Validations.validate(context::ValidationContext, data::PointsGraphData)
         end
     end
 
+    validate_in(context, "selection") do
+        return validate_selection(context, data.selection)
+    end
+
+    return nothing
+end
+
+# A selection is a box or a polygon (not both), with finite coordinates, a box's limits in order, and a polygon of at
+# least three vertices.
+function validate_selection(context::ValidationContext, selection::SelectionData)::Nothing
+    box = selection.box
+    polygon = selection.polygon
+
+    if box !== nothing && polygon !== nothing
+        throw(ArgumentError("can't specify both $(location(context)).box\n" * "and $(location(context)).polygon"))
+    end
+
+    if box !== nothing
+        validate_in(context, "box") do
+            for (index, value) in enumerate(box)
+                validate_in(context, index) do
+                    return validate_is_finite(context, value)
+                end
+            end
+            for (low_index, high_index) in ((1, 2), (3, 4))
+                if box[low_index] > box[high_index]
+                    throw(
+                        ArgumentError(
+                            "range low limit $(location(context))[$(low_index)]: $(box[low_index])\n" *
+                            "is above high limit $(location(context))[$(high_index)]: $(box[high_index])",
+                        ),
+                    )
+                end
+            end
+            return nothing
+        end
+    end
+
+    if polygon !== nothing
+        validate_in(context, "polygon") do
+            if length(polygon) < 3
+                throw(ArgumentError("too few vertices in $(location(context)): $(length(polygon))\nis not at least: 3"))
+            end
+            for (index, (x, y)) in enumerate(polygon)
+                validate_in(context, index) do
+                    validate_is_finite(context, x)
+                    validate_is_finite(context, y)
+                    return nothing
+                end
+            end
+            return nothing
+        end
+    end
+
     return nothing
 end
 
@@ -337,6 +417,7 @@ PointsGraph = Graph{PointsGraphData, PointsGraphConfiguration}
         vertical_bands::BandsData = BandsData(),
         horizontal_bands::BandsData = BandsData(),
         diagonal_bands::BandsData = BandsData(),
+        selection::SelectionData = SelectionData(),
         configuration::PointsGraphConfiguration = PointsGraphConfiguration()]
     )::PointsGraph
 
@@ -353,10 +434,22 @@ function points_graph(;
     vertical_bands::BandsData = BandsData(),
     horizontal_bands::BandsData = BandsData(),
     diagonal_bands::BandsData = BandsData(),
+    selection::SelectionData = SelectionData(),
     configuration::PointsGraphConfiguration = PointsGraphConfiguration(),
 )::PointsGraph
     return PointsGraph(
-        PointsGraphData(; figure_title, x, y, points, borders, edges, vertical_bands, horizontal_bands, diagonal_bands),
+        PointsGraphData(;
+            figure_title,
+            x,
+            y,
+            points,
+            borders,
+            edges,
+            vertical_bands,
+            horizontal_bands,
+            diagonal_bands,
+            selection,
+        ),
         configuration,
     )
 end
@@ -560,6 +653,8 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         graph.configuration.x_axis,
     )
 
+    validate_graph_selection(graph)
+
     has_legend = false
     n_colors_scales = 0
     for (colors_configuration, colors_values) in (
@@ -595,6 +690,49 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         throw(ArgumentError(text))  # UNTESTED
     end
 
+    return nothing
+end
+
+# Along a log scale axis, the coordinates of the selection plus the axis' log regularization must be above zero, the
+# same as the points' coordinates.
+function validate_graph_selection(graph::PointsGraph)::Nothing
+    selection = graph.data.selection
+    x_axis = ("graph.configuration.x_axis", graph.configuration.x_axis.scale)
+    y_axis = ("graph.configuration.y_axis", graph.configuration.y_axis.scale)
+
+    box = selection.box
+    if box !== nothing
+        for (index, value, (axis_location, scale)) in
+            ((1, box[1], x_axis), (2, box[2], x_axis), (3, box[3], y_axis), (4, box[4], y_axis))
+            validate_selection_coordinate("graph.data.selection.box[$(index)]", value, axis_location, scale)
+        end
+    end
+
+    polygon = selection.polygon
+    if polygon !== nothing
+        for (index, (x, y)) in enumerate(polygon)
+            validate_selection_coordinate("graph.data.selection.polygon[$(index)].x", x, x_axis...)
+            validate_selection_coordinate("graph.data.selection.polygon[$(index)].y", y, y_axis...)
+        end
+    end
+
+    return nothing
+end
+
+# Along a log scale axis, a coordinate plus the axis' log regularization must be above zero.
+function validate_selection_coordinate(
+    value_location::AbstractString,
+    value::Real,
+    axis_location::AbstractString,
+    scale::ScaleConfiguration,
+)::Nothing
+    if scale.log_base !== nothing
+        validate_is_above(
+            ValidationContext(["($(value_location) + $(axis_location).scale.log_regularization)"]),
+            value + scale.log_regularization,
+            0,
+        )
+    end
     return nothing
 end
 
@@ -687,6 +825,43 @@ function configured_scatters(;
         mask,
         order,
     )
+end
+
+# Render the selection (if any) as a Plotly selection, which draws its outline and highlights the points inside it. Its
+# coordinates are converted the same way as those of the bands.
+function set_layout_selection!(layout::Layout, graph::PointsGraph)::Nothing
+    x_scale = graph.configuration.x_axis.scale
+    y_scale = graph.configuration.y_axis.scale
+
+    function plotly_x(x::Real)::Real
+        return plotly_axis_value(x_scale, scale_axis_value(x_scale, x); is_plotly_log = true)
+    end
+
+    function plotly_y(y::Real)::Real
+        return plotly_axis_value(y_scale, scale_axis_value(y_scale, y); is_plotly_log = true)
+    end
+
+    box = graph.data.selection.box
+    polygon = graph.data.selection.polygon
+    if box !== nothing
+        x_minimum, x_maximum, y_minimum, y_maximum = box
+        layout[:selections] = [
+            Dict(
+                :type => "rect",
+                :xref => "x",
+                :yref => "y",
+                :x0 => plotly_x(x_minimum),
+                :x1 => plotly_x(x_maximum),
+                :y0 => plotly_y(y_minimum),
+                :y1 => plotly_y(y_maximum),
+            ),
+        ]
+    elseif polygon !== nothing
+        path = "M " * join(["$(plotly_x(x)),$(plotly_y(y))" for (x, y) in polygon], " L ") * " Z"  # NOJET
+        layout[:selections] = [Dict(:type => "path", :xref => "x", :yref => "y", :path => path)]
+    end
+
+    return nothing
 end
 
 function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
@@ -811,6 +986,8 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         has_legend,
         has_hovers,
     )
+
+    set_layout_selection!(layout, graph)
 
     next_colors_scale_offset_index = [Int(has_legend)]
     side_panels = SidePanel[]
@@ -2333,6 +2510,20 @@ function points_density(
     return [itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
 end
 
+# The same selection with its X and Y swapped.
+function flipped_selection(selection::SelectionData)::SelectionData
+    box = selection.box
+    polygon = selection.polygon
+    if box !== nothing
+        x_minimum, x_maximum, y_minimum, y_maximum = box
+        return SelectionData(; box = (y_minimum, y_maximum, x_minimum, x_maximum))
+    elseif polygon !== nothing
+        return SelectionData(; polygon = [(y, x) for (x, y) in polygon])
+    else
+        return SelectionData()
+    end
+end
+
 function Common.flip_axes(graph::PointsGraph)::PointsGraph
     return PointsGraph(
         PointsGraphData(;
@@ -2345,6 +2536,7 @@ function Common.flip_axes(graph::PointsGraph)::PointsGraph
             vertical_bands = graph.data.horizontal_bands,
             horizontal_bands = graph.data.vertical_bands,
             diagonal_bands = graph.data.diagonal_bands,
+            selection = flipped_selection(graph.data.selection),
         ),
         PointsGraphConfiguration(;
             figure = graph.configuration.figure,
@@ -2433,6 +2625,7 @@ function Common.flip_axes!(graph::PointsGraph)::PointsGraph
     data = graph.data
     data.x, data.y = data.y, data.x
     data.vertical_bands, data.horizontal_bands = data.horizontal_bands, data.vertical_bands
+    data.selection = flipped_selection(data.selection)
 
     configuration = graph.configuration
     configuration.x_axis, configuration.y_axis = configuration.y_axis, configuration.x_axis
