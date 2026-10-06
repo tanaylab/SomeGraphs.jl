@@ -19,9 +19,9 @@ using ..Sources
 using ..Utilities
 using ..Validations
 
-using NamedArrays
 using PlotlyBase
 
+import ..Common.categorical_colors_dict
 import ..Common.is_categorical_axis
 import ..Common.validate_entities_order
 import ..Validations.Maybe
@@ -1234,11 +1234,7 @@ function push_annotation_traces!(;
 
     if colors.show_in_legend && colors.colors_configuration.palette isa CategoricalColors
         legend_group = "Annotation$(annotation_index)"
-        palette_dict = colors.colors_configuration.palette
-        if palette_dict isa NamedArray
-            palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
-        end
-        for (index, (value, color)) in enumerate(palette_dict)
+        for (index, (value, color)) in enumerate(categorical_colors_dict(colors.colors_configuration.palette))  # NOJET
             has_legend_only_traces[1] = true
             push_annotation_legend_trace!(;
                 traces,

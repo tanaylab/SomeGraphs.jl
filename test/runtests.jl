@@ -3,8 +3,10 @@ using Test
 
 using Clustering
 using Distances
+using NamedArrays
 using SomeGraphs
 using NestedTests
+using OrderedCollections
 
 import SomeGraphs.Common.Maybe
 

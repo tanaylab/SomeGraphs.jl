@@ -52,6 +52,7 @@ export save_graph
 
 using Base.Multimedia
 using NamedArrays
+using OrderedCollections
 using PlotlyBase
 
 using ..Validations
@@ -658,8 +659,20 @@ ContinuousColors =
 A categorical colors palette, mapping string values to colors. An empty string color means the entity will not be shown
 (as if it was masked or never included in the data). As a convenience, a named vector of strings can be specified
 instead of a dictionary.
+
+The legend lists the values in the order of the palette. A `Dict` has no order of its own, so use an `OrderedDict` (or a
+named vector) to control it.
 """
-CategoricalColors = Union{Dict{<:AbstractString, <:AbstractString}, NamedVector{<:AbstractString}}
+CategoricalColors = Union{AbstractDict{<:AbstractString, <:AbstractString}, NamedVector{<:AbstractString}}
+
+# The palette as a dictionary, in the same order.
+function categorical_colors_dict(palette::CategoricalColors)::AbstractDict{<:AbstractString, <:AbstractString}
+    if palette isa NamedVector
+        return OrderedDict(zip(names(palette, 1), palette.array))
+    else
+        return palette
+    end
+end
 
 """
     struct AutomaticColors end
@@ -1253,7 +1266,7 @@ end
 
 function categorical_palette(values::AbstractSet{<:AbstractString}, palette::ContinuousColors)::CategoricalColors
     scale = 1 / length(values)
-    return Dict([
+    return OrderedDict([
         value => interpolate_color(palette, index * scale) for (index, value) in enumerate(sort!(collect(values)))
     ])  # NOJET
 end
@@ -1537,9 +1550,7 @@ function Validations.validate(
     end
 
     if palette isa CategoricalColors
-        if palette isa NamedVector
-            palette = Dict(zip(names(palette, 1), palette.array))  # UNTESTED
-        end
+        palette = categorical_colors_dict(palette)
 
         validate_dict_is_not_empty(context, "palette", palette)  # NOJET
 

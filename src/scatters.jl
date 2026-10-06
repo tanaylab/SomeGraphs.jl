@@ -29,9 +29,9 @@ using ..Utilities
 using ..Validations
 
 using KernelDensity
-using NamedArrays
 using PlotlyBase
 
+import ..Common.categorical_colors_dict
 import ..Common.validate_entities_order
 import ..Utilities.Maybe
 
@@ -1319,11 +1319,7 @@ function push_points_traces!(;
             # The categories are the (unique) keys, in order of appearance, and the colors are picked automatically.
             name_color_pairs = [(name, nothing) for name in unique(configured_points.colors.original_color_values)]
         else
-            palette_dict = palette
-            if palette_dict isa NamedArray
-                palette_dict = Dict(zip(names(palette_dict, 1), palette_dict.array))  # UNTESTED # NOJET
-            end
-            name_color_pairs = collect(palette_dict)
+            name_color_pairs = collect(categorical_colors_dict(palette))  # NOJET
         end
         for (name, color) in name_color_pairs
             push!(colors_names, name)

@@ -698,6 +698,20 @@ nested_test("points") do
             return nothing
         end
 
+        nested_test("ordered") do
+            graph.configuration.points.colors.palette = OrderedDict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
+            graph.configuration.points.colors.show_legend = true
+            test_html(graph, "points.categorical.ordered.html")
+            return nothing
+        end
+
+        nested_test("named") do
+            graph.configuration.points.colors.palette = NamedArray(["red", "green", "blue"], (["Foo", "Bar", "Baz"],))
+            graph.configuration.points.colors.show_legend = true
+            test_html(graph, "points.categorical.named.html")
+            return nothing
+        end
+
         nested_test("mask") do
             graph.data.points.entities.mask = [true, true, true, true, true, true, false, false, false, false, false]
             test_html(graph, "points.categorical.mask.html")

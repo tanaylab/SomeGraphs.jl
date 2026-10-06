@@ -362,7 +362,7 @@ function validate_vector_entries(
     return nothing
 end
 
-function validate_vector_entries(  # UNTESTED
+function validate_vector_entries(
     validation::Function,
     context::ValidationContext,
     vector::Maybe{AbstractVector},

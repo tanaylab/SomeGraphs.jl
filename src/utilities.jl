@@ -51,7 +51,6 @@ export validate_numeric_values
 export validate_values
 
 using Colors
-using NamedArrays
 using PlotlyBase
 using Reexport
 
@@ -59,6 +58,7 @@ using ..Validations
 using ..Common
 
 import .Common.CACHED_COLOR_SCALES
+import .Common.categorical_colors_dict
 import .Validations.Maybe
 
 @reexport import .Common.validate_graph
@@ -267,10 +267,7 @@ function validate_colors(
 
     elseif colors_configuration.palette isa CategoricalColors
         if colors_data isa AbstractVector{<:AbstractString}
-            palette_dict = colors_configuration.palette
-            if palette_dict isa NamedVector
-                palette_dict = palette_dict.dicts[1]  # UNTESTED
-            end
+            palette_dict = categorical_colors_dict(colors_configuration.palette)  # NOJET
 
             validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
                 if !haskey(palette_dict, color)
