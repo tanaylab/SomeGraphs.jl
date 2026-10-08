@@ -990,9 +990,11 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     )
 
     if graph.configuration.rows.dendogram_size !== nothing
+        rows_hclust = placement.rows.hclust
+        @assert rows_hclust !== nothing
         rows_max_height = push_dendogram_trace!(;
             traces,
-            clusters = displayed_hclust(placement.rows.hclust, rows_mask),
+            clusters = displayed_hclust(rows_hclust, rows_mask),
             values_orientation = HorizontalValues,
             dendogram_line = graph.configuration.rows.dendogram_line,
             expanded_mask = expanded_rows_mask,
@@ -1011,9 +1013,11 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     end
 
     if graph.configuration.columns.dendogram_size !== nothing
+        columns_hclust = placement.columns.hclust
+        @assert columns_hclust !== nothing
         columns_max_height = push_dendogram_trace!(;
             traces,
-            clusters = displayed_hclust(placement.columns.hclust, columns_mask),
+            clusters = displayed_hclust(columns_hclust, columns_mask),
             values_orientation = VerticalValues,
             dendogram_line = graph.configuration.columns.dendogram_line,
             expanded_mask = expanded_columns_mask,
@@ -1507,15 +1511,9 @@ function reset_placement!(graph::HeatmapGraph)::Nothing
 end
 
 # Only a heatmap has a computed placement, so only a heatmap has this property; any other graph will complain there's
-# no such field. The property is propagated like that of any graph.
-Base.@constprop :aggressive function Base.getproperty(graph::HeatmapGraph, property::Symbol)
-    if property == :placement
-        return heatmap_placement(graph)
-    elseif property == :figure || property == :json
-        return invoke(Base.getproperty, Tuple{Graph, Symbol}, graph, property)
-    else
-        return getfield(graph, property)
-    end
+# no such field.
+function Common.graph_property(graph::HeatmapGraph, ::Val{:placement})::HeatmapGraphPlacement
+    return heatmap_placement(graph)
 end
 
 # The entries of a side which are shown, in the order they are shown in: the order of the data without the hidden

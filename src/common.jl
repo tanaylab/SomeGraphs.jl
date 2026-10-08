@@ -121,16 +121,23 @@ function Base.show(io::IO, graph::Graph)::Nothing
     return nothing
 end
 
-# The property is a constant at almost every call, so it is propagated, and `graph.data` infers as the type of the
-# field.
+# A property is computed by the method of `graph_property` for its name. The name is a constant at almost every call,
+# so it is propagated, and the method is chosen at compile time (e.g. `graph.data` is just the field).
 Base.@constprop :aggressive function Base.getproperty(graph::Graph, property::Symbol)
-    if property == :figure
-        return graph_to_figure(graph)
-    elseif property == :json
-        return graph_to_json(graph)
-    else
-        return getfield(graph, property)
-    end
+    return graph_property(graph, Val(property))
+end
+
+function graph_property(graph::Graph, ::Val{:figure})::PlotlyFigure
+    return graph_to_figure(graph)
+end
+
+function graph_property(graph::Graph, ::Val{:json})::AbstractString
+    return graph_to_json(graph)
+end
+
+# Any other property is a field, of whatever type it has.
+function graph_property(graph::Graph, ::Val{name}) where {name}
+    return getfield(graph, name)
 end
 
 function Validations.validate(context::ValidationContext, graph::Graph)::Nothing
