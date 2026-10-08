@@ -1507,12 +1507,14 @@ function reset_placement!(graph::HeatmapGraph)::Nothing
 end
 
 # Only a heatmap has a computed placement, so only a heatmap has this property; any other graph will complain there's
-# no such field.
-function Base.getproperty(graph::HeatmapGraph, property::Symbol)::Any
+# no such field. The property is propagated like that of any graph.
+Base.@constprop :aggressive function Base.getproperty(graph::HeatmapGraph, property::Symbol)
     if property == :placement
         return heatmap_placement(graph)
-    else
+    elseif property == :figure || property == :json
         return invoke(Base.getproperty, Tuple{Graph, Symbol}, graph, property)
+    else
+        return getfield(graph, property)
     end
 end
 

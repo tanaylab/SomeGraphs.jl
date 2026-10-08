@@ -121,7 +121,9 @@ function Base.show(io::IO, graph::Graph)::Nothing
     return nothing
 end
 
-function Base.getproperty(graph::Graph, property::Symbol)::Any
+# The property is a constant at almost every call, so it is propagated, and `graph.data` infers as the type of the
+# field.
+Base.@constprop :aggressive function Base.getproperty(graph::Graph, property::Symbol)
     if property == :figure
         return graph_to_figure(graph)
     elseif property == :json
