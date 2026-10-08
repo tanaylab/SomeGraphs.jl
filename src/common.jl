@@ -161,25 +161,27 @@ end
 """
     visit_graph_parts(visitor::Function, part::Any, visited::Base.IdSet)::Nothing
 
-Walk a `part` of a [`Graph`](@ref) (or the whole graph) down to the leaves it holds, and call the `visitor` on each of
-them, once each. This is how `visit_data_sinks` and `visit_configuration_sinks` reach every leaf of a whole graph. A
-leaf is a struct which holds no other parts, such as an [`AxisConfiguration`](@ref) or a [`VectorValuesData`](@ref).
+Call the `visitor` on a `part` of a [`Graph`](@ref) (or on the whole graph), and on every struct it holds, once each.
+The walk doesn't go into a leaf: the struct of a role, such as an [`AxisConfiguration`](@ref) or a
+[`VectorValuesData`](@ref), which a visitor handles whole (e.g. together with its scale).
 
-Each struct of this package which a graph may hold has a method of its own, defined right after it. A leaf's method
-calls `visit_graph_leaf`. Any other struct's method calls `visit_graph_fields`, which walks its fields, so a new field
-is walked without further code. There is no fallback, so a walk which reaches a struct without a method is an error.
+Each struct of this package which a graph or a view may hold has a method of its own, defined right after it. A leaf's
+method calls `visit_graph_leaf`. Any other struct's method calls `visit_graph_fields`, which also walks its fields, so
+a new field is walked without further code. There is no fallback, so a walk which reaches a struct without a method is
+an error.
 """
 function visit_graph_parts end
 
 """
     visit_graph_fields(visitor::Function, container::Any, visited::Base.IdSet)::Nothing
 
-Walk the parts held in the fields of the `container` (see [`visit_graph_parts`](@ref)): each field holding a struct of
-this package, or a vector of them. Any other field (a number, a string, an enum, a vector of numbers, ...) holds no
-parts.
+Call the `visitor` on the `container`, then walk the parts held in its fields (see [`visit_graph_parts`](@ref)): each
+field holding a struct of this package, or a vector of them. Any other field (a number, a string, an enum, a vector of
+numbers, ...) holds no parts.
 """
 function visit_graph_fields(visitor::Function, container::Any, visited::Base.IdSet)::Nothing
     if !is_graph_part_visited(container, visited)
+        visitor(container)
         for name in fieldnames(typeof(container))
             value = getfield(container, name)
             if is_graph_part(value)

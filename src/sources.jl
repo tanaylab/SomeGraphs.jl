@@ -38,6 +38,7 @@ export matrix_sink_error
 export vector_sink_error
 export visit_configuration_sinks
 export visit_data_sinks
+export visit_graph_parts
 export AxisConfigurationFields
 export AxisVectorFields
 export ColorsConfigurationFields
@@ -210,6 +211,7 @@ end
 # A matrix is walked into its entries only (see `visit_data_sinks`).
 function visit_graph_parts(visitor::Function, part::MatrixDataFields, visited::Base.IdSet)::Nothing
     if !is_graph_part_visited(part, visited)
+        visitor(part)
         visit_graph_parts(visitor, part.values, visited)
         visit_graph_parts(visitor, part.entities, visited)
     end
@@ -278,6 +280,7 @@ end
 # The `scale` is the one in the `sizes`, so the `sizes` are all that is visited.
 function visit_graph_parts(visitor::Function, part::SizesConfigurationFields, visited::Base.IdSet)::Nothing
     if !is_graph_part_visited(part, visited)
+        visitor(part)
         visit_graph_parts(visitor, part.sizes, visited)
     end
     return nothing
@@ -308,6 +311,7 @@ function visit_graph_parts(
     visited::Base.IdSet,
 )::Nothing
     if !is_graph_part_visited(part, visited)
+        visitor(part)
         visit_graph_parts(visitor, part.colors, visited)
     end
     return nothing
@@ -793,6 +797,7 @@ end
 # The side holds the whole graph, so only its entities and arrangement are visited, not its fields.
 function visit_graph_parts(visitor::Function, part::HeatmapSide, visited::Base.IdSet)::Nothing
     if !is_graph_part_visited(part, visited)
+        visitor(part)
         data = side_data(part)
         visit_graph_parts(visitor, data.entities, visited)
         visit_graph_parts(visitor, data.arrangement, visited)
@@ -886,12 +891,37 @@ which has no place for such a value.
 MatrixDataSinks = Union{AnyContainer, ConfigurationLeaf, MatrixDataLeaf, Tuple, AbstractVector}
 
 """
-    visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
-    visit_data_sinks(visitor::Function, graph::Graph)::Nothing
+    visit_graph_parts(visitor::Function, target::Union{Sinks, Graph})::Nothing
 
-Walk the `sinks` down to the data structs they are built from, and call the `visitor` on each of them. This lets a data
-source write a method per struct it fills, without a traversal of its own. Given a whole `graph`, walk all of it, and
-call the `visitor` on each of its data structs. A data source can't be given a whole graph, since it fills one role.
+Call the `visitor` on every struct the `target` reaches: a whole graph, or some sinks. Each is visited once, however
+many reach it. The walk doesn't go into a leaf, the struct of a role (such as an [`AxisConfiguration`](@ref)), which the
+`visitor` handles whole. For example, this hides every legend of a graph:
+
+```julia
+visit_graph_parts(graph) do part
+    if hasproperty(part, :show_legend)
+        part.show_legend = false
+    end
+    return nothing
+end
+```
+
+A data source uses [`visit_data_sinks`](@ref) or [`visit_configuration_sinks`](@ref) instead. These call the `visitor`
+only on the leaves of their half.
+"""
+function visit_graph_parts(visitor::Function, target::Union{Sinks, Graph})::Nothing
+    visited = Base.IdSet{Any}()
+    for part in sinks_collection(target)
+        visit_graph_parts(visitor, part, visited)
+    end
+    return nothing
+end
+
+"""
+    visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
+
+Call the `visitor` on each data struct the `sinks` reach (see [`visit_graph_parts`](@ref)). This lets a data source
+write a method per struct it fills, without a traversal of its own. It isn't called on the views themselves.
 
 A struct is visited once however many sinks reach it. All the roles of an axis share its entities, and
 [`add_hovers!`](@ref) appends, so without this a hover would be added once per sink which reaches the same entities.
@@ -899,36 +929,29 @@ A struct is visited once however many sinks reach it. All the roles of an axis s
 A matrix is walked into its entries only. Its row and column entities belong to their axes and are sized by one axis
 each, so a value per matrix entry can't be written to them; they are reached by naming them directly.
 """
-function visit_data_sinks(visitor::Function, sinks::Union{Sinks, Graph})::Nothing
+function visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
     visit_sinks_leaves(visitor, DataLeaf, sinks)
     return nothing
 end
 
 """
     visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
-    visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 
-Walk the `sinks` down to the configuration structs they are built from, and call the `visitor` on each of them. The
-mirror of [`visit_data_sinks`](@ref). Given a whole `graph`, this reaches the configuration structs held in its data too
-(e.g. the colors of its annotations).
+Call the `visitor` on each configuration struct the `sinks` reach. The mirror of [`visit_data_sinks`](@ref).
 """
-function visit_configuration_sinks(visitor::Function, sinks::Union{Sinks, Graph})::Nothing
+function visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
     visit_sinks_leaves(visitor, ConfigurationLeaf, sinks)
     return nothing
 end
 
-# Walk the `sinks` (or a whole graph) down to the leaves they hold, and call the `visitor` on each leaf of the
-# `Leaf` type. A leaf is visited once, however many of the `sinks` reach it. The type is static, so that the `visitor`
-# is seen to be called only with the leaves it handles.
-function visit_sinks_leaves(visitor::Function, ::Type{Leaf}, sinks::Union{Sinks, Graph})::Nothing where {Leaf}
-    visited = Base.IdSet{Any}()
-    for sink in sinks_collection(sinks)
-        visit_graph_parts(sink, visited) do leaf
-            if leaf isa Leaf
-                visitor(leaf)
-            end
-            return nothing
+# Call the `visitor` on each struct of the `Leaf` type which the `sinks` reach. The type is static, so that the
+# `visitor` is seen to be called only with the leaves it handles.
+function visit_sinks_leaves(visitor::Function, ::Type{Leaf}, sinks::Sinks)::Nothing where {Leaf}
+    visit_graph_parts(sinks) do part
+        if part isa Leaf
+            visitor(part)
         end
+        return nothing
     end
     return nothing
 end

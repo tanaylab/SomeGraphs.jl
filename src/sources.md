@@ -166,8 +166,9 @@ SomeGraphs.Sources.matrix_sink_error
 SomeGraphs.Sources.vector_sink_error
 ```
 
-Both visitors walk through `visit_graph_parts`. Each struct which a graph or a view holds has a method of it. A new
-struct needs one too.
+Every walk goes through `visit_graph_parts`, which calls its visitor on every struct of a graph or of some sinks. Use it
+directly to change a whole graph (e.g. to hide all its legends). The two sink visitors above are its use by data
+sources. Each struct which a graph or a view holds has a method of it. A new struct needs one too.
 
 ```@docs
 SomeGraphs.Common.visit_graph_parts

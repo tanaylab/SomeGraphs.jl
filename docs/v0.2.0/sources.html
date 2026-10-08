@@ -2273,18 +2273,17 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
-visit_data_sinks(visitor::Function, graph::Graph)::Nothing
 </code>
 </pre>
-<p>Walk the 
+<p>Call the 
+<code>visitor
+</code> on each data struct the 
 <code>sinks
-</code> down to the data structs they are built from, and call the 
-<code>visitor
-</code> on each of them. This lets a data source write a method per struct it fills, without a traversal of its own. Given a whole 
-<code>graph
-</code>, walk all of it, and call the 
-<code>visitor
-</code> on each of its data structs. A data source can&#39;t be given a whole graph, since it fills one role.
+</code> reach (see 
+<a href="sources.html#SomeGraphs.Common.visit_graph_parts">
+<code>visit_graph_parts
+</code>
+</a>). This lets a data source write a method per struct it fills, without a traversal of its own. It isn&#39;t called on the views themselves.
 </p>
 <p>A struct is visited once however many sinks reach it. All the roles of an axis share its entities, and 
 <a href="sources.html#SomeGraphs.Sources.add_hovers!">
@@ -2312,20 +2311,17 @@ visit_data_sinks(visitor::Function, graph::Graph)::Nothing
 <div>
 <pre>
 <code class="language-julia hljs">visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
-visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 </code>
 </pre>
-<p>Walk the 
-<code>sinks
-</code> down to the configuration structs they are built from, and call the 
+<p>Call the 
 <code>visitor
-</code> on each of them. The mirror of 
+</code> on each configuration struct the 
+<code>sinks
+</code> reach. The mirror of 
 <a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
 <code>visit_data_sinks
 </code>
-</a>. Given a whole 
-<code>graph
-</code>, this reaches the configuration structs held in its data too (e.g. the colors of its annotations).
+</a>.
 </p>
 </div>
 </section>
@@ -2387,9 +2383,9 @@ visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 </section>
 </details>
 </article>
-<p>Both visitors walk through 
+<p>Every walk goes through 
 <code>visit_graph_parts
-</code>. Each struct which a graph or a view holds has a method of it. A new struct needs one too.
+</code>, which calls its visitor on every struct of a graph or of some sinks. Use it directly to change a whole graph (e.g. to hide all its legends). The two sink visitors above are its use by data sources. Each struct which a graph or a view holds has a method of it. A new struct needs one too.
 </p>
 <article>
 <details class="docstring" open="true">
@@ -2407,19 +2403,15 @@ visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 <code class="language-julia hljs">visit_graph_parts(visitor::Function, part::Any, visited::Base.IdSet)::Nothing
 </code>
 </pre>
-<p>Walk a 
+<p>Call the 
+<code>visitor
+</code> on a 
 <code>part
 </code> of a 
 <a href="common.html#SomeGraphs.Common.Graph">
 <code>Graph
 </code>
-</a> (or the whole graph) down to the leaves it holds, and call the 
-<code>visitor
-</code> on each of them, once each. This is how 
-<code>visit_data_sinks
-</code> and 
-<code>visit_configuration_sinks
-</code> reach every leaf of a whole graph. A leaf is a struct which holds no other parts, such as an 
+</a> (or on the whole graph), and on every struct it holds, once each. The walk doesn&#39;t go into a leaf: the struct of a role, such as an 
 <a href="common.html#SomeGraphs.Common.AxisConfiguration">
 <code>AxisConfiguration
 </code>
@@ -2427,13 +2419,13 @@ visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 <a href="common.html#SomeGraphs.Common.VectorValuesData">
 <code>VectorValuesData
 </code>
-</a>.
+</a>, which a visitor handles whole (e.g. together with its scale).
 </p>
-<p>Each struct of this package which a graph may hold has a method of its own, defined right after it. A leaf&#39;s method calls 
+<p>Each struct of this package which a graph or a view may hold has a method of its own, defined right after it. A leaf&#39;s method calls 
 <code>visit_graph_leaf
 </code>. Any other struct&#39;s method calls 
 <code>visit_graph_fields
-</code>, which walks its fields, so a new field is walked without further code. There is no fallback, so a walk which reaches a struct without a method is an error.
+</code>, which also walks its fields, so a new field is walked without further code. There is no fallback, so a walk which reaches a struct without a method is an error.
 </p>
 </div>
 </section>
@@ -2455,9 +2447,11 @@ visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 <code class="language-julia hljs">visit_graph_fields(visitor::Function, container::Any, visited::Base.IdSet)::Nothing
 </code>
 </pre>
-<p>Walk the parts held in the fields of the 
+<p>Call the 
+<code>visitor
+</code> on the 
 <code>container
-</code> (see 
+</code>, then walk the parts held in its fields (see 
 <a href="sources.html#SomeGraphs.Common.visit_graph_parts">
 <code>visit_graph_parts
 </code>
@@ -3094,12 +3088,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='r4osKwl5wE' class='' style=';'>
+<div id='o9oq1iSFPB' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("r4osKwl5wE")
+    const PLOT = document.getElementById("o9oq1iSFPB")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","customdata":[1,2,3,4,5,6,7,8,9,10,11],"text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

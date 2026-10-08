@@ -115,30 +115,44 @@ nested_test("sources") do
         end
 
         nested_test("graph") do
-            nested_test("configuration") do
+            nested_test("leaves") do
                 # The colors of the annotation are held in the data of the graph, and are reached too.
-                @test count(==(:ColorsConfiguration), visited_names(visit_configuration_sinks, graph)) == 2
+                names = visited_names(visit_graph_parts, graph)
+                @test count(==(:ColorsConfiguration), names) == 2
+                @test count(==(:ArrangementData), names) == 2
+                @test :MatrixValuesData in names
                 return nothing
             end
 
-            nested_test("data") do
-                names = visited_names(visit_data_sinks, graph)
-                @test count(==(:ArrangementData), names) == 2
-                @test :MatrixValuesData in names
-                @test !(:ColorsConfiguration in names)
+            nested_test("containers") do
+                names = visited_names(visit_graph_parts, graph)
+                @test :Graph in names
+                @test :HeatmapGraphConfiguration in names
+                @test count(==(:HeatmapSideData), names) == 2
+                return nothing
+            end
+
+            nested_test("scales") do
+                # A leaf is not walked into, so the scales held by the axes and the colors are not visited on their own.
+                @test !(:ScaleConfiguration in visited_names(visit_graph_parts, graph))
                 return nothing
             end
 
             nested_test("legends") do
+                # Every struct which has a legend is reached, whether it is a leaf or not.
                 points = points_graph()
-                visit_configuration_sinks(points) do leaf
-                    if hasproperty(leaf, :show_legend)
-                        leaf.show_legend = true
+                lines = lines_graph()
+                for every_graph in (points, lines)
+                    visit_graph_parts(every_graph) do part
+                        if hasproperty(part, :show_legend)
+                            part.show_legend = true
+                        end
+                        return nothing
                     end
-                    return nothing
                 end
                 @test points.configuration.points.colors.show_legend
                 @test points.configuration.edges.sizes.show_legend
+                @test lines.configuration.show_legend
                 return nothing
             end
 
@@ -154,27 +168,27 @@ nested_test("sources") do
                     series_bars_graph(; series = [SeriesData()], annotations = [AnnotationData()]),
                     heatmap_graph(),
                 )
-                    @test !isempty(visited_names(visit_data_sinks, every_graph))
-                    @test !isempty(visited_names(visit_configuration_sinks, every_graph))
+                    @test !isempty(visited_names(visit_graph_parts, every_graph))
                 end
                 return nothing
             end
 
             nested_test("scale") do
-                # A scale is not walked into from the configuration which holds it, but it may be given on its own.
+                # A scale is not walked into from the leaf which holds it, but it may be given on its own.
                 @test visited_names(visit_configuration_sinks, graph.configuration.entries.colors.scale) ==
                       [:ScaleConfiguration]
                 return nothing
             end
 
             nested_test("placement") do
-                # The computed placement of a heatmap holds no leaves, so walking it adds nothing.
+                # The computed placement of a heatmap is part of its configuration once it is computed.
                 placed = heatmap_graph()
                 placed.data.entries.matrix = [1.0 2.0; 3.0 4.0]
-                names = visited_names(visit_data_sinks, placed)
+                @test !(:HeatmapGraphPlacement in visited_names(visit_graph_parts, placed))
                 heatmap_placement(placed)
-                @test placed.configuration.final_placement !== nothing
-                @test visited_names(visit_data_sinks, placed) == names
+                names = visited_names(visit_graph_parts, placed)
+                @test :HeatmapGraphPlacement in names
+                @test count(==(:SidePlacement), names) == 2
                 return nothing
             end
 
