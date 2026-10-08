@@ -53,6 +53,7 @@ import ..Bars.push_annotations_traces!
 import ..Bars.push_plotly_annotation!
 import ..Bars.expand_vector
 import ..Common.validate_entities_order
+import ..Common.visit_graph_fields
 import ..Validations.Maybe
 
 """
@@ -119,6 +120,11 @@ The computed [`SidePlacement`](@ref) of the rows and of the columns of a heatmap
 struct HeatmapGraphPlacement
     rows::SidePlacement
     columns::SidePlacement
+end
+
+function Common.visit_graph_parts(visitor::Function, part::HeatmapGraphPlacement, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -248,6 +254,11 @@ If a dendogram tree is shown, the `dendogram_line` can be used to control it. Th
     dendogram_line::LineConfiguration = LineConfiguration()
 end
 
+function Common.visit_graph_parts(visitor::Function, part::HeatmapSideConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, configuration::HeatmapSideConfiguration)::Nothing
     validate_field(context, "annotations", configuration.annotations)
     validate_field(context, "dendogram_line", configuration.dendogram_line)
@@ -301,6 +312,11 @@ only continuous color palettes are supported, and a `fixed` color can't be speci
 """
 @kwdef mutable struct EntriesConfiguration <: Validated
     colors::ColorsConfiguration = ColorsConfiguration()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::EntriesConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, configuration::EntriesConfiguration)::Nothing
@@ -357,6 +373,11 @@ figure is generated or its placement is asked for first.
     final_placement::Maybe{HeatmapGraphPlacement} = nothing
 end
 
+function Common.visit_graph_parts(visitor::Function, part::HeatmapGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, configuration::HeatmapGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "entries", configuration.entries)
@@ -391,6 +412,11 @@ entries. At least one entry must be shown.
     arrangement::ArrangementData = ArrangementData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
+end
+
+function Common.visit_graph_parts(visitor::Function, part::HeatmapSideData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 # Validate the data of the `name` (rows or columns) side of a heatmap with `n_entries`. The context is that of the whole
@@ -495,6 +521,11 @@ not impact the tree and/or order.
     cells::MatrixEntitiesData = MatrixEntitiesData()
     rows::HeatmapSideData = HeatmapSideData()
     columns::HeatmapSideData = HeatmapSideData()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::HeatmapGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::HeatmapGraphData)::Nothing

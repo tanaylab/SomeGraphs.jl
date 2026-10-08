@@ -34,6 +34,8 @@ export MatrixDataSinks
 export Sinks
 export VectorDataLeaf
 export VectorDataSinks
+export matrix_sink_error
+export vector_sink_error
 export visit_configuration_sinks
 export visit_data_sinks
 export AxisConfigurationFields
@@ -108,6 +110,9 @@ using ..Common
 using ..Validations
 
 import Clustering.Hclust  # NOLINT
+import ..Common.is_graph_part_visited
+import ..Common.visit_graph_fields
+import ..Common.visit_graph_parts
 import ..Validations.Maybe
 
 """
@@ -169,6 +174,11 @@ struct VectorDataFields
     entities::VectorEntitiesData
 end
 
+function visit_graph_parts(visitor::Function, part::VectorDataFields, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 """
     struct MatrixDataFields
         values::MatrixValuesData
@@ -193,6 +203,15 @@ struct MatrixDataFields
     columns_entities::VectorEntitiesData
 end
 
+# A matrix is walked into its entries only (see `visit_data_sinks`).
+function visit_graph_parts(visitor::Function, part::MatrixDataFields, visited::Base.IdSet)::Nothing
+    if !is_graph_part_visited(part, visited)
+        visit_graph_parts(visitor, part.values, visited)
+        visit_graph_parts(visitor, part.entities, visited)
+    end
+    return nothing
+end
+
 """
 Abstract interface for the configuration half of `AbstractFields`. Every concrete type says how the values are mapped
 to the range they are shown in, and most have additional fields as appropriate for the specific configuration. A role
@@ -211,6 +230,11 @@ The configuration half of an `AxisVectorFields` data source view (see [`VectorFi
 """
 struct AxisConfigurationFields <: AbstractConfigurationFields
     axis::AxisConfiguration
+end
+
+function visit_graph_parts(visitor::Function, part::AxisConfigurationFields, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -247,6 +271,14 @@ struct SizesConfigurationFields <: AbstractConfigurationFields
     sizes::SizesConfiguration
 end
 
+# The `scale` is the one in the `sizes`, so the `sizes` are all that is visited.
+function visit_graph_parts(visitor::Function, part::SizesConfigurationFields, visited::Base.IdSet)::Nothing
+    if !is_graph_part_visited(part, visited)
+        visit_graph_parts(visitor, part.sizes, visited)
+    end
+    return nothing
+end
+
 function SizesConfigurationFields(sizes::SizesConfiguration)::SizesConfigurationFields
     return SizesConfigurationFields(sizes.scale, sizes)
 end
@@ -263,6 +295,18 @@ colored by, and its `scale`.
 struct MatrixConfigurationFields <: AbstractConfigurationFields
     scale::ScaleConfiguration
     colors::ColorsConfiguration
+end
+
+# The `scale` is the one in the `colors`, so the `colors` are all that is visited.
+function visit_graph_parts(
+    visitor::Function,
+    part::Union{ColorsConfigurationFields, MatrixConfigurationFields},
+    visited::Base.IdSet,
+)::Nothing
+    if !is_graph_part_visited(part, visited)
+        visit_graph_parts(visitor, part.colors, visited)
+    end
+    return nothing
 end
 
 function MatrixConfigurationFields(colors::ColorsConfiguration)::MatrixConfigurationFields
@@ -298,6 +342,11 @@ works the same on the X coordinates of points, the values of bars, the colors of
 struct VectorFields{Configuration} <: AbstractFields
     data::VectorDataFields
     configuration::Configuration
+end
+
+function visit_graph_parts(visitor::Function, part::VectorFields, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -336,6 +385,9 @@ This allows a data source to set the part regardless of the role it plays in the
 instances, they are identified by their `index` in the `graph`. Parts are different from simple vector data in that they
 have scalar properties (e.g., name, hover) and may contain multiple vector data (e.g., both x and y coordinates for a
 line part). The part `data` acts as a view that allows accessing the relevant fields depending on the `PartType`.
+
+A part is not a sink, since it may play several roles (a line has an `x` and a `y`). A data source is given one of its
+roles (e.g. `part.x`) or its `entities` instead.
 """
 struct PartFields{GraphType, PartType <: AbstractPartData}
     graph::GraphType
@@ -391,6 +443,11 @@ heatmap), shown as colors.
 struct MatrixFields <: AbstractFields
     data::MatrixDataFields
     configuration::MatrixConfigurationFields
+end
+
+function visit_graph_parts(visitor::Function, part::MatrixFields, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function MatrixFields(
@@ -720,12 +777,23 @@ One side (the rows or the columns) of a heatmap graph, as returned by [`rows_sid
 It stands for the three things a side has: its data ([`side_data`](@ref)), its configuration
 ([`side_configuration`](@ref)) and its computed placement ([`side_placement`](@ref)).
 
-As a sink, it reaches the entities and the arrangement of the side. As a source, it is what the fills copying one side
-onto another take.
+As a sink, it reaches the entities and the arrangement of the side. It doesn't reach the annotations. Each annotation is
+a role of its own, reached through its own view (e.g. [`rows_annotations_colors_vector_fields`](@ref)), so a source
+given the side doesn't write into all of them. As a source, it is what the fills copying one side onto another take.
 """
 struct HeatmapSide
     graph::Graph
     is_rows::Bool
+end
+
+# The side holds the whole graph, so only its entities and arrangement are visited, not its fields.
+function visit_graph_parts(visitor::Function, part::HeatmapSide, visited::Base.IdSet)::Nothing
+    if !is_graph_part_visited(part, visited)
+        data = side_data(part)
+        visit_graph_parts(visitor, data.entities, visited)
+        visit_graph_parts(visitor, data.arrangement, visited)
+    end
+    return nothing
 end
 
 """
@@ -794,8 +862,10 @@ rest, so a mixed collection is fine and either half may match nothing at all.
 The method of a data source which walks the sinks takes every `Sinks` but the leaves it writes:
 `Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector}` when writing data, and the mirror when writing
 configuration. It has a method per leaf it writes, and one explicit no-op method for the leaves it ignores, so a leaf it
-says nothing about is a `MethodError`. Taking `Sinks` in the walking method would match such a leaf too, and walking it
-calls the same method again, forever.
+says nothing about is a `MethodError`. A data source writing data has one more method, for the leaves of the other shape
+(a matrix leaf for a source of a value per entity, and a vector leaf for a source of a value per matrix entry). It
+raises an `ArgumentError`, since such a sink has no place for the data. Taking `Sinks` in the walking method would match
+a leaf too, and walking it calls the same method again, forever.
 """
 Sinks = Union{AnySink, Tuple, AbstractVector}
 
@@ -813,9 +883,11 @@ MatrixDataSinks = Union{AnyContainer, ConfigurationLeaf, MatrixDataLeaf, Tuple, 
 
 """
     visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
+    visit_data_sinks(visitor::Function, graph::Graph)::Nothing
 
 Walk the `sinks` down to the data structs they are built from, and call the `visitor` on each of them. This lets a data
-source write a method per struct it fills, without a traversal of its own.
+source write a method per struct it fills, without a traversal of its own. Given a whole `graph`, walk all of it, and
+call the `visitor` on each of its data structs. A data source can't be given a whole graph, since it fills one role.
 
 A struct is visited once however many sinks reach it. All the roles of an axis share its entities, and
 [`add_hovers!`](@ref) appends, so without this a hover would be added once per sink which reaches the same entities.
@@ -823,116 +895,58 @@ A struct is visited once however many sinks reach it. All the roles of an axis s
 A matrix is walked into its entries only. Its row and column entities belong to their axes and are sized by one axis
 each, so a value per matrix entry can't be written to them; they are reached by naming them directly.
 """
-function visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
-    visited = Base.IdSet{Any}()
-    for sink in data_sinks(sinks)
-        visit_data_sink(visitor, sink, visited)
-    end
-    return nothing
-end
-
-function visit_data_sink(visitor::Function, fields::Union{VectorFields, MatrixFields}, visited::Base.IdSet)::Nothing
-    if !is_visited(fields, visited)
-        visit_data_sink(visitor, fields.data, visited)
-    end
-    return nothing
-end
-
-function visit_data_sink(
-    visitor::Function,
-    data_fields::Union{VectorDataFields, MatrixDataFields},
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(data_fields, visited)
-        visit_data_sink(visitor, data_fields.values, visited)
-        visit_data_sink(visitor, data_fields.entities, visited)
-    end
-    return nothing
-end
-
-function visit_data_sink(visitor::Function, side::HeatmapSide, visited::Base.IdSet)::Nothing
-    if !is_visited(side, visited)
-        data = side_data(side)
-        visit_data_sink(visitor, data.entities, visited)
-        visit_data_sink(visitor, data.arrangement, visited)
-    end
-    return nothing
-end
-
-function visit_data_sink(visitor::Function, leaf::DataLeaf, visited::Base.IdSet)::Nothing
-    if !is_visited(leaf, visited)
-        visitor(leaf)
-    end
+function visit_data_sinks(visitor::Function, sinks::Union{Sinks, Graph})::Nothing
+    visit_sinks_leaves(visitor, DataLeaf, sinks)
     return nothing
 end
 
 """
     visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
+    visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 
 Walk the `sinks` down to the configuration structs they are built from, and call the `visitor` on each of them. The
-mirror of [`visit_data_sinks`](@ref).
+mirror of [`visit_data_sinks`](@ref). Given a whole `graph`, this reaches the configuration structs held in its data too
+(e.g. the colors of its annotations).
 """
-function visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
+function visit_configuration_sinks(visitor::Function, sinks::Union{Sinks, Graph})::Nothing
+    visit_sinks_leaves(visitor, ConfigurationLeaf, sinks)
+    return nothing
+end
+
+# Walk the `sinks` (or a whole graph) down to the leaves they hold, and call the `visitor` on each leaf of the
+# `Leaf` type. A leaf is visited once, however many of the `sinks` reach it. The type is static, so that the `visitor`
+# is seen to be called only with the leaves it handles.
+function visit_sinks_leaves(visitor::Function, ::Type{Leaf}, sinks::Union{Sinks, Graph})::Nothing where {Leaf}
     visited = Base.IdSet{Any}()
-    for sink in configuration_sinks(sinks)
-        visit_configuration_sink(visitor, sink, visited)
+    for sink in sinks_collection(sinks)
+        visit_graph_parts(sink, visited) do leaf
+            if leaf isa Leaf
+                visitor(leaf)
+            end
+            return nothing
+        end
     end
     return nothing
 end
 
-function visit_configuration_sink(
-    visitor::Function,
-    fields::Union{VectorFields, MatrixFields},
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(fields, visited)
-        visit_configuration_sink(visitor, fields.configuration, visited)
-    end
-    return nothing
+"""
+    matrix_sink_error(leaf::MatrixDataLeaf)::ArgumentError
+
+The error of giving a matrix sink to a data source which puts a value per entity. The entries and cells of a matrix have
+no such value. Such a data source raises it for the matrix `leaf` (see [`Sinks`](@ref)).
+"""
+function matrix_sink_error(leaf::MatrixDataLeaf)::ArgumentError
+    return ArgumentError("can't put a value per entity into a matrix sink: $(typeof(leaf))")
 end
 
-function visit_configuration_sink(
-    visitor::Function,
-    configuration_fields::AxisConfigurationFields,
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(configuration_fields, visited)
-        visit_configuration_sink(visitor, configuration_fields.axis, visited)
-    end
-    return nothing
-end
+"""
+    vector_sink_error(leaf::VectorDataLeaf)::ArgumentError
 
-function visit_configuration_sink(
-    visitor::Function,
-    configuration_fields::Union{ColorsConfigurationFields, MatrixConfigurationFields},
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(configuration_fields, visited)
-        visit_configuration_sink(visitor, configuration_fields.colors, visited)
-    end
-    return nothing
-end
-
-function visit_configuration_sink(
-    visitor::Function,
-    configuration_fields::SizesConfigurationFields,
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(configuration_fields, visited)
-        visit_configuration_sink(visitor, configuration_fields.sizes, visited)
-    end
-    return nothing
-end
-
-function visit_configuration_sink(
-    visitor::Function,
-    configuration::Union{AxisConfiguration, ColorsConfiguration, SizesConfiguration, ScaleConfiguration},
-    visited::Base.IdSet,
-)::Nothing
-    if !is_visited(configuration, visited)
-        visitor(configuration)
-    end
-    return nothing
+The error of giving a vector sink to a data source which puts a value per entry of a matrix. A vector has no such value.
+Such a data source raises it for the vector `leaf` (see [`Sinks`](@ref)).
+"""
+function vector_sink_error(leaf::VectorDataLeaf)::ArgumentError
+    return ArgumentError("can't put a value per matrix entry into a vector sink: $(typeof(leaf))")
 end
 
 """
@@ -986,6 +1000,14 @@ function put_vector_data!(
     return nothing
 end
 
+function put_vector_data!(
+    leaf::MatrixDataLeaf,
+    ::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
+    title::Maybe{AbstractString} = nothing,  # NOLINT
+)::Nothing
+    return throw(matrix_sink_error(leaf))
+end
+
 """
     put_vector_names_data!(sinks::VectorDataSinks, name_per_entry::AbstractVector{<:AbstractString})::Nothing
 
@@ -1010,6 +1032,10 @@ end
 # A name identifies an entity, so it belongs to the entities rather than to any one role's values or to the arrangement.
 function put_vector_names_data!(::Union{VectorValuesData, ArrangementData}, ::AbstractVector{<:AbstractString})::Nothing
     return nothing
+end
+
+function put_vector_names_data!(leaf::MatrixDataLeaf, ::AbstractVector{<:AbstractString})::Nothing
+    return throw(matrix_sink_error(leaf))
 end
 
 """
@@ -1047,6 +1073,10 @@ function put_vector_mask_data!(
     return nothing
 end
 
+function put_vector_mask_data!(leaf::MatrixDataLeaf, ::Union{AbstractVector{Bool}, BitVector})::Nothing
+    return throw(matrix_sink_error(leaf))
+end
+
 """
     put_vector_order_data!(
         sinks::VectorDataSinks,
@@ -1075,6 +1105,10 @@ end
 # a heatmap side, which are what the arrangement holds.
 function put_vector_order_data!(::Union{VectorValuesData, ArrangementData}, ::AbstractVector{<:Integer})::Nothing
     return nothing
+end
+
+function put_vector_order_data!(leaf::MatrixDataLeaf, ::AbstractVector{<:Integer})::Nothing
+    return throw(matrix_sink_error(leaf))
 end
 
 """
@@ -1117,6 +1151,14 @@ function put_matrix_data!(
 )::Nothing
     add_hovers!(entities, hover_strings(value_per_row_per_column); title)
     return nothing
+end
+
+function put_matrix_data!(
+    leaf::VectorDataLeaf,
+    ::AbstractMatrix{<:Real};
+    title::Maybe{AbstractString} = nothing,  # NOLINT
+)::Nothing
+    return throw(vector_sink_error(leaf))
 end
 
 """
@@ -1209,6 +1251,10 @@ function put_vector_tree_data!(::Union{VectorValuesData, VectorEntitiesData}, ::
     return nothing
 end
 
+function put_vector_tree_data!(leaf::MatrixDataLeaf, ::Maybe{Hclust})::Nothing
+    return throw(matrix_sink_error(leaf))
+end
+
 """
     fill_entities!(sinks::VectorDataSinks, source::Union{HeatmapSide, VectorEntitiesData})::Nothing
 
@@ -1240,6 +1286,10 @@ end
 # The entities are all that is filled.
 function fill_entities!(::Union{VectorValuesData, ArrangementData}, ::VectorEntitiesData)::Nothing
     return nothing
+end
+
+function fill_entities!(leaf::MatrixDataLeaf, ::VectorEntitiesData)::Nothing
+    return throw(matrix_sink_error(leaf))
 end
 
 """
@@ -1274,6 +1324,10 @@ end
 # The arrangement is all that is filled.
 function fill_arrangement!(::Union{VectorValuesData, VectorEntitiesData}, ::ArrangementData)::Nothing
     return nothing
+end
+
+function fill_arrangement!(leaf::MatrixDataLeaf, ::ArrangementData)::Nothing
+    return throw(matrix_sink_error(leaf))
 end
 
 """
@@ -1402,25 +1456,15 @@ function hover_strings(value_per_entry::AbstractArray{<:Real})::AbstractArray{<:
     return string.(value_per_entry)
 end
 
-# Which of the `sinks` each half is written into. Either may be empty. A collection is asserted rather than typed,
-# because a literal vector of several kinds of sink is a `Vector{Any}`. The result is typed, so that a visitor is seen
-# to be called only with the half it handles.
-function data_sinks(sinks::Union{Tuple, AbstractVector})::Vector{DataSink}
+# The `sinks` as a collection: a single sink (or a whole graph) on its own. A collection is asserted rather than typed,
+# because a literal vector of several kinds of sink is a `Vector{Any}`.
+function sinks_collection(sinks::Union{Tuple, AbstractVector})::Union{Tuple, AbstractVector}
     assert_sinks(sinks)
-    return collect(DataSink, filter(sink -> sink isa DataSink, sinks))
+    return sinks
 end
 
-function data_sinks(sink::AnySink)::Vector{DataSink}
-    return data_sinks((sink,))
-end
-
-function configuration_sinks(sinks::Union{Tuple, AbstractVector})::Vector{ConfigurationSink}
-    assert_sinks(sinks)
-    return collect(ConfigurationSink, filter(sink -> sink isa ConfigurationSink, sinks))
-end
-
-function configuration_sinks(sink::AnySink)::Vector{ConfigurationSink}
-    return configuration_sinks((sink,))
+function sinks_collection(sink::Union{AnySink, Graph})::Tuple
+    return (sink,)
 end
 
 function assert_sinks(sinks::Union{Tuple, AbstractVector})::Nothing
@@ -1428,16 +1472,6 @@ function assert_sinks(sinks::Union{Tuple, AbstractVector})::Nothing
         @assert sink isa AnySink "not a graph data or configuration struct: $(typeof(sink))"
     end
     return nothing
-end
-
-# Whether the `sink` was already visited, adding it to the set if it wasn't. Identity is what matters here, since two
-# distinct empty entities compare equal.
-function is_visited(sink::AnySink, visited::Base.IdSet)::Bool
-    if sink in visited
-        return true
-    end
-    push!(visited, sink)
-    return false
 end
 
 end  # module

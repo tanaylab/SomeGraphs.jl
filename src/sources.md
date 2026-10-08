@@ -162,6 +162,17 @@ SomeGraphs.Sources.VectorDataSinks
 SomeGraphs.Sources.MatrixDataSinks
 SomeGraphs.Sources.visit_data_sinks
 SomeGraphs.Sources.visit_configuration_sinks
+SomeGraphs.Sources.matrix_sink_error
+SomeGraphs.Sources.vector_sink_error
+```
+
+Both visitors walk through `visit_graph_parts`. Each struct which a graph or a view holds has a method of it. A new
+struct needs one too.
+
+```@docs
+SomeGraphs.Common.visit_graph_parts
+SomeGraphs.Common.visit_graph_fields
+SomeGraphs.Common.visit_graph_leaf
 ```
 
 ## Puts

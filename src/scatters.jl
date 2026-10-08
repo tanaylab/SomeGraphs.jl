@@ -33,6 +33,7 @@ using PlotlyBase
 
 import ..Common.categorical_colors_dict
 import ..Common.validate_entities_order
+import ..Common.visit_graph_fields
 import ..Utilities.Maybe
 
 """
@@ -48,6 +49,11 @@ lines.
 @kwdef mutable struct ScattersConfiguration <: Validated
     colors::ColorsConfiguration = ColorsConfiguration()
     sizes::SizesConfiguration = SizesConfiguration()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::ScattersConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, scatters_configuration::ScattersConfiguration)::Nothing
@@ -111,6 +117,11 @@ match.
     diagonal_bands::BandsConfiguration = BandsConfiguration()
 end
 
+function Common.visit_graph_parts(visitor::Function, part::PointsGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, configuration::PointsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "x_axis", configuration.x_axis)
@@ -169,6 +180,11 @@ interactive figure back to the entities.
     entities::VectorEntitiesData = VectorEntitiesData()
 end
 
+function Common.visit_graph_parts(visitor::Function, part::PointsData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 """
     @kwdef mutable struct BordersData
         colors::VectorValuesData = VectorValuesData()
@@ -184,6 +200,11 @@ the borders. Borders share the hovers and order of the points. It mirrors the `b
     colors::VectorValuesData = VectorValuesData()
     sizes::VectorValuesData = VectorValuesData()
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
+end
+
+function Common.visit_graph_parts(visitor::Function, part::BordersData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -213,6 +234,11 @@ The edges of a [`PointsGraphData`](@ref): straight lines between pairs of `point
     entities::VectorEntitiesData = VectorEntitiesData()
 end
 
+function Common.visit_graph_parts(visitor::Function, part::EdgesData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 """
     @kwdef mutable struct SelectionData
         box::Maybe{Tuple{Real, Real, Real, Real}} = nothing
@@ -232,6 +258,11 @@ interactive figure's own API (e.g., Plotly's `FigureWidget.on_selection`).
 @kwdef mutable struct SelectionData
     box::Maybe{Tuple{Real, Real, Real, Real}} = nothing
     polygon::Maybe{AbstractVector{<:Tuple{Real, Real}}} = nothing
+end
+
+function Common.visit_graph_parts(visitor::Function, part::SelectionData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -286,6 +317,11 @@ other category. We therefore compute an overall priority for each category as th
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
     selection::SelectionData = SelectionData()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::PointsGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::PointsGraphData)::Nothing
@@ -1473,6 +1509,11 @@ similar to [`PointsGraphConfiguration`](@ref).
     diagonal_bands::BandsConfiguration = BandsConfiguration()
 end
 
+function Common.visit_graph_parts(visitor::Function, part::LineGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 """
     @kwdef mutable struct LineGraphData <: AbstractGraphData
         figure_title::Maybe{AbstractString} = nothing
@@ -1498,6 +1539,11 @@ are left out of the line.
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::LineGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::LineGraphData)::Nothing
@@ -1690,6 +1736,11 @@ the (scaled) values must not be negative.
     stacking::Maybe{Stacking} = nothing
 end
 
+function Common.visit_graph_parts(visitor::Function, part::LinesGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(
     context::ValidationContext,
     configuration::Union{LineGraphConfiguration, LinesGraphConfiguration},
@@ -1787,6 +1838,11 @@ The `name` is shown in the legend. The `hover` (if any) is prefixed to the hover
     points_color::Maybe{AbstractString} = nothing
 end
 
+function Common.visit_graph_parts(visitor::Function, part::LineData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, line::LineData)::Nothing
     validate_numeric_values(context, "x.vector", line.x.vector; is_required = true)
     validate_numeric_values(context, "y.vector", line.y.vector; is_required = true)
@@ -1841,6 +1897,11 @@ earlier ones.
     vertical_bands::BandsData = BandsData()
     horizontal_bands::BandsData = BandsData()
     diagonal_bands::BandsData = BandsData()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::LinesGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::LinesGraphData)::Nothing

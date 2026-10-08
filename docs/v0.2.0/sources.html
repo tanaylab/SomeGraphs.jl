@@ -1292,7 +1292,11 @@ end
 </code>
 </a>).
 </p>
-<p>As a sink, it reaches the entities and the arrangement of the side. As a source, it is what the fills copying one side onto another take.
+<p>As a sink, it reaches the entities and the arrangement of the side. It doesn&#39;t reach the annotations. Each annotation is a role of its own, reached through its own view (e.g. 
+<a href="sources.html#SomeGraphs.Sources.rows_annotations_colors_vector_fields">
+<code>rows_annotations_colors_vector_fields
+</code>
+</a>), so a source given the side doesn&#39;t write into all of them. As a source, it is what the fills copying one side onto another take.
 </p>
 </div>
 </section>
@@ -1616,6 +1620,16 @@ end
 </code> acts as a view that allows accessing the relevant fields depending on the 
 <code>PartType
 </code>.
+</p>
+<p>A part is not a sink, since it may play several roles (a line has an 
+<code>x
+</code> and a 
+<code>y
+</code>). A data source is given one of its roles (e.g. 
+<code>part.x
+</code>) or its 
+<code>entities
+</code> instead.
 </p>
 </div>
 </section>
@@ -2183,9 +2197,11 @@ end
 <code>Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector}
 </code> when writing data, and the mirror when writing configuration. It has a method per leaf it writes, and one explicit no-op method for the leaves it ignores, so a leaf it says nothing about is a 
 <code>MethodError
-</code>. Taking 
+</code>. A data source writing data has one more method, for the leaves of the other shape (a matrix leaf for a source of a value per entity, and a vector leaf for a source of a value per matrix entry). It raises an 
+<code>ArgumentError
+</code>, since such a sink has no place for the data. Taking 
 <code>Sinks
-</code> in the walking method would match such a leaf too, and walking it calls the same method again, forever.
+</code> in the walking method would match a leaf too, and walking it calls the same method again, forever.
 </p>
 </div>
 </section>
@@ -2257,13 +2273,18 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">visit_data_sinks(visitor::Function, sinks::Sinks)::Nothing
+visit_data_sinks(visitor::Function, graph::Graph)::Nothing
 </code>
 </pre>
 <p>Walk the 
 <code>sinks
 </code> down to the data structs they are built from, and call the 
 <code>visitor
-</code> on each of them. This lets a data source write a method per struct it fills, without a traversal of its own.
+</code> on each of them. This lets a data source write a method per struct it fills, without a traversal of its own. Given a whole 
+<code>graph
+</code>, walk all of it, and call the 
+<code>visitor
+</code> on each of its data structs. A data source can&#39;t be given a whole graph, since it fills one role.
 </p>
 <p>A struct is visited once however many sinks reach it. All the roles of an axis share its entities, and 
 <a href="sources.html#SomeGraphs.Sources.add_hovers!">
@@ -2291,6 +2312,7 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">visit_configuration_sinks(visitor::Function, sinks::Sinks)::Nothing
+visit_configuration_sinks(visitor::Function, graph::Graph)::Nothing
 </code>
 </pre>
 <p>Walk the 
@@ -2301,7 +2323,175 @@ end
 <a href="sources.html#SomeGraphs.Sources.visit_data_sinks">
 <code>visit_data_sinks
 </code>
+</a>. Given a whole 
+<code>graph
+</code>, this reaches the configuration structs held in its data too (e.g. the colors of its annotations).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.matrix_sink_error">
+<a class="docstring-binding" href="#SomeGraphs.Sources.matrix_sink_error">
+<code>SomeGraphs.Sources.matrix_sink_error
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">matrix_sink_error(leaf::MatrixDataLeaf)::ArgumentError
+</code>
+</pre>
+<p>The error of giving a matrix sink to a data source which puts a value per entity. The entries and cells of a matrix have no such value. Such a data source raises it for the matrix 
+<code>leaf
+</code> (see 
+<a href="sources.html#SomeGraphs.Sources.Sinks">
+<code>Sinks
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.vector_sink_error">
+<a class="docstring-binding" href="#SomeGraphs.Sources.vector_sink_error">
+<code>SomeGraphs.Sources.vector_sink_error
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">vector_sink_error(leaf::VectorDataLeaf)::ArgumentError
+</code>
+</pre>
+<p>The error of giving a vector sink to a data source which puts a value per entry of a matrix. A vector has no such value. Such a data source raises it for the vector 
+<code>leaf
+</code> (see 
+<a href="sources.html#SomeGraphs.Sources.Sinks">
+<code>Sinks
+</code>
+</a>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<p>Both visitors walk through 
+<code>visit_graph_parts
+</code>. Each struct which a graph or a view holds has a method of it. A new struct needs one too.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Common.visit_graph_parts">
+<a class="docstring-binding" href="#SomeGraphs.Common.visit_graph_parts">
+<code>SomeGraphs.Common.visit_graph_parts
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">visit_graph_parts(visitor::Function, part::Any, visited::Base.IdSet)::Nothing
+</code>
+</pre>
+<p>Walk a 
+<code>part
+</code> of a 
+<a href="common.html#SomeGraphs.Common.Graph">
+<code>Graph
+</code>
+</a> (or the whole graph) down to the leaves it holds, and call the 
+<code>visitor
+</code> on each of them, once each. This is how 
+<code>visit_data_sinks
+</code> and 
+<code>visit_configuration_sinks
+</code> reach every leaf of a whole graph. A leaf is a struct which holds no other parts, such as an 
+<a href="common.html#SomeGraphs.Common.AxisConfiguration">
+<code>AxisConfiguration
+</code>
+</a> or a 
+<a href="common.html#SomeGraphs.Common.VectorValuesData">
+<code>VectorValuesData
+</code>
 </a>.
+</p>
+<p>Each struct of this package which a graph may hold has a method of its own, defined right after it. A leaf&#39;s method calls 
+<code>visit_graph_leaf
+</code>. Any other struct&#39;s method calls 
+<code>visit_graph_fields
+</code>, which walks its fields, so a new field is walked without further code. There is no fallback, so a walk which reaches a struct without a method is an error.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Common.visit_graph_fields">
+<a class="docstring-binding" href="#SomeGraphs.Common.visit_graph_fields">
+<code>SomeGraphs.Common.visit_graph_fields
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">visit_graph_fields(visitor::Function, container::Any, visited::Base.IdSet)::Nothing
+</code>
+</pre>
+<p>Walk the parts held in the fields of the 
+<code>container
+</code> (see 
+<a href="sources.html#SomeGraphs.Common.visit_graph_parts">
+<code>visit_graph_parts
+</code>
+</a>): each field holding a struct of this package, or a vector of them. Any other field (a number, a string, an enum, a vector of numbers, ...) holds no parts.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Common.visit_graph_leaf">
+<a class="docstring-binding" href="#SomeGraphs.Common.visit_graph_leaf">
+<code>SomeGraphs.Common.visit_graph_leaf
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">visit_graph_leaf(visitor::Function, leaf::Any, visited::Base.IdSet)::Nothing
+</code>
+</pre>
+<p>Call the 
+<code>visitor
+</code> on a 
+<code>leaf
+</code> part of a graph (see 
+<a href="sources.html#SomeGraphs.Common.visit_graph_parts">
+<code>visit_graph_parts
+</code>
+</a>), unless it was already visited.
 </p>
 </div>
 </section>
@@ -2904,12 +3094,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='7vWgAEU114' class='' style=';'>
+<div id='QwUQfvSVFn' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("7vWgAEU114")
+    const PLOT = document.getElementById("QwUQfvSVFn")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","customdata":[1,2,3,4,5,6,7,8,9,10,11],"text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -3115,6 +3305,24 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Common.visit_graph_fields">
+<code>SomeGraphs.Common.visit_graph_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Common.visit_graph_leaf">
+<code>SomeGraphs.Common.visit_graph_leaf
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Common.visit_graph_parts">
+<code>SomeGraphs.Common.visit_graph_parts
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.add_annotation!">
 <code>SomeGraphs.Sources.add_annotation!
 </code>
@@ -3307,6 +3515,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.matrix_sink_error">
+<code>SomeGraphs.Sources.matrix_sink_error
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.points_colors_vector_fields">
 <code>SomeGraphs.Sources.points_colors_vector_fields
 </code>
@@ -3429,6 +3643,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.values_axis_vector_fields">
 <code>SomeGraphs.Sources.values_axis_vector_fields
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.vector_sink_error">
+<code>SomeGraphs.Sources.vector_sink_error
 </code>
 </a>
 </li>

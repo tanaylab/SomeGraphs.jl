@@ -150,6 +150,78 @@ function validate_graph(::Graph)::Maybe{AbstractString}  # UNTESTED
 end
 
 """
+    visit_graph_parts(visitor::Function, part::Any, visited::Base.IdSet)::Nothing
+
+Walk a `part` of a [`Graph`](@ref) (or the whole graph) down to the leaves it holds, and call the `visitor` on each of
+them, once each. This is how `visit_data_sinks` and `visit_configuration_sinks` reach every leaf of a whole graph. A
+leaf is a struct which holds no other parts, such as an [`AxisConfiguration`](@ref) or a [`VectorValuesData`](@ref).
+
+Each struct of this package which a graph may hold has a method of its own, defined right after it. A leaf's method
+calls `visit_graph_leaf`. Any other struct's method calls `visit_graph_fields`, which walks its fields, so a new field
+is walked without further code. There is no fallback, so a walk which reaches a struct without a method is an error.
+"""
+function visit_graph_parts end
+
+"""
+    visit_graph_fields(visitor::Function, container::Any, visited::Base.IdSet)::Nothing
+
+Walk the parts held in the fields of the `container` (see [`visit_graph_parts`](@ref)): each field holding a struct of
+this package, or a vector of them. Any other field (a number, a string, an enum, a vector of numbers, ...) holds no
+parts.
+"""
+function visit_graph_fields(visitor::Function, container::Any, visited::Base.IdSet)::Nothing
+    if !is_graph_part_visited(container, visited)
+        for name in fieldnames(typeof(container))
+            value = getfield(container, name)
+            if is_graph_part(value)
+                visit_graph_parts(visitor, value, visited)  # NOJET
+            elseif value isa AbstractVector && is_graph_part_type(eltype(value))
+                for item in value
+                    visit_graph_parts(visitor, item, visited)  # NOJET
+                end
+            end
+        end
+    end
+    return nothing
+end
+
+"""
+    visit_graph_leaf(visitor::Function, leaf::Any, visited::Base.IdSet)::Nothing
+
+Call the `visitor` on a `leaf` part of a graph (see [`visit_graph_parts`](@ref)), unless it was already visited.
+"""
+function visit_graph_leaf(visitor::Function, leaf::Any, visited::Base.IdSet)::Nothing
+    if !is_graph_part_visited(leaf, visited)
+        visitor(leaf)
+    end
+    return nothing
+end
+
+function visit_graph_parts(visitor::Function, part::Graph, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
+# Whether the `part` was already visited, adding it to the set if it wasn't. Identity is what matters here, since two
+# distinct empty parts compare equal.
+function is_graph_part_visited(part::Any, visited::Base.IdSet)::Bool
+    if part in visited
+        return true
+    end
+    push!(visited, part)
+    return false
+end
+
+# Whether the `value` is a part of a graph: a struct of this package, other than an enum.
+function is_graph_part(value::Any)::Bool
+    return is_graph_part_type(typeof(value))
+end
+
+function is_graph_part_type(type::Type)::Bool
+    return isstructtype(type) && !(type <: Enum) && Base.moduleroot(parentmodule(type)) === Base.moduleroot(@__MODULE__)
+end
+
+"""
     save_graph(graph::Graph, output_file::AbstractString)::Nothing
 
 Save the graph to a file. Unlike the Plotly `savefig` function, this function will actually obey the `width` and
@@ -245,6 +317,11 @@ white space. In the 21st century. Sigh.
     top::Int = 50
 end
 
+function visit_graph_parts(visitor::Function, part::MarginsConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, margins_configuration::MarginsConfiguration)::Nothing
     for (field, value) in (
         ("left", margins_configuration.left),
@@ -302,6 +379,11 @@ requires more offsets.
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
     colors_scale_offsets::AbstractVector{<:Real} = [1.02, 1.2, 1.4, 1.6, 1.8, 2.0]
+end
+
+function visit_graph_parts(visitor::Function, part::FigureConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, figure_configuration::FigureConfiguration)::Nothing
@@ -386,6 +468,11 @@ to control log scale and/or percent scaling without changing anything else.
     percent::Bool = false
 end
 
+function visit_graph_parts(visitor::Function, part::ScaleConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, scale_configuration::ScaleConfiguration)::Nothing
     for (field, value) in (
         ("minimum", scale_configuration.minimum),
@@ -468,6 +555,11 @@ set, so you can override this in the data.
     title::Maybe{AbstractString} = nothing
 end
 
+function visit_graph_parts(visitor::Function, part::AxisConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, axis_configuration::AxisConfiguration)::Nothing
     validate_field(context, "scale", axis_configuration.scale)
 
@@ -530,6 +622,11 @@ By default, the `color` is chosen automatically.
     color::Maybe{AbstractString} = nothing
 end
 
+function visit_graph_parts(visitor::Function, part::LineConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, line_configuration::LineConfiguration)::Nothing
     validate_in(context, "width") do
         validate_is_above(context, line_configuration.width, 0)
@@ -559,6 +656,11 @@ this offset is not specified.
 @kwdef mutable struct BandConfiguration <: Validated
     offset::Maybe{Real} = nothing
     line::LineConfiguration = LineConfiguration()
+end
+
+function visit_graph_parts(visitor::Function, part::BandConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(  # UNTESTED
@@ -594,6 +696,11 @@ between them (so its line is inside it, solid by default).
     low::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DotLine))
     middle::BandConfiguration = BandConfiguration()
     high::BandConfiguration = BandConfiguration(; line = LineConfiguration(; style = DashLine))
+end
+
+function visit_graph_parts(visitor::Function, part::BandsConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(
@@ -646,6 +753,11 @@ Specify data for bands.
     low_offset::Maybe{Real} = nothing
     middle_offset::Maybe{Real} = nothing
     high_offset::Maybe{Real} = nothing
+end
+
+function visit_graph_parts(visitor::Function, part::BandsData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -1356,6 +1468,11 @@ the data set, so you can override this in the data.
     title::Maybe{AbstractString} = nothing
 end
 
+function visit_graph_parts(visitor::Function, part::SizesConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
     validate_field(context, "scale", sizes_configuration.scale)
 
@@ -1465,6 +1582,11 @@ title depends on the data set, so you can override this in the data.
     scale::ScaleConfiguration = ScaleConfiguration()
     show_legend::Bool = false
     title::Maybe{AbstractString} = nothing
+end
+
+function visit_graph_parts(visitor::Function, part::ColorsConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(
@@ -1608,6 +1730,11 @@ the title of these values (which becomes the axis title, the colors title, ...).
     title::Maybe{AbstractString} = nothing
 end
 
+function visit_graph_parts(visitor::Function, part::VectorValuesData, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
+end
+
 function VectorValuesData(vector::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}})::VectorValuesData
     return VectorValuesData(; vector)
 end
@@ -1641,6 +1768,11 @@ rather than ignoring it.
     hovers::Maybe{AbstractVector{<:AbstractString}} = nothing
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}} = nothing
     order::Maybe{AbstractVector{<:Integer}} = nothing
+end
+
+function visit_graph_parts(visitor::Function, part::VectorEntitiesData, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
 end
 
 # Validate the `order` of the `entities` of a `field` of a graph, which has `n_entities` entities as per the `base`
@@ -1693,6 +1825,11 @@ level of grouping nested in the groups. Neither has a title.
     arrange_by::Maybe{AbstractMatrix{<:Real}} = nothing
 end
 
+function visit_graph_parts(visitor::Function, part::ArrangementData, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
+end
+
 """
     struct SidePlacement
         order::AbstractVector{<:Integer}
@@ -1714,6 +1851,11 @@ struct SidePlacement
     hclust::Maybe{Hclust}
 end
 
+function visit_graph_parts(visitor::Function, part::SidePlacement, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 """
     @kwdef mutable struct MatrixValuesData
         matrix::Maybe{AbstractMatrix{<:Real}} = nothing
@@ -1726,6 +1868,11 @@ colors title).
 @kwdef mutable struct MatrixValuesData
     matrix::Maybe{AbstractMatrix{<:Real}} = nothing
     title::Maybe{AbstractString} = nothing
+end
+
+function visit_graph_parts(visitor::Function, part::MatrixValuesData, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
 end
 
 function MatrixValuesData(matrix::AbstractMatrix{<:Real})::MatrixValuesData
@@ -1745,6 +1892,11 @@ there's nothing to hide; to drop a cell, hide its whole row or column.
 """
 @kwdef mutable struct MatrixEntitiesData
     hovers::Maybe{AbstractMatrix{<:AbstractString}} = nothing
+end
+
+function visit_graph_parts(visitor::Function, part::MatrixEntitiesData, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
 end
 
 """
@@ -1774,6 +1926,11 @@ tightly coupled with the data.
     values::VectorValuesData = VectorValuesData()
     colors::ColorsConfiguration = ColorsConfiguration()
     is_shown::Bool = true
+end
+
+function visit_graph_parts(visitor::Function, part::AnnotationData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(
@@ -1820,6 +1977,11 @@ sizes are in the usual inconvenient units (fraction of the overall graph size), 
 @kwdef mutable struct AnnotationSize <: Validated
     size::AbstractFloat = 0.05
     gap::AbstractFloat = 0.005
+end
+
+function visit_graph_parts(visitor::Function, part::AnnotationSize, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing

@@ -28,7 +28,7 @@ nested_test("sources") do
         groups = columns_groups_vector_data_fields(graph)
 
         # The name of a type, for comparing what was visited.
-        function visited_names(visit::Function, sinks::Sinks)::Vector{Symbol}
+        function visited_names(visit::Function, sinks::Union{Sinks, Graph})::Vector{Symbol}
             names = Symbol[]
             visit(sinks) do sink
                 push!(names, typeof(sink).name.name)
@@ -110,6 +110,81 @@ nested_test("sources") do
                 points = points_graph()
                 @test visited_names(visit_configuration_sinks, points_sizes_vector_fields(points)) ==
                       [:SizesConfiguration]
+                return nothing
+            end
+        end
+
+        nested_test("graph") do
+            nested_test("configuration") do
+                # The colors of the annotation are held in the data of the graph, and are reached too.
+                @test count(==(:ColorsConfiguration), visited_names(visit_configuration_sinks, graph)) == 2
+                return nothing
+            end
+
+            nested_test("data") do
+                names = visited_names(visit_data_sinks, graph)
+                @test count(==(:ArrangementData), names) == 2
+                @test :MatrixValuesData in names
+                @test !(:ColorsConfiguration in names)
+                return nothing
+            end
+
+            nested_test("legends") do
+                points = points_graph()
+                visit_configuration_sinks(points) do leaf
+                    if hasproperty(leaf, :show_legend)
+                        leaf.show_legend = true
+                    end
+                    return nothing
+                end
+                @test points.configuration.points.colors.show_legend
+                @test points.configuration.edges.sizes.show_legend
+                return nothing
+            end
+
+            nested_test("every") do
+                # Every graph type, with one of each part it holds in a vector, is walked without a missing method.
+                for every_graph in (
+                    points_graph(),
+                    line_graph(),
+                    lines_graph(; lines = [LineData()]),
+                    distribution_graph(),
+                    distributions_graph(; distributions = [DistributionData()]),
+                    bars_graph(; annotations = [AnnotationData()]),
+                    series_bars_graph(; series = [SeriesData()], annotations = [AnnotationData()]),
+                    heatmap_graph(),
+                )
+                    @test !isempty(visited_names(visit_data_sinks, every_graph))
+                    @test !isempty(visited_names(visit_configuration_sinks, every_graph))
+                end
+                return nothing
+            end
+
+            nested_test("scale") do
+                # A scale is not walked into from the configuration which holds it, but it may be given on its own.
+                @test visited_names(visit_configuration_sinks, graph.configuration.entries.colors.scale) ==
+                      [:ScaleConfiguration]
+                return nothing
+            end
+
+            nested_test("placement") do
+                # The computed placement of a heatmap holds no leaves, so walking it adds nothing.
+                placed = heatmap_graph()
+                placed.data.entries.matrix = [1.0 2.0; 3.0 4.0]
+                names = visited_names(visit_data_sinks, placed)
+                heatmap_placement(placed)
+                @test placed.configuration.final_placement !== nothing
+                @test visited_names(visit_data_sinks, placed) == names
+                return nothing
+            end
+
+            nested_test("unknown") do
+                # A struct of this package without a method of its own is an error, rather than silently skipped.
+                @test_throws MethodError SomeGraphs.Common.visit_graph_parts(
+                    identity,
+                    AutomaticColors(),
+                    Base.IdSet{Any}(),
+                )
                 return nothing
             end
         end
@@ -231,11 +306,21 @@ nested_test("sources") do
             return nothing
         end
 
-        # A leaf a put says nothing about (the other shape) is an error.
+        # A leaf of the other shape is an error.
         nested_test("mismatched") do
-            @test_throws MethodError put_vector_data!(entries_matrix_fields(heatmap), [1.0, 2.0])
-            @test_throws MethodError put_vector_names_data!(entries_matrix_fields(heatmap), ["a", "b"])
-            @test_throws MethodError put_matrix_data!(x_axis_vector_fields(points), [1.0 2.0; 3.0 4.0])
+            matrix = entries_matrix_fields(heatmap)
+            message = "can't put a value per entity into a matrix sink: MatrixValuesData"
+            @test_throws message put_vector_data!(matrix, [1.0, 2.0])
+            @test_throws message put_vector_names_data!(matrix, ["a", "b"])
+            @test_throws message put_vector_mask_data!(matrix, [true, false])
+            @test_throws message put_vector_order_data!(matrix, [2, 1])
+            @test_throws message put_vector_tree_data!(matrix, nothing)
+            @test_throws message fill_entities!(matrix, VectorEntitiesData())
+            @test_throws message fill_arrangement!(matrix, ArrangementData())
+            @test_throws "can't put a value per matrix entry into a vector sink: VectorValuesData" put_matrix_data!(
+                x_axis_vector_fields(points),
+                [1.0 2.0; 3.0 4.0],
+            )
             @test_throws "can't name the rows and columns of a vector sink" put_matrix_names_data!(
                 x_axis_vector_fields(points),
                 ["a", "b"],

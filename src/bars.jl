@@ -24,6 +24,7 @@ using PlotlyBase
 import ..Common.categorical_colors_dict
 import ..Common.is_categorical_axis
 import ..Common.validate_entities_order
+import ..Common.visit_graph_fields
 import ..Validations.Maybe
 
 """
@@ -36,6 +37,11 @@ fractions of the total graph size.
 """
 @kwdef mutable struct BarsConfiguration <: Validated
     gap::Real = 0.02
+end
+
+function Common.visit_graph_parts(visitor::Function, part::BarsConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, configuration::BarsConfiguration)::Nothing
@@ -84,6 +90,11 @@ overrides this. A log scale never reaches zero, so there a bar is measured from 
     colors::ColorsConfiguration = ColorsConfiguration()
     bars::BarsConfiguration = BarsConfiguration()
     annotations::AnnotationSize = AnnotationSize()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::BarsGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 # The bar axis shows the names of the bars, so only the fields that apply to an axis of names may be specified.
@@ -152,6 +163,11 @@ including the ones that are not `is_shown`.
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
     value_bands::BandsData = BandsData()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::BarsGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::BarsGraphData)::Nothing
@@ -425,6 +441,11 @@ Without a `series_gap` all the pairs share the same two value axes and are shown
     mirrored::Bool = false
 end
 
+function Common.visit_graph_parts(visitor::Function, part::SeriesBarsGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, configuration::SeriesBarsGraphConfiguration)::Nothing
     validate_field(context, "figure", configuration.figure)
     validate_field(context, "value_axis", configuration.value_axis)
@@ -481,6 +502,11 @@ of a series have the same `color`; a `nothing` means the color is chosen automat
     color::Maybe{AbstractString} = nothing
 end
 
+function Common.visit_graph_parts(visitor::Function, part::SeriesData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, series::SeriesData)::Nothing
     validate_numeric_values(context, "values.vector", series.values.vector; is_required = true)
 
@@ -535,6 +561,11 @@ in the series, skipping whichever is not specified.
     bars::VectorEntitiesData = VectorEntitiesData()
     annotations::AbstractVector{AnnotationData} = AnnotationData[]
     annotations_order::Maybe{AbstractVector{<:Integer}} = nothing
+end
+
+function Common.visit_graph_parts(visitor::Function, part::SeriesBarsGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::SeriesBarsGraphData)::Nothing

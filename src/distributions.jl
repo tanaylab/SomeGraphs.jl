@@ -33,6 +33,7 @@ using ..Validations
 import ..Common.is_categorical_axis
 import ..Common.is_default_axis
 import ..Common.validate_entities_order
+import ..Common.visit_graph_fields
 import ..Validations.Maybe
 
 """
@@ -94,6 +95,11 @@ ascending).
     line::LineConfiguration = LineConfiguration(; is_filled = true)
     normalize::Bool = false
     cumulative_descending::Bool = false
+end
+
+function Common.visit_graph_parts(visitor::Function, part::DistributionConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(
@@ -172,6 +178,11 @@ the `distribution.normalize` and `density_axis.scale.percent` settings.
     value_bands::BandsConfiguration = BandsConfiguration()
     density_axis::AxisConfiguration = AxisConfiguration()
     cumulative_bands::BandsConfiguration = BandsConfiguration()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::DistributionGraphConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(
@@ -265,6 +276,15 @@ gap, the `series_axis` must be left at its default.
     density_axis::AxisConfiguration = AxisConfiguration()
     series_axis::AxisConfiguration = AxisConfiguration()
     distributions_gap::Maybe{Real} = 0.05
+end
+
+function Common.visit_graph_parts(
+    visitor::Function,
+    part::DistributionsGraphConfiguration,
+    visited::Base.IdSet,
+)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(
@@ -372,6 +392,11 @@ configuration default is used.
     color::Maybe{AbstractString} = nothing
 end
 
+function Common.visit_graph_parts(visitor::Function, part::DistributionData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, distribution::DistributionData)::Nothing
     validate_numeric_values(context, "values.vector", distribution.values.vector; is_required = true)
 
@@ -414,6 +439,11 @@ The `cumulative_bands` should only be specified if the `distribution.style` is `
     cumulative_bands::BandsData = BandsData()
 end
 
+function Common.visit_graph_parts(visitor::Function, part::DistributionGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
+end
+
 function Validations.validate(context::ValidationContext, data::DistributionGraphData)::Maybe{AbstractString}
     validate_in(context, "distribution") do
         validate(context, data.distribution)
@@ -453,6 +483,11 @@ specified; when there is a gap, whichever is given is used to title the series a
     density_axis_title::Maybe{AbstractString} = nothing
     series_axis_title::Maybe{AbstractString} = nothing
     value_bands::BandsData = BandsData()
+end
+
+function Common.visit_graph_parts(visitor::Function, part::DistributionsGraphData, visited::Base.IdSet)::Nothing
+    visit_graph_fields(visitor, part, visited)
+    return nothing
 end
 
 function Validations.validate(context::ValidationContext, data::DistributionsGraphData)::Maybe{AbstractString}
