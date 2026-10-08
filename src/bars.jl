@@ -15,7 +15,6 @@ export bars_graph
 export series_bars_graph
 
 using ..Common
-using ..Sources
 using ..Utilities
 using ..Validations
 
@@ -234,48 +233,6 @@ function bars_graph(;
         BarsGraphData(; figure_title, values, bars, colors, annotations, annotations_order, value_bands),
         configuration,
     )
-end
-
-"""
-    values_axis_vector_fields(graph::BarsGraph)::AxisVectorFields
-
-The values of the bars, along the `value_axis`.
-"""
-function Sources.values_axis_vector_fields(graph::BarsGraph)::AxisVectorFields
-    return VectorFields(graph.data.values, graph.data.bars, AxisConfigurationFields(graph.configuration.value_axis))
-end
-
-function Sources.bars_entities(graph::BarsGraph)::VectorEntitiesData
-    return graph.data.bars
-end
-
-"""
-    colors_vector_fields(graph::BarsGraph)::ColorsVectorFields
-
-The colors of the bars.
-"""
-function Sources.colors_vector_fields(graph::BarsGraph)::ColorsVectorFields
-    return VectorFields(graph.data.colors, graph.data.bars, ColorsConfigurationFields(graph.configuration.colors))
-end
-
-"""
-    annotations_colors_vector_fields(graph::BarsGraph, index::Integer)::ColorsVectorFields
-
-The `index` annotation of the bars, which shares the entities of the bars.
-"""
-function Sources.annotations_colors_vector_fields(graph::BarsGraph, index::Integer)::ColorsVectorFields
-    annotation = graph.data.annotations[index]
-    return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
-end
-
-"""
-    add_annotation!(graph::BarsGraph, [annotation::AnnotationData = AnnotationData()])::Int
-
-Append an `annotation` of the bars and return its index.
-"""
-function Sources.add_annotation!(graph::BarsGraph, annotation::AnnotationData = AnnotationData())::Int
-    push!(graph.data.annotations, annotation)
-    return length(graph.data.annotations)
 end
 
 function Common.validate_graph(graph::BarsGraph)::Nothing
@@ -708,59 +665,6 @@ function series_value_axis_title(graph::SeriesBarsGraph)::Maybe{AbstractString}
         "values",
         [series.values for series in graph.data.series],
     )
-end
-
-Sources.entities_field(::SeriesData)::Symbol = :bars
-
-# The entities of a series are the bars of that series alone, rather than the bars shared by all of them.
-function Sources.part_role_fields(part::PartFields{SeriesBarsGraph, SeriesData}, ::Val{:values})::AxisVectorFields
-    series = part.data
-    return VectorFields(series.values, series.bars, AxisConfigurationFields(part.graph.configuration.value_axis))
-end
-
-"""
-    series_part_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
-
-The view of the `index` series of bars (see [`PartFields`](@ref)).
-"""
-function Sources.series_part_fields(graph::SeriesBarsGraph, index::Integer)::PartFields
-    series::SeriesData = graph.data.series[index]
-    return PartFields(graph, Int(index), series)
-end
-
-"""
-    add_series!(graph::SeriesBarsGraph, [series::SeriesData = SeriesData()])::PartFields
-
-Append a `series` of bars and return its view (see [`PartFields`](@ref)).
-"""
-function Sources.add_series!(graph::SeriesBarsGraph, series::SeriesData = SeriesData())::PartFields
-    push!(graph.data.series, series)
-    n_series::Int = length(graph.data.series)
-    return PartFields(graph, n_series, series)
-end
-
-"""
-    annotations_colors_vector_fields(graph::SeriesBarsGraph, index::Integer)::ColorsVectorFields
-
-The `index` annotation of the bars, which shares the entities of the bars (the ones shared by all the series).
-"""
-function Sources.annotations_colors_vector_fields(graph::SeriesBarsGraph, index::Integer)::ColorsVectorFields
-    annotation = graph.data.annotations[index]
-    return VectorFields(annotation.values, graph.data.bars, ColorsConfigurationFields(annotation.colors))
-end
-
-function Sources.bars_entities(graph::SeriesBarsGraph)::VectorEntitiesData
-    return graph.data.bars
-end
-
-"""
-    add_annotation!(graph::SeriesBarsGraph, [annotation::AnnotationData = AnnotationData()])::Int
-
-Append an `annotation` of the bars (the ones shared by all the series) and return its index.
-"""
-function Sources.add_annotation!(graph::SeriesBarsGraph, annotation::AnnotationData = AnnotationData())::Int
-    push!(graph.data.annotations, annotation)
-    return length(graph.data.annotations)
 end
 
 function Common.validate_graph(graph::SeriesBarsGraph)::Nothing

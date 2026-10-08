@@ -106,7 +106,11 @@ export put_vector_names_data!
 export put_vector_order_data!
 export put_vector_tree_data!
 
+using ..Bars
 using ..Common
+using ..Distributions
+using ..Heatmaps
+using ..Scatters
 using ..Validations
 
 import Clustering.Hclust  # NOLINT
@@ -769,7 +773,7 @@ function add_columns_annotation! end
 
 """
     struct HeatmapSide
-        graph::Graph
+        graph::HeatmapGraph
         is_rows::Bool
     end
 
@@ -782,7 +786,7 @@ a role of its own, reached through its own view (e.g. [`rows_annotations_colors_
 given the side doesn't write into all of them. As a source, it is what the fills copying one side onto another take.
 """
 struct HeatmapSide
-    graph::Graph
+    graph::HeatmapGraph
     is_rows::Bool
 end
 
@@ -1473,5 +1477,7 @@ function assert_sinks(sinks::Union{Tuple, AbstractVector})::Nothing
     end
     return nothing
 end
+
+include("data_views.jl")
 
 end  # module

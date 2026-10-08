@@ -24,7 +24,6 @@ export points_density
 export points_graph
 
 using ..Common
-using ..Sources
 using ..Utilities
 using ..Validations
 
@@ -487,110 +486,6 @@ function points_graph(;
             selection,
         ),
         configuration,
-    )
-end
-
-"""
-    x_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
-
-The X coordinates of the points, along the `x_axis`.
-"""
-function Sources.x_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
-    return VectorFields(graph.data.x, graph.data.points.entities, AxisConfigurationFields(graph.configuration.x_axis))
-end
-
-"""
-    y_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
-
-The Y coordinates of the points, along the `y_axis`.
-"""
-function Sources.y_axis_vector_fields(graph::PointsGraph)::AxisVectorFields
-    return VectorFields(graph.data.y, graph.data.points.entities, AxisConfigurationFields(graph.configuration.y_axis))
-end
-
-"""
-    points_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
-
-The colors of the points.
-"""
-function Sources.points_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
-    return VectorFields(
-        graph.data.points.colors,
-        graph.data.points.entities,
-        ColorsConfigurationFields(graph.configuration.points.colors),
-    )
-end
-
-"""
-    points_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
-
-The sizes of the points.
-"""
-function Sources.points_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
-    return VectorFields(
-        graph.data.points.sizes,
-        graph.data.points.entities,
-        SizesConfigurationFields(graph.configuration.points.sizes),
-    )
-end
-
-"""
-    borders_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
-
-The colors of the borders of the points, which share the entities of the points.
-"""
-function Sources.borders_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
-    return VectorFields(
-        graph.data.borders.colors,
-        graph.data.points.entities,
-        ColorsConfigurationFields(graph.configuration.borders.colors),
-    )
-end
-
-"""
-    borders_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
-
-The sizes of the borders of the points, which share the entities of the points.
-"""
-function Sources.borders_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
-    return VectorFields(
-        graph.data.borders.sizes,
-        graph.data.points.entities,
-        SizesConfigurationFields(graph.configuration.borders.sizes),
-    )
-end
-
-"""
-    edges_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
-
-The colors of the edges.
-"""
-function Sources.edges_colors_vector_fields(graph::PointsGraph)::ColorsVectorFields
-    return VectorFields(
-        graph.data.edges.colors,
-        graph.data.edges.entities,
-        ColorsConfigurationFields(graph.configuration.edges.colors),
-    )
-end
-
-function Sources.points_entities(graph::PointsGraph)::VectorEntitiesData
-    return graph.data.points.entities
-end
-
-function Sources.edges_entities(graph::PointsGraph)::VectorEntitiesData
-    return graph.data.edges.entities
-end
-
-"""
-    edges_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
-
-The sizes (widths) of the edges.
-"""
-function Sources.edges_sizes_vector_fields(graph::PointsGraph)::SizesVectorFields
-    return VectorFields(
-        graph.data.edges.sizes,
-        graph.data.edges.entities,
-        SizesConfigurationFields(graph.configuration.edges.sizes),
     )
 end
 
@@ -1951,61 +1846,6 @@ function lines_graph(;
         LinesGraphData(; figure_title, lines, order, vertical_bands, horizontal_bands, diagonal_bands),
         configuration,
     )
-end
-
-"""
-    x_axis_vector_fields(graph::LineGraph)::AxisVectorFields
-
-The X coordinates of the points of the line, along the `x_axis`.
-"""
-function Sources.x_axis_vector_fields(graph::LineGraph)::AxisVectorFields
-    return VectorFields(graph.data.x, graph.data.points, AxisConfigurationFields(graph.configuration.x_axis))
-end
-
-"""
-    y_axis_vector_fields(graph::LineGraph)::AxisVectorFields
-
-The Y coordinates of the points of the line, along the `y_axis`.
-"""
-function Sources.y_axis_vector_fields(graph::LineGraph)::AxisVectorFields
-    return VectorFields(graph.data.y, graph.data.points, AxisConfigurationFields(graph.configuration.y_axis))
-end
-
-function Sources.points_entities(graph::LineGraph)::VectorEntitiesData
-    return graph.data.points
-end
-
-Sources.entities_field(::LineData)::Symbol = :points
-
-function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:x})::AxisVectorFields
-    line = part.data
-    return VectorFields(line.x, line.points, AxisConfigurationFields(part.graph.configuration.x_axis))
-end
-
-function Sources.part_role_fields(part::PartFields{LinesGraph, LineData}, ::Val{:y})::AxisVectorFields
-    line = part.data
-    return VectorFields(line.y, line.points, AxisConfigurationFields(part.graph.configuration.y_axis))
-end
-
-"""
-    line_part_fields(graph::LinesGraph, index::Integer)::PartFields
-
-The view of the `index` line (see [`PartFields`](@ref)).
-"""
-function Sources.line_part_fields(graph::LinesGraph, index::Integer)::PartFields
-    line::LineData = graph.data.lines[index]
-    return PartFields(graph, Int(index), line)
-end
-
-"""
-    add_line!(graph::LinesGraph, [line::LineData = LineData()])::PartFields
-
-Append a `line` and return its view (see [`PartFields`](@ref)).
-"""
-function Sources.add_line!(graph::LinesGraph, line::LineData = LineData())::PartFields
-    push!(graph.data.lines, line)
-    n_lines::Int = length(graph.data.lines)
-    return PartFields(graph, n_lines, line)
 end
 
 function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing

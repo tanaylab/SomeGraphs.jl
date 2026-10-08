@@ -18,9 +18,6 @@ include("common.jl")
 include("utilities.jl")
 @reexport using .Utilities
 
-include("sources.jl")
-@reexport using .Sources
-
 include("distributions.jl")
 @reexport using .Distributions
 
@@ -32,5 +29,8 @@ include("bars.jl")
 
 include("heatmaps.jl")
 @reexport using .Heatmaps
+
+include("sources.jl")
+@reexport using .Sources
 
 end  # module

@@ -26,7 +26,6 @@ export distributions_graph
 using PlotlyBase
 
 using ..Common
-using ..Sources
 using ..Utilities
 using ..Validations
 
@@ -635,24 +634,6 @@ function collect_hidden_values_range!(
     return nothing
 end
 
-"""
-    distribution_axis_vector_fields(graph::DistributionGraph)::AxisVectorFields
-
-The values of the distribution, along the `value_axis`.
-"""
-function Sources.distribution_axis_vector_fields(graph::DistributionGraph)::AxisVectorFields
-    distribution = graph.data.distribution
-    return VectorFields(
-        distribution.values,
-        distribution.points,
-        AxisConfigurationFields(graph.configuration.value_axis),
-    )
-end
-
-function Sources.distribution_entities(graph::DistributionGraph)::VectorEntitiesData
-    return graph.data.distribution.points
-end
-
 function Common.validate_graph(graph::DistributionGraph)::Nothing
     values = numeric_values(graph.data.distribution.values)
     @assert values !== nothing
@@ -673,44 +654,6 @@ function Common.validate_graph(graph::DistributionGraph)::Nothing
     validate_graph_bands("cumulative_bands", graph.configuration.cumulative_bands, graph.data.cumulative_bands)
 
     return nothing
-end
-
-Sources.entities_field(::DistributionData)::Symbol = :points
-
-function Sources.part_role_fields(
-    part::PartFields{DistributionsGraph, DistributionData},
-    ::Val{:values},
-)::AxisVectorFields
-    distribution = part.data
-    return VectorFields(
-        distribution.values,
-        distribution.points,
-        AxisConfigurationFields(part.graph.configuration.value_axis),
-    )
-end
-
-"""
-    distribution_part_fields(graph::DistributionsGraph, index::Integer)::PartFields
-
-The view of the `index` distribution (see [`PartFields`](@ref)).
-"""
-function Sources.distribution_part_fields(graph::DistributionsGraph, index::Integer)::PartFields
-    distribution::DistributionData = graph.data.distributions[index]
-    return PartFields(graph, Int(index), distribution)
-end
-
-"""
-    add_distribution!(graph::DistributionsGraph, [distribution::DistributionData = DistributionData()])::PartFields
-
-Append a `distribution` and return its view (see [`PartFields`](@ref)).
-"""
-function Sources.add_distribution!(
-    graph::DistributionsGraph,
-    distribution::DistributionData = DistributionData(),
-)::PartFields
-    push!(graph.data.distributions, distribution)
-    n_distributions::Int = length(graph.data.distributions)
-    return PartFields(graph, n_distributions, distribution)
 end
 
 function Common.validate_graph(graph::DistributionsGraph)::Nothing

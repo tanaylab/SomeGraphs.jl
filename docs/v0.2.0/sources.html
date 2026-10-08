@@ -1265,7 +1265,7 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">struct HeatmapSide
-    graph::Graph
+    graph::HeatmapGraph
     is_rows::Bool
 end
 </code>
@@ -3094,12 +3094,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='QwUQfvSVFn' class='' style=';'>
+<div id='13mGc1hoer' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("QwUQfvSVFn")
+    const PLOT = document.getElementById("13mGc1hoer")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","customdata":[1,2,3,4,5,6,7,8,9,10,11],"text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
