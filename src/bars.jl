@@ -296,7 +296,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         mask,
     )
 
-    push_bar_trace!(;  # NOJET
+    push_bar_trace!(;
         traces,
         sub_graph = SubGraph(;
             index = 1,
@@ -1189,7 +1189,7 @@ function push_annotation_traces!(;
         gap_color = missing
     end
 
-    push_bar_trace!(;  # NOJET
+    push_bar_trace!(;
         traces,
         sub_graph,
         values = if expanded_mask !== nothing
@@ -1291,7 +1291,7 @@ function bars_layout(;
     annotations_colors::AbstractVector{ConfiguredColors},
     has_legend_only_traces::AbstractVector{Bool},
 )::Layout
-    scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
+    scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
 
     if specific_scaled_ranges !== nothing
         specific_scaled_ranges = [
@@ -1349,7 +1349,7 @@ function bars_layout(;
             series_index_per_axis[arrangement.axis_indices[position]] = series_index
         end
         n_series = length(arrangement.series_indices)
-        graphs_gap = value_axes_gap(graph.configuration)  # NOJET
+        graphs_gap = value_axes_gap(graph.configuration)
         n_graphs = arrangement.n_axes
         mirrored = graph.configuration.mirrored
     else
@@ -1399,11 +1399,11 @@ function bars_layout(;
                 @assert series_index_per_axis !== nothing
                 series_index = series_index_per_axis[value_axis_position]
                 title = prefer_data(
-                    series_index === nothing ? nothing : graph.data.series[series_index].name,  # NOJET
+                    series_index === nothing ? nothing : graph.data.series[series_index].name,
                     prefer_data(value_axis_title, graph.configuration.value_axis.title),
                 )
             end
-            set_layout_axis!(  # NOJET
+            set_layout_axis!(
                 layout,
                 plotly_axis(value_axis_letter, axis_index),
                 graph.configuration.value_axis;
@@ -1477,7 +1477,7 @@ function bars_layout(;
             values_orientation = graph.configuration.values_orientation,
             title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
         )
-        set_layout_axis!(  # NOJET
+        set_layout_axis!(
             layout,
             plotly_axis(value_axis_letter, annotation_index),
             graph.configuration.value_axis;

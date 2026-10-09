@@ -245,7 +245,7 @@ function validate_colors(
         end
 
         if colors_configuration.scale.log_base !== nothing
-            validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
+            validate_vector_entries(colors_data_context, colors_data, mask) do _, color
                 if colors_configuration.scale.minimum === nothing || color >= colors_configuration.scale.minimum
                     validate_in(
                         colors_data_context,
@@ -261,7 +261,7 @@ function validate_colors(
 
     if colors_configuration.palette === nothing
         if colors_data isa AbstractVector{<:AbstractString}
-            validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
+            validate_vector_entries(colors_data_context, colors_data, mask) do _, color
                 return validate_is_color(colors_data_context, color)
             end
         end
@@ -270,7 +270,7 @@ function validate_colors(
         if colors_data isa AbstractVector{<:AbstractString}
             palette_dict = categorical_colors_dict(colors_configuration.palette)  # NOJET
 
-            validate_vector_entries(colors_data_context, colors_data, mask) do _, color  # NOJET
+            validate_vector_entries(colors_data_context, colors_data, mask) do _, color
                 if !haskey(palette_dict, color)
                     throw(
                         ArgumentError(
@@ -434,7 +434,7 @@ function plotly_layout(
     has_hovers::Bool = false,
     shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
-    return Layout(;  # NOJET
+    return Layout(;
         title,
         showlegend = has_legend,
         legend_x = has_legend ? figure_configuration.colors_scale_offsets[1] : nothing,
@@ -923,7 +923,7 @@ Wrap a `trace` or a set of `traces` with the accompanying `layout` in a `PlotlyF
 function plotly_figure(trace::GenericTrace, layout::Layout)::PlotlyFigure
     purge_nulls!(trace.fields)
     purge_nulls!(layout.fields)
-    return Plot(trace, layout)  # NOJET
+    return Plot(trace, layout)
 end
 
 function plotly_figure(traces::AbstractVector{<:GenericTrace}, layout::Layout)::PlotlyFigure
@@ -931,7 +931,7 @@ function plotly_figure(traces::AbstractVector{<:GenericTrace}, layout::Layout)::
         purge_nulls!(trace.fields)
     end
     purge_nulls!(layout.fields)
-    return Plot(traces, layout)  # NOJET
+    return Plot(traces, layout)
 end
 
 function purge_nulls!(dict::AbstractDict)::Nothing
@@ -948,7 +948,7 @@ function purge_nulls!(dict::AbstractDict)::Nothing
         end
     end
     filter!(dict) do pair
-        return pair.second !== nothing &&  # NOJET
+        return pair.second !== nothing &&
                !(pair.second isa AbstractDict && isempty(pair.second)) &&
                !(pair.second isa AbstractVector && (isempty(pair.second) || all(pair.second .=== nothing))) &&
                !(pair.second isa Tuple && all(pair.second .=== nothing))
@@ -2657,7 +2657,7 @@ function validate_axis_sizes(;
             text *= "\ndendogram size: $(dendogram_size_overhead)"  # UNTESTED
         end
         text *= "\nthe total overhead: $(total_overhead_size)" * "\nis not less than: 1"
-        throw(ArgumentError(text))  # NOJET
+        throw(ArgumentError(text))
     end
 
     return nothing
@@ -2824,7 +2824,7 @@ function configured_colors(;
             final_color_palette_values = (scaled_colors_palette_values .- implicit_scaled_colors_range.minimum) ./ scale
             final_color_palette_values[1] = 0
             final_color_palette_values[end] = 1
-            scaled_colors_palette = [  # NOJET
+            scaled_colors_palette = [
                 (final_value, entry[2]) for
                 (final_value, entry) in zip(final_color_palette_values, colors_configuration.palette)
             ]

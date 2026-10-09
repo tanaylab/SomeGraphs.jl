@@ -95,7 +95,7 @@ function location(context::ValidationContext)::AbstractString
         push!(text, "]")
     end
 
-    return join(text)  # NOJET
+    return join(text)
 end
 
 """
@@ -131,7 +131,7 @@ function validate_in(validation::Function, context::ValidationContext, where::Un
     try
         validation()
     finally
-        pop!(context)  # NOJET
+        pop!(context)
     end
 end
 
@@ -396,7 +396,7 @@ function validate_vector_is_finite(
     vector::Maybe{AbstractVector},
 )::Nothing
     if vector isa AbstractVector{<:Real}
-        index = findfirst(!isfinite, vector)  # NOJET
+        index = findfirst(!isfinite, vector)
         if index !== nothing
             validate_in(context, field) do
                 return validate_in(context, index) do
@@ -540,7 +540,7 @@ function validate_matrix_is_finite(
     matrix::Maybe{AbstractMatrix},
 )::Nothing
     if matrix isa AbstractMatrix{<:Real}
-        position = findfirst(!isfinite, matrix)  # NOJET
+        position = findfirst(!isfinite, matrix)
         if position !== nothing
             validate_in(context, field) do
                 return validate_in(context, position[1]) do

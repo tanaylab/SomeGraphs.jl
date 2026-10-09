@@ -705,7 +705,7 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
 
     push!(
         traces,
-        distribution_trace(;  # NOJET
+        distribution_trace(;
             values,
             hovers,
             name = prefer_data(distribution.name, "Trace"),
@@ -960,7 +960,7 @@ function distribution_layout(;
     has_legend::Bool,
     has_hovers::Bool,
 )::Layout
-    scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)  # NOJET
+    scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
 
     shapes = Shape[]
 
@@ -1087,7 +1087,7 @@ function distribution_layout(;
 
             distributions = graph.data.distributions[displayed_distributions(graph)]  # NOJET
             counts = [length(displayed_values(distribution)) for distribution in distributions]
-            distributions_gap = graph.configuration.distributions_gap  # NOJET
+            distributions_gap = graph.configuration.distributions_gap
             if distributions_gap === nothing
                 n_distributions = 1
             else
@@ -1161,7 +1161,7 @@ function distribution_layout(;
             end
 
             n_distributions = length(displayed_distributions(graph))  # NOJET
-            distributions_gap = graph.configuration.distributions_gap  # NOJET
+            distributions_gap = graph.configuration.distributions_gap
 
             if distributions_gap === nothing
                 if is_histogram

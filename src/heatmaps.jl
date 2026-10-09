@@ -1171,7 +1171,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                     values_orientation,
                     title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                 )
-                set_layout_axis!(  # NOJET
+                set_layout_axis!(
                     layout,
                     plotly_axis(axis_letter, annotation_index),
                     AxisConfiguration(; show_grid = false, show_ticks = false);
@@ -1200,7 +1200,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         end
 
         if dendogram_size !== nothing
-            set_layout_axis!(  # NOJET
+            set_layout_axis!(
                 layout,
                 plotly_axis(axis_letter, n_annotations + 1 + 1),
                 AxisConfiguration(; show_grid = false, show_ticks = false);
@@ -1492,7 +1492,7 @@ other_graph.configuration.columns.dendogram_size = 0.1
 ```
 """
 function heatmap_placement(graph::HeatmapGraph)::HeatmapGraphPlacement
-    final_placement = graph.configuration.final_placement  # NOJET
+    final_placement = graph.configuration.final_placement
     if final_placement === nothing
         graph.configuration.final_placement = final_placement = compute_heatmap_placement(graph)  # NOJET
     end

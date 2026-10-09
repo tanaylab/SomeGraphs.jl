@@ -1213,7 +1213,7 @@ function push_edge_traces!(;
                 edge_trace[:text] = edge_hover
                 edge_trace[:hovertemplate] = "%{text}<extra></extra>"
             end
-            push!(traces, edge_trace)  # NOJET
+            push!(traces, edge_trace)
             legend_group_title = nothing
         end
     end
@@ -1346,7 +1346,7 @@ function push_points_trace!(;
     indices = masked_values(collect(1:n_points), mask, order)
 
     show_in_legend = configured_points.colors.show_in_legend
-    push!(  # NOJET
+    push!(
         traces,
         scatter(;
             x = plotly_values(scaled_points_xs, masked_values(scaled_points_xs.values, mask, order)),

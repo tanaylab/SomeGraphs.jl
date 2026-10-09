@@ -150,8 +150,8 @@ function graph_property(graph::Graph, ::Val{name}) where {name}
 end
 
 function Validations.validate(context::ValidationContext, graph::Graph)::Nothing
-    validate_field(context, "data", graph.data)  # NOJET
-    validate_field(context, "configuration", graph.configuration)  # NOJET
+    validate_field(context, "data", graph.data)
+    validate_field(context, "configuration", graph.configuration)
     validate_graph(graph)  # NOJET
     return nothing
 end
@@ -194,10 +194,10 @@ function visit_graph_fields(visitor::Function, container::Any, visited::Base.IdS
         for name in fieldnames(typeof(container))
             value = getfield(container, name)
             if is_graph_part(value)
-                visit_graph_parts(visitor, value, visited)  # NOJET
+                visit_graph_parts(visitor, value, visited)
             elseif value isa AbstractVector && is_graph_part_type(eltype(value))
                 for item in value
-                    visit_graph_parts(visitor, item, visited)  # NOJET
+                    visit_graph_parts(visitor, item, visited)
                 end
             end
         end
@@ -272,7 +272,7 @@ You can just write `graph.svg` (as a string) or `graph.png` instead.
 function graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
     image = IOBuffer()
     PlotlyKaleido.start()  # NOJET
-    PlotlyKaleido.savefig(  # NOJET
+    PlotlyKaleido.savefig(
         image,
         graph_to_figure(graph);
         width = graph.configuration.figure.width,
@@ -314,7 +314,7 @@ You can just write `graph.json` instead of `graph_to_json(graph)`.
     responsible for applying them (they are also included in the JSON `layout`).
 """
 function graph_to_json(graph::Graph)::AbstractString
-    return JSON.json(graph_to_figure(graph))  # NOJET
+    return JSON.json(graph_to_figure(graph))
 end
 
 """
@@ -1358,7 +1358,7 @@ function ensure_cached_scale(context::ValidationContext, palette::AbstractString
                     elseif pieces[1] == "o" && length(pieces) == 3
                         value_fraction = parse(Float32, pieces[2])
                         color = pieces[3]
-                        parse(Colorant, color)  # NOJET
+                        parse(Colorant, color)
                         if 0 <= value_fraction < 1
                             actual_palette = overflow_colors_scale(actual_palette, value_fraction, color)
                             continue
@@ -1366,7 +1366,7 @@ function ensure_cached_scale(context::ValidationContext, palette::AbstractString
                     elseif pieces[1] == "u" && length(pieces) == 3
                         value_fraction = parse(Float32, pieces[2])
                         color = pieces[3]
-                        parse(Colorant, color)  # NOJET
+                        parse(Colorant, color)
                         if 0 <= value_fraction < 1
                             actual_palette = underflow_colors_scale(actual_palette, value_fraction, color)
                             continue
@@ -1416,7 +1416,7 @@ function categorical_palette(values::AbstractSet{<:AbstractString}, palette::Con
     scale = 1 / length(values)
     return OrderedDict([
         value => interpolate_color(palette, index * scale) for (index, value) in enumerate(sort!(collect(values)))
-    ])  # NOJET
+    ])
 end
 
 function interpolate_color(palette::ContinuousColors, value::Real)::AbstractString
@@ -1674,7 +1674,7 @@ function Validations.validate(
     end
 
     if palette isa ContinuousColors
-        validate_vector_is_not_empty(context, "palette", palette)  # NOJET
+        validate_vector_is_not_empty(context, "palette", palette)
 
         values = [entry[1] for entry in palette]
         for (index, (low_value, high_value)) in enumerate(zip(values[1:(end - 1)], values[2:end]))
@@ -1688,14 +1688,14 @@ function Validations.validate(
             end
         end  # NOJET
 
-        validate_vector_entries(context, "palette", palette) do _, (_, color)  # NOJET
+        validate_vector_entries(context, "palette", palette) do _, (_, color)
             validate_in(context, "color") do
                 validate_is_color(context, color)
                 return nothing
             end
         end
 
-        validate_is_range(context, "palette[1].value", palette[1][1], "palette[end].value", palette[end][1])  # NOJET
+        validate_is_range(context, "palette[1].value", palette[1][1], "palette[end].value", palette[end][1])
 
         if colors_configuration.scale.log_base !== nothing
             validate_in(context, "(palette[1].value + scale.log_regularization)") do
@@ -1710,9 +1710,9 @@ function Validations.validate(
     if palette isa CategoricalColors
         palette = categorical_colors_dict(palette)
 
-        validate_dict_is_not_empty(context, "palette", palette)  # NOJET
+        validate_dict_is_not_empty(context, "palette", palette)
 
-        validate_dict_entries(context, "palette", palette) do _, color  # NOJET
+        validate_dict_entries(context, "palette", palette) do _, color
             validate_in(context, "color") do
                 validate_is_color(context, color)
                 return nothing
