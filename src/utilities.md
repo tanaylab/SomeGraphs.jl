@@ -6,6 +6,7 @@ SomeGraphs.Utilities.Maybe
 SomeGraphs.Utilities.validate_graph
 SomeGraphs.Utilities.graph_to_figure
 SomeGraphs.Utilities.graph_to_json
+SomeGraphs.Utilities.graph_to_image
 SomeGraphs.Utilities.plotly_figure
 SomeGraphs.Utilities.validate_colors
 SomeGraphs.Utilities.fill_color

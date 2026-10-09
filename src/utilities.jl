@@ -63,6 +63,7 @@ import .Validations.Maybe
 
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
+@reexport import .Common.graph_to_image
 @reexport import .Common.graph_to_json
 @reexport import .Common.flip_axes
 @reexport import .Common.flip_axes!

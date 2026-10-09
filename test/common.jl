@@ -58,6 +58,17 @@ nested_test("common") do
         return nothing
     end
 
+    nested_test("image") do
+        graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
+        graph.configuration.figure.width = 300
+        graph.configuration.figure.height = 200
+        svg = graph.svg
+        @test startswith(svg, "<svg")
+        @test occursin("width=\"300\"", svg)
+        @test graph.png[1:4] == [0x89, 0x50, 0x4e, 0x47]
+        return nothing
+    end
+
     nested_test("figure") do
         figure = FigureConfiguration()
         context = ValidationContext(["figure"])

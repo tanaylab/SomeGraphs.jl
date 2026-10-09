@@ -333,6 +333,46 @@
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Common.graph_to_image">
+<a class="docstring-binding" href="#SomeGraphs.Common.graph_to_image">
+<code>SomeGraphs.Common.graph_to_image
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
+</code>
+</pre>
+<p>Render a graph as a static image in the 
+<code>format
+</code> (e.g. 
+<code>&quot;svg&quot;
+</code> or 
+<code>&quot;png&quot;
+</code>), in memory. Unlike the Plotly 
+<code>savefig
+</code> function, this obeys the 
+<code>width
+</code> and 
+<code>height
+</code> of the graph&#39;s configuration. Rendering an image starts a Kaleido process, which is slow the first time.
+</p>
+<p>You can just write 
+<code>graph.svg
+</code> (as a string) or 
+<code>graph.png
+</code> instead.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.plotly_figure">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_figure">
 <code>SomeGraphs.Utilities.plotly_figure
@@ -1985,6 +2025,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Common.graph_to_figure">
 <code>SomeGraphs.Common.graph_to_figure
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Common.graph_to_image">
+<code>SomeGraphs.Common.graph_to_image
 </code>
 </a>
 </li>

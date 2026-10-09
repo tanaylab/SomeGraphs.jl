@@ -104,7 +104,8 @@ The type of a figure we can display. This is a combination of some [`AbstractGra
 [`AbstractGraphConfiguration`](@ref). Accessing the `.figure` property of the graph will return it as a `PlotlyFigure`,
 which can be displayed in interactive environments (such as Jupyter notebooks or a Plotly-aware IDE). Accessing the
 `.json` property will return the same figure as a JSON string, for handing the graph over to another programming
-language (e.g., to display it in a Python or R Jupyter notebook).
+language (e.g., to display it in a Python or R Jupyter notebook). Accessing the `.svg` or `.png` property will return
+the graph as a static image (see [`graph_to_image`](@ref)).
 
 !!! note
 
@@ -133,6 +134,14 @@ end
 
 function graph_property(graph::Graph, ::Val{:json})::AbstractString
     return graph_to_json(graph)
+end
+
+function graph_property(graph::Graph, ::Val{:svg})::AbstractString
+    return String(graph_to_image(graph, "svg"))
+end
+
+function graph_property(graph::Graph, ::Val{:png})::Vector{UInt8}
+    return graph_to_image(graph, "png")
 end
 
 # Any other property is a field, of whatever type it has.
@@ -239,22 +248,38 @@ Save the graph to a file. Unlike the Plotly `savefig` function, this function wi
 `height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name.
 """
 function save_graph(graph::Graph, output_file::AbstractString)::Nothing
-    figure = graph_to_figure(graph)
     if endswith(output_file, ".html")
+        figure = graph_to_figure(graph)
         open(output_file, "w") do file
             PlotlyBase.to_html(file, figure)  # NOJET
             return nothing
         end
     else
-        PlotlyKaleido.start()  # NOJET
-        PlotlyKaleido.savefig(  # NOJET
-            figure,
-            output_file;
-            width = graph.configuration.figure.width,
-            height = graph.configuration.figure.height,
-        )
+        write(output_file, graph_to_image(graph, splitext(output_file)[2][2:end]))
     end
     return nothing
+end
+
+"""
+    graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
+
+Render a graph as a static image in the `format` (e.g. `"svg"` or `"png"`), in memory. Unlike the Plotly `savefig`
+function, this obeys the `width` and `height` of the graph's configuration. Rendering an image starts a Kaleido process,
+which is slow the first time.
+
+You can just write `graph.svg` (as a string) or `graph.png` instead.
+"""
+function graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
+    image = IOBuffer()
+    PlotlyKaleido.start()  # NOJET
+    PlotlyKaleido.savefig(  # NOJET
+        image,
+        graph_to_figure(graph);
+        width = graph.configuration.figure.width,
+        height = graph.configuration.figure.height,
+        format,
+    )
+    return take!(image)
 end
 
 """
