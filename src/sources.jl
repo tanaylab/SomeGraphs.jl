@@ -1083,7 +1083,11 @@ function get_vector_names_data(
         push!(name_per_entry_per_leaf, get_vector_names_data(sink))
         return nothing
     end
-    return reduce(merged_names, name_per_entry_per_leaf; init = nothing)
+    name_per_entry = nothing
+    for leaf_name_per_entry in name_per_entry_per_leaf
+        name_per_entry = merged_names(name_per_entry, leaf_name_per_entry)
+    end
+    return name_per_entry
 end
 
 function get_vector_names_data(entities::VectorEntitiesData)::Maybe{AbstractVector{<:AbstractString}}
