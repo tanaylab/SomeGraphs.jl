@@ -99,6 +99,8 @@ export fill_configuration!
 export fill_entities!
 export fill_placement!
 export fill_side!
+export get_matrix_names_data
+export get_vector_names_data
 export put_matrix_data!
 export put_matrix_names_data!
 export put_vector_data!
@@ -1066,6 +1068,48 @@ function put_vector_names_data!(leaf::MatrixDataLeaf, ::AbstractVector{<:Abstrac
 end
 
 """
+    get_vector_names_data(sinks::VectorDataSinks)::Maybe{AbstractVector{<:AbstractString}}
+
+The names of the entities of the `sinks`, as given by [`put_vector_names_data!`](@ref), or `nothing` if they have none.
+This lets a data source fill the entities which were already named, without being told again which entries they are.
+
+Entities with no names don't count. If the `sinks` reach several entities with different names, this is an error.
+"""
+function get_vector_names_data(
+    sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
+)::Maybe{AbstractVector{<:AbstractString}}
+    name_per_entry_per_leaf = Maybe{AbstractVector{<:AbstractString}}[]
+    visit_data_sinks(sinks) do sink
+        push!(name_per_entry_per_leaf, get_vector_names_data(sink))
+        return nothing
+    end
+    return reduce(merged_names, name_per_entry_per_leaf; init = nothing)
+end
+
+function get_vector_names_data(entities::VectorEntitiesData)::Maybe{AbstractVector{<:AbstractString}}
+    return entities.names
+end
+
+# Only the entities hold names. A matrix sink holds none for a vector, and the data source rejects it when it puts.
+function get_vector_names_data(::Union{VectorValuesData, ArrangementData, MatrixDataLeaf})::Nothing
+    return nothing
+end
+
+# The names of the entities reached by several sinks must agree. Entities with no names don't count.
+function merged_names(
+    name_per_entry::Maybe{AbstractVector{<:AbstractString}},
+    other_name_per_entry::Maybe{AbstractVector{<:AbstractString}},
+)::Maybe{AbstractVector{<:AbstractString}}
+    if name_per_entry === nothing
+        return other_name_per_entry
+    elseif other_name_per_entry === nothing || other_name_per_entry == name_per_entry
+        return name_per_entry
+    else
+        throw(ArgumentError("the sinks have entities with different names"))
+    end
+end
+
+"""
     put_vector_mask_data!(
         sinks::VectorDataSinks,
         is_shown_per_entry::Union{AbstractVector{Bool}, BitVector},
@@ -1248,6 +1292,51 @@ function put_matrix_names_data!(
     ::AbstractVector{<:AbstractString},
 )::Nothing
     return throw(ArgumentError("can't name the rows and columns of a vector sink: $(typeof(sinks))"))
+end
+
+"""
+    get_matrix_names_data(
+        sinks::MatrixDataSinks,
+    )::Tuple{Maybe{AbstractVector{<:AbstractString}}, Maybe{AbstractVector{<:AbstractString}}}
+
+The names of the rows and of the columns of the `sinks`, as given by [`put_matrix_names_data!`](@ref). Each is
+`nothing` if they have none. The matrix twin of [`get_vector_names_data`](@ref).
+"""
+function get_matrix_names_data(
+    sinks::Union{Tuple, AbstractVector},
+)::Tuple{Maybe{AbstractVector{<:AbstractString}}, Maybe{AbstractVector{<:AbstractString}}}
+    name_per_row = nothing
+    name_per_column = nothing
+    for sink in sinks
+        sink_name_per_row, sink_name_per_column = get_matrix_names_data(sink)
+        name_per_row = merged_names(name_per_row, sink_name_per_row)
+        name_per_column = merged_names(name_per_column, sink_name_per_column)
+    end
+    return (name_per_row, name_per_column)
+end
+
+function get_matrix_names_data(
+    fields::MatrixFields,
+)::Tuple{Maybe{AbstractVector{<:AbstractString}}, Maybe{AbstractVector{<:AbstractString}}}
+    return get_matrix_names_data(fields.data)
+end
+
+function get_matrix_names_data(
+    data_fields::MatrixDataFields,
+)::Tuple{Maybe{AbstractVector{<:AbstractString}}, Maybe{AbstractVector{<:AbstractString}}}
+    return (data_fields.rows_entities.names, data_fields.columns_entities.names)
+end
+
+# A configuration has no rows or columns, and the entries or cells of a matrix hold no names of either.
+function get_matrix_names_data(
+    ::Union{AbstractConfigurationFields, ConfigurationLeaf, MatrixDataLeaf},
+)::Tuple{Nothing, Nothing}
+    return (nothing, nothing)
+end
+
+# A vector sink is admitted by `MatrixDataSinks` since it is a container, but it has no rows or columns.
+function get_matrix_names_data(sinks::Union{VectorFields, VectorDataFields, HeatmapSide})::Tuple{Nothing, Nothing}
+    return throw(ArgumentError("can't get the names of the rows and columns of a vector sink: $(typeof(sinks))"))
 end
 
 """

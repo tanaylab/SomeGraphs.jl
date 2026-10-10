@@ -359,4 +359,61 @@ nested_test("sources") do
             return nothing
         end
     end
+
+    nested_test("gets") do
+        points = points_graph()
+        heatmap = heatmap_graph()
+
+        # All the roles of an axis share its entities, so the names put through one role are read through another.
+        nested_test("names") do
+            @test get_vector_names_data(points_colors_vector_fields(points)) === nothing
+            put_vector_names_data!(x_axis_vector_fields(points), ["a", "b"])
+            @test get_vector_names_data(points_colors_vector_fields(points)) == ["a", "b"]
+            @test get_vector_names_data(points.data.x) === nothing
+            return nothing
+        end
+
+        nested_test("side") do
+            put_vector_names_data!(rows_side(heatmap), ["A", "B"])
+            @test get_vector_names_data(rows_side(heatmap)) == ["A", "B"]
+            @test get_vector_names_data(
+                rows_annotations_colors_vector_fields(heatmap, add_rows_annotation!(heatmap)),
+            ) == ["A", "B"]
+            return nothing
+        end
+
+        # Entities with no names don't count, but named entities must agree.
+        nested_test("several") do
+            other = points_graph()
+            put_vector_names_data!(x_axis_vector_fields(points), ["a", "b"])
+            @test get_vector_names_data((x_axis_vector_fields(points), x_axis_vector_fields(other))) == ["a", "b"]
+            put_vector_names_data!(x_axis_vector_fields(other), ["a", "c"])
+            @test_throws "the sinks have entities with different names" get_vector_names_data((
+                x_axis_vector_fields(points),
+                x_axis_vector_fields(other),
+            ))
+            return nothing
+        end
+
+        nested_test("matrix_names") do
+            @test get_matrix_names_data(entries_matrix_fields(heatmap)) == (nothing, nothing)
+            put_matrix_names_data!(entries_matrix_fields(heatmap), ["r1", "r2"], ["c1", "c2"])
+            @test get_matrix_names_data(entries_matrix_fields(heatmap)) == (["r1", "r2"], ["c1", "c2"])
+            @test get_matrix_names_data(heatmap.configuration.entries.colors) == (nothing, nothing)
+            @test get_vector_names_data(entries_matrix_fields(heatmap)) === nothing
+
+            other = heatmap_graph()
+            @test get_matrix_names_data((entries_matrix_fields(heatmap), entries_matrix_fields(other))) ==
+                  (["r1", "r2"], ["c1", "c2"])
+            put_matrix_names_data!(entries_matrix_fields(other), ["r1", "r2"], ["c1", "c3"])
+            @test_throws "the sinks have entities with different names" get_matrix_names_data((
+                entries_matrix_fields(heatmap),
+                entries_matrix_fields(other),
+            ))
+            @test_throws "can't get the names of the rows and columns of a vector sink" get_matrix_names_data(
+                x_axis_vector_fields(points),
+            )
+            return nothing
+        end
+    end
 end

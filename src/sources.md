@@ -191,6 +191,16 @@ SomeGraphs.Sources.put_matrix_data!
 SomeGraphs.Sources.put_matrix_names_data!
 ```
 
+## Gets
+
+Reading back the names the sinks already hold, so a data source can fill entities which were named before, without
+being told again which entries they are.
+
+```@docs
+SomeGraphs.Sources.get_vector_names_data
+SomeGraphs.Sources.get_matrix_names_data
+```
+
 ## Copying Sides
 
 A side of a heatmap is a data source too, for laying out another heatmap the same way. Each of these copies one part

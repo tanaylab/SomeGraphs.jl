@@ -122,6 +122,12 @@
 </a>
 </li>
 <li>
+<a class="tocitem" href="#Gets">
+<span>Gets
+</span>
+</a>
+</li>
+<li>
 <a class="tocitem" href="#Copying-Sides">
 <span>Copying Sides
 </span>
@@ -2735,6 +2741,86 @@ end
 </section>
 </details>
 </article>
+<h2 id="Gets">
+<a class="docs-heading-anchor" href="#Gets">Gets
+</a>
+<a id="Gets-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Gets" title="Permalink">
+</a>
+</h2>
+<p>Reading back the names the sinks already hold, so a data source can fill entities which were named before, without being told again which entries they are.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.get_vector_names_data">
+<a class="docstring-binding" href="#SomeGraphs.Sources.get_vector_names_data">
+<code>SomeGraphs.Sources.get_vector_names_data
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">get_vector_names_data(sinks::VectorDataSinks)::Maybe{AbstractVector{&lt;:AbstractString}}
+</code>
+</pre>
+<p>The names of the entities of the 
+<code>sinks
+</code>, as given by 
+<a href="sources.html#SomeGraphs.Sources.put_vector_names_data!">
+<code>put_vector_names_data!
+</code>
+</a>, or 
+<code>nothing
+</code> if they have none. This lets a data source fill the entities which were already named, without being told again which entries they are.
+</p>
+<p>Entities with no names don&#39;t count. If the 
+<code>sinks
+</code> reach several entities with different names, this is an error.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.get_matrix_names_data">
+<a class="docstring-binding" href="#SomeGraphs.Sources.get_matrix_names_data">
+<code>SomeGraphs.Sources.get_matrix_names_data
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">get_matrix_names_data(
+    sinks::MatrixDataSinks,
+)::Tuple{Maybe{AbstractVector{&lt;:AbstractString}}, Maybe{AbstractVector{&lt;:AbstractString}}}
+</code>
+</pre>
+<p>The names of the rows and of the columns of the 
+<code>sinks
+</code>, as given by 
+<a href="sources.html#SomeGraphs.Sources.put_matrix_names_data!">
+<code>put_matrix_names_data!
+</code>
+</a>. Each is 
+<code>nothing
+</code> if they have none. The matrix twin of 
+<a href="sources.html#SomeGraphs.Sources.get_vector_names_data">
+<code>get_vector_names_data
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
 <h2 id="Copying-Sides">
 <a class="docs-heading-anchor" href="#Copying-Sides">Copying Sides
 </a>
@@ -3088,12 +3174,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='x6iUR2xtUK' class='' style=';'>
+<div id='Ou1MQzC06E' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("x6iUR2xtUK")
+    const PLOT = document.getElementById("Ou1MQzC06E")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","customdata":[1,2,3,4,5,6,7,8,9,10,11],"text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -3499,6 +3585,18 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.fill_side!">
 <code>SomeGraphs.Sources.fill_side!
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.get_matrix_names_data">
+<code>SomeGraphs.Sources.get_matrix_names_data
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.get_vector_names_data">
+<code>SomeGraphs.Sources.get_vector_names_data
 </code>
 </a>
 </li>
