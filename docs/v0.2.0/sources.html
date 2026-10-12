@@ -2524,6 +2524,7 @@ end
     sinks::VectorDataSinks,
     value_per_entry::Union{AbstractVector{&lt;:Real}, AbstractVector{&lt;:AbstractString}};
     title::Maybe{AbstractString} = nothing,
+    hover_format::Maybe{Function} = nothing,
 )::Nothing
 </code>
 </pre>
@@ -2537,7 +2538,15 @@ end
 <code>title
 </code> prefixes the hover line, as 
 <code>title: value
-</code>. Nothing is configured here, because how to show a value depends on what it is; a specific data source says that in its own configuration put.
+</code>. The 
+<code>hover_format
+</code> (if any) turns each value into its text in the hover line (e.g. 
+<a href="sources.html#SomeGraphs.Sources.percent_format">
+<code>percent_format
+</code>
+</a>). It doesn&#39;t change the values of the role. Nothing is configured here, because how to show a value depends on what it is; a specific data source says that in its own configuration put. That put should match the 
+<code>hover_format
+</code> (e.g., a percent axis and a percent hover).
 </p>
 </div>
 </section>
@@ -2676,6 +2685,7 @@ end
     sinks::MatrixDataSinks,
     value_per_row_per_column::AbstractMatrix{&lt;:Real};
     title::Maybe{AbstractString} = nothing,
+    hover_format::Maybe{Function} = nothing,
 )::Nothing
 </code>
 </pre>
@@ -2687,7 +2697,9 @@ end
 <a href="sources.html#SomeGraphs.Sources.put_vector_data!">
 <code>put_vector_data!
 </code>
-</a>.
+</a>, including the 
+<code>hover_format
+</code>.
 </p>
 <p>The row and the column entities are not written here. They belong to their sides and are sized by one side each, so they are named separately; see 
 <a href="sources.html#SomeGraphs.Sources.put_matrix_names_data!">
@@ -3129,6 +3141,166 @@ end
 </section>
 </details>
 </article>
+<h3 id="Hover-Formats">
+<a class="docs-heading-anchor" href="#Hover-Formats">Hover Formats
+</a>
+<a id="Hover-Formats-1">
+</a>
+<a class="docs-heading-anchor-permalink" href="#Hover-Formats" title="Permalink">
+</a>
+</h3>
+<p>A hover line shows a value as text. By default this is the value as Julia prints it. A 
+<code>hover_format
+</code> given to a put (see 
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>put_vector_data!
+</code>
+</a>) shows it differently, e.g. as a percent to match a percent axis.
+</p>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.fixed_format">
+<a class="docstring-binding" href="#SomeGraphs.Sources.fixed_format">
+<code>SomeGraphs.Sources.fixed_format
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">fixed_format(; digits::Integer)::Function
+</code>
+</pre>
+<p>A 
+<code>hover_format
+</code> (see 
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>put_vector_data!
+</code>
+</a>) showing each value with a fixed number of 
+<code>digits
+</code> after the decimal point (e.g., 
+<code>0.01
+</code> for 
+<code>0.012345
+</code> with 2 digits).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.significant_format">
+<a class="docstring-binding" href="#SomeGraphs.Sources.significant_format">
+<code>SomeGraphs.Sources.significant_format
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">significant_format(; sigdigits::Integer)::Function
+</code>
+</pre>
+<p>A 
+<code>hover_format
+</code> (see 
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>put_vector_data!
+</code>
+</a>) showing each value with 
+<code>sigdigits
+</code> significant digits (e.g., 
+<code>0.0123
+</code> for 
+<code>0.012345
+</code> with 3 digits). Trailing zeros are dropped. A very large or very small value is shown in scientific notation (e.g., 
+<code>2.5e+05
+</code>).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.scientific_format">
+<a class="docstring-binding" href="#SomeGraphs.Sources.scientific_format">
+<code>SomeGraphs.Sources.scientific_format
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">scientific_format(; digits::Integer)::Function
+</code>
+</pre>
+<p>A 
+<code>hover_format
+</code> (see 
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>put_vector_data!
+</code>
+</a>) showing each value in scientific notation, with 
+<code>digits
+</code> digits after the decimal point (e.g., 
+<code>1.23e-02
+</code> for 
+<code>0.012345
+</code> with 2 digits).
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Sources.percent_format">
+<a class="docstring-binding" href="#SomeGraphs.Sources.percent_format">
+<code>SomeGraphs.Sources.percent_format
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">percent_format(; sigdigits::Integer)::Function
+</code>
+</pre>
+<p>A 
+<code>hover_format
+</code> (see 
+<a href="sources.html#SomeGraphs.Sources.put_vector_data!">
+<code>put_vector_data!
+</code>
+</a>) showing each value (a fraction) as a percent, with 
+<code>sigdigits
+</code> significant digits (e.g., 
+<code>25%
+</code> for 
+<code>0.25
+</code> and 
+<code>0.123%
+</code> for 
+<code>0.0012345
+</code> with 3 digits). Trailing zeros are dropped. This matches an axis whose 
+<code>scale.percent
+</code> is set.
+</p>
+</div>
+</section>
+</details>
+</article>
 <p>
 <strong>Example:
 </strong>
@@ -3174,12 +3346,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='v8eyGTs4xW' class='' style=';'>
+<div id='nuyFDWnxyJ' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("v8eyGTs4xW")
+    const PLOT = document.getElementById("nuyFDWnxyJ")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","customdata":[1,2,3,4,5,6,7,8,9,10,11],"text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -3589,6 +3761,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.fixed_format">
+<code>SomeGraphs.Sources.fixed_format
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.get_matrix_names_data">
 <code>SomeGraphs.Sources.get_matrix_names_data
 </code>
@@ -3609,6 +3787,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.matrix_sink_error">
 <code>SomeGraphs.Sources.matrix_sink_error
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.percent_format">
+<code>SomeGraphs.Sources.percent_format
 </code>
 </a>
 </li>
@@ -3709,6 +3893,12 @@ to_documenter(graph.figure)
 </a>
 </li>
 <li>
+<a href="sources.html#SomeGraphs.Sources.scientific_format">
+<code>SomeGraphs.Sources.scientific_format
+</code>
+</a>
+</li>
+<li>
 <a href="sources.html#SomeGraphs.Sources.series_part_fields">
 <code>SomeGraphs.Sources.series_part_fields
 </code>
@@ -3729,6 +3919,12 @@ to_documenter(graph.figure)
 <li>
 <a href="sources.html#SomeGraphs.Sources.side_placement">
 <code>SomeGraphs.Sources.side_placement
+</code>
+</a>
+</li>
+<li>
+<a href="sources.html#SomeGraphs.Sources.significant_format">
+<code>SomeGraphs.Sources.significant_format
 </code>
 </a>
 </li>

@@ -230,6 +230,18 @@ fill_side!(rows_side(other), rows_side(graph))
 SomeGraphs.Sources.add_hovers!
 ```
 
+### Hover Formats
+
+A hover line shows a value as text. By default this is the value as Julia prints it. A `hover_format` given to a put
+(see [`put_vector_data!`](@ref)) shows it differently, e.g. as a percent to match a percent axis.
+
+```@docs
+SomeGraphs.Sources.fixed_format
+SomeGraphs.Sources.significant_format
+SomeGraphs.Sources.scientific_format
+SomeGraphs.Sources.percent_format
+```
+
 **Example:**
 
 One source function, writing a vector of values as the values of a role and as a hover line. It says what to do with a

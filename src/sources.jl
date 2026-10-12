@@ -99,8 +99,10 @@ export fill_configuration!
 export fill_entities!
 export fill_placement!
 export fill_side!
+export fixed_format
 export get_matrix_names_data
 export get_vector_names_data
+export percent_format
 export put_matrix_data!
 export put_matrix_names_data!
 export put_vector_data!
@@ -108,6 +110,8 @@ export put_vector_mask_data!
 export put_vector_names_data!
 export put_vector_order_data!
 export put_vector_tree_data!
+export scientific_format
+export significant_format
 
 using ..Bars
 using ..Common
@@ -117,6 +121,7 @@ using ..Scatters
 using ..Validations
 
 import Clustering.Hclust  # NOLINT
+import Printf
 import ..Common.is_graph_part_visited
 import ..Common.visit_graph_fields
 import ..Common.visit_graph_parts
@@ -159,6 +164,59 @@ function add_hovers!(
     end
 
     return nothing
+end
+
+"""
+    fixed_format(; digits::Integer)::Function
+
+A `hover_format` (see [`put_vector_data!`](@ref)) showing each value with a fixed number of `digits` after the decimal
+point (e.g., `0.01` for `0.012345` with 2 digits).
+"""
+function fixed_format(; digits::Integer)::Function
+    @assert digits >= 0
+    return printf_format("%.$(digits)f")
+end
+
+"""
+    significant_format(; sigdigits::Integer)::Function
+
+A `hover_format` (see [`put_vector_data!`](@ref)) showing each value with `sigdigits` significant digits (e.g., `0.0123`
+for `0.012345` with 3 digits). Trailing zeros are dropped. A very large or very small value is shown in scientific
+notation (e.g., `2.5e+05`).
+"""
+function significant_format(; sigdigits::Integer)::Function
+    @assert sigdigits > 0
+    return printf_format("%.$(sigdigits)g")
+end
+
+"""
+    scientific_format(; digits::Integer)::Function
+
+A `hover_format` (see [`put_vector_data!`](@ref)) showing each value in scientific notation, with `digits` digits after
+the decimal point (e.g., `1.23e-02` for `0.012345` with 2 digits).
+"""
+function scientific_format(; digits::Integer)::Function
+    @assert digits >= 0
+    return printf_format("%.$(digits)e")
+end
+
+"""
+    percent_format(; sigdigits::Integer)::Function
+
+A `hover_format` (see [`put_vector_data!`](@ref)) showing each value (a fraction) as a percent, with `sigdigits`
+significant digits (e.g., `25%` for `0.25` and `0.123%` for `0.0012345` with 3 digits). Trailing zeros are dropped. This
+matches an axis whose `scale.percent` is set.
+"""
+function percent_format(; sigdigits::Integer)::Function
+    @assert sigdigits > 0
+    format = printf_format("%.$(sigdigits)g%%")
+    return value -> format(100 * value)
+end
+
+# A function formatting a value by a `Printf` `specification` built at run time.
+function printf_format(specification::AbstractString)::Function
+    format = Printf.Format(specification)  # NOJET
+    return value -> Printf.format(format, value)
 end
 
 """
@@ -983,20 +1041,24 @@ end
         sinks::VectorDataSinks,
         value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
         title::Maybe{AbstractString} = nothing,
+        hover_format::Maybe{Function} = nothing,
     )::Nothing
 
 Put a `value_per_entry` into the `sinks`: as the values of a role, and as a hover line on the entities.
 
-The `title` prefixes the hover line, as `title: value`. Nothing is configured here, because how to show a value depends
-on what it is; a specific data source says that in its own configuration put.
+The `title` prefixes the hover line, as `title: value`. The `hover_format` (if any) turns each value into its text in
+the hover line (e.g. [`percent_format`](@ref)). It doesn't change the values of the role. Nothing is configured here,
+because how to show a value depends on what it is; a specific data source says that in its own configuration put. That
+put should match the `hover_format` (e.g., a percent axis and a percent hover).
 """
 function put_vector_data!(
     sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
     value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
     title::Maybe{AbstractString} = nothing,
+    hover_format::Maybe{Function} = nothing,
 )::Nothing
     visit_data_sinks(sinks) do sink
-        return put_vector_data!(sink, value_per_entry; title)
+        return put_vector_data!(sink, value_per_entry; title, hover_format)
     end
     return nothing
 end
@@ -1005,6 +1067,7 @@ function put_vector_data!(
     values::VectorValuesData,
     value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
     title::Maybe{AbstractString} = nothing,  # NOLINT
+    hover_format::Maybe{Function} = nothing,  # NOLINT
 )::Nothing
     values.vector = value_per_entry
     return nothing
@@ -1014,8 +1077,9 @@ function put_vector_data!(
     entities::VectorEntitiesData,
     value_per_entry::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
     title::Maybe{AbstractString} = nothing,
+    hover_format::Maybe{Function} = nothing,
 )::Nothing
-    add_hovers!(entities, hover_strings(value_per_entry); title)
+    add_hovers!(entities, hover_strings(value_per_entry, hover_format); title)
     return nothing
 end
 
@@ -1025,6 +1089,7 @@ function put_vector_data!(
     ::ArrangementData,
     ::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
     title::Maybe{AbstractString} = nothing,  # NOLINT
+    hover_format::Maybe{Function} = nothing,  # NOLINT
 )::Nothing
     return nothing
 end
@@ -1033,6 +1098,7 @@ function put_vector_data!(
     leaf::MatrixDataLeaf,
     ::Union{AbstractVector{<:Real}, AbstractVector{<:AbstractString}};
     title::Maybe{AbstractString} = nothing,  # NOLINT
+    hover_format::Maybe{Function} = nothing,  # NOLINT
 )::Nothing
     return throw(matrix_sink_error(leaf))
 end
@@ -1191,10 +1257,11 @@ end
         sinks::MatrixDataSinks,
         value_per_row_per_column::AbstractMatrix{<:Real};
         title::Maybe{AbstractString} = nothing,
+        hover_format::Maybe{Function} = nothing,
     )::Nothing
 
 Put a `value_per_row_per_column` into the `sinks`: as the values of the entries, and as a hover line on each entry. The
-matrix twin of [`put_vector_data!`](@ref).
+matrix twin of [`put_vector_data!`](@ref), including the `hover_format`.
 
 The row and the column entities are not written here. They belong to their sides and are sized by one side each, so
 they are named separately; see [`put_matrix_names_data!`](@ref).
@@ -1203,9 +1270,10 @@ function put_matrix_data!(
     sinks::Union{AnyContainer, ConfigurationLeaf, Tuple, AbstractVector},
     value_per_row_per_column::AbstractMatrix{<:Real};
     title::Maybe{AbstractString} = nothing,
+    hover_format::Maybe{Function} = nothing,
 )::Nothing
     visit_data_sinks(sinks) do sink
-        return put_matrix_data!(sink, value_per_row_per_column; title)
+        return put_matrix_data!(sink, value_per_row_per_column; title, hover_format)
     end
     return nothing
 end
@@ -1214,6 +1282,7 @@ function put_matrix_data!(
     values::MatrixValuesData,
     value_per_row_per_column::AbstractMatrix{<:Real};
     title::Maybe{AbstractString} = nothing,  # NOLINT
+    hover_format::Maybe{Function} = nothing,  # NOLINT
 )::Nothing
     values.matrix = value_per_row_per_column
     return nothing
@@ -1223,8 +1292,9 @@ function put_matrix_data!(
     entities::MatrixEntitiesData,
     value_per_row_per_column::AbstractMatrix{<:Real};
     title::Maybe{AbstractString} = nothing,
+    hover_format::Maybe{Function} = nothing,
 )::Nothing
-    add_hovers!(entities, hover_strings(value_per_row_per_column); title)
+    add_hovers!(entities, hover_strings(value_per_row_per_column, hover_format); title)
     return nothing
 end
 
@@ -1232,6 +1302,7 @@ function put_matrix_data!(
     leaf::VectorDataLeaf,
     ::AbstractMatrix{<:Real};
     title::Maybe{AbstractString} = nothing,  # NOLINT
+    hover_format::Maybe{Function} = nothing,  # NOLINT
 )::Nothing
     return throw(vector_sink_error(leaf))
 end
@@ -1567,12 +1638,17 @@ end
 # Forget the cached placement of the graph of a heatmap `side`.
 function reset_side_placement! end
 
-# The values as the strings a hover shows. Only strings can be a hover, so anything else is converted.
-function hover_strings(value_per_entry::AbstractArray{<:AbstractString})::AbstractArray{<:AbstractString}
+# The values as the strings a hover shows, by the `hover_format` if there is one. Only strings can be a hover, so
+# anything else is converted.
+function hover_strings(value_per_entry::AbstractArray, hover_format::Function)::AbstractArray{<:AbstractString}
+    return hover_format.(value_per_entry)
+end
+
+function hover_strings(value_per_entry::AbstractArray{<:AbstractString}, ::Nothing)::AbstractArray{<:AbstractString}
     return value_per_entry
 end
 
-function hover_strings(value_per_entry::AbstractArray{<:Real})::AbstractArray{<:AbstractString}
+function hover_strings(value_per_entry::AbstractArray{<:Real}, ::Nothing)::AbstractArray{<:AbstractString}
     return string.(value_per_entry)
 end
 

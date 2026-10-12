@@ -268,6 +268,30 @@ nested_test("sources") do
             return nothing
         end
 
+        # A hover format changes only the hover line, not the values.
+        nested_test("formats") do
+            values = [0.012345, 250000]
+            for (hover_format, hovers) in (
+                (fixed_format(; digits = 2), ["F: 0.01", "F: 250000.00"]),
+                (significant_format(; sigdigits = 3), ["F: 0.0123", "F: 2.5e+05"]),
+                (scientific_format(; digits = 2), ["F: 1.23e-02", "F: 2.50e+05"]),
+                (percent_format(; sigdigits = 3), ["F: 1.23%", "F: 2.5e+07%"]),
+            )
+                graph = points_graph()
+                put_vector_data!(x_axis_vector_fields(graph), values; title = "F", hover_format)
+                @test graph.data.x.vector == values
+                @test graph.data.points.entities.hovers == hovers
+            end
+
+            put_matrix_data!(
+                entries_matrix_fields(heatmap),
+                [0.25 1.0; 0.5 0.0];
+                hover_format = percent_format(; sigdigits = 3),
+            )
+            @test heatmap.data.cells.hovers == ["25%" "100%"; "50%" "0%"]
+            return nothing
+        end
+
         nested_test("names") do
             put_vector_names_data!(x_axis_vector_fields(points), ["a", "b"])
             @test points.data.points.entities.names == ["a", "b"]
