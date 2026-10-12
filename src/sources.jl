@@ -180,9 +180,10 @@ end
 """
     significant_format(; sigdigits::Integer)::Function
 
-A `hover_format` (see [`put_vector_data!`](@ref)) showing each value with `sigdigits` significant digits (e.g., `0.0123`
-for `0.012345` with 3 digits). Trailing zeros are dropped. A very large or very small value is shown in scientific
-notation (e.g., `2.5e+05`).
+A `hover_format` (see [`put_vector_data!`](@ref)) showing each value as `printf`'s `%g` does, with `sigdigits`
+significant digits (e.g., `0.0123` for `0.012345` with 3 digits). Trailing zeros are dropped (e.g., `25` for `25.0`). A
+value is shown in scientific notation when its exponent is at least `sigdigits` or below -4 (e.g., `1.23e+03` for
+`1234` with 3 digits).
 """
 function significant_format(; sigdigits::Integer)::Function
     @assert sigdigits > 0
@@ -201,15 +202,15 @@ function scientific_format(; digits::Integer)::Function
 end
 
 """
-    percent_format(; sigdigits::Integer)::Function
+    percent_format(; digits::Integer)::Function
 
-A `hover_format` (see [`put_vector_data!`](@ref)) showing each value (a fraction) as a percent, with `sigdigits`
-significant digits (e.g., `25%` for `0.25` and `0.123%` for `0.0012345` with 3 digits). Trailing zeros are dropped. This
-matches an axis whose `scale.percent` is set.
+A `hover_format` (see [`put_vector_data!`](@ref)) showing each value (a fraction) as a percent, with a fixed number of
+`digits` after the decimal point (e.g., `25.0%` for `0.25` with 1 digit). This matches an axis whose `scale.percent` is
+set.
 """
-function percent_format(; sigdigits::Integer)::Function
-    @assert sigdigits > 0
-    format = printf_format("%.$(sigdigits)g%%")
+function percent_format(; digits::Integer)::Function
+    @assert digits >= 0
+    format = printf_format("%.$(digits)f%%")
     return value -> format(100 * value)
 end
 

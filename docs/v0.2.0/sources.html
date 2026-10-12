@@ -3213,15 +3213,27 @@ end
 <a href="sources.html#SomeGraphs.Sources.put_vector_data!">
 <code>put_vector_data!
 </code>
-</a>) showing each value with 
+</a>) showing each value as 
+<code>printf
+</code>&#39;s 
+<code>%g
+</code> does, with 
 <code>sigdigits
 </code> significant digits (e.g., 
 <code>0.0123
 </code> for 
 <code>0.012345
-</code> with 3 digits). Trailing zeros are dropped. A very large or very small value is shown in scientific notation (e.g., 
-<code>2.5e+05
-</code>).
+</code> with 3 digits). Trailing zeros are dropped (e.g., 
+<code>25
+</code> for 
+<code>25.0
+</code>). A value is shown in scientific notation when its exponent is at least 
+<code>sigdigits
+</code> or below -4 (e.g., 
+<code>1.23e+03
+</code> for 
+<code>1234
+</code> with 3 digits).
 </p>
 </div>
 </section>
@@ -3274,7 +3286,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">percent_format(; sigdigits::Integer)::Function
+<code class="language-julia hljs">percent_format(; digits::Integer)::Function
 </code>
 </pre>
 <p>A 
@@ -3283,17 +3295,13 @@ end
 <a href="sources.html#SomeGraphs.Sources.put_vector_data!">
 <code>put_vector_data!
 </code>
-</a>) showing each value (a fraction) as a percent, with 
-<code>sigdigits
-</code> significant digits (e.g., 
-<code>25%
+</a>) showing each value (a fraction) as a percent, with a fixed number of 
+<code>digits
+</code> after the decimal point (e.g., 
+<code>25.0%
 </code> for 
 <code>0.25
-</code> and 
-<code>0.123%
-</code> for 
-<code>0.0012345
-</code> with 3 digits). Trailing zeros are dropped. This matches an axis whose 
+</code> with 1 digit). This matches an axis whose 
 <code>scale.percent
 </code> is set.
 </p>
@@ -3346,12 +3354,12 @@ using PlotlyDocumenter
 to_documenter(graph.figure)
 </code>
 </pre>
-<div id='nuyFDWnxyJ' class='' style=';'>
+<div id='hAnloqXCiT' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nuyFDWnxyJ")
+    const PLOT = document.getElementById("hAnloqXCiT")
     const plot_obj = {"data": [{"showlegend":false,"mode":"markers","marker":{"color":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0],"coloraxis":"coloraxis","size":6,"showscale":false},"y":[0.0,1.0,4.0,9.0,16.0,25.0,36.0,49.0,64.0,81.0,100.0],"type":"scatter","customdata":[1,2,3,4,5,6,7,8,9,10,11],"text":["X: 0\u003cbr>Y: 0\u003cbr>Color: 0","X: 10\u003cbr>Y: 1\u003cbr>Color: 1","X: 20\u003cbr>Y: 4\u003cbr>Color: 2","X: 30\u003cbr>Y: 9\u003cbr>Color: 3","X: 40\u003cbr>Y: 16\u003cbr>Color: 4","X: 50\u003cbr>Y: 25\u003cbr>Color: 5","X: 60\u003cbr>Y: 36\u003cbr>Color: 6","X: 70\u003cbr>Y: 49\u003cbr>Color: 7","X: 80\u003cbr>Y: 64\u003cbr>Color: 8","X: 90\u003cbr>Y: 81\u003cbr>Color: 9","X: 100\u003cbr>Y: 100\u003cbr>Color: 10"],"hovertemplate":"%{text}\u003cextra>\u003c/extra>","x":[0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0]}], "layout": {"showlegend":false,"coloraxis":{"cmin":0.0,"cmax":10.0,"showscale":false},"xaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"X"},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"plot_bgcolor":"white","yaxis":{"showgrid":true,"gridcolor":"lightgrey","showticklabels":true,"zeroline":true,"range":[-1.0,101.0],"title":"Y"},"hoverlabel":{"align":"left"},"margin":{"l":50,"b":50,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
