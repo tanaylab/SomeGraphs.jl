@@ -167,57 +167,86 @@ function add_hovers!(
 end
 
 """
-    fixed_format(; digits::Integer)::Function
+    fixed_format(; digits::Integer, separated::Bool = true)::Function
 
 A `hover_format` (see [`put_vector_data!`](@ref)) showing each value with a fixed number of `digits` after the decimal
 point (e.g., `0.01` for `0.012345` with 2 digits).
+
+If `separated`, the digits are grouped by 3, with a narrow no-break space, on both sides of the decimal point (e.g.,
+`12 345.678 9`, or `0.000 123`). This is a no-op for short numbers. The same holds for the other formats.
 """
-function fixed_format(; digits::Integer)::Function
+function fixed_format(; digits::Integer, separated::Bool = true)::Function
     @assert digits >= 0
-    return printf_format("%.$(digits)f")
+    return printf_format("%.$(digits)f"; separated)
 end
 
 """
-    significant_format(; sigdigits::Integer)::Function
+    significant_format(; sigdigits::Integer, separated::Bool = true)::Function
 
 A `hover_format` (see [`put_vector_data!`](@ref)) showing each value as `printf`'s `%g` does, with `sigdigits`
 significant digits (e.g., `0.0123` for `0.012345` with 3 digits). Trailing zeros are dropped (e.g., `25` for `25.0`). A
 value is shown in scientific notation when its exponent is at least `sigdigits` or below -4 (e.g., `1.23e+03` for
-`1234` with 3 digits).
+`1234` with 3 digits). The digits are `separated` as in [`fixed_format`](@ref).
 """
-function significant_format(; sigdigits::Integer)::Function
+function significant_format(; sigdigits::Integer, separated::Bool = true)::Function
     @assert sigdigits > 0
-    return printf_format("%.$(sigdigits)g")
+    return printf_format("%.$(sigdigits)g"; separated)
 end
 
 """
-    scientific_format(; digits::Integer)::Function
+    scientific_format(; digits::Integer, separated::Bool = true)::Function
 
 A `hover_format` (see [`put_vector_data!`](@ref)) showing each value in scientific notation, with `digits` digits after
-the decimal point (e.g., `1.23e-02` for `0.012345` with 2 digits).
+the decimal point (e.g., `1.23e-02` for `0.012345` with 2 digits). The digits of the mantissa are `separated` as in
+[`fixed_format`](@ref); those of the exponent never are.
 """
-function scientific_format(; digits::Integer)::Function
+function scientific_format(; digits::Integer, separated::Bool = true)::Function
     @assert digits >= 0
-    return printf_format("%.$(digits)e")
+    return printf_format("%.$(digits)e"; separated)
 end
 
 """
-    percent_format(; digits::Integer)::Function
+    percent_format(; digits::Integer, separated::Bool = true)::Function
 
 A `hover_format` (see [`put_vector_data!`](@ref)) showing each value (a fraction) as a percent, with a fixed number of
 `digits` after the decimal point (e.g., `25.0%` for `0.25` with 1 digit). This matches an axis whose `scale.percent` is
-set.
+set. The digits are `separated` as in [`fixed_format`](@ref).
 """
-function percent_format(; digits::Integer)::Function
+function percent_format(; digits::Integer, separated::Bool = true)::Function
     @assert digits >= 0
-    format = printf_format("%.$(digits)f%%")
+    format = printf_format("%.$(digits)f%%"; separated)
     return value -> format(100 * value)
 end
 
-# A function formatting a value by a `Printf` `specification` built at run time.
-function printf_format(specification::AbstractString)::Function
+# A function formatting a value by a `Printf` `specification` built at run time, with its digits grouped if `separated`.
+function printf_format(specification::AbstractString; separated::Bool)::Function
     format = Printf.Format(specification)  # NOJET
-    return value -> Printf.format(format, value)
+    if separated
+        return value -> separate_digits(Printf.format(format, value))
+    else
+        return value -> Printf.format(format, value)
+    end
+end
+
+# The separator of the groups of digits: a narrow no-break space, the SI digit group separator.
+const DIGITS_SEPARATOR = "\u202f"
+
+# The `text` of a number, with its digits grouped by 3 on both sides of the decimal point: the integer digits from the
+# right, and the fraction digits from the left. What follows them (an exponent, a percent sign) is left as is, and so is
+# a text which doesn't start with a number (e.g., `NaN`).
+function separate_digits(text::AbstractString)::AbstractString
+    parts = match(r"^([+-]?)([0-9]+)(?:\.([0-9]+))?(.*)$"s, text)
+    if parts === nothing
+        return text
+    end
+    sign, integer, fraction, rest = parts.captures
+    integer = replace(integer, r"(?<=[0-9])(?=(?:[0-9]{3})+$)" => DIGITS_SEPARATOR)
+    if fraction === nothing
+        return "$(sign)$(integer)$(rest)"
+    else
+        fraction = join((String(chunk) for chunk in Iterators.partition(fraction, 3)), DIGITS_SEPARATOR)
+        return "$(sign)$(integer).$(fraction)$(rest)"
+    end
 end
 
 """

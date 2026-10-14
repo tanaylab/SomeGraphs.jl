@@ -272,16 +272,23 @@ nested_test("sources") do
         nested_test("formats") do
             values = [0.012345, 250000]
             for (hover_format, hovers) in (
-                (fixed_format(; digits = 2), ["F: 0.01", "F: 250000.00"]),
-                (significant_format(; sigdigits = 3), ["F: 0.0123", "F: 2.5e+05"]),
+                (fixed_format(; digits = 2), ["F: 0.01", "F: 250\u202f000.00"]),
+                (fixed_format(; digits = 2, separated = false), ["F: 0.01", "F: 250000.00"]),
+                (significant_format(; sigdigits = 3), ["F: 0.012\u202f3", "F: 2.5e+05"]),
                 (scientific_format(; digits = 2), ["F: 1.23e-02", "F: 2.50e+05"]),
-                (percent_format(; digits = 1), ["F: 1.2%", "F: 25000000.0%"]),
+                (percent_format(; digits = 1), ["F: 1.2%", "F: 25\u202f000\u202f000.0%"]),
             )
                 graph = points_graph()
                 put_vector_data!(x_axis_vector_fields(graph), values; title = "F", hover_format)
                 @test graph.data.x.vector == values
                 @test graph.data.points.entities.hovers == hovers
             end
+
+            # The digits are grouped by 3 on both sides of the decimal point, but never in the exponent.
+            @test fixed_format(; digits = 6)(-1234.000123) == "-1\u202f234.000\u202f123"
+            @test scientific_format(; digits = 4)(12345678) == "1.234\u202f6e+07"
+            @test fixed_format(; digits = 0)(123) == "123"
+            @test fixed_format(; digits = 2)(NaN) == "NaN"
 
             put_matrix_data!(
                 entries_matrix_fields(heatmap),
