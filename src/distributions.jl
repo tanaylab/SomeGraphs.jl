@@ -506,7 +506,7 @@ end
 A graph for visualizing a single distribution. See [`DistributionGraphData`](@ref) and
 [`DistributionGraphConfiguration`](@ref).
 """
-DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
+const DistributionGraph = Graph{DistributionGraphData, DistributionGraphConfiguration}
 
 """
     distribution_graph(;
@@ -537,7 +537,7 @@ end
 A graph for visualizing multiple distributions. See [`DistributionsGraphData`](@ref) and
 [`DistributionsGraphConfiguration`](@ref).
 """
-DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfiguration}
+const DistributionsGraph = Graph{DistributionsGraphData, DistributionsGraphConfiguration}
 
 """
     distributions_graph(;
@@ -978,7 +978,7 @@ function distribution_layout(;
     # apply to a graph of multiple distributions just as they do to a graph of a single one. They are pushed once per
     # sub-graph, using its own density axis, so they do not stretch across the gaps between the distributions.
     if graph isa DistributionsGraph && graph.configuration.distributions_gap !== nothing
-        n_sub_graphs = length(displayed_distributions(graph))  # NOJET
+        n_sub_graphs = length(displayed_distributions(graph))
     else
         n_sub_graphs = 1
     end
@@ -1085,7 +1085,7 @@ function distribution_layout(;
             density_axis = graph.configuration.density_axis
             _, is_normalized, is_percent = cumulative_density_flags(graph.configuration)
 
-            distributions = graph.data.distributions[displayed_distributions(graph)]  # NOJET
+            distributions = graph.data.distributions[displayed_distributions(graph)]
             counts = [length(displayed_values(distribution)) for distribution in distributions]
             distributions_gap = graph.configuration.distributions_gap
             if distributions_gap === nothing
@@ -1160,7 +1160,7 @@ function distribution_layout(;
                 density_range = Range(; minimum = density_axis.scale.minimum, maximum = density_axis.scale.maximum)
             end
 
-            n_distributions = length(displayed_distributions(graph))  # NOJET
+            n_distributions = length(displayed_distributions(graph))
             distributions_gap = graph.configuration.distributions_gap
 
             if distributions_gap === nothing
@@ -1185,7 +1185,7 @@ function distribution_layout(;
                     if is_histogram
                         set_layout_axis!(layout, axis, density_axis; title = nothing, range = density_range, domain)
                     else
-                        layout[axis] = Dict(:showticklabels => false, :title => nothing, :domain => domain)
+                        layout[axis] = Dict{Symbol, Any}(:showticklabels => false, :title => nothing, :domain => domain)
                     end
                 end
             end

@@ -546,7 +546,7 @@ end
 """
 A graph showing a heatmap. See [`HeatmapGraphData`](@ref) and [`HeatmapGraphConfiguration`](@ref).
 """
-HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
+const HeatmapGraph = Graph{HeatmapGraphData, HeatmapGraphConfiguration}
 
 """
     function heatmap_graph(;

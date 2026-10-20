@@ -50,13 +50,13 @@ with `Nothing` but is shorter and more readable. This is extremely common.
     This is replicated from `TanayLabUtilities` to avoid making it a dependency. We do not export it but use it
     extensively in the type signatures.
 """
-Maybe = Union{T, Nothing} where {T}
+const Maybe = Union{T, Nothing} where {T}  # NOLINT
 
 """
 A context (path of field names and/or indices) leading to a validated value. A string indicates access of a data member,
 an integer indicates accessing a vector or matrix element.
 """
-ValidationContext = Vector{Union{AbstractString, Integer}}
+const ValidationContext = Vector{Union{AbstractString, Integer}}
 
 """
     location(context::ValidationContext)::AbstractString

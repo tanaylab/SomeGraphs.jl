@@ -202,7 +202,7 @@ end
 """
 A graph showing a single series of bars. See [`BarsGraphData`](@ref) and [`BarsGraphConfiguration`](@ref).
 """
-BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
+const BarsGraph = Graph{BarsGraphData, BarsGraphConfiguration}
 
 """
     function bars_graph(;
@@ -576,7 +576,7 @@ end
 """
 A graph showing multiple series of bars. See [`SeriesBarsGraphData`](@ref) and [`SeriesBarsGraphConfiguration`](@ref).
 """
-SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
+const SeriesBarsGraph = Graph{SeriesBarsGraphData, SeriesBarsGraphConfiguration}
 
 """
     function series_bars_graph(;
@@ -1019,7 +1019,7 @@ end
 const FAR_BARS_BASE = -1.0e6
 
 # The color of the bars: a single color, or a color value per bar.
-BarsColor = Union{AbstractVector{<:Union{Real, Missing}}, AbstractVector{<:AbstractString}, AbstractString}
+const BarsColor = Union{AbstractVector{<:Union{Real, Missing}}, AbstractVector{<:AbstractString}, AbstractString}
 
 function push_bar_trace!(;
     traces::Vector{GenericTrace},
@@ -1342,7 +1342,7 @@ function bars_layout(;
         else
             @assert graph.configuration.stacking === nothing
         end
-        arrangement = series_arrangement(graph)  # NOJET
+        arrangement = series_arrangement(graph)
         # The series which titles each value axis, if any; mirrored, the hidden side of a shown pair has none.
         series_index_per_axis = Maybe{Int}[nothing for _ in 1:(arrangement.n_axes)]
         for (position, series_index) in enumerate(arrangement.series_indices)

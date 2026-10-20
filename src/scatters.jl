@@ -439,7 +439,7 @@ end
 A graph visualizing scattered points (possibly with edges between them). See [`PointsGraphData`](@ref) and
 [`PointsGraphConfiguration`](@ref).
 """
-PointsGraph = Graph{PointsGraphData, PointsGraphConfiguration}
+const PointsGraph = Graph{PointsGraphData, PointsGraphConfiguration}
 
 """
     function points_graph(;
@@ -1461,7 +1461,7 @@ end
 """
 A graph showing a single line. See [`LineGraphData`](@ref) and [`LineGraphConfiguration`](@ref).
 """
-LineGraph = Graph{LineGraphData, LineGraphConfiguration}
+const LineGraph = Graph{LineGraphData, LineGraphConfiguration}
 
 """
     function line_graph(;
@@ -1817,7 +1817,7 @@ end
 """
 A graph showing multiple lines. See [`LinesGraphData`](@ref) and [`LinesGraphConfiguration`](@ref).
 """
-LinesGraph = Graph{LinesGraphData, LinesGraphConfiguration}
+const LinesGraph = Graph{LinesGraphData, LinesGraphConfiguration}
 
 """
     function lines_graph(;
@@ -1954,8 +1954,8 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
         graph.configuration.x_axis,
     )
 
-    if graph isa LinesGraph && graph.configuration.show_legend  # NOJET
-        for (line_index, line) in enumerate(graph.data.lines)  # NOJET
+    if graph isa LinesGraph && graph.configuration.show_legend
+        for (line_index, line) in enumerate(graph.data.lines)
             if line.is_shown && line.name === nothing
                 throw(
                     ArgumentError(

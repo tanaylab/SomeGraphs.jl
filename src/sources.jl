@@ -450,17 +450,17 @@ end
 """
 A [`VectorFields`](@ref) of values shown along an axis.
 """
-AxisVectorFields = VectorFields{AxisConfigurationFields}
+const AxisVectorFields = VectorFields{AxisConfigurationFields}
 
 """
 A [`VectorFields`](@ref) of values shown as colors.
 """
-ColorsVectorFields = VectorFields{ColorsConfigurationFields}
+const ColorsVectorFields = VectorFields{ColorsConfigurationFields}
 
 """
 A [`VectorFields`](@ref) of values shown as sizes.
 """
-SizesVectorFields = VectorFields{SizesConfigurationFields}
+const SizesVectorFields = VectorFields{SizesConfigurationFields}
 
 function VectorFields(values::VectorValuesData, entities::VectorEntitiesData, configuration::Any)::VectorFields
     return VectorFields(VectorDataFields(values, entities), configuration)
@@ -899,59 +899,59 @@ end
 A struct holding graph data with a value per entity: the values of a role, the entities they belong to, or the
 arrangement of the entities of a heatmap axis.
 """
-VectorDataLeaf = Union{VectorValuesData, VectorEntitiesData, ArrangementData}
+const VectorDataLeaf = Union{VectorValuesData, VectorEntitiesData, ArrangementData}
 
 """
 A struct holding graph data with a value per row per column: the entries of a heatmap, or the cells they belong to.
 """
-MatrixDataLeaf = Union{MatrixValuesData, MatrixEntitiesData}
+const MatrixDataLeaf = Union{MatrixValuesData, MatrixEntitiesData}
 
 """
 A struct holding graph data: a [`VectorDataLeaf`](@ref) or a [`MatrixDataLeaf`](@ref).
 """
-DataLeaf = Union{VectorDataLeaf, MatrixDataLeaf}
+const DataLeaf = Union{VectorDataLeaf, MatrixDataLeaf}
 
 """
 A struct holding graph configuration: how a role is shown.
 """
-ConfigurationLeaf = Union{AxisConfiguration, ScaleConfiguration, ColorsConfiguration, SizesConfiguration}
+const ConfigurationLeaf = Union{AxisConfiguration, ScaleConfiguration, ColorsConfiguration, SizesConfiguration}
 
 """
 A [`DataLeaf`](@ref) or a [`ConfigurationLeaf`](@ref).
 """
-AnyLeaf = Union{DataLeaf, ConfigurationLeaf}
+const AnyLeaf = Union{DataLeaf, ConfigurationLeaf}
 
 """
 Anything that may contain graph data: a view, the data half of one, or a side of a heatmap. [`visit_data_sinks`](@ref)
 reaches the [`DataLeaf`](@ref) structs inside.
 """
-DataContainer = Union{VectorFields, MatrixFields, VectorDataFields, MatrixDataFields, HeatmapSide}
+const DataContainer = Union{VectorFields, MatrixFields, VectorDataFields, MatrixDataFields, HeatmapSide}
 
 """
 Anything that may contain graph configuration: a view, or the configuration half of one.
 [`visit_configuration_sinks`](@ref) reaches the [`ConfigurationLeaf`](@ref) structs inside.
 """
-ConfigurationContainer = Union{VectorFields, MatrixFields, AbstractConfigurationFields}
+const ConfigurationContainer = Union{VectorFields, MatrixFields, AbstractConfigurationFields}
 
 """
 A [`DataContainer`](@ref) or a [`ConfigurationContainer`](@ref).
 """
-AnyContainer = Union{DataContainer, ConfigurationContainer}
+const AnyContainer = Union{DataContainer, ConfigurationContainer}
 
 """
 One struct a data source writes data into: a [`DataContainer`](@ref) or a [`DataLeaf`](@ref).
 """
-DataSink = Union{DataContainer, DataLeaf}
+const DataSink = Union{DataContainer, DataLeaf}
 
 """
 One struct a data source writes configuration into: a [`ConfigurationContainer`](@ref) or a [`ConfigurationLeaf`](@ref).
 """
-ConfigurationSink = Union{ConfigurationContainer, ConfigurationLeaf}
+const ConfigurationSink = Union{ConfigurationContainer, ConfigurationLeaf}
 
 """
 Any one struct a data source writes into: an [`AnyContainer`](@ref) or an [`AnyLeaf`](@ref).
 """
-AnySink = Union{AnyContainer, AnyLeaf}
+const AnySink = Union{AnyContainer, AnyLeaf}
 
 """
 What a data source accepts: one [`AnySink`](@ref), or a tuple or vector of them. Passing several lets one set of data
@@ -966,19 +966,19 @@ says nothing about is a `MethodError`. A data source writing data has one more m
 raises an `ArgumentError`, since such a sink has no place for the data. Taking `Sinks` in the walking method would match
 a leaf too, and walking it calls the same method again, forever.
 """
-Sinks = Union{AnySink, Tuple, AbstractVector}
+const Sinks = Union{AnySink, Tuple, AbstractVector}
 
 """
 What a data source writing a value per entity accepts: every [`Sinks`](@ref) but a [`MatrixDataLeaf`](@ref), which has
 no place for such a value.
 """
-VectorDataSinks = Union{AnyContainer, ConfigurationLeaf, VectorDataLeaf, Tuple, AbstractVector}
+const VectorDataSinks = Union{AnyContainer, ConfigurationLeaf, VectorDataLeaf, Tuple, AbstractVector}
 
 """
 What a data source writing a value per row per column accepts: every [`Sinks`](@ref) but a [`VectorDataLeaf`](@ref),
 which has no place for such a value.
 """
-MatrixDataSinks = Union{AnyContainer, ConfigurationLeaf, MatrixDataLeaf, Tuple, AbstractVector}
+const MatrixDataSinks = Union{AnyContainer, ConfigurationLeaf, MatrixDataLeaf, Tuple, AbstractVector}
 
 """
     visit_graph_parts(visitor::Function, target::Union{Sinks, Graph})::Nothing

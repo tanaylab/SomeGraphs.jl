@@ -479,7 +479,7 @@ end
 """
     set_layout_axis!(
         layout::Layout,
-        axis::AbstractString,
+        axis::Maybe{AbstractString},
         axis_configuration::AxisConfiguration;
         title::Maybe{AbstractString} = nothing,
         range::Maybe{Range} = nothing,
@@ -492,7 +492,8 @@ end
         is_plotly_log::Bool = false,
     )::Nothing
 
-Add a Plotly `axis` in a `layout` using the `axis_configuration`. If `is_reversed`, the axis runs backwards (right to
+Add a Plotly `axis` in a `layout` using the `axis_configuration`. The `axis` is the name given by [`plotly_axis`](@ref),
+which must not be `nothing`. If `is_reversed`, the axis runs backwards (right to
 left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it
 shares with the other side.
 
@@ -505,7 +506,7 @@ range.
 """
 function set_layout_axis!(
     layout::Layout,
-    axis::AbstractString,
+    axis::Maybe{AbstractString},
     axis_configuration::AxisConfiguration;
     title::Maybe{AbstractString} = nothing,
     range::Maybe{Range} = nothing,
@@ -517,6 +518,7 @@ function set_layout_axis!(
     is_reversed::Bool = false,
     is_plotly_log::Bool = false,
 )::Nothing
+    @assert axis !== nothing
     show_ticks = is_tick_axis && axis_configuration.show_ticks
     is_log_axis = is_plotly_log && axis_configuration.scale.log_base === Log10Base
     screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, startswith(axis, "y"))
@@ -902,12 +904,15 @@ function place_side_panels!(;
     for panel in side_panels
         offset = offsets[panel.offset_index + 1]
         width = panel.pixel_width / graph_width
-        layout[plotly_axis("x", panel.axis_index)][:domain] = [offset + pad, offset + pad + width] ./ scale
+        x_axis = plotly_axis("x", panel.axis_index)
+        y_axis = plotly_axis("y", panel.axis_index)
+        @assert x_axis !== nothing && y_axis !== nothing
+        layout[x_axis][:domain] = [offset + pad, offset + pad + width] ./ scale
         if panel.pixel_height === nothing
-            layout[plotly_axis("y", panel.axis_index)][:domain] = [vertical_pad, 1 - vertical_pad]
+            layout[y_axis][:domain] = [vertical_pad, 1 - vertical_pad]
         else
             height = min(panel.pixel_height / graph_height, 1 - 2 * vertical_pad)
-            layout[plotly_axis("y", panel.axis_index)][:domain] = [1 - vertical_pad - height, 1 - vertical_pad]
+            layout[y_axis][:domain] = [1 - vertical_pad - height, 1 - vertical_pad]
         end
     end
 
@@ -1028,33 +1033,47 @@ end
 """
     scale_axis_values(
         scale_configuration::ScaleConfiguration,
-        values::Maybe{AbstractVector{<:Maybe{Real}}};
+        values::AbstractVector{<:Maybe{Real}};
         clamp::Bool = true,
         copy::Bool = false,
-    )::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
+    )::AbstractVector{<:Maybe{AbstractFloat}}
     scale_axis_values(
         scale_configuration::ScaleConfiguration,
         values::AbstractMatrix{<:Maybe{Real}};
         clamp::Bool = true,
         copy::Bool = false,
-    )::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
+    )::AbstractMatrix{<:Maybe{AbstractFloat}}
+    scale_axis_values(
+        scale_configuration::ScaleConfiguration,
+        values::Nothing;
+        clamp::Bool = true,
+        copy::Bool = false,
+    )::Nothing
 
 Scale a vector (or a matrix) of `values` according to the `scale_configuration`. This deals with log scales and percent
 scaling. By default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so
-it can be safely modified further without impacting the original data).
+it can be safely modified further without impacting the original data). If the `values` are `nothing`, so is the
+result.
 """
 function scale_axis_values(
+    ::ScaleConfiguration,
+    ::Nothing;
+    clamp::Bool = true,  # NOLINT
+    copy::Bool = false,  # NOLINT
+)::Nothing
+    return nothing  # UNTESTED
+end
+
+function scale_axis_values(
     scale_configuration::ScaleConfiguration,
-    values::Maybe{AbstractVector{<:Maybe{Real}}};
+    values::AbstractVector{<:Maybe{Real}};
     clamp::Bool = true,
     copy::Bool = false,
-)::Maybe{AbstractVector{<:Maybe{AbstractFloat}}}
-    if values === nothing
-        return nothing  # UNTESTED
-    elseif !scale_configuration.percent &&
-           scale_configuration.log_base === nothing &&
-           scale_configuration.minimum === nothing &&
-           scale_configuration.maximum === nothing
+)::AbstractVector{<:Maybe{AbstractFloat}}
+    if !scale_configuration.percent &&
+       scale_configuration.log_base === nothing &&
+       scale_configuration.minimum === nothing &&
+       scale_configuration.maximum === nothing
         return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
     else
         function scale(value)
@@ -1069,7 +1088,7 @@ function scale_axis_values(
     values::AbstractMatrix{<:Maybe{Real}};
     clamp::Bool = true,
     copy::Bool = false,
-)::Maybe{AbstractMatrix{<:Maybe{AbstractFloat}}}
+)::AbstractMatrix{<:Maybe{AbstractFloat}}
     if !scale_configuration.percent &&
        scale_configuration.log_base === nothing &&
        scale_configuration.minimum === nothing &&
@@ -1595,8 +1614,7 @@ function log10_candidates(
         push!(candidates, candidate)
     end
 
-    powers_step = 1
-    while true
+    for powers_step in Iterators.countfrom(1)
         candidate = [
             (Float64(power), max(0, -power)) for power in first_power:last_power if
             power % powers_step == 0 && scaled_minimum - 1e-9 <= power <= scaled_maximum + 1e-9
@@ -1605,8 +1623,8 @@ function log10_candidates(
             return candidates
         end
         push!(candidates, candidate)
-        powers_step += 1
     end
+    @assert false
 end
 
 # The value shown for a scaled value of sizes: the real value for a linear or a `Log10Base` scale, and the log value
@@ -1645,7 +1663,9 @@ function sizes_legend_label(scale_configuration::ScaleConfiguration, value::Real
             return decimal_text(value, places)
         end
     elseif scale_configuration.log_base === Log2Base
-        return axis_ticks_prefix(scale_configuration) * decimal_text(value, places)
+        ticks_prefix = axis_ticks_prefix(scale_configuration)
+        @assert ticks_prefix !== nothing
+        return ticks_prefix * decimal_text(value, places)
     else
         @assert scale_configuration.log_base === nothing
         return decimal_text(value, places)
@@ -1755,13 +1775,14 @@ function push_vertical_bands_shapes(
         (bands_configuration.middle, scaled_middle_offset),
         (bands_configuration.high, scaled_high_offset),
     )
-        if scaled_offset !== nothing && band_configuration.line.style !== nothing
-            push!(  # NOJET
+        line_style = band_configuration.line.style
+        if scaled_offset !== nothing && line_style !== nothing
+            push!(
                 shapes,
                 Shape(
                     "line";
                     line_color = band_configuration.line.color,
-                    line_dash = plotly_line_dash(band_configuration.line.style),
+                    line_dash = plotly_line_dash(line_style),
                     x0 = plotly_value(scaled_offset * bands_scale),
                     x1 = plotly_value(scaled_offset * bands_scale),
                     xref = "x",
@@ -1878,13 +1899,14 @@ function push_horizontal_bands_shapes(
         (bands_configuration.middle, scaled_middle_offset),
         (bands_configuration.high, scaled_high_offset),
     )
-        if scaled_offset !== nothing && band_configuration.line.style !== nothing
-            push!(  # NOJET
+        line_style = band_configuration.line.style
+        if scaled_offset !== nothing && line_style !== nothing
+            push!(
                 shapes,
                 Shape(
                     "line";
                     line_color = band_configuration.line.color,
-                    line_dash = plotly_line_dash(band_configuration.line.style),
+                    line_dash = plotly_line_dash(line_style),
                     y0 = plotly_value(scaled_offset * bands_scale),
                     y1 = plotly_value(scaled_offset * bands_scale),
                     yref = "y",
@@ -2065,17 +2087,18 @@ function push_diagonal_bands_line(
     start_point = start_diagonal_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
     end_point = end_diagonal_band_point(axis_configuration, x_scaled_values_range, y_scaled_values_range, offset)
     @assert (start_point === nothing) == (end_point === nothing)
-    if start_point === nothing
+    if start_point === nothing || end_point === nothing
         return nothing
     end
 
-    if band_configuration.line.style !== nothing
-        push!(  # NOJET
+    line_style = band_configuration.line.style
+    if line_style !== nothing
+        push!(
             shapes,
             Shape(
                 "line";
                 line_color = band_configuration.line.color,
-                line_dash = plotly_line_dash(band_configuration.line.style),
+                line_dash = plotly_line_dash(line_style),
                 y0 = plotly_axis_value(axis_configuration.scale, start_point.point.y; is_plotly_log),
                 y1 = plotly_axis_value(axis_configuration.scale, end_point.point.y; is_plotly_log),
                 yref = "y",
@@ -2489,7 +2512,7 @@ end
 
 # At most this fraction of an axis is spent on the annotations and on the gaps between the sub-graphs; most of the graph
 # should be the graph itself.
-MAX_OVERHEAD_FRACTION = 1 / 3
+const MAX_OVERHEAD_FRACTION = 1 / 3
 
 # The size of each annotation, the gap following it, and the gap between the sub-graphs; if together they would take
 # more than `MAX_OVERHEAD_FRACTION` of the axis, they are all scaled down to fit.
@@ -2788,12 +2811,13 @@ function configured_colors(;
     if colors_values isa AbstractVector{<:AbstractString}
         show_in_legend = colors_configuration.show_legend
 
-        palette = colors_configuration.palette
-        if palette isa AutomaticColors
-            # Automatic colors are resolved here to an explicit categorical palette, so consumers that render the final
-            # color values directly (unlike scatters, which draw one trace per category and let Plotly pick) get valid
-            # color names.
-            palette = categorical_palette([color for color in colors_values if color != ""])
+        # Automatic colors are resolved here to an explicit categorical palette, so consumers that render the final
+        # color values directly (unlike scatters, which draw one trace per category and let Plotly pick) get valid color
+        # names.
+        palette = if colors_configuration.palette isa AutomaticColors
+            categorical_palette([color for color in colors_values if color != ""])
+        else
+            colors_configuration.palette
         end
 
         if palette isa CategoricalColors
@@ -2812,10 +2836,12 @@ function configured_colors(;
         next_colors_scale_index[1] += 1
 
         final_colors_values = scale_axis_values(colors_configuration.scale, colors_values)
-        if colors_configuration.palette isa ContinuousColors
-            color_palette_values = [entry[1] for entry in colors_configuration.palette]
+        continuous_palette = colors_configuration.palette
+        if continuous_palette isa ContinuousColors
+            color_palette_values = Float64[entry[1] for entry in continuous_palette]
             scaled_colors_palette_values = scale_axis_values(colors_configuration.scale, color_palette_values)
-            implicit_scaled_colors_range =
+            @assert scaled_colors_palette_values !== nothing
+            implicit_scaled_colors_range =  # NOJET
                 Range(; minimum = scaled_colors_palette_values[1], maximum = scaled_colors_palette_values[end])
             final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.scale)
 
@@ -2825,13 +2851,13 @@ function configured_colors(;
             final_color_palette_values[1] = 0
             final_color_palette_values[end] = 1
             scaled_colors_palette = [
-                (final_value, entry[2]) for
-                (final_value, entry) in zip(final_color_palette_values, colors_configuration.palette)
+                (final_value, entry[2]) for (final_value, entry) in zip(final_color_palette_values, continuous_palette)
             ]
         else
             ranged_values = range_values(colors_configuration.scale, final_colors_values, mask)
             # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
-            @assert all(isfinite, ranged_values) "non-finite value in the colors range"
+            is_finite_range = all(value -> value !== nothing && isfinite(value), ranged_values)
+            @assert is_finite_range "non-finite value in the colors range"
             implicit_scaled_colors_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
             final_colors_range = final_scaled_range(implicit_scaled_colors_range, colors_configuration.scale)
         end

@@ -842,16 +842,22 @@ scale_axis_value(scale_configuration::ScaleConfiguration, value::Nothing; clamp:
 <pre>
 <code class="language-julia hljs">scale_axis_values(
     scale_configuration::ScaleConfiguration,
-    values::Maybe{AbstractVector{&lt;:Maybe{Real}}};
+    values::AbstractVector{&lt;:Maybe{Real}};
     clamp::Bool = true,
     copy::Bool = false,
-)::Maybe{AbstractVector{&lt;:Maybe{AbstractFloat}}}
+)::AbstractVector{&lt;:Maybe{AbstractFloat}}
 scale_axis_values(
     scale_configuration::ScaleConfiguration,
     values::AbstractMatrix{&lt;:Maybe{Real}};
     clamp::Bool = true,
     copy::Bool = false,
-)::Maybe{AbstractMatrix{&lt;:Maybe{AbstractFloat}}}
+)::AbstractMatrix{&lt;:Maybe{AbstractFloat}}
+scale_axis_values(
+    scale_configuration::ScaleConfiguration,
+    values::Nothing;
+    clamp::Bool = true,
+    copy::Bool = false,
+)::Nothing
 </code>
 </pre>
 <p>Scale a vector (or a matrix) of 
@@ -862,7 +868,11 @@ scale_axis_values(
 <code>clamp
 </code> the values to a specified explicit range. If 
 <code>copy
-</code> we always return a copy of the data (so it can be safely modified further without impacting the original data).
+</code> we always return a copy of the data (so it can be safely modified further without impacting the original data). If the 
+<code>values
+</code> are 
+<code>nothing
+</code>, so is the result.
 </p>
 </div>
 </section>
@@ -1189,7 +1199,7 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 <pre>
 <code class="language-julia hljs">set_layout_axis!(
     layout::Layout,
-    axis::AbstractString,
+    axis::Maybe{AbstractString},
     axis_configuration::AxisConfiguration;
     title::Maybe{AbstractString} = nothing,
     range::Maybe{Range} = nothing,
@@ -1209,6 +1219,14 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 <code>layout
 </code> using the 
 <code>axis_configuration
+</code>. The 
+<code>axis
+</code> is the name given by 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_axis">
+<code>plotly_axis
+</code>
+</a>, which must not be 
+<code>nothing
 </code>. If 
 <code>is_reversed
 </code>, the axis runs backwards (right to left, or top to bottom), which is how the left (or lower) side of a mirrored bars graph grows away from the axis it shares with the other side.

@@ -72,7 +72,7 @@ A plotly figure contains everything needed to display an interactive graph (or g
 also be converted to a JSON string for handing it over to a different programming language (e.g., to be used to display
 the interactive graph in a Python Jupyter notebook, given an appropriate wrapper code).
 """
-PlotlyFigure = Plot
+const PlotlyFigure = Plot
 
 """
 A configuration of a [`Graph`](@ref) specifies how to display the data while being (as much as possible) independent of
@@ -152,7 +152,7 @@ end
 function Validations.validate(context::ValidationContext, graph::Graph)::Nothing
     validate_field(context, "data", graph.data)
     validate_field(context, "configuration", graph.configuration)
-    validate_graph(graph)  # NOJET
+    validate_graph(graph)
     return nothing
 end
 
@@ -297,7 +297,7 @@ You can just write `graph.figure` instead of `graph_to_figure(graph)`.
     inside the figure, (except for saving HTML file). You should therefore use [`save_graph`](@ref) rather than call
     `savefig` on the result of `graph_to_figure`.
 """
-function graph_to_figure(::Graph)::PlotlyFigure end
+function graph_to_figure end
 
 """
     graph_to_json(graph::Graph)::AbstractString
@@ -800,7 +800,7 @@ end
 A continuous colors palette, mapping numeric values to colors. We also allow specifying tuples instead of pairs to make
 it easy to invoke the API from other languages such as Python which do not have the concept of a `Pair`.
 """
-ContinuousColors =
+const ContinuousColors =
     Union{AbstractVector{<:Pair{<:Real, <:AbstractString}}, AbstractVector{<:Tuple{<:Real, <:AbstractString}}}
 
 """
@@ -811,7 +811,7 @@ instead of a dictionary.
 The legend lists the values in the order of the palette. A `Dict` has no order of its own, so use an `OrderedDict` (or a
 named vector) to control it.
 """
-CategoricalColors = Union{AbstractDict{<:AbstractString, <:AbstractString}, NamedVector{<:AbstractString}}
+const CategoricalColors = Union{AbstractDict{<:AbstractString, <:AbstractString}, NamedVector{<:AbstractString}}
 
 # The palette as a dictionary, in the same order.
 function categorical_colors_dict(palette::CategoricalColors)::AbstractDict{<:AbstractString, <:AbstractString}
@@ -1042,7 +1042,7 @@ Palettes with suffixes (including `_r`) are computed on the fly and cached for f
     Always hold the [`COLOR_SCALES_LOCK`](@ref) when manually accessing the `NAMED_COLOR_SCALES`, otherwise you
     *will* regret it at some point.
 """
-NAMED_COLOR_SCALES = Dict{String, ContinuousColors}([
+const NAMED_COLOR_SCALES = Dict{String, ContinuousColors}([
     "Twilight" => continuous_colors_scale([
         "#e2d9e2",
         "#9ebbc9",
@@ -1320,9 +1320,9 @@ NAMED_COLOR_SCALES = Dict{String, ContinuousColors}([
 A global lock to use when accessing the `NAMED_COLOR_SCALES`. Always hold the [`COLOR_SCALES_LOCK`](@ref) when
 manually accessing the `NAMED_COLOR_SCALES`, otherwise you *will* regret it at some point.
 """
-COLOR_SCALES_LOCK = ReentrantLock()
+const COLOR_SCALES_LOCK = ReentrantLock()
 
-CACHED_COLOR_SCALES = Dict{String, ContinuousColors}()
+const CACHED_COLOR_SCALES = Dict{String, ContinuousColors}()  # NOLINT
 
 function ensure_cached_scale(context::ValidationContext, palette::AbstractString)::ContinuousColors
     return lock(COLOR_SCALES_LOCK) do
@@ -1708,11 +1708,11 @@ function Validations.validate(
     end
 
     if palette isa CategoricalColors
-        palette = categorical_colors_dict(palette)
+        palette_dict = categorical_colors_dict(palette)
 
-        validate_dict_is_not_empty(context, "palette", palette)
+        validate_dict_is_not_empty(context, "palette", palette_dict)
 
-        validate_dict_entries(context, "palette", palette) do _, color
+        validate_dict_entries(context, "palette", palette_dict) do _, color
             validate_in(context, "color") do
                 validate_is_color(context, color)
                 return nothing
