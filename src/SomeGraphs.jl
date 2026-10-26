@@ -33,4 +33,6 @@ include("heatmaps.jl")
 include("sources.jl")
 @reexport using .Sources
 
+include("workloads.jl")
+
 end  # module
