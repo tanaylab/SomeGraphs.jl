@@ -7,6 +7,7 @@ using NamedArrays
 using SomeGraphs
 using NestedTests
 using OrderedCollections
+using SparseArrays
 
 import SomeGraphs.Common.Maybe
 

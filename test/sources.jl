@@ -299,6 +299,19 @@ nested_test("sources") do
             return nothing
         end
 
+        # The hovers of sparse values are a dense vector of strings, since `SparseArrays` doesn't support strings.
+        nested_test("sparse") do
+            values = sparsevec([2], [3.0], 2)
+            for (hover_format, hovers) in
+                ((nothing, ["S: 0.0", "S: 3.0"]), (fixed_format(; digits = 2), ["S: 0.00", "S: 3.00"]))
+                graph = points_graph()
+                put_vector_data!(x_axis_vector_fields(graph), values; title = "S", hover_format)
+                @test graph.data.points.entities.hovers == hovers
+                @test graph.data.points.entities.hovers isa Vector{<:AbstractString}
+            end
+            return nothing
+        end
+
         nested_test("names") do
             put_vector_names_data!(x_axis_vector_fields(points), ["a", "b"])
             @test points.data.points.entities.names == ["a", "b"]

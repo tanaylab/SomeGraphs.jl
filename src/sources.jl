@@ -1669,9 +1669,10 @@ end
 function reset_side_placement! end
 
 # The values as the strings a hover shows, by the `hover_format` if there is one. Only strings can be a hover, so
-# anything else is converted.
+# anything else is converted. Converted strings are a dense array even if the values are sparse, since `SparseArrays`
+# doesn't support strings (a broadcast would keep the values' sparse type).
 function hover_strings(value_per_entry::AbstractArray, hover_format::Function)::AbstractArray{<:AbstractString}
-    return hover_format.(value_per_entry)
+    return [hover_format(value) for value in value_per_entry]
 end
 
 function hover_strings(value_per_entry::AbstractArray{<:AbstractString}, ::Nothing)::AbstractArray{<:AbstractString}
@@ -1679,7 +1680,7 @@ function hover_strings(value_per_entry::AbstractArray{<:AbstractString}, ::Nothi
 end
 
 function hover_strings(value_per_entry::AbstractArray{<:Real}, ::Nothing)::AbstractArray{<:AbstractString}
-    return string.(value_per_entry)
+    return [string(value) for value in value_per_entry]
 end
 
 # The `sinks` as a collection: a single sink (or a whole graph) on its own. A collection is asserted rather than typed,
