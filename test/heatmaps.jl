@@ -630,6 +630,22 @@ nested_test("heatmaps") do
             return nothing
         end
 
+        nested_test("empty") do
+            graph.data.rows.annotations[1].values.vector = ["yes", "", "no"]
+
+            nested_test("()") do
+                graph.data.rows.annotations[1].colors.palette =
+                    Dict("yes" => "black", "" => "grey", "no" => "lightgray")
+                test_html(graph, "heatmap.annotations.empty.html")
+                return nothing
+            end
+
+            nested_test("no_color") do
+                test_html(graph, "heatmap.annotations.empty.no_color.html")
+                return nothing
+            end
+        end
+
         nested_test("log") do
             for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
                 nested_test(log_name) do

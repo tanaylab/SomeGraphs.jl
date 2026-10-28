@@ -2780,6 +2780,9 @@ Colors data after applying the configuration.
     show_scale::Bool
 end
 
+# The color of an entity with no categorical color. Plotly rejects an empty color, so this is a fully transparent one.
+const NO_COLOR = "rgba(0,0,0,0)"
+
 """
     configured_colors(;
         colors_configuration::ColorsConfiguration,
@@ -2791,6 +2794,7 @@ end
 
 Apply the colors configuration to the colors data. The `mask` (if any) marks the shown entities; the hidden ones get no
 categorical color, and are left out of the implicit range of the colors scale unless the scale `include_hidden` is set.
+An empty categorical value gets the color of the empty value in the palette. If the palette has none, it gets no color.
 """
 function configured_colors(;
     colors_configuration::ColorsConfiguration,
@@ -2821,9 +2825,15 @@ function configured_colors(;
         end
 
         if palette isa CategoricalColors
+            empty_value_color = get(categorical_colors_dict(palette), "", NO_COLOR)
             final_colors_values = [
-                color != "" && prefer_data(mask, index, true) ? palette[color] : ""  #
-                for (index, color) in enumerate(colors_values)
+                if !prefer_data(mask, index, true)
+                    NO_COLOR
+                elseif color == ""
+                    empty_value_color
+                else
+                    palette[color]
+                end for (index, color) in enumerate(colors_values)
             ]
         else
             @assert palette === nothing
