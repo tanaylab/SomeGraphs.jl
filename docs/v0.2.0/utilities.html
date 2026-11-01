@@ -1093,7 +1093,7 @@ end
 <code>Log10Base
 </code> scale these are the digits, or 1, 2 and 5, or the powers of 10 (or of 100 etc.). If the range is too small for these, it uses linear steps instead. For a 
 <code>Log2Base
-</code> scale, these are linear steps of the log values. This uses the finest step whose entries are at least 1 pixel apart, with no more than 6 entries. If fewer than 2 such values fit in the range, the entries are the ends of the range. If all the values are the same, there is a single entry.
+</code> scale, these are linear steps of the log values. This uses the finest step whose entries are at least 1 pixel apart, with no more than 6 entries. If that gives fewer than 3 entries, it uses the next finer step instead, if its entries are at least 1 pixel apart (it has at most 8 entries). If fewer than 2 such values fit in the range, the entries are the ends of the range. If all the values are the same, there is a single entry.
 </p>
 <p>If a value was clamped to the 
 <code>minimum

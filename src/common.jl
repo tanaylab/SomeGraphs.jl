@@ -294,7 +294,7 @@ You can just write `graph.html` instead of `graph_to_html(graph)`.
 function graph_to_html(graph::Graph)::String
     figure = graph_to_figure(graph)
     return sprint() do io
-        PlotlyBase.to_html(io, figure)  # NOJET
+        PlotlyBase.to_html(io, figure)
         return nothing
     end
 end

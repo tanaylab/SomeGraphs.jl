@@ -237,6 +237,22 @@ nested_test("utilities") do
                 return test_entries([1, 1e6], ["1", "100", "10k", "1M"], [6, 10, 14, 18])
             end
 
+            # Only 2 decades fit, so the next finer step is used, though it has more than 6 entries.
+            nested_test("finer") do
+                values = [20, 50, 100, 200, 500, 1000, 2000]
+                return test_entries(
+                    [16, 4096],
+                    ["20", "50", "100", "200", "500", "1k", "2k"],
+                    6 .+ 12 .* log10.(values ./ 16) ./ log10(4096 / 16),
+                )
+            end
+
+            # The next finer step would put entries less than 1 pixel apart, so the 2 decades are kept.
+            nested_test("!finer") do
+                sizes_configuration.span = 4
+                return test_entries([16, 4096], ["100", "1k"], 6 .+ 4 .* log10.([100, 1000] ./ 16) ./ log10(4096 / 16))
+            end
+
             nested_test("digits") do
                 return test_entries([1, 5], ["1", "2", "3", "4", "5"], 6 .+ 12 .* log10.([1, 2, 3, 4, 5]) ./ log10(5))
             end

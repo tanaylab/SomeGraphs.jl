@@ -1466,6 +1466,9 @@ const SIZES_LEGEND_MINIMAL_PIXELS_GAP = 1
 # The maximal number of entries in the legend of sizes (not counting the ends added for clamped values).
 const SIZES_LEGEND_MAXIMAL_ENTRIES = 6
 
+# The minimal number of entries in the legend of sizes, unless even the next finer candidate has sizes too close.
+const SIZES_LEGEND_MINIMAL_ENTRIES = 3
+
 """
     sizes_legend_entries(
         sizes_configuration::SizesConfiguration,
@@ -1479,9 +1482,10 @@ The entries of the legend of the sizes `values`, as mapped by the `sizes_configu
 The entries are "nice" values, chosen the way ticks are. For a linear scale these are multiples of a step of 1, 2 or 5
 times a power of 10. For a `Log10Base` scale these are the digits, or 1, 2 and 5, or the powers of 10 (or of 100 etc.).
 If the range is too small for these, it uses linear steps instead. For a `Log2Base` scale, these are linear steps of the
-log values. This uses the finest step whose entries are at least 1 pixel apart, with no more than 6 entries. If fewer
-than 2 such values fit in the range, the entries are the ends of the range. If all the values are the same, there is a
-single entry.
+log values. This uses the finest step whose entries are at least 1 pixel apart, with no more than 6 entries. If that
+gives fewer than 3 entries, it uses the next finer step instead, if its entries are at least 1 pixel apart (it has at
+most 8 entries). If fewer than 2 such values fit in the range, the entries are the ends of the range. If all the values
+are the same, there is a single entry.
 
 If a value was clamped to the `minimum` (or `maximum`) of the scale, the end of the legend is at that value, with a "≤ "
 (or "≥ ") prefix. It replaces the nearest entry if that is less than 1 pixel away, and is added to the entries
@@ -1506,18 +1510,28 @@ function sizes_legend_entries(
         return [sizes_legend_entry(sizes_mapping, scaled_value, places)]
     end
 
-    chosen = nothing
-    for candidate in sizes_legend_candidates(sizes_mapping)
+    candidates = sizes_legend_candidates(sizes_mapping)
+    chosen_index = nothing
+    for (index, candidate) in enumerate(candidates)
         if length(candidate) < 2
             break
         end
-        pixel_sizes = [pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
-        if length(candidate) <= SIZES_LEGEND_MAXIMAL_ENTRIES &&
-           minimum(diff(pixel_sizes)) >= SIZES_LEGEND_MINIMAL_PIXELS_GAP
-            chosen = candidate
+        if length(candidate) <= SIZES_LEGEND_MAXIMAL_ENTRIES && is_sizes_legend_distinct(sizes_mapping, candidate)
+            chosen_index = index
             break
         end
     end
+
+    # Too few entries say little about the range, so the next finer candidate is used instead, if its sizes are
+    # distinct. It has at most 8 entries, so it isn't held to the maximal number of entries.
+    if chosen_index !== nothing &&
+       chosen_index > 1 &&
+       length(candidates[chosen_index]) < SIZES_LEGEND_MINIMAL_ENTRIES &&
+       is_sizes_legend_distinct(sizes_mapping, candidates[chosen_index - 1])
+        chosen_index -= 1
+    end
+
+    chosen = chosen_index === nothing ? nothing : candidates[chosen_index]
 
     # Too few nice values fit in the range, so show its ends, rounded to the decimal place of their difference.
     if chosen === nothing
@@ -1552,6 +1566,13 @@ function sizes_legend_entries(
     end
 
     return entries
+end
+
+# Whether the sizes of the entries of a `candidate` of the legend of sizes are distinct: each is at least 1 pixel more
+# than the previous one.
+function is_sizes_legend_distinct(sizes_mapping::SizesMapping, candidate::AbstractVector{Tuple{Float64, Int}})::Bool
+    pixel_sizes = [pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
+    return minimum(diff(pixel_sizes)) >= SIZES_LEGEND_MINIMAL_PIXELS_GAP
 end
 
 # The candidate entries of the legend of sizes, from the finest to the coarsest. Each is a vector of the scaled values
