@@ -42,7 +42,7 @@ graph = heatmap_graph(;
     columns = HeatmapSideData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Flip axes (non-mutating):
@@ -61,7 +61,7 @@ graph = heatmap_graph(;
 )
 flipped = flip_axes(graph)
 using PlotlyDocumenter
-to_documenter(flipped.figure)
+to_documenter(flipped.fig)
 ```
 
 Flip axes (in-place):
@@ -80,7 +80,7 @@ graph = heatmap_graph(;
 )
 flip_axes!(graph)
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Annotations:
@@ -111,7 +111,7 @@ graph = heatmap_graph(;
     ),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Dendograms:
@@ -144,7 +144,7 @@ graph = heatmap_graph(;
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Gaps:
@@ -179,7 +179,7 @@ graph = heatmap_graph(;
 graph.configuration.rows.dendogram_size = 0.2
 graph.configuration.columns.dendogram_size = 0.2
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Subgroups (a 2nd level of grouping nested in the groups). The groups are numbered, so they are shown in the order of
@@ -207,7 +207,7 @@ graph = heatmap_graph(;
 graph.configuration.columns.order_source = OptimalTreeReorder
 graph.configuration.columns.subgroups_gap = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Hide some rows. The hidden ones are still part of the data, so they still count in the colors scale (unless
@@ -228,7 +228,7 @@ graph = heatmap_graph(;
     columns = HeatmapSideData(; entities = VectorEntitiesData(; names = ["X", "Y", "Z"])),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ## Index

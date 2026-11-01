@@ -32,7 +32,7 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Reduced size:
@@ -43,7 +43,7 @@ graph = distribution_graph(; distribution = DistributionData(; values = VectorVa
 graph.configuration.figure.width = 300
 graph.configuration.figure.height = 300
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Change colors:
@@ -54,7 +54,7 @@ graph = distribution_graph(; distribution = DistributionData(; values = VectorVa
 graph.configuration.figure.background_color = "lightyellow"
 graph.configuration.figure.paper_color = "lightgrey"
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -73,7 +73,7 @@ graph.configuration.figure.margins.right = 200
 graph.configuration.figure.margins.top = 150
 graph.configuration.figure.margins.bottom = 250
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -90,7 +90,7 @@ using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.show_ticks = false
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Disable grid:
@@ -100,7 +100,7 @@ using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.show_grid = false
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Override grid color:
@@ -110,7 +110,7 @@ using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.grid_color = "red"
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Override range:
@@ -121,7 +121,7 @@ graph = distribution_graph(; distribution = DistributionData(; values = VectorVa
 graph.configuration.value_axis.scale.minimum = 1
 graph.configuration.value_axis.scale.maximum = 4
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Percent:
@@ -131,7 +131,7 @@ using SomeGraphs
 graph = distribution_graph(; distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])))
 graph.configuration.value_axis.scale.percent = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -148,7 +148,7 @@ graph = distribution_graph(; distribution = DistributionData(; values = VectorVa
 graph.configuration.value_axis.scale.log_base = Log2Base
 graph.configuration.value_axis.scale.log_regularization = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Log 10:
@@ -159,7 +159,7 @@ graph = distribution_graph(; distribution = DistributionData(; values = VectorVa
 graph.configuration.value_axis.scale.log_base = Log10Base
 graph.configuration.value_axis.scale.log_regularization = 1e-5
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs

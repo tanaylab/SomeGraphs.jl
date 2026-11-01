@@ -24,7 +24,7 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = bars_graph(; values = VectorValuesData(collect(0:10) .* 10))
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Annotations:
@@ -34,7 +34,7 @@ using SomeGraphs
 graph = bars_graph(; values = VectorValuesData(collect(0:10) .* 10))
 graph.data.annotations = [AnnotationData(; values = VectorValuesData(collect(0:10) .% 3, "score"))]
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -58,7 +58,7 @@ graph = series_bars_graph(;
     ],
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Annotations:
@@ -73,7 +73,7 @@ graph = series_bars_graph(;
 )
 graph.data.annotations = [AnnotationData(; values = VectorValuesData(collect(0:10) .% 3, "score"))]
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ## Index

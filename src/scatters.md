@@ -28,7 +28,7 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Flip axes (non-mutating):
@@ -38,7 +38,7 @@ using SomeGraphs
 graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 flipped = flip_axes(graph)
 using PlotlyDocumenter
-to_documenter(flipped.figure)
+to_documenter(flipped.fig)
 ```
 
 Flip axes (in-place):
@@ -48,7 +48,7 @@ using SomeGraphs
 graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 flip_axes!(graph)
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Borders:
@@ -59,7 +59,7 @@ graph = points_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValu
 graph.configuration.borders.colors.fixed = "black"
 graph.configuration.borders.sizes.fixed = 1
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Edges:
@@ -72,7 +72,7 @@ graph = points_graph(;
     edges = EdgesData(; points = [(1, 8), (2, 9), (3, 10), (4, 11)]),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Selection (box):
@@ -85,7 +85,7 @@ graph = points_graph(;
     selection = SelectionData(; box = (25, 75, 5, 50)),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Selection (polygon):
@@ -98,7 +98,7 @@ graph = points_graph(;
     selection = SelectionData(; polygon = [(10, 0), (90, 40), (70, 90), (0, 30)]),
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Diagonal bands (linear scales):
@@ -110,7 +110,7 @@ graph.configuration.diagonal_bands.low.offset = -25
 graph.configuration.diagonal_bands.middle.offset = 0
 graph.configuration.diagonal_bands.high.offset = +25
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Diagonal bands (log scales):
@@ -126,7 +126,7 @@ graph.configuration.diagonal_bands.low.offset = 1 / 4
 graph.configuration.diagonal_bands.middle.offset = 1
 graph.configuration.diagonal_bands.high.offset = 4
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -193,7 +193,7 @@ graph.configuration.y_axis.scale.minimum = -3
 graph.configuration.x_axis.scale.maximum = 3
 graph.configuration.y_axis.scale.maximum = 3
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -211,7 +211,7 @@ Default (serves as a baseline to compare with when modifying options):
 using SomeGraphs
 graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 With points:
@@ -221,7 +221,7 @@ using SomeGraphs
 graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.show_points = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Filled:
@@ -231,7 +231,7 @@ using SomeGraphs
 graph = line_graph(; x = VectorValuesData(collect(0:10) .* 10), y = VectorValuesData(collect(0:10) .^ 2))
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ```@docs
@@ -255,7 +255,7 @@ graph = lines_graph(;
     ],
 )
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Filled:
@@ -270,7 +270,7 @@ graph = lines_graph(;
 )
 graph.configuration.line.is_filled = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Stacked:
@@ -286,7 +286,7 @@ graph = lines_graph(;
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackValues
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Fractions:
@@ -302,7 +302,7 @@ graph = lines_graph(;
 graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 Percents:
@@ -319,7 +319,7 @@ graph.configuration.line.is_filled = true
 graph.configuration.stacking = StackFractions
 graph.configuration.y_axis.scale.percent = true
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 ## Index

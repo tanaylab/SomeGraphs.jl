@@ -745,7 +745,7 @@ nested_test("points") do
             @test_throws chomp("""
                                ArgumentError: numeric graph.data.points.colors.vector
                                specified for automatic graph.configuration.points.colors.palette
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~missing") do
@@ -753,7 +753,7 @@ nested_test("points") do
             @test_throws chomp("""
                                ArgumentError: must specify (categorical) graph.data.points.colors.vector
                                for automatic graph.configuration.points.colors.palette
-                               """) graph.figure
+                               """) graph.fig
         end
     end
 

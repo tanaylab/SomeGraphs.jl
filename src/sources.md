@@ -278,7 +278,7 @@ source!(x_axis_vector_fields(graph), collect(0:10) .* 10, "X")
 source!(y_axis_vector_fields(graph), collect(0:10) .^ 2, "Y")
 source!(points_colors_vector_fields(graph), collect(0:10), "Color")
 using PlotlyDocumenter
-to_documenter(graph.figure)
+to_documenter(graph.fig)
 ```
 
 All three roles share the points' entities, so each call adds one hover line to the same entities, and the points end

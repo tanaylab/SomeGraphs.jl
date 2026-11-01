@@ -69,6 +69,23 @@ nested_test("common") do
         return nothing
     end
 
+    nested_test("html") do
+        graph = distribution_graph(;
+            distribution = DistributionData(; values = VectorValuesData([0, 0, 1, 1, 1, 3])),
+            figure_title = "html title",
+        )
+        html = graph.html
+        @test occursin("<html", html)
+        @test occursin("html title", html)
+        mktempdir() do directory
+            path = joinpath(directory, "graph.html")
+            save_graph(graph, path)
+            @test normalize_html(read(path, String)) == normalize_html(html)
+            return nothing
+        end
+        return nothing
+    end
+
     nested_test("figure") do
         figure = FigureConfiguration()
         context = ValidationContext(["figure"])

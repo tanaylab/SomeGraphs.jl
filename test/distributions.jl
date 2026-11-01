@@ -270,8 +270,7 @@ nested_test("distribution") do
     )
 
     nested_test("show") do
-        @test "$(graph)" ==
-              "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .figure to show the graph)"
+        @test "$(graph)" == "Graph{DistributionGraphData, DistributionGraphConfiguration} (use .fig to show the graph)"
     end
 
     nested_test("entities") do
@@ -324,18 +323,18 @@ nested_test("distribution") do
     nested_test("invalid") do
         nested_test("!values") do
             graph.data.distribution.values.vector = nothing
-            @test_throws "ArgumentError: must specify graph.data.distribution.values.vector" graph.figure
+            @test_throws "ArgumentError: must specify graph.data.distribution.values.vector" graph.fig
         end
 
         # A distribution has no order to its points, so an order of them has no meaning.
         nested_test("order") do
             graph.data.distribution.points.order = reverse(collect(1:length(graph.data.distribution.values.vector)))
-            @test_throws "ArgumentError: no effect for specified graph.data.distribution.points.order" graph.figure
+            @test_throws "ArgumentError: no effect for specified graph.data.distribution.points.order" graph.fig
         end
 
         nested_test("~values") do
             graph.data.distribution.values.vector = ["Foo"]
-            @test_throws "ArgumentError: non-numeric graph.data.distribution.values.vector" graph.figure
+            @test_throws "ArgumentError: non-numeric graph.data.distribution.values.vector" graph.fig
         end
 
         nested_test("~mask") do
@@ -343,12 +342,12 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: invalid length of graph.data.distribution.points.mask: 2
                                is different from length of graph.data.distribution.values.vector: 274
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~shown") do
             graph.data.distribution.is_shown = false
-            @test_throws "ArgumentError: not is_shown graph.data.distribution" graph.figure
+            @test_throws "ArgumentError: not is_shown graph.data.distribution" graph.fig
         end
 
         nested_test("~density_axis") do
@@ -356,12 +355,12 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.density_axis
                                for graph.configuration.distribution.style: CurveDistribution
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~color") do
             graph.data.distribution.color = "Oobleck"
-            @test_throws "ArgumentError: invalid graph.data.distribution.color: Oobleck" graph.figure
+            @test_throws "ArgumentError: invalid graph.data.distribution.color: Oobleck" graph.fig
         end
 
         nested_test("~normalize") do
@@ -369,7 +368,7 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.distribution.normalize
                                for graph.configuration.distribution.style: CurveDistribution
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~cumulative_descending") do
@@ -378,7 +377,7 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.distribution.cumulative_descending
                                for non-cumulative graph.configuration.distribution.style: HistogramDistribution
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~percent") do
@@ -387,7 +386,7 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.density_axis.scale.percent
                                without graph.configuration.distribution.normalize
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~log") do
@@ -395,7 +394,7 @@ nested_test("distribution") do
             graph.configuration.density_axis.scale.log_base = Log10Base
             @test_throws(
                 "ArgumentError: unsupported graph.configuration.density_axis.scale.log_base: Log10Base",
-                graph.figure
+                graph.fig
             )
         end
 
@@ -405,7 +404,7 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: too high graph.configuration.density_axis.ticks_angle: 91
                                is not at most: 90
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~bands") do
@@ -413,7 +412,7 @@ nested_test("distribution") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.cumulative_bands
                                for non-cumulative graph.configuration.distribution.style: CurveDistribution
-                               """) graph.figure
+                               """) graph.fig
         end
     end
 
@@ -611,7 +610,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.density_axis
                                for graph.configuration.distribution.style: CurveDistribution
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~percent") do
@@ -620,17 +619,17 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.density_axis.scale.percent
                                without graph.configuration.distribution.normalize
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("!distributions") do
             empty!(graph.data.distributions)
-            @test_throws "ArgumentError: empty vector graph.data.distributions" graph.figure
+            @test_throws "ArgumentError: empty vector graph.data.distributions" graph.fig
         end
 
         nested_test("!values") do
             empty!(graph.data.distributions[1].values.vector)
-            @test_throws "ArgumentError: empty vector graph.data.distributions[1].values.vector" graph.figure
+            @test_throws "ArgumentError: empty vector graph.data.distributions[1].values.vector" graph.fig
         end
 
         nested_test("~order") do
@@ -638,7 +637,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: invalid length of graph.data.order: 1
                                is different from length of graph.data.distributions: 2
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~values_titles") do
@@ -647,7 +646,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: conflicting graph.data.distributions[2].values.title: Bar
                                is different from graph.data.distributions[1].values.title: Foo
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~both_titles") do
@@ -656,7 +655,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: can't specify both graph.data.density_axis_title: Density
                                and graph.data.series_axis_title: Series
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~series_axis_title") do
@@ -665,7 +664,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: can't specify graph.data.series_axis_title: Series
                                for overlay (no graph.configuration.distributions_gap)
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~series_axis_numeric") do
@@ -673,7 +672,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: specified numeric or grid fields of graph.configuration.series_axis
                                (only show_ticks, ticks_angle and title apply to the cross-series names)
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~series_axis_grid") do
@@ -681,7 +680,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: specified numeric or grid fields of graph.configuration.series_axis
                                (only show_ticks, ticks_angle and title apply to the cross-series names)
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~series_axis_overlay") do
@@ -690,7 +689,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: specified graph.configuration.series_axis
                                for overlay (no graph.configuration.distributions_gap)
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~both_axis_titles") do
@@ -700,7 +699,7 @@ nested_test("distributions") do
             @test_throws chomp("""
                                ArgumentError: can't specify both graph.configuration.density_axis.title
                                and graph.configuration.series_axis.title
-                               """) graph.figure
+                               """) graph.fig
         end
 
         nested_test("~log") do
@@ -708,13 +707,13 @@ nested_test("distributions") do
             graph.configuration.density_axis.scale.log_base = Log10Base
             @test_throws(
                 "ArgumentError: unsupported graph.configuration.density_axis.scale.log_base: Log10Base",
-                graph.figure
+                graph.fig
             )
         end
 
         nested_test("~color") do
             graph.data.distributions[2].color = "Oobleck"
-            @test_throws "ArgumentError: invalid graph.data.distributions[2].color: Oobleck" graph.figure
+            @test_throws "ArgumentError: invalid graph.data.distributions[2].color: Oobleck" graph.fig
         end
     end
 

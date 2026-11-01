@@ -63,6 +63,7 @@ import .Validations.Maybe
 
 @reexport import .Common.validate_graph
 @reexport import .Common.graph_to_figure
+@reexport import .Common.graph_to_html
 @reexport import .Common.graph_to_image
 @reexport import .Common.graph_to_json
 @reexport import .Common.flip_axes
@@ -434,7 +435,7 @@ function plotly_layout(
     has_hovers::Bool = false,
     shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
-    return Layout(;
+    return Layout(;  # NOJET
         title,
         showlegend = has_legend,
         legend_x = has_legend ? figure_configuration.colors_scale_offsets[1] : nothing,

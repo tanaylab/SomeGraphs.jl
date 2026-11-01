@@ -101,15 +101,16 @@ abstract type AbstractPartData end
 
 """
 The type of a figure we can display. This is a combination of some [`AbstractGraphData`](@ref) and
-[`AbstractGraphConfiguration`](@ref). Accessing the `.figure` property of the graph will return it as a `PlotlyFigure`,
+[`AbstractGraphConfiguration`](@ref). Accessing the `.fig` property of the graph will return it as a `PlotlyFigure`,
 which can be displayed in interactive environments (such as Jupyter notebooks or a Plotly-aware IDE). Accessing the
 `.json` property will return the same figure as a JSON string, for handing the graph over to another programming
-language (e.g., to display it in a Python or R Jupyter notebook). Accessing the `.svg` or `.png` property will return
-the graph as a static image (see [`graph_to_image`](@ref)).
+language (e.g., to display it in a Python or R Jupyter notebook). Accessing the `.html` property will return it as a
+standalone HTML page (see [`graph_to_html`](@ref)). Accessing the `.svg` or `.png` property will return the graph as a
+static image (see [`graph_to_image`](@ref)).
 
 !!! note
 
-    You should call [`save_graph`](@ref) to save the graph to a file, instead of calling `savefig` on the `.figure`,
+    You should call [`save_graph`](@ref) to save the graph to a file, instead of calling `savefig` on the `.fig`,
     because the latter does't obey the graph size, because Plotly.
 """
 @kwdef mutable struct Graph{D <: AbstractGraphData, C <: AbstractGraphConfiguration} <: Validated  # NOJET
@@ -118,7 +119,7 @@ the graph as a static image (see [`graph_to_image`](@ref)).
 end
 
 function Base.show(io::IO, graph::Graph)::Nothing
-    print(io, "$(typeof(graph)) (use .figure to show the graph)")
+    print(io, "$(typeof(graph)) (use .fig to show the graph)")
     return nothing
 end
 
@@ -128,12 +129,16 @@ Base.@constprop :aggressive function Base.getproperty(graph::Graph, property::Sy
     return graph_property(graph, Val(property))
 end
 
-function graph_property(graph::Graph, ::Val{:figure})::PlotlyFigure
+function graph_property(graph::Graph, ::Val{:fig})::PlotlyFigure
     return graph_to_figure(graph)
 end
 
 function graph_property(graph::Graph, ::Val{:json})::AbstractString
     return graph_to_json(graph)
+end
+
+function graph_property(graph::Graph, ::Val{:html})::String
+    return graph_to_html(graph)
 end
 
 function graph_property(graph::Graph, ::Val{:svg})::AbstractString
@@ -249,11 +254,7 @@ Save the graph to a file. Unlike the Plotly `savefig` function, this function wi
 """
 function save_graph(graph::Graph, output_file::AbstractString)::Nothing
     if endswith(output_file, ".html")
-        figure = graph_to_figure(graph)
-        open(output_file, "w") do file
-            PlotlyBase.to_html(file, figure)  # NOJET
-            return nothing
-        end
+        write(output_file, graph_to_html(graph))
     else
         write(output_file, graph_to_image(graph, splitext(output_file)[2][2:end]))
     end
@@ -283,13 +284,29 @@ function graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
 end
 
 """
+    graph_to_html(graph::Graph)::String
+
+Render a graph as a standalone HTML page, which shows the interactive Plotly figure. This is what [`save_graph`](@ref)
+writes to an `.html` file.
+
+You can just write `graph.html` instead of `graph_to_html(graph)`.
+"""
+function graph_to_html(graph::Graph)::String
+    figure = graph_to_figure(graph)
+    return sprint() do io
+        PlotlyBase.to_html(io, figure)  # NOJET
+        return nothing
+    end
+end
+
+"""
     graph_to_figure(graph::Graph)::PlotlyFigure
 
 Render a graph given its data and configuration. Technically this just converts the graph to a [`PlotlyFigure`](@ref)
 which Julia knows how display for us, rather than actually display the graph. The implementation depends on the specific
 graph type.
 
-You can just write `graph.figure` instead of `graph_to_figure(graph)`.
+You can just write `graph.fig` instead of `graph_to_figure(graph)`.
 
 !!! note
 

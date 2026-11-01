@@ -256,7 +256,7 @@
 </a> which Julia knows how display for us, rather than actually display the graph. The implementation depends on the specific graph type.
 </p>
 <p>You can just write 
-<code>graph.figure
+<code>graph.fig
 </code> instead of 
 <code>graph_to_figure(graph)
 </code>.
@@ -366,6 +366,40 @@
 </code> (as a string) or 
 <code>graph.png
 </code> instead.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Common.graph_to_html">
+<a class="docstring-binding" href="#SomeGraphs.Common.graph_to_html">
+<code>SomeGraphs.Common.graph_to_html
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">graph_to_html(graph::Graph)::String
+</code>
+</pre>
+<p>Render a graph as a standalone HTML page, which shows the interactive Plotly figure. This is what 
+<a href="common.html#SomeGraphs.Common.save_graph">
+<code>save_graph
+</code>
+</a> writes to an 
+<code>.html
+</code> file.
+</p>
+<p>You can just write 
+<code>graph.html
+</code> instead of 
+<code>graph_to_html(graph)
+</code>.
 </p>
 </div>
 </section>
@@ -2043,6 +2077,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Common.graph_to_figure">
 <code>SomeGraphs.Common.graph_to_figure
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Common.graph_to_html">
+<code>SomeGraphs.Common.graph_to_html
 </code>
 </a>
 </li>
