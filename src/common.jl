@@ -261,23 +261,29 @@ function save_graph(graph::Graph, output_file::AbstractString)::Nothing
     return nothing
 end
 
+# Plotly's default size of a graph, in pixels.
+const PLOTLY_DEFAULT_WIDTH = 700
+const PLOTLY_DEFAULT_HEIGHT = 450
+
 """
     graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
 
 Render a graph as a static image in the `format` (e.g. `"svg"` or `"png"`), in memory. Unlike the Plotly `savefig`
-function, this obeys the `width` and `height` of the graph's configuration. Rendering an image starts a Kaleido process,
-which is slow the first time.
+function, this obeys the `width` and `height` of the graph's configuration: the image is exactly that size. A graph
+which doesn't set them gets Plotly's default size (700 by 450 pixels), as an interactive graph does. Rendering an image
+starts a Kaleido process, which is slow the first time.
 
 You can just write `graph.svg` (as a string) or `graph.png` instead.
 """
 function graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
     image = IOBuffer()
     PlotlyKaleido.start()  # NOJET
+    # Kaleido's own default size differs from Plotly's, so the size is always given.
     PlotlyKaleido.savefig(
         image,
         graph_to_figure(graph);
-        width = graph.configuration.figure.width,
-        height = graph.configuration.figure.height,
+        width = something(graph.configuration.figure.width, PLOTLY_DEFAULT_WIDTH),
+        height = something(graph.configuration.figure.height, PLOTLY_DEFAULT_HEIGHT),
         format,
     )
     return take!(image)

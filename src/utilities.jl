@@ -58,6 +58,8 @@ using ..Validations
 using ..Common
 
 import .Common.CACHED_COLOR_SCALES
+import .Common.PLOTLY_DEFAULT_HEIGHT
+import .Common.PLOTLY_DEFAULT_WIDTH
 import .Common.categorical_colors_dict
 import .Validations.Maybe
 
@@ -683,10 +685,8 @@ const COLORS_SCALE_STRIP_AXIS_BASE = 80
 # The number of color steps in the strip of a color scale.
 const COLORS_SCALE_STRIP_STEPS = 200
 
-# Plotly's defaults for the width of a graph, and the thickness and padding of a color bar, in pixels. The strips of the
-# color scales use the same thickness and padding as the Plotly color bars.
-const PLOTLY_DEFAULT_WIDTH = 700
-const PLOTLY_DEFAULT_HEIGHT = 450
+# Plotly's defaults for the thickness and padding of a color bar, in pixels. The strips of the color scales use the same
+# thickness and padding as the Plotly color bars.
 const PLOTLY_COLORS_SCALE_THICKNESS = 30
 const PLOTLY_COLORS_SCALE_PAD = 10
 
@@ -2371,7 +2371,7 @@ end
 
 function fill_color(line_color::AbstractString)::AbstractString
     rgba = parse(RGBA, line_color)
-    return hex(RGBA(rgba.r, rgba.g, rgba.b, rgba.alpha * 0.5), :RRGGBBAA)
+    return "#$(hex(RGBA(rgba.r, rgba.g, rgba.b, rgba.alpha * 0.5), :RRGGBBAA))"
 end
 
 """

@@ -1,18 +1,18 @@
-<svg class="main-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="700" height="500" viewBox="0 0 700 500">
-<rect x="0" y="0" width="700" height="500" style="fill: rgb(255, 255, 255); fill-opacity: 1;"/>
+<svg class="main-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="700" height="450" viewBox="0 0 700 450">
+<rect x="0" y="0" width="700" height="450" style="fill: rgb(255, 255, 255); fill-opacity: 1;"/>
 <defs id="id-1">
 <g class="clips">
 <clipPath id="id-2" class="plotclip">
-<rect width="600" height="400"/>
+<rect width="600" height="350"/>
 </clipPath>
 <clipPath class="axesclip" id="id-3">
-<rect x="50" y="0" width="600" height="500"/>
+<rect x="50" y="0" width="600" height="450"/>
 </clipPath>
 <clipPath class="axesclip" id="id-4">
-<rect x="0" y="50" width="700" height="400"/>
+<rect x="0" y="50" width="700" height="350"/>
 </clipPath>
 <clipPath class="axesclip" id="id-5">
-<rect x="50" y="50" width="600" height="400"/>
+<rect x="50" y="50" width="600" height="350"/>
 </clipPath>
 </g>
 <g class="gradients"/>
@@ -36,16 +36,16 @@
 <g class="gridlayer">
 <g class="x"/>
 <g class="y">
-<path class="ygrid crisp" transform="translate(0,446.08)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,380.72)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,250)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,184.64)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,119.28)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,53.92)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,396.57)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,339.38)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,225)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,167.81)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,110.62)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,53.43)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
 </g>
 </g>
 <g class="zerolinelayer">
-<path class="yzl zl crisp" transform="translate(0,315.36)" d="M50,0h600" style="stroke: rgb(68, 68, 68); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="yzl zl crisp" transform="translate(0,282.19)" d="M50,0h600" style="stroke: rgb(68, 68, 68); stroke-opacity: 1; stroke-width: 1px;"/>
 </g>
 <g class="layer-between">
 <g class="shapelayer"/>
@@ -63,16 +63,16 @@
 <g class="trace bars" style="opacity: 1;">
 <g class="points">
 <g class="point">
-<path d="M1.5,265.36V396.08H148.5V265.36Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+<path d="M1.5,232.19V346.57H148.5V232.19Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 <g class="point">
 <path d="M0,0Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 <g class="point">
-<path d="M301.5,265.36V134.64H448.5V265.36Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+<path d="M301.5,232.19V117.81H448.5V232.19Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 <g class="point">
-<path d="M451.5,265.36V3.92H598.5V265.36Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+<path d="M451.5,232.19V3.43H598.5V232.19Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 </g>
 </g>
@@ -85,31 +85,31 @@
 <g class="xaxislayer-above"/>
 <g class="yaxislayer-above">
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" transform="translate(0,446.08)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;">
+<text text-anchor="end" x="49" y="4.199999999999999" transform="translate(0,396.57)" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;">
 −1</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,380.72)">
+<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,339.38)">
 −0.5</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,315.36)">
+<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,282.19)">
 0</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,250)">
+<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,225)">
 0.5</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,184.64)">
+<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,167.81)">
 1</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,119.28)">
+<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,110.62)">
 1.5</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,53.92)">
+<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: 'Open Sans', verdana, arial, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre; opacity: 1;" transform="translate(0,53.43)">
 2</text>
 </g>
 </g>
