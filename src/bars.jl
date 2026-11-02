@@ -1445,7 +1445,7 @@ function bars_layout(;
         :showgrid => false,
         :showticklabels => show_tick_names,
         :tickangle => (show_tick_names && bar_axis_screen_ticks_angle != 0) ? bar_axis_screen_ticks_angle : nothing,
-        :title => bar_axis.title,
+        :title => plotly_title(bar_axis.title),
         :anchor => bar_axis_anchor,
     )
 

@@ -1148,7 +1148,7 @@ function distribution_layout(;
                 )
             else
                 layout["$(density_axis_letter)axis"] =
-                    Dict(:showticklabels => false, :title => graph.data.distribution.name)
+                    Dict(:showticklabels => false, :title => plotly_title(graph.data.distribution.name))
             end
 
         elseif graph isa DistributionsGraph
@@ -1174,7 +1174,7 @@ function distribution_layout(;
                     )
                 else
                     layout["$(density_axis_letter)axis"] =
-                        Dict(:showticklabels => false, :title => graph.data.density_axis_title)
+                        Dict(:showticklabels => false, :title => plotly_title(graph.data.density_axis_title))
                 end
             else
                 for index in 1:n_distributions

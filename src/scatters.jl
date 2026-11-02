@@ -1095,7 +1095,7 @@ function push_sizes_legend!(;
         :anchor => yaxis,
         :range => [0, 1],
         :side => "top",
-        :title => configured.sizes_title,
+        :title => plotly_title(configured.sizes_title),
         :ticks => "",
         :showticklabels => false,
         :showgrid => false,

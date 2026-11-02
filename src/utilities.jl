@@ -27,6 +27,7 @@ export plotly_line_dash
 export plotly_sub_graph_axes
 export place_side_panels!
 export plotly_sub_graph_domain
+export plotly_title
 export prefer_data
 export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
@@ -438,7 +439,7 @@ function plotly_layout(
     shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
     return Layout(;  # NOJET
-        title,
+        title = plotly_title(title),
         showlegend = has_legend,
         legend_x = has_legend ? figure_configuration.colors_scale_offsets[1] : nothing,
         legend_itemdoubleclick = has_legend ? false : nothing,
@@ -527,7 +528,7 @@ function set_layout_axis!(
     screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, startswith(axis, "y"))
     # Plotly runs an axis backwards when its range is given in descending order.
     layout[axis] = Dict(
-        :title => title,
+        :title => plotly_title(title),
         :type => is_log_axis ? "log" : nothing,
         :range => if range === nothing
             nothing
@@ -594,6 +595,8 @@ function set_layout_twin_log_axis!(;
     twin_axis = plotly_axis(letter, twin_index)
     set_layout_axis!(layout, twin_axis, axis_configuration; title, range, is_plotly_log = true)  # NOJET
     layout[twin_axis][:overlaying] = letter
+    # Plotly gives an overlaying axis the ticks of the axis it overlays, unless told to pick its own.
+    layout[twin_axis][:tickmode] = "auto"
     layout[twin_axis][:side] = letter == "x" ? "bottom" : "left"
 
     for cross_axis_index in 1:n_cross_axes
@@ -761,7 +764,7 @@ function set_layout_colorscale!(;
             nothing
         else
             Dict(
-                :title => Dict(:text => title),
+                :title => plotly_title(title),
                 :x => colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
                 :tickprefix => axis_ticks_prefix(colors_configuration.scale),
                 :ticksuffix => axis_ticks_suffix(colors_configuration.scale),
@@ -825,7 +828,7 @@ function push_colors_scale_strip!(;
     layout[plotly_axis("x", axis_index)] = Dict(
         :anchor => plotly_axis("y", axis_index; short = true),
         :side => "top",
-        :title => title,
+        :title => plotly_title(title),
         :ticks => "",
         :showticklabels => false,
         :showgrid => false,
@@ -2372,6 +2375,20 @@ end
 function fill_color(line_color::AbstractString)::AbstractString
     rgba = parse(RGBA, line_color)
     return "#$(hex(RGBA(rgba.r, rgba.g, rgba.b, rgba.alpha * 0.5), :RRGGBBAA))"
+end
+
+"""
+    plotly_title(title::Maybe{AbstractString})::Maybe{AbstractDict}
+
+Return the Plotly form of a `title` (of the figure, an axis, a color bar, ...), or `nothing` if there is none. Plotly
+ignores a title given as a plain string, so it is given as the `text` of the title.
+"""
+function plotly_title(::Nothing)::Nothing
+    return nothing
+end
+
+function plotly_title(title::AbstractString)::AbstractDict
+    return Dict(:text => title)
 end
 
 """

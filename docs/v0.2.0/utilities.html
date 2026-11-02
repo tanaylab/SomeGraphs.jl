@@ -1143,6 +1143,34 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.plotly_title">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_title">
+<code>SomeGraphs.Utilities.plotly_title
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_title(title::Maybe{AbstractString})::Maybe{AbstractDict}
+</code>
+</pre>
+<p>Return the Plotly form of a 
+<code>title
+</code> (of the figure, an axis, a color bar, ...), or 
+<code>nothing
+</code> if there is none. Plotly ignores a title given as a plain string, so it is given as the 
+<code>text
+</code> of the title.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.axis_ticks_prefix">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.axis_ticks_prefix">
 <code>SomeGraphs.Utilities.axis_ticks_prefix
@@ -2227,6 +2255,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.plotly_sub_graph_domain">
 <code>SomeGraphs.Utilities.plotly_sub_graph_domain
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_title">
+<code>SomeGraphs.Utilities.plotly_title
 </code>
 </a>
 </li>
