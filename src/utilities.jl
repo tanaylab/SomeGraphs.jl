@@ -45,6 +45,7 @@ export SidePanel
 export sizes_legend_entries
 export SizesLegendEntry
 export SubGraph
+export text_width
 export validate_axis_sizes
 export validate_colors
 export validate_graph_bands
@@ -71,6 +72,32 @@ import .Validations.Maybe
 @reexport import .Common.graph_to_json
 @reexport import .Common.flip_axes
 @reexport import .Common.flip_axes!
+
+include("lato_widths.jl")
+
+# The advance width of the widest character in `LATO_ADVANCE_PER_CHARACTER`, used for any character it lacks.
+const LATO_WIDEST_ADVANCE = maximum(values(LATO_ADVANCE_PER_CHARACTER))
+
+"""
+    text_width(text::AbstractString; font_size::Real = 12)::Float64
+
+The width in pixels of a `text` written in Lato (the default font) of `font_size` pixels. This adds the advance width
+of each character and the kerning of each pair of adjacent characters, from the Lato font which Kaleido bundles. A
+character which is not in the table counts as the widest one. Plotly's own measure of a text (in Kaleido) may be up to
+0.6 pixels wider.
+"""
+function text_width(text::AbstractString; font_size::Real = 12)::Float64
+    font_units = 0
+    previous_character = nothing
+    for character in text
+        font_units += get(LATO_ADVANCE_PER_CHARACTER, character, LATO_WIDEST_ADVANCE)
+        if previous_character !== nothing
+            font_units += get(LATO_KERNING_PER_PAIR, (previous_character, character), 0)
+        end
+        previous_character = character
+    end
+    return font_units * font_size / LATO_UNITS_PER_EM
+end
 
 @kwdef mutable struct ScaledPoint
     x::Real

@@ -304,6 +304,29 @@ nested_test("utilities") do
         end
     end
 
+    # The widths of texts drawn by Kaleido, with their kerning.
+    nested_test("text_width") do
+        nested_test("empty") do
+            @test text_width("") == 0
+        end
+
+        nested_test("kerned") do
+            @test isapprox(text_width("Population of cells"), 96.126; atol = 0.001)
+        end
+
+        nested_test("wide") do
+            @test isapprox(text_width("WWWWWWWWWW"), 124.260; atol = 0.001)
+        end
+
+        nested_test("font_size") do
+            @test isapprox(text_width("A long color bar title"; font_size = 14), 123.914; atol = 0.001)
+        end
+
+        nested_test("missing") do
+            @test text_width("中") == SomeGraphs.Utilities.LATO_WIDEST_ADVANCE * 12 / 2000
+        end
+    end
+
     nested_test("values") do
         data_context = ValidationContext(["values_data"])
         configuration_context = ValidationContext(["axis_configuration"])

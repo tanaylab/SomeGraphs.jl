@@ -28,6 +28,7 @@ SomeGraphs.Utilities.plotly_axis_values
 SomeGraphs.Utilities.scale_size_values
 SomeGraphs.Utilities.SizesLegendEntry
 SomeGraphs.Utilities.sizes_legend_entries
+SomeGraphs.Utilities.text_width
 SomeGraphs.Utilities.plotly_layout
 SomeGraphs.Utilities.plotly_title
 SomeGraphs.Utilities.axis_ticks_prefix

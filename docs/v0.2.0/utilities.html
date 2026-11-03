@@ -1109,6 +1109,32 @@ end
 </article>
 <article>
 <details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.text_width">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.text_width">
+<code>SomeGraphs.Utilities.text_width
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">text_width(text::AbstractString; font_size::Real = 12)::Float64
+</code>
+</pre>
+<p>The width in pixels of a 
+<code>text
+</code> written in Lato (the default font) of 
+<code>font_size
+</code> pixels. This adds the advance width of each character and the kerning of each pair of adjacent characters, from the Lato font which Kaleido bundles. A character which is not in the table counts as the widest one. Plotly&#39;s own measure of a text (in Kaleido) may be up to 0.6 pixels wider.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.plotly_layout">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_layout">
 <code>SomeGraphs.Utilities.plotly_layout
@@ -2341,6 +2367,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.sizes_legend_entries">
 <code>SomeGraphs.Utilities.sizes_legend_entries
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.text_width">
+<code>SomeGraphs.Utilities.text_width
 </code>
 </a>
 </li>
