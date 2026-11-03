@@ -810,7 +810,7 @@ nested_test("points") do
                 return nothing
             end
 
-            # The legend of sizes takes the slot after a strip (of log colors) and a color bar (of linear colors).
+            # The legend of sizes takes the slot after the color bars (of log colors and of linear colors).
             nested_test("colors") do
                 graph.data.points.colors.vector = collect(0:10)
                 graph.configuration.points.colors.scale.log_base = Log10Base
@@ -821,6 +821,17 @@ nested_test("points") do
                 graph.configuration.borders.colors.legend.show = true
                 graph.data.borders.colors.title = "Borders"
                 test_html(graph, "points.sizes.legend.colors.html")
+                return nothing
+            end
+
+            # The legend of sizes takes the slot after the categorical legend.
+            nested_test("categorical") do
+                graph.data.points.colors.vector =
+                    ["Foo", "Bar", "Baz", "Foo", "Bar", "Baz", "Foo", "Bar", "Baz", "Foo", "Bar"]
+                graph.configuration.points.colors.palette = Dict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
+                graph.configuration.points.colors.legend.show = true
+                graph.data.points.colors.title = "Colors"
+                test_html(graph, "points.sizes.legend.categorical.html")
                 return nothing
             end
         end

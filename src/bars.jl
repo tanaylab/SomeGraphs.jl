@@ -341,7 +341,6 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
 
     layout = bars_layout(;
         graph,
-        traces,
         has_tick_names = graph.data.bars.names !== nothing,
         has_legend = false,
         has_hovers = hovers !== nothing,
@@ -1001,7 +1000,6 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
 
     layout = bars_layout(;
         graph,
-        traces,
         has_tick_names = graph.data.bars.names !== nothing,
         has_legend = show_in_legend,
         has_hovers,
@@ -1281,7 +1279,6 @@ end
 
 function bars_layout(;
     graph::Union{BarsGraph, SeriesBarsGraph},
-    traces::AbstractVector{GenericTrace},
     has_tick_names::Bool,
     has_legend::Bool,
     has_hovers::Bool = false,
@@ -1427,7 +1424,6 @@ function bars_layout(;
     end
 
     next_colors_scale_offset_index = [Int(has_legend)]
-    side_panels = SidePanel[]
 
     # The bar axis is drawn against the 1st axis of the other direction, which is the 1st annotation when there is one.
     # That is where the names belong for any other graph - outside everything - but a mirrored pair puts its
@@ -1452,7 +1448,6 @@ function bars_layout(;
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
             layout,
-            traces,
             colors_scale_index = colors.colors_scale_index,
             colors_configuration = colors.colors_configuration,
             scaled_colors_palette = colors.scaled_colors_palette,
@@ -1460,8 +1455,7 @@ function bars_layout(;
             title = colors.colors_title,
             show_scale = colors.show_scale,
             next_colors_scale_offset_index,
-            colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-            side_panels,
+            figure_configuration = graph.configuration.figure,
         )
     end
 
@@ -1489,17 +1483,15 @@ function bars_layout(;
         if annotation_colors.colors_scale_index !== nothing
             set_layout_colorscale!(;
                 layout,
-                traces,
                 colors_scale_index = annotation_colors.colors_scale_index,
                 colors_configuration = annotation_data.colors,
                 scaled_colors_palette = annotation_colors.scaled_colors_palette,
                 range = nothing,
-                strip_range = annotation_colors.final_colors_range,
+                ticks_range = annotation_colors.final_colors_range,
                 title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                 show_scale = annotation_colors.show_scale,
                 next_colors_scale_offset_index,
-                colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-                side_panels,
+                figure_configuration = graph.configuration.figure,
             )
         end
     end
@@ -1508,8 +1500,6 @@ function bars_layout(;
         layout["xaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
         layout["yaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
     end
-
-    place_side_panels!(; layout, figure_configuration = graph.configuration.figure, side_panels)
 
     return layout
 end

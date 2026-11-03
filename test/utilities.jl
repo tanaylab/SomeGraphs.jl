@@ -304,6 +304,41 @@ nested_test("utilities") do
         end
     end
 
+    # The ticks of a `Log10Base` color bar follow Plotly's rule for a vertical log axis.
+    nested_test("log10_colors_scale_ticks") do
+        log10_colors_scale_ticks = SomeGraphs.Utilities.log10_colors_scale_ticks
+
+        nested_test("single") do
+            values, labels = log10_colors_scale_ticks(Range(; minimum = 2, maximum = 2), 350)
+            @test values == [2.0]
+            @test labels == ["100"]
+        end
+
+        nested_test("powers") do
+            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 9), 350)
+            @test values == collect(0.0:9.0)
+            @test labels == ["1", "10", "100", "1k", "10k", "100k", "1M", "10M", "100M", "1G"]
+        end
+
+        nested_test("125") do
+            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 3), 350)
+            @test values ≈ log10.([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000])
+            @test labels == ["1", "2", "5", "10", "20", "50", "100", "200", "500", "1k"]
+        end
+
+        nested_test("digits") do
+            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 1.5), 100)
+            @test values ≈ log10.([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30])
+            @test labels == ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30"]
+        end
+
+        nested_test("linear") do
+            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 0.5), 350)
+            @test values ≈ log10.(collect(1.0:0.2:3.0))
+            @test labels == ["1.0", "1.2", "1.4", "1.6", "1.8", "2.0", "2.2", "2.4", "2.6", "2.8", "3.0"]
+        end
+    end
+
     # The widths of texts drawn by Kaleido, with their kerning.
     nested_test("text_width") do
         nested_test("empty") do

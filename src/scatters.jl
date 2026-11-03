@@ -927,7 +927,6 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         if configured.colors.colors_scale_index !== nothing
             set_layout_colorscale!(;
                 layout,
-                traces,
                 colors_scale_index = configured.colors.colors_scale_index,
                 colors_configuration = configured.colors.colors_configuration,
                 scaled_colors_palette = configured.colors.scaled_colors_palette,
@@ -935,8 +934,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                 title = configured.colors.colors_title,
                 show_scale = configured.colors.show_scale,
                 next_colors_scale_offset_index,
-                colors_scale_offsets = graph.configuration.figure.colors_scale_offsets,
-                side_panels,
+                figure_configuration = graph.configuration.figure,
             )
         end
     end

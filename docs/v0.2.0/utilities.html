@@ -1409,17 +1409,15 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 <pre>
 <code class="language-julia hljs">set_layout_colorscale!(;
     layout::Layout,
-    traces::AbstractVector{GenericTrace},
     colors_scale_index::Integer,
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}},
     range::Maybe{Range} = nothing,
-    strip_range::Maybe{Range} = range,
+    ticks_range::Maybe{Range} = range,
     title::Maybe{AbstractString},
     show_scale::Bool,
     next_colors_scale_offset_index::AbstractVector{&lt;:Integer},
-    colors_scale_offsets::AbstractVector{&lt;:Real},
-    side_panels::AbstractVector{SidePanel},
+    figure_configuration::FigureConfiguration,
 )::Nothing
 </code>
 </pre>
@@ -1431,23 +1429,19 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 <code>colors_configuration
 </code>. Since Plotly is dumb when it comes to placement of color scales, a shown scale is placed at the next of the 
 <code>colors_scale_offsets
+</code> of the 
+<code>figure_configuration
 </code> (the 
 <code>next_colors_scale_offset_index
 </code>, which this advances) to avoid overlaps.
 </p>
-<p>A shown 
+<p>A Plotly color bar shows the ticks of its (scaled) values. For a 
 <code>Log10Base
-</code> scale is drawn as a strip 
-<a href="utilities.html#SomeGraphs.Utilities.SidePanel">
-<code>SidePanel
-</code>
-</a> instead, which pushes its heatmap to the 
-<code>traces
-</code> and itself to the 
-<code>side_panels
-</code>. The strip covers the 
-<code>strip_range
-</code>, which must be given.
+</code> scale these are the log values, so a shown 
+<code>Log10Base
+</code> scale gets its own ticks instead, which show the real values. They are chosen in the 
+<code>ticks_range
+</code>, which must be given, the way Plotly chooses the ticks of a log axis.
 </p>
 </div>
 </section>
@@ -1470,25 +1464,21 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
     offset_index::Integer
     axis_index::Integer
     pixel_width::Real
-    pixel_height::Maybe{Real} = nothing
+    pixel_height::Real
 end
 </code>
 </pre>
 <p>A panel drawn to the side of the graph, on its own X and Y axes (at the 
 <code>axis_index
-</code>), rather than by Plotly. This is the strip of a 
-<code>Log10Base
-</code> color scale (a 1-column heatmap), since only a Plotly log axis shows the ticks of the real values, and a Plotly color bar can&#39;t be one. It is also the legend of sizes, since the Plotly legend limits the sizes of its symbols. The 
+</code>), rather than by Plotly. This is the legend of sizes, since the Plotly legend limits the sizes of its symbols. The 
 <code>offset_index
 </code> is that of its entry in the 
 <code>colors_scale_offsets
 </code>. The panel is 
 <code>pixel_width
-</code> wide, and is either 
+</code> wide and 
 <code>pixel_height
-</code> high (at the top), or as high as the graph (if this is 
-<code>nothing
-</code>).
+</code> high, at the top.
 </p>
 </div>
 </section>

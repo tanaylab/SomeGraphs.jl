@@ -695,76 +695,57 @@ end
         offset_index::Integer
         axis_index::Integer
         pixel_width::Real
-        pixel_height::Maybe{Real} = nothing
+        pixel_height::Real
     end
 
 A panel drawn to the side of the graph, on its own X and Y axes (at the `axis_index`), rather than by Plotly. This is
-the strip of a `Log10Base` color scale (a 1-column heatmap), since only a Plotly log axis shows the ticks of the real
-values, and a Plotly color bar can't be one. It is also the legend of sizes, since the Plotly legend limits the sizes of
-its symbols. The `offset_index` is that of its entry in the `colors_scale_offsets`. The panel is `pixel_width` wide, and
-is either `pixel_height` high (at the top), or as high as the graph (if this is `nothing`).
+the legend of sizes, since the Plotly legend limits the sizes of its symbols. The `offset_index` is that of its entry
+in the `colors_scale_offsets`. The panel is `pixel_width` wide and `pixel_height` high, at the top.
 """
 @kwdef struct SidePanel
     offset_index::Integer
     axis_index::Integer
     pixel_width::Real
-    pixel_height::Maybe{Real} = nothing
+    pixel_height::Real
 end
 
-# The index of the X and Y axes of the strip of a color scale is this plus the index of the color scale.
-const COLORS_SCALE_STRIP_AXIS_BASE = 80
-
-# The number of color steps in the strip of a color scale.
-const COLORS_SCALE_STRIP_STEPS = 200
-
-# Plotly's defaults for the thickness and padding of a color bar, in pixels. The strips of the color scales use the same
-# thickness and padding as the Plotly color bars.
-const PLOTLY_COLORS_SCALE_THICKNESS = 30
+# Plotly's default padding of a color bar, in pixels.
 const PLOTLY_COLORS_SCALE_PAD = 10
-
-# Plotly's default outline of a color bar.
-const PLOTLY_COLORS_SCALE_OUTLINE_COLOR = "#444"
-const PLOTLY_COLORS_SCALE_OUTLINE_WIDTH = 1
 
 """
     set_layout_colorscale!(;
         layout::Layout,
-        traces::AbstractVector{GenericTrace},
         colors_scale_index::Integer,
         colors_configuration::ColorsConfiguration,
         scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
         range::Maybe{Range} = nothing,
-        strip_range::Maybe{Range} = range,
+        ticks_range::Maybe{Range} = range,
         title::Maybe{AbstractString},
         show_scale::Bool,
         next_colors_scale_offset_index::AbstractVector{<:Integer},
-        colors_scale_offsets::AbstractVector{<:Real},
-        side_panels::AbstractVector{SidePanel},
+        figure_configuration::FigureConfiguration,
     )::Nothing
 
 Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. Since Plotly is dumb when it comes to
-placement of color scales, a shown scale is placed at the next of the `colors_scale_offsets` (the
-`next_colors_scale_offset_index`, which this advances) to avoid overlaps.
+placement of color scales, a shown scale is placed at the next of the `colors_scale_offsets` of the
+`figure_configuration` (the `next_colors_scale_offset_index`, which this advances) to avoid overlaps.
 
-A shown `Log10Base` scale is drawn as a strip [`SidePanel`](@ref) instead, which pushes its heatmap to the `traces`
-and itself to the `side_panels`. The strip covers the `strip_range`, which must be given.
+A Plotly color bar shows the ticks of its (scaled) values. For a `Log10Base` scale these are the log values, so a shown
+`Log10Base` scale gets its own ticks instead, which show the real values. They are chosen in the `ticks_range`, which
+must be given, the way Plotly chooses the ticks of a log axis.
 """
 function set_layout_colorscale!(;
     layout::Layout,
-    traces::AbstractVector{GenericTrace},
     colors_scale_index::Integer,
     colors_configuration::ColorsConfiguration,
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}},
     range::Maybe{Range} = nothing,
-    strip_range::Maybe{Range} = range,
+    ticks_range::Maybe{Range} = range,
     title::Maybe{AbstractString},
     show_scale::Bool,
     next_colors_scale_offset_index::AbstractVector{<:Integer},
-    colors_scale_offsets::AbstractVector{<:Real},
-    side_panels::AbstractVector{SidePanel},
+    figure_configuration::FigureConfiguration,
 )::Nothing
-    is_strip = show_scale && colors_configuration.scale.log_base === Log10Base
-
     if colors_configuration.palette isa CategoricalColors
         @assert false
 
@@ -784,36 +765,35 @@ function set_layout_colorscale!(;
         colorscale = nothing
     end
 
-    layout[plotly_axis("color", colors_scale_index)] = Dict(
-        :showscale => show_scale && !is_strip,
+    colorbar = nothing
+    if show_scale
+        colorbar = Dict{Symbol, Any}(
+            :title => plotly_title(title),
+            :x => figure_configuration.colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
+        )
+        if colors_configuration.scale.log_base === Log10Base
+            @assert ticks_range !== nothing
+            plot_height =
+                prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
+                figure_configuration.margins.bottom
+            ticks_values, ticks_labels = log10_colors_scale_ticks(ticks_range, plot_height)
+            ticks_suffix = axis_ticks_suffix(colors_configuration.scale)
+            colorbar[:tickmode] = "array"
+            colorbar[:tickvals] = ticks_values
+            colorbar[:ticktext] = ticks_suffix === nothing ? ticks_labels : ticks_labels .* ticks_suffix
+        else
+            colorbar[:tickprefix] = axis_ticks_prefix(colors_configuration.scale)
+            colorbar[:ticksuffix] = axis_ticks_suffix(colors_configuration.scale)
+        end
+    end
+
+    layout[plotly_axis("color", colors_scale_index)] = Dict{Symbol, Any}(
+        :showscale => show_scale,
         :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range.minimum,
         :cmax => range === nothing ? nothing : range.maximum,
-        :colorbar => if !show_scale || is_strip
-            nothing
-        else
-            Dict(
-                :title => plotly_title(title),
-                :x => colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
-                :tickprefix => axis_ticks_prefix(colors_configuration.scale),
-                :ticksuffix => axis_ticks_suffix(colors_configuration.scale),
-            )
-        end,
+        :colorbar => colorbar,
     )
-
-    if is_strip
-        @assert strip_range !== nothing
-        push_colors_scale_strip!(;
-            layout,
-            traces,
-            colors_scale_index,
-            colors_configuration,
-            strip_range,
-            title,
-            offset_index = next_colors_scale_offset_index[1],
-            side_panels,
-        )
-    end
 
     if show_scale
         next_colors_scale_offset_index[1] += 1
@@ -822,68 +802,52 @@ function set_layout_colorscale!(;
     return nothing
 end
 
-# Push the heatmap and the axes of the strip of a `Log10Base` color scale. The heatmap uses the same Plotly color axis
-# as the colored traces, so it has the same colors. Its domain is set later, when all the strips are known.
-function push_colors_scale_strip!(;
-    layout::Layout,
-    traces::AbstractVector{GenericTrace},
-    colors_scale_index::Integer,
-    colors_configuration::ColorsConfiguration,
-    strip_range::Range,
-    title::Maybe{AbstractString},
-    offset_index::Integer,
-    side_panels::AbstractVector{SidePanel},
-)::Nothing
-    axis_index = COLORS_SCALE_STRIP_AXIS_BASE + colors_scale_index
-    # Plotly draws the outline of a color bar around its thickness, but we draw it inside the domain of the strip.
-    pixel_width = PLOTLY_COLORS_SCALE_THICKNESS + 2 * PLOTLY_COLORS_SCALE_OUTLINE_WIDTH
-    push!(side_panels, SidePanel(; offset_index, axis_index, pixel_width))
+# Plotly aims at a tick per this many pixels along a vertical axis.
+const PLOTLY_VERTICAL_PIXELS_PER_TICK = 40
 
-    scaled_steps = collect(range(strip_range.minimum, strip_range.maximum; length = COLORS_SCALE_STRIP_STEPS))
-    push!(
-        traces,
-        heatmap(;
-            z = reshape(scaled_steps, COLORS_SCALE_STRIP_STEPS, 1),
-            x = [0],
-            y = plotly_axis_values(colors_configuration.scale, scaled_steps; is_plotly_log = true),
-            coloraxis = plotly_axis("color", colors_scale_index),
-            xaxis = plotly_axis("x", axis_index; short = true),
-            yaxis = plotly_axis("y", axis_index; short = true),
-            hoverinfo = "skip",
-        ),
-    )
+# The ticks of the color bar of a `Log10Base` color scale, whose (log) values are in the `scaled_range`, and which is
+# `pixel_length` long: the log values of the ticks, and their labels, which show the real values (with SI suffixes).
+# They are chosen the way plotly.js 4.1.1 chooses the ticks of a vertical log axis (`calcTicks` and `autoTicks`), from
+# the same candidates as the legend of sizes.
+function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tuple{Vector{Float64}, Vector{String}}
+    scaled_minimum = scaled_range.minimum
+    scaled_maximum = scaled_range.maximum
+    decades = scaled_maximum - scaled_minimum
+    n_ticks = clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
+    rough_step = decades / n_ticks
 
-    # The title is on top of the strip, as it is on top of a Plotly color bar.
-    layout[plotly_axis("x", axis_index)] = Dict(
-        :anchor => plotly_axis("y", axis_index; short = true),
-        :side => "top",
-        :title => plotly_title(title),
-        :ticks => "",
-        :showticklabels => false,
-        :showgrid => false,
-        :zeroline => false,
-        :fixedrange => true,
-        :showline => true,
-        :mirror => true,
-        :linecolor => PLOTLY_COLORS_SCALE_OUTLINE_COLOR,
-        :linewidth => PLOTLY_COLORS_SCALE_OUTLINE_WIDTH,
-    )
-    layout[plotly_axis("y", axis_index)] = Dict(
-        :anchor => plotly_axis("x", axis_index; short = true),
-        :type => "log",
-        :range => [strip_range.minimum, strip_range.maximum],
-        :side => "right",
-        :exponentformat => "SI",
-        :ticksuffix => axis_ticks_suffix(colors_configuration.scale),
-        :showgrid => false,
-        :fixedrange => true,
-        :showline => true,
-        :mirror => true,
-        :linecolor => PLOTLY_COLORS_SCALE_OUTLINE_COLOR,
-        :linewidth => PLOTLY_COLORS_SCALE_OUTLINE_WIDTH,
-    )
+    if decades == 0
+        # A single value is shown with (up to) 3 significant digits, as in the legend of sizes.
+        chosen = [(Float64(scaled_minimum), max(0, 2 - floor(Int, scaled_minimum)))]
 
-    return nothing
+    elseif rough_step > 0.7
+        # Every k-th power of 10. The candidates are the digits, then 1, 2 and 5, then every power, every 2nd, etc.
+        candidates = log10_candidates(scaled_minimum, scaled_maximum)
+        chosen = candidates[min(2 + ceil(Int, rough_step), length(candidates))]
+
+    elseif decades < 1
+        # Linear steps of the real values, of 2, 5 or 10 times a power of 10 (rounding up, as Plotly's `roundUp`).
+        linear_minimum = exp10(scaled_minimum)
+        linear_maximum = exp10(scaled_maximum)
+        rough_linear_step = (linear_maximum - linear_minimum) / (1.5 * n_ticks)
+        power = floor(Int, log10(rough_linear_step))
+        multiplier = rough_linear_step / exp10(power)
+        step = (multiplier < 2 ? 2 : multiplier < 5 ? 5 : 10) * exp10(power)
+        places = max(0, -floor(Int, log10(step)))
+        first_index = ceil(Int, linear_minimum / step - 1e-9)
+        last_index = floor(Int, linear_maximum / step + 1e-9)
+        chosen = [(log10(index * step), places) for index in first_index:last_index]
+
+    else
+        # Every digit, or only 1, 2 and 5, in each decade.
+        chosen = log10_candidates(scaled_minimum, scaled_maximum)[rough_step > 0.3 ? 2 : 1]
+    end
+
+    scale_configuration = ScaleConfiguration(; log_base = Log10Base)
+    ticks_values = [scaled_value for (scaled_value, _) in chosen]
+    ticks_labels =
+        [scale_value_label(scale_configuration, exp10(scaled_value), places) for (scaled_value, places) in chosen]
+    return (ticks_values, ticks_labels)
 end
 
 """
@@ -941,12 +905,8 @@ function place_side_panels!(;
         y_axis = plotly_axis("y", panel.axis_index)
         @assert x_axis !== nothing && y_axis !== nothing
         layout[x_axis][:domain] = [offset + pad, offset + pad + width] ./ scale
-        if panel.pixel_height === nothing
-            layout[y_axis][:domain] = [vertical_pad, 1 - vertical_pad]
-        else
-            height = min(panel.pixel_height / graph_height, 1 - 2 * vertical_pad)
-            layout[y_axis][:domain] = [1 - vertical_pad - height, 1 - vertical_pad]
-        end
+        height = min(panel.pixel_height / graph_height, 1 - 2 * vertical_pad)
+        layout[y_axis][:domain] = [1 - vertical_pad - height, 1 - vertical_pad]
     end
 
     return nothing
@@ -1701,14 +1661,16 @@ function sizes_legend_entry(sizes_mapping::SizesMapping, scaled_value::Real, pla
     return SizesLegendEntry(;
         value,
         pixel_size = pixel_size(sizes_mapping, scaled_value),
-        label = sizes_legend_label(scale_configuration, legend_value(scale_configuration, scaled_value), places),
+        label = scale_value_label(scale_configuration, legend_value(scale_configuration, scaled_value), places),
     )
 end
 
 # The SI suffixes for the powers of 1000, as used by Plotly log axes (with `exponentformat = "SI"`).
 const SI_SUFFIXES = ("k", "M", "G", "T", "P", "E")
 
-function sizes_legend_label(scale_configuration::ScaleConfiguration, value::Real, places::Integer)::AbstractString
+# The label of a `value` shown by an entry of a legend of sizes, or by a tick of a color bar: with `places` decimal
+# places, and with SI suffixes for a `Log10Base` scale.
+function scale_value_label(scale_configuration::ScaleConfiguration, value::Real, places::Integer)::AbstractString
     if scale_configuration.log_base === Log10Base
         thousands = min(floor(Int, log10(abs(value)) / 3), length(SI_SUFFIXES))
         if thousands > 0
