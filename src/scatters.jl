@@ -94,7 +94,7 @@ match.
 
 !!! note
 
-    There is no `show_legend` here. Instead you probably want to set the `show_legend` of the colors and/or sizes of the
+    There is no `legend` here. Instead you probably want to show the `legend` of the colors and/or sizes of the
     `points`, `borders` and/or `edges`. There's no way to create a legend for edge styles.
 
 !!! note
@@ -285,9 +285,9 @@ titles. If specified, the `points` and `borders` colors and sizes values must al
 hovers and masks. Colors can be explicit color names if no `palette` is specified in the configuration; otherwise, they
 are either numeric values or category names depending on the type of palette specified. Sizes are the diameter in
 pixels (1/96th of an inch); border sizes are added to the point sizes. The colors titles are used for the legends, if
-`show_legend` is set for the relevant colors configuration (you can't specify `show_legend` if the colors data
-contains explicit color names). Similarly, the sizes titles are used for the legends of sizes, if `show_legend` is set
-for the relevant sizes configuration.
+the `legend` of the relevant colors configuration is shown (you can't show it if the colors data contains explicit
+color names). Similarly, the sizes titles are used for the legends of sizes, if the `legend` of the relevant sizes
+configuration is shown.
 
 The `edges` draw straight lines between pairs of points; see [`EdgesData`](@ref).
 
@@ -533,11 +533,11 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         ("borders", graph.data.borders.sizes, graph.configuration.borders.sizes),
         ("edges", graph.data.edges.sizes, graph.configuration.edges.sizes),
     )
-        if sizes_configuration.show_legend && sizes_data.vector === nothing
+        if sizes_configuration.legend.show && sizes_data.vector === nothing
             throw(
                 ArgumentError(
                     "must specify graph.data.$(name).sizes.vector\n" *
-                    "for graph.configuration.$(name).sizes.show_legend",
+                    "for graph.configuration.$(name).sizes.legend.show",
                 ),
             )
         end
@@ -593,7 +593,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         (graph.configuration.borders.colors, graph.data.borders.colors.vector),
         (graph.configuration.edges.colors, graph.data.edges.colors.vector),
     )
-        if colors_configuration.show_legend
+        if colors_configuration.legend.show
             if colors_configuration.palette isa CategoricalColors || colors_values isa AbstractVector{<:AbstractString}
                 has_legend = true
             else
@@ -603,7 +603,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
     end
 
     n_sizes_legends = count(
-        sizes_configuration.show_legend for sizes_configuration in
+        sizes_configuration.legend.show for sizes_configuration in
         (graph.configuration.points.sizes, graph.configuration.borders.sizes, graph.configuration.edges.sizes)
     )
 
@@ -732,7 +732,7 @@ function configured_scatters(;
         pixel_sizes = nothing
     end
 
-    if scatters_configuration.sizes.show_legend
+    if scatters_configuration.sizes.legend.show
         @assert size_values !== nothing
         sizes_legend = sizes_legend_entries(scatters_configuration.sizes, size_values, mask)
     else
@@ -740,7 +740,7 @@ function configured_scatters(;
     end
 
     show_in_legend =
-        scatters_configuration.colors.show_legend && (
+        scatters_configuration.colors.legend.show && (
             scatters_configuration.colors.palette isa CategoricalColors ||
             scatters_configuration.colors.palette isa AutomaticColors
         )
@@ -1603,13 +1603,13 @@ end
         vertical_bands::BandsConfiguration = BandsConfiguration()
         horizontal_bands::BandsConfiguration = BandsConfiguration()
         diagonal_bands::BandsConfiguration = BandsConfiguration()
-        show_legend::Bool = false
+        legend::LegendConfiguration = LegendConfiguration()
         stacking::Maybe{Stacking} = nothing
     end
 
 Configure a graph for showing multiple lines.
 
-This is similar to [`LineGraphConfiguration`](@ref), with the addition of `show_legend`. If this is set, then the data
+This is similar to [`LineGraphConfiguration`](@ref), with the addition of the `legend`. If it is shown, then the data
 must specify the `name` of each shown line.
 
 If `stacking` is specified, we stack the values on top of each other. Stacking can't be combined with a log `y_axis`.
@@ -1627,7 +1627,7 @@ the (scaled) values must not be negative.
     vertical_bands::BandsConfiguration = BandsConfiguration()
     horizontal_bands::BandsConfiguration = BandsConfiguration()
     diagonal_bands::BandsConfiguration = BandsConfiguration()
-    show_legend::Bool = false
+    legend::LegendConfiguration = LegendConfiguration()
     stacking::Maybe{Stacking} = nothing
 end
 
@@ -1644,6 +1644,9 @@ function Validations.validate(
     validate_field(context, "x_axis", configuration.x_axis)
     validate_field(context, "y_axis", configuration.y_axis)
     validate_field(context, "line", configuration.line)
+    if configuration isa LinesGraphConfiguration
+        validate_field(context, "legend", configuration.legend)
+    end
 
     validate_in(context, "points_size") do
         return validate_is_above(context, configuration.points_size, 0)
@@ -1779,8 +1782,7 @@ end
 The data for a multi-line graph, a [`LineData`](@ref) per line.
 
 The axes titles are the titles of the `x` (and `y`) values of the lines: all the lines that give one must give the
-same. The `name` of every shown line is required if `show_legend` is specified in the
-[`LinesGraphConfiguration`](@ref).
+same. The `name` of every shown line is required if the `legend` of the [`LinesGraphConfiguration`](@ref) is shown.
 
 If `order` is specified, we draw the lines in that order, so later lines appear on top of (or, when stacking, above)
 earlier ones.
@@ -1954,12 +1956,12 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
         graph.configuration.x_axis,
     )
 
-    if graph isa LinesGraph && graph.configuration.show_legend
+    if graph isa LinesGraph && graph.configuration.legend.show
         for (line_index, line) in enumerate(graph.data.lines)
             if line.is_shown && line.name === nothing
                 throw(
                     ArgumentError(
-                        "must specify graph.data.lines[$(line_index)].name for graph.configuration.show_legend",
+                        "must specify graph.data.lines[$(line_index)].name for graph.configuration.legend.show",
                     ),
                 )
             end
@@ -2102,7 +2104,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
             mode = graph.configuration.show_points ? "lines+markers" : "lines",
             points_size = prefer_data(line.points_size, graph.configuration.points_size),
             points_color = prefer_data(line.points_color, graph.configuration.points_color),
-            show_in_legend = graph.configuration.show_legend,
+            show_in_legend = graph.configuration.legend.show,
             fill = fill_mode,
             stack_group,
             group_norm,
@@ -2144,7 +2146,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         scaled_xs_range,
         scaled_ys_range,
         shapes,
-        has_legend = graph.configuration.show_legend,
+        has_legend = graph.configuration.legend.show,
         has_hovers,
     )
 
@@ -2512,7 +2514,7 @@ function Common.flip_axes(graph::LinesGraph)::LinesGraph
             vertical_bands = graph.configuration.horizontal_bands,
             horizontal_bands = graph.configuration.vertical_bands,
             diagonal_bands = graph.configuration.diagonal_bands,
-            show_legend = graph.configuration.show_legend,
+            legend = graph.configuration.legend,
             stacking = graph.configuration.stacking,
         ),
     )

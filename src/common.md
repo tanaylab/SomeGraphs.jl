@@ -163,6 +163,7 @@ to_documenter(graph.fig)
 ```
 
 ```@docs
+SomeGraphs.Common.LegendConfiguration
 SomeGraphs.Common.SizesConfiguration
 SomeGraphs.Common.LineConfiguration
 SomeGraphs.Common.LineStyle

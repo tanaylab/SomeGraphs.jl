@@ -989,8 +989,8 @@ many reach it. The walk doesn't go into a leaf, the struct of a role (such as an
 
 ```julia
 visit_graph_parts(graph) do part
-    if hasproperty(part, :show_legend)
-        part.show_legend = false
+    if hasproperty(part, :legend)
+        part.legend = LegendConfiguration()
     end
     return nothing
 end

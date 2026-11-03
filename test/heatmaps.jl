@@ -593,7 +593,7 @@ nested_test("heatmaps") do
                 end
 
                 nested_test("legend") do
-                    graph.configuration.entries.colors.show_legend = true
+                    graph.configuration.entries.colors.legend.show = true
                     test_html(graph, "heatmap.$(log_name).legend.html")
                     return nothing
                 end
@@ -602,7 +602,7 @@ nested_test("heatmaps") do
     end
 
     nested_test("legend") do
-        graph.configuration.entries.colors.show_legend = true
+        graph.configuration.entries.colors.legend.show = true
         test_html(graph, "heatmap.legend.html")
         return nothing
     end
@@ -625,7 +625,7 @@ nested_test("heatmaps") do
 
         nested_test("automatic") do
             graph.data.rows.annotations[1].colors.palette = AutomaticColors()
-            graph.data.rows.annotations[1].colors.show_legend = true
+            graph.data.rows.annotations[1].colors.legend.show = true
             test_html(graph, "heatmap.annotations.automatic.html")
             return nothing
         end
@@ -651,7 +651,7 @@ nested_test("heatmaps") do
                 nested_test(log_name) do
                     graph.data.columns.annotations[1].colors.scale.log_base = log_base
                     graph.data.columns.annotations[1].colors.scale.log_regularization = 1
-                    graph.data.columns.annotations[1].colors.show_legend = true
+                    graph.data.columns.annotations[1].colors.legend.show = true
                     test_html(graph, "heatmap.annotations.$(log_name).html")
                     return nothing
                 end
@@ -710,9 +710,9 @@ nested_test("heatmaps") do
 
         nested_test("legend") do
             graph.data.entries.title = "values"
-            graph.configuration.entries.colors.show_legend = true
-            graph.data.rows.annotations[1].colors.show_legend = true
-            graph.data.columns.annotations[1].colors.show_legend = true
+            graph.configuration.entries.colors.legend.show = true
+            graph.data.rows.annotations[1].colors.legend.show = true
+            graph.data.columns.annotations[1].colors.legend.show = true
             graph.data.rows.entities.names = ["X", "Y", "Z"]
             graph.data.columns.entities.names = ["A", "B", "C", "D"]
             test_html(graph, "heatmap.annotations.legend.html")

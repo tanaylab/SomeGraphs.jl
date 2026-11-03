@@ -7,11 +7,11 @@ nested_test("bars") do
 
     nested_test("invalid") do
         nested_test("legend") do
-            graph.configuration.colors.show_legend = true
+            graph.configuration.colors.legend.show = true
             graph.configuration.colors.palette = Dict(["Foo" => "red"])
             graph.data.colors.vector = ["Foo", "Foo", "Foo", "Foo"]
             @test_throws chomp("""
-                               ArgumentError: can't specify graph.configuration.colors.show_legend
+                               ArgumentError: can't specify graph.configuration.colors.legend.show
                                for a categorical graph.configuration.colors.palette
                                """) validate(ValidationContext(["graph"]), graph)
         end
@@ -177,7 +177,7 @@ nested_test("bars") do
                     end
 
                     nested_test("legend") do
-                        graph.configuration.colors.show_legend = true
+                        graph.configuration.colors.legend.show = true
                         graph.data.colors.title = "Colors"
                         test_html(graph, "bars.$(orientation_name).colors.continuous.legend.html")
                         return nothing
@@ -188,7 +188,7 @@ nested_test("bars") do
                             nested_test(log_name) do
                                 graph.configuration.colors.scale.log_base = log_base
                                 graph.configuration.colors.scale.log_regularization = 1
-                                graph.configuration.colors.show_legend = true
+                                graph.configuration.colors.legend.show = true
                                 graph.data.colors.title = "Colors"
                                 test_html(graph, "bars.$(orientation_name).colors.continuous.$(log_name).legend.html")
                                 return nothing
@@ -288,7 +288,7 @@ nested_test("bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.legend.show = true
                         test_html(graph, "bars.$(orientation_name).continuous.legend.html")
                         return nothing
                     end
@@ -297,7 +297,7 @@ nested_test("bars") do
                     nested_test("colors_title") do
                         graph.data.annotations[1].values.title = nothing
                         graph.data.annotations[1].colors.title = "score"
-                        graph.data.annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.legend.show = true
                         test_html(graph, "bars.$(orientation_name).continuous.legend.html")
                         return nothing
                     end
@@ -319,7 +319,7 @@ nested_test("bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.legend.show = true
                         test_html(graph, "bars.$(orientation_name).categorical.legend.html")
                         return nothing
                     end
@@ -813,7 +813,7 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.legend.show = true
                             test_html(graph, "series_bars.$(orientation_name).gap.continuous.legend.html")
                             return nothing
                         end
@@ -850,7 +850,7 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.legend.show = true
                             test_html(graph, "series_bars.$(orientation_name).gap.categorical.legend.html")
                             return nothing
                         end
@@ -950,7 +950,7 @@ nested_test("series_bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.legend.show = true
                         test_html(graph, "series_bars.$(orientation_name).continuous.legend.html")
                         return nothing
                     end
@@ -975,7 +975,7 @@ nested_test("series_bars") do
                     end
 
                     nested_test("legend") do
-                        graph.data.annotations[1].colors.show_legend = true
+                        graph.data.annotations[1].colors.legend.show = true
                         test_html(graph, "series_bars.$(orientation_name).categorical.legend.html")
                         return nothing
                     end
@@ -1049,7 +1049,7 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.legend.show = true
                             test_html(graph, "series_bars.$(orientation_name).values.continuous.legend.html")
                             return nothing
                         end
@@ -1086,7 +1086,7 @@ nested_test("series_bars") do
                         end
 
                         nested_test("legend") do
-                            graph.data.annotations[1].colors.show_legend = true
+                            graph.data.annotations[1].colors.legend.show = true
                             test_html(graph, "series_bars.$(orientation_name).values.categorical.legend.html")
                             return nothing
                         end

@@ -69,8 +69,8 @@ Configure a graph for showing a single series of bars.
 By default the values are the `y` axis (`VerticalValues`). You can flip the axes using the `values_orientation`. You can
 specify bands for this axis using `value_bands`. The `bars` configure the bars themselves (see
 [`BarsConfiguration`](@ref)). The `colors` is used to control the color of the bars (if not specified, chosen
-automatically by Plotly), in combination with the data bar colors (if any). A bars graph has no legend, so `show_legend`
-can only be combined with continuous colors (shown in a color scale). The `annotations` are the sizes of the
+automatically by Plotly), in combination with the data bar colors (if any). A bars graph has no legend, so the colors'
+`legend` can only be shown for continuous colors (in a color scale). The `annotations` are the sizes of the
 annotations shown next to the bars.
 
 The `bar_axis` shows the names of the bars. Only its `show_ticks`, `ticks_angle` and `title` apply, as the rest have no
@@ -121,10 +121,10 @@ function Validations.validate(context::ValidationContext, configuration::BarsGra
     validate_field(context, "bars", configuration.bars)
     validate_field(context, "annotations", configuration.annotations)
 
-    if configuration.colors.show_legend && configuration.colors.palette isa CategoricalColors
+    if configuration.colors.legend.show && configuration.colors.palette isa CategoricalColors
         throw(
             ArgumentError(
-                "can't specify $(location(context)).colors.show_legend\n" *
+                "can't specify $(location(context)).colors.legend.show\n" *
                 "for a categorical $(location(context)).colors.palette",
             ),
         )

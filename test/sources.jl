@@ -144,15 +144,15 @@ nested_test("sources") do
                 lines = lines_graph()
                 for every_graph in (points, lines)
                     visit_graph_parts(every_graph) do part
-                        if hasproperty(part, :show_legend)
-                            part.show_legend = true
+                        if hasproperty(part, :legend)
+                            part.legend.show = true
                         end
                         return nothing
                     end
                 end
-                @test points.configuration.points.colors.show_legend
-                @test points.configuration.edges.sizes.show_legend
-                @test lines.configuration.show_legend
+                @test points.configuration.points.colors.legend.show
+                @test points.configuration.edges.sizes.legend.show
+                @test lines.configuration.legend.show
                 return nothing
             end
 

@@ -24,6 +24,7 @@ export DotLine
 export FigureConfiguration
 export Graph
 export HorizontalValues
+export LegendConfiguration
 export LineConfiguration
 export LineStyle
 export Log10Base
@@ -1556,24 +1557,88 @@ function is_default_axis(axis_configuration::AxisConfiguration)::Bool
 end
 
 """
+    @kwdef mutable struct LegendConfiguration <: Validated
+        show::Bool = false
+        width::Maybe{Integer} = nothing
+        height::Maybe{Real} = nothing
+        column::Maybe{Integer} = nothing
+    end
+
+Configure the legend (or color scale) of something shown in a graph. It is shown only if `show` is set. The other fields
+control its place in the side panel to the right of the graph, and can only be specified if `show` is set.
+
+The `width` is in pixels. By default it is computed from the legend's content. The `height` is a fraction of the
+plot's height. The `column` is the index of the side panel's column the legend is placed in, where 1 is the column next
+to the plot. By default the legends are packed into columns automatically.
+"""
+@kwdef mutable struct LegendConfiguration <: Validated
+    show::Bool = false
+    width::Maybe{Integer} = nothing
+    height::Maybe{Real} = nothing
+    column::Maybe{Integer} = nothing
+end
+
+function visit_graph_parts(visitor::Function, part::LegendConfiguration, visited::Base.IdSet)::Nothing
+    visit_graph_leaf(visitor, part, visited)
+    return nothing
+end
+
+function Validations.validate(context::ValidationContext, legend_configuration::LegendConfiguration)::Nothing
+    for (field, value) in (
+        ("width", legend_configuration.width),
+        ("height", legend_configuration.height),
+        ("column", legend_configuration.column),
+    )
+        if value !== nothing && !legend_configuration.show
+            throw(ArgumentError("can't specify $(location(context)).$(field) w/o $(location(context)).show"))
+        end
+    end
+
+    if legend_configuration.width !== nothing
+        validate_in(context, "width") do
+            validate_is_above(context, legend_configuration.width, 0)
+            return nothing
+        end
+    end
+
+    if legend_configuration.height !== nothing
+        validate_in(context, "height") do
+            validate_is_finite(context, legend_configuration.height)
+            validate_is_above(context, legend_configuration.height, 0)
+            validate_is_at_most(context, legend_configuration.height, 1)
+            return nothing
+        end
+    end
+
+    if legend_configuration.column !== nothing
+        validate_in(context, "column") do
+            validate_is_at_least(context, legend_configuration.column, 1)
+            return nothing
+        end
+    end
+
+    return nothing
+end
+
+"""
     @kwdef mutable struct SizesConfiguration <: Validated
         fixed::Maybe{Real} = nothing
         scale::ScaleConfiguration = ScaleConfiguration()
         smallest::Real = 6
         span::Real = 12
-        show_legend::Bool = false
+        legend::LegendConfiguration = LegendConfiguration()
         title::Maybe{AbstractString} = nothing
     end
 
 Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
-used, the `scale`, `span` and `show_legend` must be left at their defaults, and no sizes data may be specified.
+used, the `scale`, `span` and `legend` must be left at their defaults, and no sizes data may be specified.
 Otherwise, sizes data must be specified. The `scale` maps the sizes data: values at most its `minimum` (or the minimal
 value) are mapped to the `smallest` size in pixels, values at least its `maximum` (or the maximal value) are mapped to a
 size with an additional `span` in pixels, and if `log_base` is set the log of the values (plus the `log_regularization`)
 is used instead. The `percent` of the `scale` does not apply to sizes and must be left unset.
 
-If `show_legend`, a legend to the side of the graph shows some sizes and the values they stand for (it requires sizes
-data, so it can't be combined with `fixed`). The entries are chosen as described in
+If the `legend` is shown, it is to the side of the graph and shows some sizes and the values they stand for (it
+requires sizes data, so it can't be combined with `fixed`). The entries are chosen as described in
 [`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in the
 `colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales.
 
@@ -1585,7 +1650,7 @@ the data set, so you can override this in the data.
     scale::ScaleConfiguration = ScaleConfiguration()
     smallest::Real = 6
     span::Real = 12
-    show_legend::Bool = false
+    legend::LegendConfiguration = LegendConfiguration()
     title::Maybe{AbstractString} = nothing
 end
 
@@ -1596,6 +1661,7 @@ end
 
 function Validations.validate(context::ValidationContext, sizes_configuration::SizesConfiguration)::Nothing
     validate_field(context, "scale", sizes_configuration.scale)
+    validate_field(context, "legend", sizes_configuration.legend)
 
     if sizes_configuration.scale.percent
         throw(ArgumentError("unsupported $(location(context)).scale.percent\n" * "(sizes are not shown as percents)"))
@@ -1615,10 +1681,10 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
             )
         end
 
-        if sizes_configuration.show_legend
+        if sizes_configuration.legend.show
             throw(
                 ArgumentError(
-                    "can't specify both $(location(context)).fixed\n" * "and $(location(context)).show_legend",
+                    "can't specify both $(location(context)).fixed\n" * "and $(location(context)).legend.show",
                 ),
             )
         end
@@ -1646,13 +1712,13 @@ end
         palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
         fixed::Maybe{AbstractString} = nothing
         scale::ScaleConfiguration = ScaleConfiguration()
-        show_legend::Bool = false
+        legend::LegendConfiguration = LegendConfiguration()
         title::Maybe{AbstractString} = nothing
     end
 
 Configure how to color some data. Supported combinations of configuration and data are:
 
-| `fixed`    | `palette`                      | colors data | `scale`       | `show_legend` | Behavior         |
+| `fixed`    | `palette`                      | colors data | `scale`       | `legend.show` | Behavior         |
 |:---------- |:------------------------------ |:----------- |:------------- |:------------- |:---------------- |
 | color name | `nothing`                      | `nothing`   | Restricted(S) | `false`       | Named fixed (1)  |
 | `nothing`  | `nothing`                      | `nothing`   | Restricted(S) | `false`       | Auto fixed (2)   |
@@ -1690,8 +1756,8 @@ in the data or the dictionary will prevent the matching data from being plotted.
 **Automatic (8):** The colors data contains categorical keys, whose colors are picked automatically (see
 [`AutomaticColors`](@ref)).
 
-If `show_legend` is specified, categorical colors (cases 7 and 8 above) will be shown in the legend; numerical colors
-will be shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to
+If the `legend` is shown, categorical colors (cases 7 and 8 above) will be shown in a legend; numerical colors will be
+shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to
 each other); see the `colors_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
 
 If `title` is specified, it will be used when showing the legend (whatever it is). However, in some cases the correct
@@ -1701,7 +1767,7 @@ title depends on the data set, so you can override this in the data.
     palette::Maybe{Union{AbstractString, ContinuousColors, CategoricalColors, AutomaticColors}} = nothing
     fixed::Maybe{AbstractString} = nothing
     scale::ScaleConfiguration = ScaleConfiguration()
-    show_legend::Bool = false
+    legend::LegendConfiguration = LegendConfiguration()
     title::Maybe{AbstractString} = nothing
 end
 
@@ -1715,6 +1781,7 @@ function Validations.validate(
     colors_configuration::ColorsConfiguration,
 )::Maybe{AbstractString}
     validate_field(context, "scale", colors_configuration.scale)
+    validate_field(context, "legend", colors_configuration.legend)
 
     palette = colors_configuration.palette
 
@@ -1735,10 +1802,10 @@ function Validations.validate(
             )
         end
 
-        if colors_configuration.show_legend
+        if colors_configuration.legend.show
             throw(
                 ArgumentError(
-                    "can't specify both $(location(context)).fixed\n" * "and $(location(context)).show_legend",
+                    "can't specify both $(location(context)).fixed\n" * "and $(location(context)).legend.show",
                 ),
             )
         end
@@ -2040,7 +2107,7 @@ tightly coupled with the data.
 
 !!! note
 
-    If you want to show the color scale of some annotation(s) using `show_legend`, keep in mind Plotly places a limit of
+    If you want to show the color scale of some annotation(s) using `legend.show`, keep in mind Plotly places a limit of
     at most two color scales in a graph, because "reasons".
 """
 @kwdef mutable struct AnnotationData <: Validated

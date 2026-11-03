@@ -243,18 +243,18 @@ function validate_colors(
         return nothing
     end
 
-    if colors_configuration.show_legend
+    if colors_configuration.legend.show
         if colors_data === nothing
             throw(
                 ArgumentError(
                     "must specify $(location(colors_data_context))\n" *
-                    "for $(location(colors_configuration_context)).show_legend",
+                    "for $(location(colors_configuration_context)).legend.show",
                 ),
             )
         elseif eltype(colors_data) <: AbstractString && colors_configuration.palette === nothing
             throw(
                 ArgumentError(
-                    "can't specify $(location(colors_configuration_context)).show_legend\n" *
+                    "can't specify $(location(colors_configuration_context)).legend.show\n" *
                     "for named $(location(colors_data_context))",
                 ),
             )
@@ -2881,7 +2881,7 @@ function configured_colors(;
     show_scale = false
 
     if colors_values isa AbstractVector{<:AbstractString}
-        show_in_legend = colors_configuration.show_legend
+        show_in_legend = colors_configuration.legend.show
 
         # Automatic colors are resolved here to an explicit categorical palette, so consumers that render the final
         # color values directly (unlike scatters, which draw one trace per category and let Plotly pick) get valid color
@@ -2909,7 +2909,7 @@ function configured_colors(;
         end
 
     elseif colors_values !== nothing && eltype(colors_values) <: Real
-        show_scale = colors_configuration.show_legend
+        show_scale = colors_configuration.legend.show
         colors_scale_index = next_colors_scale_index[1]
         next_colors_scale_index[1] += 1
 

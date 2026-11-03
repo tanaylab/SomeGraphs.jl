@@ -369,19 +369,19 @@ nested_test("utilities") do
         end
 
         nested_test("legend") do
-            configuration.show_legend = true
+            configuration.legend.show = true
 
             nested_test("!data") do
                 @test_throws chomp("""
                                    ArgumentError: must specify colors_data
-                                   for colors_configuration.show_legend
+                                   for colors_configuration.legend.show
                                    """) validate_colors(data_context, data, configuration_context, configuration)
             end
 
             nested_test("named") do
                 data = ["red", "green", "blue"]
                 @test_throws chomp("""
-                                   ArgumentError: can't specify colors_configuration.show_legend
+                                   ArgumentError: can't specify colors_configuration.legend.show
                                    for named colors_data
                                    """) validate_colors(data_context, data, configuration_context, configuration)
             end

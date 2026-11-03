@@ -180,6 +180,54 @@ nested_test("common") do
         end
     end
 
+    nested_test("legend") do
+        legend = LegendConfiguration()
+        context = ValidationContext(["legend"])
+        validate(context, legend)
+
+        nested_test("shown") do
+            legend.show = true
+            legend.width = 100
+            legend.height = 0.5
+            legend.column = 2
+            return validate(context, legend)
+        end
+
+        nested_test("!show") do
+            legend.height = 0.5
+            @test_throws chomp("""
+                               ArgumentError: can't specify legend.height w/o legend.show
+                               """) validate(context, legend)
+        end
+
+        nested_test("~width") do
+            legend.show = true
+            legend.width = 0
+            @test_throws chomp("""
+                               ArgumentError: too low legend.width: 0
+                               is not above: 0
+                               """) validate(context, legend)
+        end
+
+        nested_test("~height") do
+            legend.show = true
+            legend.height = 1.5
+            @test_throws chomp("""
+                               ArgumentError: too high legend.height: 1.5
+                               is not at most: 1
+                               """) validate(context, legend)
+        end
+
+        nested_test("~column") do
+            legend.show = true
+            legend.column = 0
+            @test_throws chomp("""
+                               ArgumentError: too low legend.column: 0
+                               is not at least: 1
+                               """) validate(context, legend)
+        end
+    end
+
     nested_test("sizes") do
         sizes = SizesConfiguration()
         context = ValidationContext(["sizes"])
@@ -209,10 +257,10 @@ nested_test("common") do
 
         nested_test("!legend") do
             sizes.fixed = 1
-            sizes.show_legend = true
+            sizes.legend.show = true
             @test_throws chomp("""
                                ArgumentError: can't specify both sizes.fixed
-                               and sizes.show_legend
+                               and sizes.legend.show
                                """) validate(context, sizes)
         end
 
@@ -563,10 +611,10 @@ nested_test("common") do
 
             nested_test("legend") do
                 colors.fixed = "red"
-                colors.show_legend = true
+                colors.legend.show = true
                 @test_throws chomp("""
                                    ArgumentError: can't specify both colors.fixed
-                                   and colors.show_legend
+                                   and colors.legend.show
                                    """) validate(context, colors)
             end
 

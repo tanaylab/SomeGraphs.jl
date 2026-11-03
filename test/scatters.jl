@@ -29,10 +29,10 @@ nested_test("points") do
         end
 
         nested_test("!sizes") do
-            graph.configuration.points.sizes.show_legend = true
+            graph.configuration.points.sizes.legend.show = true
             @test_throws chomp("""
                                ArgumentError: must specify graph.data.points.sizes.vector
-                               for graph.configuration.points.sizes.show_legend
+                               for graph.configuration.points.sizes.legend.show
                                """) validate(context, graph)
         end
 
@@ -475,7 +475,7 @@ nested_test("points") do
             end
 
             nested_test("legend") do
-                graph.configuration.edges.colors.show_legend = true
+                graph.configuration.edges.colors.legend.show = true
                 test_html(graph, "points.edges.categorical.legend.html")
                 return nothing
             end
@@ -503,7 +503,7 @@ nested_test("points") do
 
             nested_test("legend") do
                 graph.data.edges.sizes.title = "Edges"
-                graph.configuration.edges.sizes.show_legend = true
+                graph.configuration.edges.sizes.legend.show = true
                 test_html(graph, "points.edges.sizes.legend.html")
                 return nothing
             end
@@ -614,14 +614,14 @@ nested_test("points") do
             end
 
             nested_test("legend") do
-                graph.configuration.points.colors.show_legend = true
+                graph.configuration.points.colors.legend.show = true
                 test_html(graph, "points.continuous.scale.legend.html")
                 return nothing
             end
         end
 
         nested_test("legend") do
-            graph.configuration.points.colors.show_legend = true
+            graph.configuration.points.colors.legend.show = true
             test_html(graph, "points.continuous.legend.html")
             return nothing
         end
@@ -638,7 +638,7 @@ nested_test("points") do
                     end
 
                     nested_test("legend") do
-                        graph.configuration.points.colors.show_legend = true
+                        graph.configuration.points.colors.legend.show = true
                         graph.data.points.colors.title = "Colors"
 
                         nested_test("()") do
@@ -655,7 +655,7 @@ nested_test("points") do
                         # A strip for the log colors, followed by a color bar for the linear borders colors.
                         nested_test("borders") do
                             graph.data.borders.colors.vector = collect(0:10)
-                            graph.configuration.borders.colors.show_legend = true
+                            graph.configuration.borders.colors.legend.show = true
                             graph.data.borders.colors.title = "Borders"
                             test_html(graph, "points.continuous.$(log_name).legend.borders.html")
                             return nothing
@@ -666,7 +666,7 @@ nested_test("points") do
                             graph.data.borders.colors.vector =
                                 ["Foo", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo"]
                             graph.configuration.borders.colors.palette = Dict("Foo" => "red", "Bar" => "green")
-                            graph.configuration.borders.colors.show_legend = true
+                            graph.configuration.borders.colors.legend.show = true
                             test_html(graph, "points.continuous.$(log_name).legend.categorical.html")
                             return nothing
                         end
@@ -693,21 +693,21 @@ nested_test("points") do
         end
 
         nested_test("legend") do
-            graph.configuration.points.colors.show_legend = true
+            graph.configuration.points.colors.legend.show = true
             test_html(graph, "points.categorical.legend.html")
             return nothing
         end
 
         nested_test("ordered") do
             graph.configuration.points.colors.palette = OrderedDict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
-            graph.configuration.points.colors.show_legend = true
+            graph.configuration.points.colors.legend.show = true
             test_html(graph, "points.categorical.ordered.html")
             return nothing
         end
 
         nested_test("named") do
             graph.configuration.points.colors.palette = NamedArray(["red", "green", "blue"], (["Foo", "Bar", "Baz"],))
-            graph.configuration.points.colors.show_legend = true
+            graph.configuration.points.colors.legend.show = true
             test_html(graph, "points.categorical.named.html")
             return nothing
         end
@@ -735,7 +735,7 @@ nested_test("points") do
         end
 
         nested_test("legend") do
-            graph.configuration.points.colors.show_legend = true
+            graph.configuration.points.colors.legend.show = true
             test_html(graph, "points.automatic.legend.html")
             return nothing
         end
@@ -772,7 +772,7 @@ nested_test("points") do
         end
 
         nested_test("legend") do
-            graph.configuration.points.sizes.show_legend = true
+            graph.configuration.points.sizes.legend.show = true
             graph.data.points.sizes.title = "Sizes"
 
             nested_test("()") do
@@ -815,10 +815,10 @@ nested_test("points") do
                 graph.data.points.colors.vector = collect(0:10)
                 graph.configuration.points.colors.scale.log_base = Log10Base
                 graph.configuration.points.colors.scale.log_regularization = 1
-                graph.configuration.points.colors.show_legend = true
+                graph.configuration.points.colors.legend.show = true
                 graph.data.points.colors.title = "Colors"
                 graph.data.borders.colors.vector = collect(0:10)
-                graph.configuration.borders.colors.show_legend = true
+                graph.configuration.borders.colors.legend.show = true
                 graph.data.borders.colors.title = "Borders"
                 test_html(graph, "points.sizes.legend.colors.html")
                 return nothing
@@ -836,7 +836,7 @@ nested_test("points") do
             end
 
             nested_test("legend") do
-                graph.configuration.borders.colors.show_legend = true
+                graph.configuration.borders.colors.legend.show = true
                 test_html(graph, "points.borders.continuous.legend.html")
                 return nothing
             end
@@ -860,7 +860,7 @@ nested_test("points") do
             end
 
             nested_test("legend") do
-                graph.configuration.borders.colors.show_legend = true
+                graph.configuration.borders.colors.legend.show = true
                 test_html(graph, "points.borders.categorical.legend.html")
                 return nothing
             end
@@ -882,7 +882,7 @@ nested_test("points") do
             nested_test("legend") do
                 graph.data.borders.sizes.vector = collect(0:10)
                 graph.data.borders.sizes.title = "Borders"
-                graph.configuration.borders.sizes.show_legend = true
+                graph.configuration.borders.sizes.legend.show = true
                 test_html(graph, "points.borders.sizes.legend.html")
                 return nothing
             end
@@ -914,9 +914,9 @@ nested_test("points") do
         graph.data.borders.colors.title = "Borders"
         graph.data.edges.colors.title = "Edges"
 
-        graph.configuration.borders.colors.show_legend = true
-        graph.configuration.points.colors.show_legend = true
-        graph.configuration.edges.colors.show_legend = true
+        graph.configuration.borders.colors.legend.show = true
+        graph.configuration.points.colors.legend.show = true
+        graph.configuration.edges.colors.legend.show = true
 
         nested_test("no-colors") do
             graph.configuration.points.colors.palette = Dict("Foo-P" => "red", "Bar-P" => "green", "Baz-P" => "blue")
@@ -1273,17 +1273,17 @@ nested_test("lines") do
         end
 
         nested_test("legend") do
-            graph.configuration.show_legend = true
-            @test_throws "must specify graph.data.lines[1].name for graph.configuration.show_legend" validate(
+            graph.configuration.legend.show = true
+            @test_throws "must specify graph.data.lines[1].name for graph.configuration.legend.show" validate(
                 context,
                 graph,
             )
         end
 
         nested_test("legend_entry") do
-            graph.configuration.show_legend = true
+            graph.configuration.legend.show = true
             graph.data.lines[1].name = "Foo"
-            @test_throws "must specify graph.data.lines[2].name for graph.configuration.show_legend" validate(
+            @test_throws "must specify graph.data.lines[2].name for graph.configuration.legend.show" validate(
                 context,
                 graph,
             )
@@ -1392,7 +1392,7 @@ nested_test("lines") do
     end
 
     nested_test("legend") do
-        graph.configuration.show_legend = true
+        graph.configuration.legend.show = true
         graph.data.lines[1].name = "Foo"
         graph.data.lines[2].name = "Bar"
         test_html(graph, "lines.legend.html")
