@@ -384,10 +384,12 @@
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">graph_to_html(graph::Graph)::String
+<code class="language-julia hljs">graph_to_html(graph::Graph; standalone::Bool = false)::String
 </code>
 </pre>
-<p>Render a graph as a standalone HTML page, which shows the interactive Plotly figure. This is what 
+<p>Render a graph as an HTML page, which shows the interactive Plotly figure. The page loads plotly.js from the internet, unless it is 
+<code>standalone
+</code>, and then it includes it (a few megabytes), so it works offline. This is what 
 <a href="common.html#SomeGraphs.Common.save_graph">
 <code>save_graph
 </code>
@@ -397,9 +399,9 @@
 </p>
 <p>You can just write 
 <code>graph.html
-</code> instead of 
-<code>graph_to_html(graph)
-</code>.
+</code> (or 
+<code>graph.standalone_html
+</code>) instead.
 </p>
 </div>
 </section>

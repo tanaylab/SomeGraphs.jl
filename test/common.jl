@@ -66,6 +66,12 @@ nested_test("common") do
         @test startswith(svg, "<svg")
         @test occursin("width=\"300\"", svg)
         @test graph.png[1:4] == [0x89, 0x50, 0x4e, 0x47]
+
+        # A graph which sets no size is Plotly's default size, as an interactive graph is (the PNG header's width and
+        # height are its 17th to 24th bytes).
+        graph.configuration.figure.width = nothing
+        graph.configuration.figure.height = nothing
+        @test reinterpret(UInt32, graph.png[17:24]) == hton.(UInt32[700, 450])
         return nothing
     end
 
@@ -77,12 +83,28 @@ nested_test("common") do
         html = graph.html
         @test occursin("<html", html)
         @test occursin("html title", html)
+        @test occursin("<script src=\"https://cdn.plot.ly/plotly-4.1.1.min.js\"></script>", html)
         mktempdir() do directory
             path = joinpath(directory, "graph.html")
             save_graph(graph, path)
             @test normalize_html(read(path, String)) == normalize_html(html)
             return nothing
         end
+
+        nested_test("standalone") do
+            standalone_html = graph.standalone_html
+            @test occursin("html title", standalone_html)
+            @test occursin("plotly.js v4.1.1", standalone_html)
+            @test !occursin("<script src=\"https://cdn.plot.ly", standalone_html)
+            mktempdir() do directory
+                path = joinpath(directory, "graph.standalone.html")
+                save_graph(graph, path; standalone = true)
+                @test normalize_html(read(path, String)) == normalize_html(standalone_html)
+                return nothing
+            end
+            return nothing
+        end
+
         return nothing
     end
 

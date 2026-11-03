@@ -60,8 +60,11 @@ using Colors
 using ColorVectorSpace
 
 import Clustering.Hclust  # NOLINT
+import Downloads
 import JSON
 import PlotlyKaleido
+import SHA
+import Scratch
 
 import ..Validations.Maybe
 
@@ -104,8 +107,9 @@ The type of a figure we can display. This is a combination of some [`AbstractGra
 [`AbstractGraphConfiguration`](@ref). Accessing the `.fig` property of the graph will return it as a `PlotlyFigure`,
 which can be displayed in interactive environments (such as Jupyter notebooks or a Plotly-aware IDE). Accessing the
 `.json` property will return the same figure as a JSON string, for handing the graph over to another programming
-language (e.g., to display it in a Python or R Jupyter notebook). Accessing the `.html` property will return it as a
-standalone HTML page (see [`graph_to_html`](@ref)). Accessing the `.svg` or `.png` property will return the graph as a
+language (e.g., to display it in a Python or R Jupyter notebook). Accessing the `.html` property will return it as an
+HTML page, which loads plotly.js from the internet, and the `.standalone_html` property as a page which includes it, so
+it works offline (see [`graph_to_html`](@ref)). Accessing the `.svg` or `.png` property will return the graph as a
 static image (see [`graph_to_image`](@ref)).
 
 !!! note
@@ -139,6 +143,10 @@ end
 
 function graph_property(graph::Graph, ::Val{:html})::String
     return graph_to_html(graph)
+end
+
+function graph_property(graph::Graph, ::Val{:standalone_html})::String
+    return graph_to_html(graph; standalone = true)
 end
 
 function graph_property(graph::Graph, ::Val{:svg})::AbstractString
@@ -247,16 +255,55 @@ function is_graph_part_type(type::Type)::Bool
 end
 
 """
-    save_graph(graph::Graph, output_file::AbstractString)::Nothing
+    save_graph(graph::Graph, output_file::AbstractString; standalone::Bool = false)::Nothing
 
 Save the graph to a file. Unlike the Plotly `savefig` function, this function will actually obey the `width` and
-`height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name.
+`height` parameters specified in the graph's configuration. The format is deduced from the suffix of the file name. An
+`.html` file is the page [`graph_to_html`](@ref) gives, which includes plotly.js if `standalone`.
 """
-function save_graph(graph::Graph, output_file::AbstractString)::Nothing
+function save_graph(graph::Graph, output_file::AbstractString; standalone::Bool = false)::Nothing
     if endswith(output_file, ".html")
-        write(output_file, graph_to_html(graph))
+        write(output_file, graph_to_html(graph; standalone))
     else
         write(output_file, graph_to_image(graph, splitext(output_file)[2][2:end]))
+    end
+    return nothing
+end
+
+# The version of plotly.js which renders the graphs, in static images and in HTML pages, and the SHA-256 of its file on
+# the CDN, which is downloaded once (see `plotly_js_path`).
+const PLOTLY_JS_VERSION = "4.1.1"
+const PLOTLY_JS_SHA256 = "3b6e15d45dbb7fca5bd2094291e961ddc5472cd887009e6009a56dab668d721f"
+const PLOTLY_JS_URL = "https://cdn.plot.ly/plotly-$(PLOTLY_JS_VERSION).min.js"
+
+# The path of the local copy of plotly.js (for static images and standalone HTML pages). It is downloaded from the CDN
+# into a scratch space of this package the first time it is needed, and checked against its SHA-256.
+function plotly_js_path()::AbstractString
+    path = joinpath(Scratch.@get_scratch!("plotly.js"), "plotly-$(PLOTLY_JS_VERSION).min.js")
+    if !isfile(path)
+        downloaded = Downloads.download(PLOTLY_JS_URL)  # FLAKY TESTED  # NOJET
+        checksum = bytes2hex(open(SHA.sha256, downloaded))  # FLAKY TESTED
+        if checksum != PLOTLY_JS_SHA256  # FLAKY TESTED
+            rm(downloaded)  # UNTESTED
+            error("downloaded: $(PLOTLY_JS_URL)\nSHA-256: $(checksum)\nexpected: $(PLOTLY_JS_SHA256)")  # UNTESTED
+        end
+        mv(downloaded, path; force = true)  # FLAKY TESTED
+    end
+    return path
+end
+
+# Start Kaleido, unless it is running, with the local plotly.js (see `plotly_js_path`). Kaleido's own launcher makes its
+# bundled fonts visible, but PlotlyKaleido runs it without that launcher, so this does the same.
+function start_kaleido()::Nothing
+    if !PlotlyKaleido.is_running()
+        kaleido_directory = PlotlyKaleido.Kaleido_jll.artifact_dir
+        withenv(
+            "FONTCONFIG_PATH" => joinpath(kaleido_directory, "etc", "fonts"),
+            "XDG_DATA_HOME" => joinpath(kaleido_directory, "xdg"),
+        ) do
+            PlotlyKaleido.start(; plotly_version = PLOTLY_JS_VERSION, plotlyjs = "file://" * plotly_js_path())  # NOJET
+            return nothing
+        end
     end
     return nothing
 end
@@ -277,7 +324,7 @@ You can just write `graph.svg` (as a string) or `graph.png` instead.
 """
 function graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
     image = IOBuffer()
-    PlotlyKaleido.start()  # NOJET
+    start_kaleido()
     # Kaleido's own default size differs from Plotly's, so the size is always given.
     PlotlyKaleido.savefig(
         image,
@@ -290,19 +337,34 @@ function graph_to_image(graph::Graph, format::AbstractString)::Vector{UInt8}
 end
 
 """
-    graph_to_html(graph::Graph)::String
+    graph_to_html(graph::Graph; standalone::Bool = false)::String
 
-Render a graph as a standalone HTML page, which shows the interactive Plotly figure. This is what [`save_graph`](@ref)
-writes to an `.html` file.
+Render a graph as an HTML page, which shows the interactive Plotly figure. The page loads plotly.js from the internet,
+unless it is `standalone`, and then it includes it (a few megabytes), so it works offline. This is what
+[`save_graph`](@ref) writes to an `.html` file.
 
-You can just write `graph.html` instead of `graph_to_html(graph)`.
+You can just write `graph.html` (or `graph.standalone_html`) instead.
 """
-function graph_to_html(graph::Graph)::String
+function graph_to_html(graph::Graph; standalone::Bool = false)::String
     figure = graph_to_figure(graph)
-    return sprint() do io
-        PlotlyBase.to_html(io, figure)
+    # PlotlyBase can't load a given plotly.js (it fails for a file or a URL), so the page around its figure is ours.
+    figure_html = sprint() do io
+        PlotlyBase.to_html(io, figure; include_plotlyjs = missing, full_html = false)
         return nothing
     end
+    load_plotly_js = if standalone
+        "<script type=\"text/javascript\">$(read(plotly_js_path(), String))</script>"
+    else
+        "<script src=\"$(PLOTLY_JS_URL)\"></script>"
+    end
+    return """
+        <html>
+        <head><meta charset="utf-8" />$(load_plotly_js)</head>
+        <body>
+        $(figure_html)
+        </body>
+        </html>
+        """
 end
 
 """
