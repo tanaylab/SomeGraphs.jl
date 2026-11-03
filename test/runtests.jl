@@ -78,14 +78,13 @@ function Base.:(==)(left_file::ResultFile, right_file::ResultFile)::Bool
 end
 
 function test_svg(graph::Graph, path::AbstractString)::Nothing
-    save_graph(graph, "actual.svg")
-    actual_svg = open("actual.svg", "r") do file
+    actual_path = "actual/" * path
+    save_graph(graph, actual_path)
+    actual_svg = open(actual_path, "r") do file
         return read(file, String)
     end
-    rm("actual.svg")
     actual_svg = normalize_svg(actual_svg)
 
-    actual_path = "actual/" * path
     open(actual_path, "w") do file
         write(file, actual_svg)
         return nothing
@@ -104,14 +103,13 @@ function test_svg(graph::Graph, path::AbstractString)::Nothing
 end
 
 function test_html(graph::Graph, path::AbstractString)::Nothing
-    save_graph(graph, "actual.html")
-    actual_html = open("actual.html", "r") do file
+    actual_path = "actual/" * path
+    save_graph(graph, actual_path)
+    actual_html = open(actual_path, "r") do file
         return read(file, String)
     end
-    rm("actual.html")
     actual_html = normalize_html(actual_html)
 
-    actual_path = "actual/" * path
     open(actual_path, "w") do file
         write(file, actual_html)
         return nothing

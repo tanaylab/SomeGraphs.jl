@@ -453,6 +453,8 @@ function plotly_layout(
         # An empty template, because we style the graph ourselves. Without one, PlotlyBase fills in whatever
         # `PlotlyBase.templates.default` happens to be, which is global state that would change what we emit.
         template = Template(),
+        # Lato is bundled with Kaleido, so static images always have it.
+        font_family = "Lato, sans-serif",
         width = prefer_data(figure_configuration.width, nothing),
         height = prefer_data(figure_configuration.height, nothing),
         plot_bgcolor = figure_configuration.background_color,
