@@ -465,19 +465,12 @@ function plotly_layout(
     has_hovers::Bool = false,
     shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
-    return Layout(;  # NOJET
+    layout = Layout(;  # NOJET
         title = plotly_title(title),
         showlegend = has_legend,
         legend_tracegroupgap = 0,
         hoverlabel_align = has_hovers ? "left" : nothing,
         shapes,
-        margin_l = figure_configuration.margins.left,
-        margin_r = figure_configuration.margins.right,
-        margin_t = figure_configuration.margins.top,
-        margin_b = figure_configuration.margins.bottom,
-        # The margins are exactly as given (the right one is widened for the side panel, see `place_side_panel!`), so
-        # the plot's area is known.
-        margin_autoexpand = false,
         # An empty template, because we style the graph ourselves. Without one, PlotlyBase fills in whatever
         # `PlotlyBase.templates.default` happens to be, which is global state that would change what we emit.
         template = Template(),
@@ -488,6 +481,18 @@ function plotly_layout(
         plot_bgcolor = figure_configuration.background_color,
         paper_bgcolor = figure_configuration.paper_color,
     )
+
+    # The margins are exactly as given (the right one is widened for the side panel, see `place_side_panel!`), so the
+    # plot's area is known. They replace PlotlyBase's default margins, a `Dict` of integers, into which `false` would be
+    # converted to 0, which isn't a boolean for Plotly.
+    layout.fields[:margin] = Dict{Symbol, Any}(
+        :l => figure_configuration.margins.left,
+        :r => figure_configuration.margins.right,
+        :t => figure_configuration.margins.top,
+        :b => figure_configuration.margins.bottom,
+        :autoexpand => false,
+    )
+    return layout
 end
 
 """

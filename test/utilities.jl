@@ -17,6 +17,12 @@ nested_test("utilities") do
         @test length(figure.data) == 1
     end
 
+    # The margins don't grow, and Plotly is told so by a real boolean.
+    nested_test("plotly_layout") do
+        layout = plotly_layout(FigureConfiguration(); title = nothing, has_legend = false)
+        @test layout[:margin][:autoexpand] === false
+    end
+
     nested_test("plotly_axis_value") do
         @test plotly_axis_value(ScaleConfiguration(), nothing; is_plotly_log = false) === nothing
     end
