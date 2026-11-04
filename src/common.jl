@@ -1631,7 +1631,8 @@ end
     end
 
 Configure how to map sizes data to a size in pixels (1/96th of an inch). If `fixed` is specified, it is the size to be
-used, the `scale`, `span` and `legend` must be left at their defaults, and no sizes data may be specified.
+used, the `scale` and `legend` must be left at their defaults, the `smallest` and `span` are not used, and no sizes data
+may be specified.
 Otherwise, sizes data must be specified. The `scale` maps the sizes data: values at most its `minimum` (or the minimal
 value) are mapped to the `smallest` size in pixels, values at least its `maximum` (or the maximal value) are mapped to a
 size with an additional `span` in pixels, and if `log_base` is set the log of the values (plus the `log_regularization`)
@@ -1640,7 +1641,9 @@ is used instead. The `percent` of the `scale` does not apply to sizes and must b
 If the `legend` is shown, it is to the side of the graph and shows some sizes and the values they stand for (it
 requires sizes data, so it can't be combined with `fixed`). The entries are chosen as described in
 [`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in the
-`colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales.
+`colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales. It is a Plotly legend, which can
+only draw a point up to 21 pixels, a border up to 10 pixels, and an edge up to 10 pixels; larger sizes are drawn at
+these limits (with the right labels).
 
 If `title` is specified, it will be used when showing the legend. However, in some cases the correct title depends on
 the data set, so you can override this in the data.
@@ -1673,12 +1676,8 @@ function Validations.validate(context::ValidationContext, sizes_configuration::S
             return validate_is_above(context, sizes_configuration.fixed, 0)
         end
 
-        if !is_default_scale(sizes_configuration.scale) || sizes_configuration.span != 12
-            throw(
-                ArgumentError(
-                    "can't specify both $(location(context)).fixed\n" * "and any of $(location(context)).(scale,span)",
-                ),
-            )
+        if !is_default_scale(sizes_configuration.scale)
+            throw(ArgumentError("can't specify both $(location(context)).fixed\n" * "and $(location(context)).scale"))
         end
 
         if sizes_configuration.legend.show

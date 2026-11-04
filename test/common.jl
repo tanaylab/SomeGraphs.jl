@@ -251,7 +251,7 @@ nested_test("common") do
             sizes.scale.log_base = Log2Base
             @test_throws chomp("""
                                ArgumentError: can't specify both sizes.fixed
-                               and any of sizes.(scale,span)
+                               and sizes.scale
                                """) validate(context, sizes)
         end
 

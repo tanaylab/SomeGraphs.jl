@@ -67,8 +67,8 @@ end
         x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         points::ScattersConfiguration = ScattersConfiguration()
-        borders::ScattersConfiguration = ScattersConfiguration()
-        edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2))
+        borders::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
+        edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
         edges_style::LineStyle = SolidLine
         edges_over_points::Bool = true
         vertical_bands::BandsConfiguration = BandsConfiguration()
@@ -77,6 +77,9 @@ end
     end
 
 Configure a graph for showing a scatter of points and/or edges.
+
+The sizes of the `borders` and of the `edges` are 2 to 10 pixels by default, which is the most the legend of their sizes
+can draw.
 
 If `edges_over_points` is set, the edges will be plotted above the points; otherwise, the points will be plotted above
 the edges. Edges are plotted using the `edges_style` unless the styles are specified in the data.
@@ -107,8 +110,8 @@ match.
     x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     points::ScattersConfiguration = ScattersConfiguration()
-    borders::ScattersConfiguration = ScattersConfiguration()
-    edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2))
+    borders::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
+    edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
     edges_style::LineStyle = SolidLine
     edges_over_points::Bool = true
     vertical_bands::BandsConfiguration = BandsConfiguration()
@@ -921,7 +924,6 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     set_layout_selection!(layout, graph)
 
     next_colors_scale_offset_index = [Int(has_legend)]
-    side_panels = SidePanel[]
 
     for configured in (configured_points, configured_borders, configured_edges)
         if configured.colors.colors_scale_index !== nothing
@@ -939,176 +941,109 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         end
     end
 
+    # The categorical colors are in the Plotly legend 1, and each legend of sizes is a Plotly legend of its own.
     reference_pixel_size = prefer_data(configured_points.pixel_size, graph.configuration.points.sizes.smallest)
+    legend_index = 1
     for (kind, configured) in ((:points, configured_points), (:borders, configured_borders), (:edges, configured_edges))
         if configured.sizes_legend_entries !== nothing
+            legend_index += 1
             push_sizes_legend!(;
                 layout,
                 traces,
                 configured,
                 kind,
                 reference_pixel_size,
-                offset_index = next_colors_scale_offset_index[1],
-                side_panels,
+                legend_index,
+                x = graph.configuration.figure.colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
             )
             next_colors_scale_offset_index[1] += 1
         end
     end
 
-    place_side_panels!(; layout, figure_configuration = graph.configuration.figure, side_panels)
-
     return plotly_figure(traces, layout)
 end
-
-# The index of the X and Y axes of the legend of sizes is this plus 1 for points, 2 for borders or 3 for edges.
-const SIZES_LEGEND_AXIS_BASE = 90
 
 # The color of the symbols in the legend of sizes. It is neutral, since the sizes do not depend on the colors.
 const SIZES_LEGEND_COLOR = "grey"
 
-# The vertical gap between the rows of the legend of sizes, and the smallest height of a row (to fit the label), in
-# pixels.
-const SIZES_LEGEND_ROWS_GAP = 4
-const SIZES_LEGEND_SMALLEST_ROW = 12
+# The largest symbol, symbol outline and line which a Plotly legend draws, in pixels (hard-coded in plotly.js).
+const PLOTLY_LEGEND_LARGEST_SYMBOL = 16
+const PLOTLY_LEGEND_WIDEST_OUTLINE = 5
+const PLOTLY_LEGEND_WIDEST_LINE = 10
 
-# The smallest width of the legend of sizes (the same as the Plotly color bars), in pixels.
-const SIZES_LEGEND_SMALLEST_WIDTH = 30
-
-# The width of the legend of sizes of edges, as a multiple of the largest edge width.
-const SIZES_LEGEND_EDGE_LENGTH = 3
-
-# Push the traces and the axes of the legend of sizes of points, borders or edges (the `kind`) as a side panel. A border
-# is shown as a ring around a point of the `reference_pixel_size`, the same way the borders are drawn.
+# Push the traces and the Plotly legend (the `legend_index` one) of the legend of sizes of points, borders or edges (the
+# `kind`), placed at the paper `x`. Each entry is a trace which is only shown in the legend. A point larger than the
+# largest Plotly legend symbol is drawn as that symbol with an outline of its color. A border is shown as a ring around
+# a point of the `reference_pixel_size`, the same way the borders are drawn: a white symbol with a grey outline. An edge
+# is shown as a line of its width. Sizes beyond what a Plotly legend draws are shown at its limits.
 function push_sizes_legend!(;
     layout::Layout,
     traces::AbstractVector{GenericTrace},
     configured::ConfiguredScatters,
     kind::Symbol,
     reference_pixel_size::Real,
-    offset_index::Integer,
-    side_panels::AbstractVector{SidePanel},
+    legend_index::Integer,
+    x::Real,
 )::Nothing
     entries = configured.sizes_legend_entries
     @assert entries !== nothing
-    n_entries = length(entries)
+    legend = "legend$(legend_index)"
 
-    axis_index = SIZES_LEGEND_AXIS_BASE + (kind == :points ? 1 : kind == :borders ? 2 : 3)
-    xaxis = plotly_axis("x", axis_index; short = true)
-    yaxis = plotly_axis("y", axis_index; short = true)
-
-    # The entries are in increasing order of size, so the largest is at the top.
-    ys = collect(1:n_entries)
-    pixel_sizes = [entry.pixel_size for entry in entries]
-
-    if kind == :points
-        symbols_pixel_sizes = pixel_sizes
-        push!(
-            traces,
-            scatter(;
-                x = fill(0.5, n_entries),
-                y = ys,
+    # The entries are in increasing order of size, so they are pushed in reverse, for the largest to be at the top.
+    for entry in reverse(entries)
+        if kind == :points
+            symbol_size = min(entry.pixel_size, PLOTLY_LEGEND_LARGEST_SYMBOL)
+            outline_width = clamp(entry.pixel_size - PLOTLY_LEGEND_LARGEST_SYMBOL, 0, PLOTLY_LEGEND_WIDEST_OUTLINE)
+            entry_trace = scatter(;
                 mode = "markers",
-                marker_size = pixel_sizes,
+                marker_size = symbol_size,
                 marker_color = SIZES_LEGEND_COLOR,
-                xaxis,
-                yaxis,
-                hoverinfo = "skip",
-                showlegend = false,
-            ),
-        )
+                marker_line_width = outline_width,
+                marker_line_color = SIZES_LEGEND_COLOR,
+            )
 
-    elseif kind == :borders
-        symbols_pixel_sizes = pixel_sizes .+ reference_pixel_size
-        for (marker_sizes, marker_color) in ((symbols_pixel_sizes, SIZES_LEGEND_COLOR), (reference_pixel_size, "white"))
-            push!(
-                traces,
-                scatter(;
-                    x = fill(0.5, n_entries),
-                    y = ys,
-                    mode = "markers",
-                    marker_size = marker_sizes,
-                    marker_color,
-                    xaxis,
-                    yaxis,
-                    hoverinfo = "skip",
-                    showlegend = false,
-                ),
+        elseif kind == :borders
+            # The outline is centered on the symbol's edge, so a ring of the border's width around the point is a symbol
+            # half a border larger than the point, with an outline half a border wide.
+            symbol_size = min(reference_pixel_size + entry.pixel_size / 2, PLOTLY_LEGEND_LARGEST_SYMBOL)
+            outline_width = min(entry.pixel_size / 2, PLOTLY_LEGEND_WIDEST_OUTLINE)
+            entry_trace = scatter(;
+                mode = "markers",
+                marker_size = symbol_size,
+                marker_color = "white",
+                marker_line_width = outline_width,
+                marker_line_color = SIZES_LEGEND_COLOR,
+            )
+
+        else
+            @assert kind == :edges
+            entry_trace = scatter(;
+                mode = "lines",
+                line_width = min(entry.pixel_size, PLOTLY_LEGEND_WIDEST_LINE),
+                line_color = SIZES_LEGEND_COLOR,
             )
         end
 
-    else
-        @assert kind == :edges
-        symbols_pixel_sizes = pixel_sizes
-        for (y, pixel_size) in zip(ys, pixel_sizes)
-            push!(
-                traces,
-                scatter(;
-                    x = [0.1, 0.9],
-                    y = [y, y],
-                    mode = "lines",
-                    line_width = pixel_size,
-                    line_color = SIZES_LEGEND_COLOR,
-                    xaxis,
-                    yaxis,
-                    hoverinfo = "skip",
-                    showlegend = false,
-                ),
-            )
-        end
+        # A single `missing` point (serialized as JSON `null`, unlike `nothing`, which is dropped) draws nothing, but
+        # makes Plotly show the trace in the legend.
+        entry_trace[:x] = [missing]
+        entry_trace[:y] = [missing]
+        entry_trace[:name] = entry.label
+        entry_trace[:legend] = legend
+        entry_trace[:showlegend] = true
+        entry_trace[:hoverinfo] = "skip"
+        push!(traces, entry_trace)
     end
 
-    push!(
-        traces,
-        scatter(;
-            x = fill(1.0, n_entries),
-            y = ys,
-            mode = "text",
-            text = [entry.label for entry in entries],
-            textposition = "middle right",
-            # The labels are to the right of the panel, as the tick labels of a Plotly color bar.
-            cliponaxis = false,
-            xaxis,
-            yaxis,
-            hoverinfo = "skip",
-            showlegend = false,
-        ),
-    )
-
-    largest_pixel_size = maximum(symbols_pixel_sizes)
-    row_pixels = max(largest_pixel_size, SIZES_LEGEND_SMALLEST_ROW) + SIZES_LEGEND_ROWS_GAP
-    # An edge is shown as a line, which is much longer than it is wide.
-    pixel_width = kind == :edges ? SIZES_LEGEND_EDGE_LENGTH * largest_pixel_size : largest_pixel_size
-    push!(
-        side_panels,
-        SidePanel(;
-            offset_index,
-            axis_index,
-            pixel_width = max(pixel_width, SIZES_LEGEND_SMALLEST_WIDTH),
-            pixel_height = n_entries * row_pixels,
-        ),
-    )
-
-    # The title is on top of the legend, as it is on top of a Plotly color bar.
-    layout[plotly_axis("x", axis_index)] = Dict(
-        :anchor => yaxis,
-        :range => [0, 1],
-        :side => "top",
+    layout[legend] = Dict(
         :title => plotly_title(configured.sizes_title),
-        :ticks => "",
-        :showticklabels => false,
-        :showgrid => false,
-        :zeroline => false,
-        :fixedrange => true,
+        :x => x,
+        :itemsizing => "trace",
+        :itemclick => false,
+        :itemdoubleclick => false,
+        :tracegroupgap => 0,
     )
-    layout[plotly_axis("y", axis_index)] = Dict(
-        :anchor => xaxis,
-        :range => [0.5, n_entries + 0.5],
-        :ticks => "",
-        :showticklabels => false,
-        :showgrid => false,
-        :zeroline => false,
-        :fixedrange => true,
-    )
+    layout[:showlegend] = true
 
     return nothing
 end

@@ -25,7 +25,6 @@ export plotly_figure
 export plotly_layout
 export plotly_line_dash
 export plotly_sub_graph_axes
-export place_side_panels!
 export plotly_sub_graph_domain
 export plotly_title
 export prefer_data
@@ -41,7 +40,6 @@ export set_layout_axis!
 export set_layout_colorscale!
 export set_layout_twin_log_axis!
 export shared_values_title
-export SidePanel
 export sizes_legend_entries
 export SizesLegendEntry
 export SubGraph
@@ -691,28 +689,6 @@ function plotly_axis(prefix::AbstractString, ::Nothing; short::Bool = false, for
 end
 
 """
-    @kwdef struct SidePanel
-        offset_index::Integer
-        axis_index::Integer
-        pixel_width::Real
-        pixel_height::Real
-    end
-
-A panel drawn to the side of the graph, on its own X and Y axes (at the `axis_index`), rather than by Plotly. This is
-the legend of sizes, since the Plotly legend limits the sizes of its symbols. The `offset_index` is that of its entry
-in the `colors_scale_offsets`. The panel is `pixel_width` wide and `pixel_height` high, at the top.
-"""
-@kwdef struct SidePanel
-    offset_index::Integer
-    axis_index::Integer
-    pixel_width::Real
-    pixel_height::Real
-end
-
-# Plotly's default padding of a color bar, in pixels.
-const PLOTLY_COLORS_SCALE_PAD = 10
-
-"""
     set_layout_colorscale!(;
         layout::Layout,
         colors_scale_index::Integer,
@@ -848,68 +824,6 @@ function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tupl
     ticks_labels =
         [scale_value_label(scale_configuration, exp10(scaled_value), places) for (scaled_value, places) in chosen]
     return (ticks_values, ticks_labels)
-end
-
-"""
-    place_side_panels!(;
-        layout::Layout,
-        figure_configuration::FigureConfiguration,
-        side_panels::AbstractVector{SidePanel},
-    )::Nothing
-
-Place the [`SidePanel`](@ref)s (if any) of a `layout` at their `colors_scale_offsets`. This must be called after
-everything else was added to the `layout`.
-
-The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can
-only place the axes of a panel inside it. We therefore shrink the graph (and the offsets) to make room for the panels.
-"""
-function place_side_panels!(;
-    layout::Layout,
-    figure_configuration::FigureConfiguration,
-    side_panels::AbstractVector{SidePanel},
-)::Nothing
-    if isempty(side_panels)
-        return nothing
-    end
-
-    graph_width =
-        prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH) - figure_configuration.margins.left -
-        figure_configuration.margins.right
-    pad = PLOTLY_COLORS_SCALE_PAD / graph_width
-
-    graph_height =
-        prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
-        figure_configuration.margins.bottom
-    vertical_pad = PLOTLY_COLORS_SCALE_PAD / graph_height
-
-    offsets = figure_configuration.colors_scale_offsets
-    scale = maximum([offsets[panel.offset_index + 1] + pad + panel.pixel_width / graph_width for panel in side_panels])
-
-    panels_x_axes = Set([Symbol(plotly_axis("x", panel.axis_index)) for panel in side_panels])
-    for (key, value) in layout.fields
-        name = String(key)
-        if startswith(name, "xaxis") && !(key in panels_x_axes) && !haskey(value, :overlaying)
-            domain = get(value, :domain, nothing)
-            value[:domain] = domain === nothing ? [0, 1 / scale] : domain ./ scale
-        elseif startswith(name, "coloraxis") && get(value, :colorbar, nothing) !== nothing
-            value[:colorbar][:x] /= scale
-        elseif key == :legend && get(value, :x, nothing) !== nothing
-            value[:x] /= scale
-        end
-    end
-
-    for panel in side_panels
-        offset = offsets[panel.offset_index + 1]
-        width = panel.pixel_width / graph_width
-        x_axis = plotly_axis("x", panel.axis_index)
-        y_axis = plotly_axis("y", panel.axis_index)
-        @assert x_axis !== nothing && y_axis !== nothing
-        layout[x_axis][:domain] = [offset + pad, offset + pad + width] ./ scale
-        height = min(panel.pixel_height / graph_height, 1 - 2 * vertical_pad)
-        layout[y_axis][:domain] = [1 - vertical_pad - height, 1 - vertical_pad]
-    end
-
-    return nothing
 end
 
 """

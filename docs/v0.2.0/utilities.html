@@ -1449,81 +1449,6 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 </article>
 <article>
 <details class="docstring" open="true">
-<summary id="SomeGraphs.Utilities.SidePanel">
-<a class="docstring-binding" href="#SomeGraphs.Utilities.SidePanel">
-<code>SomeGraphs.Utilities.SidePanel
-</code>
-</a> — 
-<span class="docstring-category">Type
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">@kwdef struct SidePanel
-    offset_index::Integer
-    axis_index::Integer
-    pixel_width::Real
-    pixel_height::Real
-end
-</code>
-</pre>
-<p>A panel drawn to the side of the graph, on its own X and Y axes (at the 
-<code>axis_index
-</code>), rather than by Plotly. This is the legend of sizes, since the Plotly legend limits the sizes of its symbols. The 
-<code>offset_index
-</code> is that of its entry in the 
-<code>colors_scale_offsets
-</code>. The panel is 
-<code>pixel_width
-</code> wide and 
-<code>pixel_height
-</code> high, at the top.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
-<summary id="SomeGraphs.Utilities.place_side_panels!">
-<a class="docstring-binding" href="#SomeGraphs.Utilities.place_side_panels!">
-<code>SomeGraphs.Utilities.place_side_panels!
-</code>
-</a> — 
-<span class="docstring-category">Function
-</span>
-</summary>
-<section>
-<div>
-<pre>
-<code class="language-julia hljs">place_side_panels!(;
-    layout::Layout,
-    figure_configuration::FigureConfiguration,
-    side_panels::AbstractVector{SidePanel},
-)::Nothing
-</code>
-</pre>
-<p>Place the 
-<a href="utilities.html#SomeGraphs.Utilities.SidePanel">
-<code>SidePanel
-</code>
-</a>s (if any) of a 
-<code>layout
-</code> at their 
-<code>colors_scale_offsets
-</code>. This must be called after everything else was added to the 
-<code>layout
-</code>.
-</p>
-<p>The offsets are fractions of the width of the graph. Plotly places a legend and color bars beyond the graph, but it can only place the axes of a panel inside it. We therefore shrink the graph (and the offsets) to make room for the panels.
-</p>
-</div>
-</section>
-</details>
-</article>
-<article>
-<details class="docstring" open="true">
 <summary id="SomeGraphs.Utilities.plotly_line_dash">
 <a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_line_dash">
 <code>SomeGraphs.Utilities.plotly_line_dash
@@ -2097,12 +2022,6 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 </a>
 </li>
 <li>
-<a href="utilities.html#SomeGraphs.Utilities.SidePanel">
-<code>SomeGraphs.Utilities.SidePanel
-</code>
-</a>
-</li>
-<li>
 <a href="utilities.html#SomeGraphs.Utilities.SizesLegendEntry">
 <code>SomeGraphs.Utilities.SizesLegendEntry
 </code>
@@ -2219,12 +2138,6 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.numeric_values">
 <code>SomeGraphs.Utilities.numeric_values
-</code>
-</a>
-</li>
-<li>
-<a href="utilities.html#SomeGraphs.Utilities.place_side_panels!">
-<code>SomeGraphs.Utilities.place_side_panels!
 </code>
 </a>
 </li>
