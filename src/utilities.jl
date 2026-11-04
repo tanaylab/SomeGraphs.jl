@@ -24,6 +24,7 @@ export plotly_axis_values
 export plotly_figure
 export plotly_layout
 export plotly_legend
+export place_side_panel!
 export plotly_line_dash
 export plotly_sub_graph_axes
 export plotly_sub_graph_domain
@@ -474,6 +475,9 @@ function plotly_layout(
         margin_r = figure_configuration.margins.right,
         margin_t = figure_configuration.margins.top,
         margin_b = figure_configuration.margins.bottom,
+        # The margins are exactly as given (the right one is widened for the side panel, see `place_side_panel!`), so
+        # the plot's area is known.
+        margin_autoexpand = false,
         # An empty template, because we style the graph ourselves. Without one, PlotlyBase fills in whatever
         # `PlotlyBase.templates.default` happens to be, which is global state that would change what we emit.
         template = Template(),
@@ -497,14 +501,14 @@ function plotly_legend(index::Integer)::String
 end
 
 """
-    set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString}, x::Real)::Nothing
+    set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString})::Nothing
 
-Set the Plotly legend of an `index` (see [`plotly_legend`](@ref)) in a `layout`, with its `title`, at the paper `x`
-coordinate.
+Set the Plotly legend of an `index` (see [`plotly_legend`](@ref)) in a `layout`, with its `title`. Its place is set by
+[`place_side_panel!`](@ref).
 """
-function set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString}, x::Real)::Nothing
+function set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString})::Nothing
     layout[plotly_legend(index)] =
-        Dict(:title => plotly_title(title), :x => x, :itemdoubleclick => false, :tracegroupgap => 0)
+        Dict{Symbol, Any}(:title => plotly_title(title), :itemdoubleclick => false, :tracegroupgap => 0)
     return nothing
 end
 
@@ -709,6 +713,25 @@ function plotly_axis(prefix::AbstractString, ::Nothing; short::Bool = false, for
     end
 end
 
+# A part of the side panel (a legend or a color bar), before it is placed: its `width` in pixels, its `height` as a
+# fraction of the plot's height, the (1-based) `column` it is pinned to (if any), and its `order` in its column (from
+# the top; ties keep the order of the parts).
+@kwdef struct SidePanelPart
+    width::Real
+    height::Real
+    column::Maybe{Integer} = nothing
+    order::Real
+end
+
+# Something to place in the side panel: the Plotly `legend` of this name, or the color bar of the Plotly `color_axis`
+# of this name, with its `title` (if any), and its `part` for packing it.
+@kwdef struct SidePanelItem  # NOLINT
+    part::SidePanelPart
+    legend::Maybe{AbstractString} = nothing
+    color_axis::Maybe{AbstractString} = nothing
+    title::Maybe{AbstractString}
+end
+
 """
     set_layout_colorscale!(;
         layout::Layout,
@@ -719,13 +742,12 @@ end
         ticks_range::Maybe{Range} = range,
         title::Maybe{AbstractString},
         show_scale::Bool,
-        next_colors_scale_offset_index::AbstractVector{<:Integer},
         figure_configuration::FigureConfiguration,
+        side_panel_items::AbstractVector{SidePanelItem},
     )::Nothing
 
-Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. Since Plotly is dumb when it comes to
-placement of color scales, a shown scale is placed at the next of the `colors_scale_offsets` of the
-`figure_configuration` (the `next_colors_scale_offset_index`, which this advances) to avoid overlaps.
+Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. A shown scale is a color bar, which
+is pushed to the `side_panel_items` to be placed by [`place_side_panel!`](@ref).
 
 A Plotly color bar shows the ticks of its (scaled) values. For a `Log10Base` scale these are the log values, so a shown
 `Log10Base` scale gets its own ticks instead, which show the real values. They are chosen in the `ticks_range`, which
@@ -740,8 +762,8 @@ function set_layout_colorscale!(;
     ticks_range::Maybe{Range} = range,
     title::Maybe{AbstractString},
     show_scale::Bool,
-    next_colors_scale_offset_index::AbstractVector{<:Integer},
     figure_configuration::FigureConfiguration,
+    side_panel_items::AbstractVector{SidePanelItem},
 )::Nothing
     if colors_configuration.palette isa CategoricalColors
         @assert false
@@ -762,18 +784,16 @@ function set_layout_colorscale!(;
         colorscale = nothing
     end
 
+    color_axis = plotly_axis("color", colors_scale_index)
     colorbar = nothing
     if show_scale
-        colorbar = Dict{Symbol, Any}(
-            :title => plotly_title(title),
-            :x => figure_configuration.colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
-        )
+        @assert ticks_range !== nothing
+        colorbar = Dict{Symbol, Any}(:title => plotly_title(title))
         if colors_configuration.scale.log_base === Log10Base
-            @assert ticks_range !== nothing
-            plot_height =
-                prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
-                figure_configuration.margins.bottom
-            ticks_values, ticks_labels = log10_colors_scale_ticks(ticks_range, plot_height)
+            ticks_values, ticks_labels = log10_colors_scale_ticks(
+                ticks_range,
+                colors_scale_pixel_length(colors_configuration, figure_configuration),
+            )
             ticks_suffix = axis_ticks_suffix(colors_configuration.scale)
             colorbar[:tickmode] = "array"
             colorbar[:tickvals] = ticks_values
@@ -782,19 +802,19 @@ function set_layout_colorscale!(;
             colorbar[:tickprefix] = axis_ticks_prefix(colors_configuration.scale)
             colorbar[:ticksuffix] = axis_ticks_suffix(colors_configuration.scale)
         end
+        push!(
+            side_panel_items,
+            colors_scale_side_panel_item(; color_axis, colors_configuration, ticks_range, title, figure_configuration),
+        )
     end
 
-    layout[plotly_axis("color", colors_scale_index)] = Dict{Symbol, Any}(
+    layout[color_axis] = Dict{Symbol, Any}(
         :showscale => show_scale,
         :colorscale => colorscale,
         :cmin => range === nothing ? nothing : range.minimum,
         :cmax => range === nothing ? nothing : range.maximum,
         :colorbar => colorbar,
     )
-
-    if show_scale
-        next_colors_scale_offset_index[1] += 1
-    end
 
     return nothing
 end
@@ -812,6 +832,7 @@ function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tupl
     decades = scaled_maximum - scaled_minimum
     n_ticks = clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
     rough_step = decades / n_ticks
+    are_digits = false
 
     if decades == 0
         chosen = [(Float64(scaled_minimum), single_value_places(exp10(scaled_minimum)))]
@@ -837,23 +858,46 @@ function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tupl
     else
         # Every digit, or only 1, 2 and 5, in each decade.
         chosen = log10_candidates(scaled_minimum, scaled_maximum)[rough_step > 0.3 ? 2 : 1]
+        are_digits = true
     end
 
     scale_configuration = ScaleConfiguration(; log_base = Log10Base)
     ticks_values = [scaled_value for (scaled_value, _) in chosen]
-    ticks_labels =
-        [scale_value_label(scale_configuration, exp10(scaled_value), places) for (scaled_value, places) in chosen]
+    ticks_labels = String[]
+    for (scaled_value, places) in chosen
+        # As Plotly does, digits other than the powers of 10 are labeled by just the digit, in a smaller font.
+        if are_digits && mod(scaled_value + 0.01, 1) >= 0.1
+            digit = round(Int, exp10(mod(scaled_value, 1)))
+            push!(ticks_labels, minor_log_tick_label(digit))
+        else
+            push!(ticks_labels, scale_value_label(scale_configuration, exp10(scaled_value), places))
+        end
+    end
     return (ticks_values, ticks_labels)
 end
 
-# A part of the side panel (a legend or a color bar), before it is placed: its `width` in pixels, its `height` as a
-# fraction of the plot's height, the (1-based) `column` it is pinned to (if any), and its `order` in its column (from
-# the top; ties keep the order of the parts).
-@kwdef struct SidePanelPart
-    width::Real
-    height::Real
-    column::Maybe{Integer} = nothing
-    order::Real
+# The font size of the labels of the digits between the powers of 10 on a log axis (75% of the 12 pixels of the rest,
+# as Plotly draws them).
+const MINOR_LOG_TICK_FONT_SIZE = 9
+
+# The text before and after the label of a digit between the powers of 10 on a log axis.
+const MINOR_LOG_TICK_PREFIX = "<span style=\"font-size:$(MINOR_LOG_TICK_FONT_SIZE)px\">"
+const MINOR_LOG_TICK_SUFFIX = "</span>"
+
+# The label of a `digit` between the powers of 10 on a log axis.
+function minor_log_tick_label(digit::Integer)::String
+    return MINOR_LOG_TICK_PREFIX * string(digit) * MINOR_LOG_TICK_SUFFIX
+end
+
+# The width in pixels of a tick label of a color bar, at its own font size (a digit between the powers of 10 on a log
+# axis is smaller).
+function tick_label_pixel_width(label::AbstractString)::Float64
+    if startswith(label, MINOR_LOG_TICK_PREFIX)
+        text = replace(label, MINOR_LOG_TICK_PREFIX => "", MINOR_LOG_TICK_SUFFIX => "")
+        return text_width(text; font_size = MINOR_LOG_TICK_FONT_SIZE)
+    else
+        return text_width(label; font_size = PLOTLY_LEGEND_FONT_SIZE)
+    end
 end
 
 # Where a part of the side panel is placed: its (1-based) `column`, the `x_offset` in pixels from the plot's right edge
@@ -1119,7 +1163,7 @@ end
 function colors_scale_pixel_width(tick_labels::AbstractVector{<:AbstractString}; title::Maybe{AbstractString})::Float64
     width =
         PLOTLY_COLORS_SCALE_THICKNESS +
-        maximum(text_width(label; font_size = PLOTLY_LEGEND_FONT_SIZE) for label in tick_labels; init = 0.0) +
+        maximum(tick_label_pixel_width(label) for label in tick_labels; init = 0.0) +
         PLOTLY_COLORS_SCALE_TICKS_EXTRA_WIDTH
     if title !== nothing
         width = max(
@@ -1173,6 +1217,167 @@ function colors_scale_tick_labels(scale::ScaleConfiguration, scaled_range::Range
         push!(labels, prefix * replace(label, "-" => "−") * suffix)
     end
     return labels
+end
+
+# The default order in a column of the side panel of each kind of part (see `LegendConfiguration`).
+const CATEGORICAL_LEGEND_ORDER = 1  # NOLINT
+const COLORS_SCALE_ORDER = 2
+const SIZES_LEGEND_ORDER = 3  # NOLINT
+
+# The default height of a color bar, as a fraction of the plot's height.
+const COLORS_SCALE_DEFAULT_HEIGHT = 0.5
+
+# How far down our title label of a legend is from the legend's top, in pixels, to be exactly where Plotly draws its
+# own title (measured in Kaleido's renders).
+const LEGEND_TITLE_Y_SHIFT = -5
+
+# The height in pixels of the plot's area: the figure's height (or Plotly's default), less the top and bottom margins.
+function plot_pixel_height(figure_configuration::FigureConfiguration)::Float64
+    return prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
+           figure_configuration.margins.bottom
+end
+
+# The length in pixels of the color bar of a `colors_configuration`.
+function colors_scale_pixel_length(
+    colors_configuration::ColorsConfiguration,
+    figure_configuration::FigureConfiguration,
+)::Float64
+    return prefer_data(colors_configuration.legend.height, COLORS_SCALE_DEFAULT_HEIGHT) *
+           plot_pixel_height(figure_configuration)
+end
+
+# The side panel item of a Plotly `legend` of entries with these `labels` and the `title` (if any), configured by the
+# `legend_configuration` (if any), whose order in its column is the `default_order` unless configured otherwise.
+function legend_side_panel_item(;
+    legend::AbstractString,
+    labels::AbstractVector{<:AbstractString},
+    title::Maybe{AbstractString},
+    legend_configuration::Maybe{LegendConfiguration} = nothing,
+    default_order::Real,
+    figure_configuration::FigureConfiguration,
+)::SidePanelItem
+    natural_height =
+        legend_pixel_height(length(labels); has_title = title !== nothing) / plot_pixel_height(figure_configuration)
+    part = SidePanelPart(;
+        width = something(
+            legend_configuration === nothing ? nothing : legend_configuration.width,
+            legend_pixel_width(labels; title),
+        ),
+        height = something(
+            legend_configuration === nothing ? nothing : legend_configuration.height,
+            min(natural_height, 1.0),
+        ),
+        column = legend_configuration === nothing ? nothing : legend_configuration.column,
+        order = something(legend_configuration === nothing ? nothing : legend_configuration.order, default_order),
+    )
+    return SidePanelItem(; part, legend, title)
+end
+
+# The side panel item of the color bar of the Plotly `color_axis` of a `colors_configuration`, whose (scaled) values are
+# in the `ticks_range`, with the `title` (if any).
+function colors_scale_side_panel_item(;
+    color_axis::AbstractString,
+    colors_configuration::ColorsConfiguration,
+    ticks_range::Range,
+    title::Maybe{AbstractString},
+    figure_configuration::FigureConfiguration,
+)::SidePanelItem
+    legend_configuration = colors_configuration.legend
+    tick_labels = colors_scale_tick_labels(
+        colors_configuration.scale,
+        ticks_range,
+        colors_scale_pixel_length(colors_configuration, figure_configuration),
+    )
+    part = SidePanelPart(;
+        width = something(legend_configuration.width, colors_scale_pixel_width(tick_labels; title)),
+        height = something(legend_configuration.height, COLORS_SCALE_DEFAULT_HEIGHT),
+        column = legend_configuration.column,
+        order = something(legend_configuration.order, COLORS_SCALE_ORDER),
+    )
+    return SidePanelItem(; part, color_axis, title)
+end
+
+"""
+    place_side_panel!(
+        layout::Layout,
+        figure_configuration::FigureConfiguration,
+        items::AbstractVector{SidePanelItem},
+    )::Nothing
+
+Place the legends and color bars of the `items` in the side panel to the right of the plot, as described in
+[`FigureConfiguration`](@ref), and widen the right margin of the `layout` to hold it. This must be called after
+everything else was added to the `layout`.
+
+Plotly can't place a legend at a pixel offset, so a legend is anchored at the plot's right edge, with its entries
+indented to its column, and a transparent background. Plotly doesn't indent the legend's title, so this is drawn as
+a text label above the legend's (transparent) title. A color bar is placed at its column by its padding.
+"""
+function place_side_panel!(
+    layout::Layout,
+    figure_configuration::FigureConfiguration,
+    items::AbstractVector{SidePanelItem},
+)::Nothing
+    if isempty(items)
+        return nothing
+    end
+
+    places, panel_width = pack_side_panel_parts(
+        [item.part for item in items];
+        horizontal_gap = figure_configuration.legends_gap,
+        vertical_gap = figure_configuration.legends_gap / plot_pixel_height(figure_configuration),
+    )
+    layout[:margin][:r] = figure_configuration.margins.right + ceil(Int, panel_width)
+
+    if !haskey(layout.fields, :annotations)
+        layout[:annotations] = []
+    end
+    annotations = layout[:annotations]
+
+    for (item, place) in zip(items, places)
+        if item.legend !== nothing
+            legend = layout[item.legend]
+            legend[:x] = 1
+            legend[:xanchor] = "left"
+            legend[:y] = place.y_top
+            legend[:yanchor] = "top"
+            legend[:indentation] = place.x_offset
+            legend[:bgcolor] = NO_COLOR
+            legend[:maxheight] = item.part.height
+            if item.title !== nothing
+                legend[:title] = Dict(:text => item.title, :font => Dict(:color => NO_COLOR))
+                push!(
+                    annotations,
+                    Dict(
+                        :text => item.title,
+                        :showarrow => false,
+                        :x => 1,
+                        :xref => "paper",
+                        :xanchor => "left",
+                        :xshift => place.x_offset,
+                        :y => place.y_top,
+                        :yref => "paper",
+                        :yanchor => "top",
+                        :yshift => LEGEND_TITLE_Y_SHIFT,
+                        :font => Dict(:size => PLOTLY_LEGEND_TITLE_FONT_SIZE),
+                    ),
+                )
+            end
+        else
+            @assert item.color_axis !== nothing
+            colorbar = layout[item.color_axis][:colorbar]
+            colorbar[:x] = 1
+            colorbar[:xanchor] = "left"
+            colorbar[:xpad] = place.x_offset
+            colorbar[:y] = place.y_top
+            colorbar[:yanchor] = "top"
+            colorbar[:ypad] = 0
+            colorbar[:len] = item.part.height
+            colorbar[:lenmode] = "fraction"
+            colorbar[:thickness] = PLOTLY_COLORS_SCALE_THICKNESS
+        end
+    end
+
+    return nothing
 end
 
 """
@@ -3188,6 +3393,13 @@ function configured_colors(;
         show_in_legend,
         show_scale,
     )
+end
+
+# The labels of the entries of the categorical legend of some `colors`: their categories, except the empty one.
+function categorical_legend_labels(colors::ConfiguredColors)::Vector{String}
+    palette = colors.final_categorical_palette
+    @assert palette !== nothing
+    return [String(name) for name in keys(categorical_colors_dict(palette)) if name != ""]
 end
 
 end  # module

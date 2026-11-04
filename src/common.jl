@@ -466,7 +466,7 @@ end
         height::Maybe{Int} = nothing
         background_color::AbstractString = "white"
         paper_color::AbstractString = "white"
-        colors_scale_offsets::AbstractVector{<:Real} = [1.02, 1.2, 1.4, 1.6, 1.8, 2.0]
+        legends_gap::Int = 10
     end
 
 Generic configuration that applies to the whole figure. Each complete [`AbstractGraphConfiguration`](@ref) contains a
@@ -478,21 +478,12 @@ units.
 You can also manually change the `background_color` (inside the graph's area) and `paper_color` (outside the graph's
 area, that is, the margins).
 
-If a graph has both a legend and a color scale, or multiple color scales, then by default, Plotly in its infinite wisdom
-will happily place them all on top of each other. We therefore need to tell it how to position the legend (if any), each
-and every color scale, and each legend of sizes (see [`SizesConfiguration`](@ref)), in this order, by specifying an
-explicit offset. Great fun! The 1st offset (1.02) is where Plotly places them by default.
-
-These `colors_scale_offsets` are specified in what Plotly calls "paper coordinates" which are singularly unsuitable for
-this purpose, as they are in a scale where 0 to 1 is the plot area and therefore dependent not only on the width of the
-preceding legend and/or color scales (which is bad by itself), but also on the overall size of the graph (so scaling an
-interactive graph will definitely misbehave). We provide a vector of hopefully reasonable default offsets here. For
-optimal results you will need to manually tweak these to match your specific graph. In 21st century, when "AI" is a
-thing. Sigh.
-
-We provide "too many" (6) offsets here. Normally a graph displays one color scale, but in theory it can have any number
-(e.g. when using annotations in bars or heatmap graphs). You will need to extend this array if you have a graph that
-requires more offsets.
+The legends and color scales of a graph (see [`LegendConfiguration`](@ref)) are in a side panel to the right of the
+plot. The panel is placed in columns, each as wide as its widest legend, and the right margin is the panel's width plus
+the `margins.right`. The `legends_gap` (in pixels) separates the plot from the panel, the columns from each other, and
+the legends of a column from each other. Widths are in pixels, but heights are fractions of the plot's height, so the
+legends follow the plot's height when an interactive graph is resized. When the `height` isn't specified, the fractions
+are computed for Plotly's default height (450 pixels).
 """
 @kwdef mutable struct FigureConfiguration <: Validated
     margins::MarginsConfiguration = MarginsConfiguration()
@@ -500,7 +491,7 @@ requires more offsets.
     height::Maybe{Int} = nothing
     background_color::AbstractString = "white"
     paper_color::AbstractString = "white"
-    colors_scale_offsets::AbstractVector{<:Real} = [1.02, 1.2, 1.4, 1.6, 1.8, 2.0]
+    legends_gap::Int = 10
 end
 
 function visit_graph_parts(visitor::Function, part::FigureConfiguration, visited::Base.IdSet)::Nothing
@@ -520,7 +511,10 @@ function Validations.validate(context::ValidationContext, figure_configuration::
         validate_is_above(context, figure_configuration.height, 0)
         return nothing
     end
-    validate_vector_is_finite(context, "colors_scale_offsets", figure_configuration.colors_scale_offsets)
+    validate_in(context, "legends_gap") do
+        validate_is_at_least(context, figure_configuration.legends_gap, 0)
+        return nothing
+    end
     validate_in(context, "background_color") do
         validate_is_color(context, figure_configuration.background_color)
         return nothing
@@ -1655,10 +1649,9 @@ is used instead. The `percent` of the `scale` does not apply to sizes and must b
 
 If the `legend` is shown, it is to the side of the graph and shows some sizes and the values they stand for (it
 requires sizes data, so it can't be combined with `fixed`). The entries are chosen as described in
-[`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in the
-`colors_scale_offsets` (see [`FigureConfiguration`](@ref)) after the color scales. It is a Plotly legend, which can
-only draw a point up to 21 pixels, a border up to 10 pixels, and an edge up to 10 pixels; larger sizes are drawn at
-these limits (with the right labels).
+[`sizes_legend_entries`](@ref SomeGraphs.Utilities.sizes_legend_entries). The legend takes its place in the side panel
+(see [`FigureConfiguration`](@ref)). It is a Plotly legend, which can only draw a point up to 21 pixels, a border up to
+10 pixels, and an edge up to 10 pixels; larger sizes are drawn at these limits (with the right labels).
 
 If `title` is specified, it will be used when showing the legend. However, in some cases the correct title depends on
 the data set, so you can override this in the data.
@@ -1771,8 +1764,8 @@ in the data or the dictionary will prevent the matching data from being plotted.
 [`AutomaticColors`](@ref)).
 
 If the `legend` is shown, categorical colors (cases 7 and 8 above) will be shown in a legend; numerical colors will be
-shown in a color scale. Plotly is dumb when it comes to positioning color scales next to a legend (or next to
-each other); see the `colors_scale_offsets` vector of [`FigureConfiguration`](@ref) for details.
+shown in a color scale. Either takes its place in the side panel (see [`FigureConfiguration`](@ref)). A color scale is
+half the plot's height by default.
 
 If `title` is specified, it will be used when showing the legend (whatever it is). However, in some cases the correct
 title depends on the data set, so you can override this in the data.

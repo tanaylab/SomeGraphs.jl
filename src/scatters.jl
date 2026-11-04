@@ -33,7 +33,12 @@ using PlotlyBase
 import ..Common.categorical_colors_dict
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
+import ..Utilities.CATEGORICAL_LEGEND_ORDER
 import ..Utilities.Maybe
+import ..Utilities.SIZES_LEGEND_ORDER
+import ..Utilities.SidePanelItem
+import ..Utilities.categorical_legend_labels
+import ..Utilities.legend_side_panel_item
 
 """
     @kwdef mutable struct ScattersConfiguration <: Validated
@@ -589,41 +594,6 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
 
     validate_graph_selection(graph)
 
-    n_legends = 0
-    n_colors_scales = 0
-    for (colors_configuration, colors_values) in (
-        (graph.configuration.points.colors, graph.data.points.colors.vector),
-        (graph.configuration.borders.colors, graph.data.borders.colors.vector),
-        (graph.configuration.edges.colors, graph.data.edges.colors.vector),
-    )
-        if colors_configuration.legend.show
-            if colors_configuration.palette isa CategoricalColors || colors_values isa AbstractVector{<:AbstractString}
-                n_legends += 1
-            else
-                n_colors_scales += 1
-            end
-        end
-    end
-
-    n_sizes_legends = count(
-        sizes_configuration.legend.show for sizes_configuration in
-        (graph.configuration.points.sizes, graph.configuration.borders.sizes, graph.configuration.edges.sizes)
-    )
-
-    if n_legends + n_colors_scales + n_sizes_legends > length(graph.configuration.figure.colors_scale_offsets)
-        text =  # UNTESTED
-            "insufficient number of graph.configuration.figure.colors_scale_offsets: " *
-            "$(length(graph.configuration.figure.colors_scale_offsets))\n" *
-            "is not enough for the shown color scales: $(n_colors_scales)"
-        if n_sizes_legends > 0  # UNTESTED
-            text *= "\nand the shown sizes legends: $(n_sizes_legends)"  # UNTESTED
-        end
-        if n_legends > 0  # UNTESTED
-            text *= "\nfollowing the legends: $(n_legends)"  # UNTESTED
-        end
-        throw(ArgumentError(text))  # UNTESTED
-    end
-
     return nothing
 end
 
@@ -931,19 +901,25 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
 
     set_layout_selection!(layout, graph)
 
-    # The categorical legends take the first offsets, before the color scales and the legends of sizes.
+    # The side panel holds the categorical legends, then the color scales, then the legends of sizes.
+    figure_configuration = graph.configuration.figure
+    side_panel_items = SidePanelItem[]
     legend_index = 0
-    next_colors_scale_offset_index = [0]
     for configured in (configured_points, configured_borders, configured_edges)
         if configured.legend !== nothing
             legend_index += 1
-            set_layout_legend!(
-                layout,
-                legend_index;
-                title = configured.colors.colors_title,
-                x = graph.configuration.figure.colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
+            set_layout_legend!(layout, legend_index; title = configured.colors.colors_title)
+            push!(
+                side_panel_items,
+                legend_side_panel_item(;
+                    legend = configured.legend,
+                    labels = categorical_legend_labels(configured.colors),
+                    title = configured.colors.colors_title,
+                    legend_configuration = configured.colors.colors_configuration.legend,
+                    default_order = CATEGORICAL_LEGEND_ORDER,
+                    figure_configuration,
+                ),
             )
-            next_colors_scale_offset_index[1] += 1
         end
     end
 
@@ -957,30 +933,38 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                 range = configured.colors.final_colors_range,
                 title = configured.colors.colors_title,
                 show_scale = configured.colors.show_scale,
-                next_colors_scale_offset_index,
-                figure_configuration = graph.configuration.figure,
+                figure_configuration,
+                side_panel_items,
             )
         end
     end
 
     # Each legend of sizes is a Plotly legend of its own, after the categorical ones.
     reference_pixel_size = prefer_data(configured_points.pixel_size, graph.configuration.points.sizes.smallest)
-    for (kind, configured) in ((:points, configured_points), (:borders, configured_borders), (:edges, configured_edges))
-        if configured.sizes_legend_entries !== nothing
+    for (kind, configured, sizes_configuration) in (
+        (:points, configured_points, graph.configuration.points.sizes),
+        (:borders, configured_borders, graph.configuration.borders.sizes),
+        (:edges, configured_edges, graph.configuration.edges.sizes),
+    )
+        entries = configured.sizes_legend_entries
+        if entries !== nothing
             legend_index += 1
-            push_sizes_legend!(;
-                layout,
-                traces,
-                configured,
-                kind,
-                reference_pixel_size,
-                legend_index,
-                x = graph.configuration.figure.colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
+            push_sizes_legend!(; layout, traces, configured, kind, reference_pixel_size, legend_index)
+            push!(
+                side_panel_items,
+                legend_side_panel_item(;
+                    legend = plotly_legend(legend_index),
+                    labels = [entry.label for entry in entries],
+                    title = configured.sizes_title,
+                    legend_configuration = sizes_configuration.legend,
+                    default_order = SIZES_LEGEND_ORDER,
+                    figure_configuration,
+                ),
             )
-            next_colors_scale_offset_index[1] += 1
         end
     end
 
+    place_side_panel!(layout, figure_configuration, side_panel_items)
     return plotly_figure(traces, layout)
 end
 
@@ -993,7 +977,7 @@ const PLOTLY_LEGEND_WIDEST_OUTLINE = 5
 const PLOTLY_LEGEND_WIDEST_LINE = 10
 
 # Push the traces and the Plotly legend (the `legend_index` one) of the legend of sizes of points, borders or edges (the
-# `kind`), placed at the paper `x`. Each entry is a trace which is only shown in the legend. A point larger than the
+# `kind`). Each entry is a trace which is only shown in the legend. A point larger than the
 # largest Plotly legend symbol is drawn as that symbol with an outline of its color. A border is shown as a ring around
 # a point of the `reference_pixel_size`, the same way the borders are drawn: a white symbol with a grey outline. An edge
 # is shown as a line of its width. Sizes beyond what a Plotly legend draws are shown at its limits.
@@ -1004,11 +988,10 @@ function push_sizes_legend!(;
     kind::Symbol,
     reference_pixel_size::Real,
     legend_index::Integer,
-    x::Real,
 )::Nothing
     entries = configured.sizes_legend_entries
     @assert entries !== nothing
-    legend = "legend$(legend_index)"
+    legend = plotly_legend(legend_index)
 
     # The entries are in increasing order of size, so they are pushed in reverse, for the largest to be at the top.
     for entry in reverse(entries)
@@ -1056,14 +1039,9 @@ function push_sizes_legend!(;
         push!(traces, entry_trace)
     end
 
-    layout[legend] = Dict(
-        :title => plotly_title(configured.sizes_title),
-        :x => x,
-        :itemsizing => "trace",
-        :itemclick => false,
-        :itemdoubleclick => false,
-        :tracegroupgap => 0,
-    )
+    set_layout_legend!(layout, legend_index; title = configured.sizes_title)
+    layout[legend][:itemsizing] = "trace"
+    layout[legend][:itemclick] = false
     layout[:showlegend] = true
 
     return nothing
@@ -2098,7 +2076,16 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     )
 
     if graph.configuration.legend.show
-        set_layout_legend!(layout, 1; title = nothing, x = graph.configuration.figure.colors_scale_offsets[1])
+        set_layout_legend!(layout, 1; title = nothing)
+        item = legend_side_panel_item(;
+            legend = plotly_legend(1),
+            labels = [line.name for line in graph.data.lines if line.is_shown && line.name !== nothing],
+            title = nothing,
+            legend_configuration = graph.configuration.legend,
+            default_order = CATEGORICAL_LEGEND_ORDER,
+            figure_configuration = graph.configuration.figure,
+        )
+        place_side_panel!(layout, graph.configuration.figure, [item])
     end
 
     return plotly_figure(traces, layout)

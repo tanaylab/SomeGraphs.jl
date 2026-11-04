@@ -24,6 +24,10 @@ import ..Common.categorical_colors_dict
 import ..Common.is_categorical_axis
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
+import ..Utilities.CATEGORICAL_LEGEND_ORDER
+import ..Utilities.SidePanelItem
+import ..Utilities.categorical_legend_labels
+import ..Utilities.legend_side_panel_item
 import ..Validations.Maybe
 
 """
@@ -343,7 +347,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
     layout = bars_layout(;
         graph,
         has_tick_names = graph.data.bars.names !== nothing,
-        has_legend = false,
+        series_legend_labels = String[],
         has_hovers = hovers !== nothing,
         implicit_values_range,
         colors,
@@ -1003,7 +1007,14 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     layout = bars_layout(;
         graph,
         has_tick_names = graph.data.bars.names !== nothing,
-        has_legend = show_in_legend,
+        series_legend_labels = if show_in_legend
+            [
+                name for name in (graph.data.series[series_index].name for series_index in series_indices) if
+                name !== nothing
+            ]
+        else
+            String[]
+        end,
         has_hovers,
         implicit_values_range,
         specific_scaled_ranges,
@@ -1280,7 +1291,7 @@ end
 function bars_layout(;
     graph::Union{BarsGraph, SeriesBarsGraph},
     has_tick_names::Bool,
-    has_legend::Bool,
+    series_legend_labels::AbstractVector{<:AbstractString},
     has_hovers::Bool = false,
     implicit_values_range::MaybeRange,
     specific_scaled_ranges::Maybe{AbstractVector{MaybeRange}} = nothing,
@@ -1321,33 +1332,48 @@ function bars_layout(;
         end
     end
 
-    # The legends are that of the series (if `has_legend`), then one per categorical annotation, in the order their
-    # traces were pushed.
+    # The side panel holds the legend of the series (if any), then one legend per categorical annotation (in the order
+    # their traces were pushed), then the color scales.
+    figure_configuration = graph.configuration.figure
     n_annotations = length(annotations_colors)
     annotations_data = displayed_annotations(graph.data.annotations, graph.data.annotations_order)
-    legends_titles = Maybe{AbstractString}[]
-    if has_legend
-        push!(legends_titles, nothing)
+    legends = Tuple{Maybe{AbstractString}, Vector{String}, Maybe{LegendConfiguration}}[]
+    if !isempty(series_legend_labels)
+        push!(legends, (nothing, collect(series_legend_labels), nothing))
     end
     for (annotation_colors, annotation_data) in zip(annotations_colors, annotations_data)
         if annotation_colors.show_in_legend && annotation_colors.final_categorical_palette !== nothing
-            push!(legends_titles, prefer_data(annotation_data.values.title, annotation_data.colors.title))
+            push!(
+                legends,
+                (
+                    prefer_data(annotation_data.values.title, annotation_data.colors.title),
+                    categorical_legend_labels(annotation_colors),
+                    annotation_data.colors.legend,
+                ),
+            )
         end
     end
 
     layout = plotly_layout(
-        graph.configuration.figure;
+        figure_configuration;
         title = graph.data.figure_title,
-        has_legend = !isempty(legends_titles),
+        has_legend = !isempty(legends),
         has_hovers,
         shapes,
     )
-    for (legend_index, legend_title) in enumerate(legends_titles)
-        set_layout_legend!(
-            layout,
-            legend_index;
-            title = legend_title,
-            x = graph.configuration.figure.colors_scale_offsets[legend_index],
+    side_panel_items = SidePanelItem[]
+    for (legend_index, (legend_title, legend_labels, legend_configuration)) in enumerate(legends)
+        set_layout_legend!(layout, legend_index; title = legend_title)
+        push!(
+            side_panel_items,
+            legend_side_panel_item(;
+                legend = plotly_legend(legend_index),
+                labels = legend_labels,
+                title = legend_title,
+                legend_configuration,
+                default_order = CATEGORICAL_LEGEND_ORDER,
+                figure_configuration,
+            ),
         )
     end
 
@@ -1446,8 +1472,6 @@ function bars_layout(;
         end
     end
 
-    next_colors_scale_offset_index = [length(legends_titles)]
-
     # The bar axis is drawn against the 1st axis of the other direction, which is the 1st annotation when there is one.
     # That is where the names belong for any other graph - outside everything - but a mirrored pair puts its
     # annotations in the spine, so there the names are anchored to the 1st of the two sides instead.
@@ -1477,8 +1501,8 @@ function bars_layout(;
             range = colors.final_colors_range,
             title = colors.colors_title,
             show_scale = colors.show_scale,
-            next_colors_scale_offset_index,
-            figure_configuration = graph.configuration.figure,
+            figure_configuration,
+            side_panel_items,
         )
     end
 
@@ -1512,8 +1536,8 @@ function bars_layout(;
                 ticks_range = annotation_colors.final_colors_range,
                 title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                 show_scale = annotation_colors.show_scale,
-                next_colors_scale_offset_index,
-                figure_configuration = graph.configuration.figure,
+                figure_configuration,
+                side_panel_items,
             )
         end
     end
@@ -1523,6 +1547,7 @@ function bars_layout(;
         layout["yaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
     end
 
+    place_side_panel!(layout, figure_configuration, side_panel_items)
     return layout
 end
 

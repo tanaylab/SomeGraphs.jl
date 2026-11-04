@@ -1221,7 +1221,7 @@ end
 <section>
 <div>
 <pre>
-<code class="language-julia hljs">set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString}, x::Real)::Nothing
+<code class="language-julia hljs">set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString})::Nothing
 </code>
 </pre>
 <p>Set the Plotly legend of an 
@@ -1234,9 +1234,49 @@ end
 <code>layout
 </code>, with its 
 <code>title
-</code>, at the paper 
-<code>x
-</code> coordinate.
+</code>. Its place is set by 
+<a href="utilities.html#SomeGraphs.Utilities.place_side_panel!">
+<code>place_side_panel!
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.place_side_panel!">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.place_side_panel!">
+<code>SomeGraphs.Utilities.place_side_panel!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">place_side_panel!(
+    layout::Layout,
+    figure_configuration::FigureConfiguration,
+    items::AbstractVector{SidePanelItem},
+)::Nothing
+</code>
+</pre>
+<p>Place the legends and color bars of the 
+<code>items
+</code> in the side panel to the right of the plot, as described in 
+<a href="common.html#SomeGraphs.Common.FigureConfiguration">
+<code>FigureConfiguration
+</code>
+</a>, and widen the right margin of the 
+<code>layout
+</code> to hold it. This must be called after everything else was added to the 
+<code>layout
+</code>.
+</p>
+<p>Plotly can&#39;t place a legend at a pixel offset, so a legend is anchored at the plot&#39;s right edge, with its entries indented to its column, and a transparent background. Plotly doesn&#39;t indent the legend&#39;s title, so this is drawn as a text label above the legend&#39;s (transparent) title. A color bar is placed at its column by its padding.
 </p>
 </div>
 </section>
@@ -1489,8 +1529,8 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
     ticks_range::Maybe{Range} = range,
     title::Maybe{AbstractString},
     show_scale::Bool,
-    next_colors_scale_offset_index::AbstractVector{&lt;:Integer},
     figure_configuration::FigureConfiguration,
+    side_panel_items::AbstractVector{SidePanelItem},
 )::Nothing
 </code>
 </pre>
@@ -1500,13 +1540,13 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 <code>layout
 </code>, as specified by a 
 <code>colors_configuration
-</code>. Since Plotly is dumb when it comes to placement of color scales, a shown scale is placed at the next of the 
-<code>colors_scale_offsets
-</code> of the 
-<code>figure_configuration
-</code> (the 
-<code>next_colors_scale_offset_index
-</code>, which this advances) to avoid overlaps.
+</code>. A shown scale is a color bar, which is pushed to the 
+<code>side_panel_items
+</code> to be placed by 
+<a href="utilities.html#SomeGraphs.Utilities.place_side_panel!">
+<code>place_side_panel!
+</code>
+</a>.
 </p>
 <p>A Plotly color bar shows the ticks of its (scaled) values. For a 
 <code>Log10Base
@@ -2211,6 +2251,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.numeric_values">
 <code>SomeGraphs.Utilities.numeric_values
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.place_side_panel!">
+<code>SomeGraphs.Utilities.place_side_panel!
 </code>
 </a>
 </li>

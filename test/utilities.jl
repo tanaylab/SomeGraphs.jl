@@ -323,13 +323,15 @@ nested_test("utilities") do
         nested_test("125") do
             values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 3), 350)
             @test values ≈ log10.([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000])
-            @test labels == ["1", "2", "5", "10", "20", "50", "100", "200", "500", "1k"]
+            small(digit) = SomeGraphs.Utilities.minor_log_tick_label(digit)
+            @test labels == ["1", small(2), small(5), "10", small(2), small(5), "100", small(2), small(5), "1k"]
         end
 
         nested_test("digits") do
             values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 1.5), 100)
             @test values ≈ log10.([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30])
-            @test labels == ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30"]
+            small(digit) = SomeGraphs.Utilities.minor_log_tick_label(digit)
+            @test labels == ["1", [small(digit) for digit in 2:9]..., "10", small(2), small(3)]
         end
 
         nested_test("linear") do
@@ -468,7 +470,8 @@ nested_test("utilities") do
                 Range(; minimum = 0, maximum = 3),
                 350,
             )
-            @test labels == ["1%", "2%", "5%", "10%", "20%", "50%", "100%", "200%", "500%", "1k%"]
+            small(digit) = SomeGraphs.Utilities.minor_log_tick_label(digit) * "%"
+            @test labels == ["1%", small(2), small(5), "10%", small(2), small(5), "100%", small(2), small(5), "1k%"]
         end
 
         nested_test("colors_scale_single") do

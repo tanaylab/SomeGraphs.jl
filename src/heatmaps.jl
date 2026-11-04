@@ -53,6 +53,10 @@ import ..Bars.push_plotly_annotation!
 import ..Bars.expand_vector
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
+import ..Utilities.CATEGORICAL_LEGEND_ORDER
+import ..Utilities.SidePanelItem
+import ..Utilities.categorical_legend_labels
+import ..Utilities.legend_side_panel_item
 import ..Validations.Maybe
 
 """
@@ -1038,13 +1042,23 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         columns_max_height = 0
     end
 
-    # Each categorical annotation is a legend of its own, columns then rows, in the order their traces were pushed.
-    legends_titles = Maybe{AbstractString}[]
+    # The side panel holds one legend per categorical annotation (columns then rows, in the order their traces were
+    # pushed), then the color scales.
+    figure_configuration = graph.configuration.figure
+    side_panel_items = SidePanelItem[]
+    legends = Tuple{Maybe{AbstractString}, Vector{String}, LegendConfiguration}[]
     for (annotations_colors, annotations_data) in
         ((columns_annotations_colors, columns_annotations_data), (rows_annotations_colors, rows_annotations_data))
         for (annotation_colors, annotation_data) in zip(annotations_colors, annotations_data)
             if annotation_colors.show_in_legend && annotation_colors.final_categorical_palette !== nothing
-                push!(legends_titles, prefer_data(annotation_data.values.title, annotation_data.colors.title))
+                push!(
+                    legends,
+                    (
+                        prefer_data(annotation_data.values.title, annotation_data.colors.title),
+                        categorical_legend_labels(annotation_colors),
+                        annotation_data.colors.legend,
+                    ),
+                )
             end
         end
     end
@@ -1053,18 +1067,20 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         entities_hovers(graph.data.rows.entities) !== nothing ||
         entities_hovers(graph.data.columns.entities) !== nothing
 
-    layout = plotly_layout(
-        graph.configuration.figure;
-        title = graph.data.figure_title,
-        has_legend = !isempty(legends_titles),
-        has_hovers,
-    )
-    for (legend_index, legend_title) in enumerate(legends_titles)
-        set_layout_legend!(
-            layout,
-            legend_index;
-            title = legend_title,
-            x = graph.configuration.figure.colors_scale_offsets[legend_index],
+    layout =
+        plotly_layout(figure_configuration; title = graph.data.figure_title, has_legend = !isempty(legends), has_hovers)
+    for (legend_index, (legend_title, legend_labels, legend_configuration)) in enumerate(legends)
+        set_layout_legend!(layout, legend_index; title = legend_title)
+        push!(
+            side_panel_items,
+            legend_side_panel_item(;
+                legend = plotly_legend(legend_index),
+                labels = legend_labels,
+                title = legend_title,
+                legend_configuration,
+                default_order = CATEGORICAL_LEGEND_ORDER,
+                figure_configuration,
+            ),
         )
     end
 
@@ -1122,8 +1138,6 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         is_zeroable = false,
     )
 
-    next_colors_scale_offset_index = [length(legends_titles)]
-
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
             layout,
@@ -1133,8 +1147,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             range = colors.final_colors_range,
             title = colors.colors_title,
             show_scale = colors.show_scale,
-            next_colors_scale_offset_index,
-            figure_configuration = graph.configuration.figure,
+            figure_configuration,
+            side_panel_items,
         )
     end
 
@@ -1205,8 +1219,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                         ticks_range = annotation_colors.final_colors_range,
                         title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
                         show_scale = annotation_colors.show_scale,
-                        next_colors_scale_offset_index,
-                        figure_configuration = graph.configuration.figure,
+                        figure_configuration,
+                        side_panel_items,
                     )
                 end
             end
@@ -1243,6 +1257,8 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     if n_rows_annotations > 0 || n_columns_annotations > 0
         layout["bargap"] = 0
     end
+
+    place_side_panel!(layout, figure_configuration, side_panel_items)
 
     return plotly_figure(traces, layout)
 end

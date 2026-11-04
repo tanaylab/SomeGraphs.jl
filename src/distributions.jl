@@ -33,6 +33,8 @@ import ..Common.is_categorical_axis
 import ..Common.is_default_axis
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
+import ..Utilities.CATEGORICAL_LEGEND_ORDER
+import ..Utilities.legend_side_panel_item
 import ..Validations.Maybe
 
 """
@@ -719,8 +721,13 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     )
     collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
 
-    layout =
-        distribution_layout(; graph, traces, implicit_values_range, has_legend = false, has_hovers = hovers !== nothing)
+    layout = distribution_layout(;
+        graph,
+        traces,
+        implicit_values_range,
+        legend_labels = String[],
+        has_hovers = hovers !== nothing,
+    )
     return plotly_figure(traces, layout)
 end
 
@@ -734,14 +741,16 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
 
     traces = Vector{GenericTrace}()
     has_hovers = false
-    has_legend = false
+    legend_labels = String[]
 
     for (position, index) in enumerate(distributions_indices)
         distribution = graph.data.distributions[index]
         values = displayed_values(distribution)
         hovers = displayed_hovers(distribution, length(values))
         has_hovers |= hovers !== nothing
-        has_legend |= graph.configuration.distributions_gap === nothing && distribution.name !== nothing
+        if graph.configuration.distributions_gap === nothing && distribution.name !== nothing
+            push!(legend_labels, distribution.name)
+        end
 
         push!(
             traces,
@@ -766,7 +775,7 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
         collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
     end
 
-    layout = distribution_layout(; graph, traces, implicit_values_range, has_legend, has_hovers)
+    layout = distribution_layout(; graph, traces, implicit_values_range, legend_labels, has_hovers)
     return plotly_figure(traces, layout)
 end
 
@@ -957,9 +966,10 @@ function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
     traces::AbstractVector{GenericTrace},
     implicit_values_range::MaybeRange,
-    has_legend::Bool,
+    legend_labels::AbstractVector{<:AbstractString},
     has_hovers::Bool,
 )::Layout
+    has_legend = !isempty(legend_labels)
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
 
     shapes = Shape[]
@@ -1008,7 +1018,15 @@ function distribution_layout(;
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
     if has_legend
-        set_layout_legend!(layout, 1; title = nothing, x = graph.configuration.figure.colors_scale_offsets[1])
+        set_layout_legend!(layout, 1; title = nothing)
+        item = legend_side_panel_item(;
+            legend = plotly_legend(1),
+            labels = legend_labels,
+            title = nothing,
+            default_order = CATEGORICAL_LEGEND_ORDER,
+            figure_configuration = graph.configuration.figure,
+        )
+        place_side_panel!(layout, graph.configuration.figure, [item])
     end
 
     # Plotly computes the distributions (bins, densities, quartiles) from the values it is given, so it must be given

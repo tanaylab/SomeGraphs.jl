@@ -32,6 +32,7 @@ SomeGraphs.Utilities.text_width
 SomeGraphs.Utilities.plotly_layout
 SomeGraphs.Utilities.plotly_legend
 SomeGraphs.Utilities.set_layout_legend!
+SomeGraphs.Utilities.place_side_panel!
 SomeGraphs.Utilities.plotly_title
 SomeGraphs.Utilities.axis_ticks_prefix
 SomeGraphs.Utilities.axis_ticks_suffix
