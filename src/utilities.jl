@@ -814,8 +814,7 @@ function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tupl
     rough_step = decades / n_ticks
 
     if decades == 0
-        # A single value is shown with (up to) 3 significant digits, as in the legend of sizes.
-        chosen = [(Float64(scaled_minimum), max(0, 2 - floor(Int, scaled_minimum)))]
+        chosen = [(Float64(scaled_minimum), single_value_places(exp10(scaled_minimum)))]
 
     elseif rough_step > 0.7
         # Every k-th power of 10. The candidates are the digits, then 1, 2 and 5, then every power, every 2nd, etc.
@@ -1081,6 +1080,99 @@ function side_panel_places(
     end
 
     return (places, panel_width)
+end
+
+# The sizes of a Plotly legend, in pixels, as measured in Kaleido's renders: its text and title font sizes, the width
+# before a label (the symbol) and after it (the padding, rounded up), the width beyond a wider title, and the height of
+# a row and of the padding.
+const PLOTLY_LEGEND_FONT_SIZE = 12
+const PLOTLY_LEGEND_TITLE_FONT_SIZE = 14
+const PLOTLY_LEGEND_LABEL_EXTRA_WIDTH = 46
+const PLOTLY_LEGEND_TITLE_EXTRA_WIDTH = 6
+const PLOTLY_LEGEND_ROW_HEIGHT = 19
+const PLOTLY_LEGEND_EXTRA_HEIGHT = 10
+
+# The sizes of a Plotly color bar, in pixels: its thickness, the width beyond its widest tick label, and the width
+# beyond a wider title.
+const PLOTLY_COLORS_SCALE_THICKNESS = 30
+const PLOTLY_COLORS_SCALE_TICKS_EXTRA_WIDTH = 2
+const PLOTLY_COLORS_SCALE_TITLE_EXTRA_WIDTH = 2
+
+# The width in pixels of a Plotly legend of entries with these `labels` and the `title` (if any).
+function legend_pixel_width(labels::AbstractVector{<:AbstractString}; title::Maybe{AbstractString})::Float64
+    width =
+        maximum(text_width(label; font_size = PLOTLY_LEGEND_FONT_SIZE) for label in labels; init = 0.0) +
+        PLOTLY_LEGEND_LABEL_EXTRA_WIDTH
+    if title !== nothing
+        width =
+            max(width, text_width(title; font_size = PLOTLY_LEGEND_TITLE_FONT_SIZE) + PLOTLY_LEGEND_TITLE_EXTRA_WIDTH)
+    end
+    return width
+end
+
+# The natural height in pixels of a Plotly legend of `n_entries` (with a title row if it `has_title`).
+function legend_pixel_height(n_entries::Integer; has_title::Bool)::Float64
+    return PLOTLY_LEGEND_ROW_HEIGHT * (n_entries + Int(has_title)) + PLOTLY_LEGEND_EXTRA_HEIGHT
+end
+
+# The width in pixels of a Plotly color bar with these `tick_labels` and the `title` (if any).
+function colors_scale_pixel_width(tick_labels::AbstractVector{<:AbstractString}; title::Maybe{AbstractString})::Float64
+    width =
+        PLOTLY_COLORS_SCALE_THICKNESS +
+        maximum(text_width(label; font_size = PLOTLY_LEGEND_FONT_SIZE) for label in tick_labels; init = 0.0) +
+        PLOTLY_COLORS_SCALE_TICKS_EXTRA_WIDTH
+    if title !== nothing
+        width = max(
+            width,
+            text_width(title; font_size = PLOTLY_LEGEND_TITLE_FONT_SIZE) + PLOTLY_COLORS_SCALE_TITLE_EXTRA_WIDTH,
+        )
+    end
+    return width
+end
+
+# The text of a prefix or a suffix of ticks, without its HTML tags (if any).
+function plain_ticks_affix(affix::Maybe{AbstractString})::String
+    return affix === nothing ? "" : replace(affix, r"<[^>]*>" => "")
+end
+
+# The tick labels of a Plotly color bar of a `scale` whose (scaled) values are in the `scaled_range`, and which is
+# `pixel_length` long, as far as their widths are concerned. For a `Log10Base` scale these are the ticks we give it. For
+# the rest, Plotly picks the ticks of a linear axis (a step of 2, 5 or 10 times a power of 10, for about a tick per 40
+# pixels), and each label is the wider of its plain and its SI form, since the form Plotly picks isn't known. Negative
+# values have Plotly's minus sign.
+function colors_scale_tick_labels(scale::ScaleConfiguration, scaled_range::Range, pixel_length::Real)::Vector{String}
+    suffix = plain_ticks_affix(axis_ticks_suffix(scale))
+
+    if scale.log_base === Log10Base
+        return [label * suffix for label in log10_colors_scale_ticks(scaled_range, pixel_length)[2]]
+    end
+
+    prefix = plain_ticks_affix(axis_ticks_prefix(scale))
+    span = scaled_range.maximum - scaled_range.minimum
+    if span == 0
+        values = [Float64(scaled_range.minimum)]
+        places = single_value_places(scaled_range.minimum)
+    else
+        n_ticks = clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
+        rough_step = span / n_ticks
+        power = floor(Int, log10(rough_step))
+        multiplier = rough_step / exp10(power)
+        step = (multiplier < 2 ? 2 : multiplier < 5 ? 5 : 10) * exp10(power)
+        places = max(0, -floor(Int, log10(step)))
+        first_index = ceil(Int, scaled_range.minimum / step - 1e-9)
+        last_index = floor(Int, scaled_range.maximum / step + 1e-9)
+        values = [index * step for index in first_index:last_index]
+    end
+
+    si_scale = ScaleConfiguration(; log_base = Log10Base)
+    labels = String[]
+    for value in values
+        plain = decimal_text(value, places)
+        si = abs(value) >= 1000 ? scale_value_label(si_scale, value, places) : plain
+        label = text_width(si) > text_width(plain) ? si : plain
+        push!(labels, prefix * replace(label, "-" => "−") * suffix)
+    end
+    return labels
 end
 
 """
@@ -1662,14 +1754,9 @@ function sizes_legend_entries(
     sizes_mapping = SizesMapping(sizes_configuration, values, mask)
     scale_configuration = sizes_configuration.scale
 
-    # A single value has no step to take the decimal places from, so it is shown with (up to) 3 significant digits.
     if sizes_mapping.is_single_value
         scaled_value = sizes_mapping.scaled_minimum_value
-        value = legend_value(scale_configuration, scaled_value)
-        places = value == 0 ? 0 : max(0, 2 - floor(Int, log10(abs(value))))
-        while places > 0 && round(value; digits = places - 1) == round(value; digits = places)
-            places -= 1
-        end
+        places = single_value_places(legend_value(scale_configuration, scaled_value))
         return [sizes_legend_entry(sizes_mapping, scaled_value, places)]
     end
 
@@ -1857,6 +1944,16 @@ function scale_value_label(scale_configuration::ScaleConfiguration, value::Real,
         @assert scale_configuration.log_base === nothing
         return decimal_text(value, places)
     end
+end
+
+# The number of decimal places to show a single `value` with, which has no step to take them from: (up to) 3
+# significant digits, without trailing zeros.
+function single_value_places(value::Real)::Int
+    places = value == 0 ? 0 : max(0, 2 - floor(Int, log10(abs(value))))
+    while places > 0 && round(value; digits = places - 1) == round(value; digits = places)
+        places -= 1
+    end
+    return places
 end
 
 # The text of a `value` with exactly this number of decimal `places` (never in scientific notation).

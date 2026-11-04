@@ -422,6 +422,65 @@ nested_test("utilities") do
         end
     end
 
+    # The estimated sizes of legends and color bars cover the boxes Kaleido drew for them, and not by much.
+    nested_test("estimators") do
+        legend_pixel_width = SomeGraphs.Utilities.legend_pixel_width
+        legend_pixel_height = SomeGraphs.Utilities.legend_pixel_height
+        colors_scale_pixel_width = SomeGraphs.Utilities.colors_scale_pixel_width
+        colors_scale_tick_labels = SomeGraphs.Utilities.colors_scale_tick_labels
+
+        nested_test("legend_width") do
+            @test 142 <= legend_pixel_width(["Population of cells", "B"]; title = nothing) <= 143
+        end
+
+        nested_test("legend_title_width") do
+            @test 157 <= legend_pixel_width(["i"]; title = "A rather long legend title") <= 158
+        end
+
+        nested_test("legend_height") do
+            @test legend_pixel_height(2; has_title = false) == 48
+            @test legend_pixel_height(1; has_title = true) == 48
+        end
+
+        nested_test("colors_scale_unit") do
+            labels = colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 0, maximum = 1), 330)
+            @test labels == ["0.0", "0.2", "0.4", "0.6", "0.8", "1.0"]
+            @test 47.8 <= colors_scale_pixel_width(labels; title = nothing) <= 50
+        end
+
+        nested_test("colors_scale_negative") do
+            labels = colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = -3, maximum = 3), 330)
+            @test labels == ["−3", "−2", "−1", "0", "1", "2", "3"]
+            @test 45 <= colors_scale_pixel_width(labels; title = nothing) <= 47
+        end
+
+        # Plotly shows "120k", but the estimate doesn't know it would, so it takes the wider "120000".
+        nested_test("colors_scale_large") do
+            labels = colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 0, maximum = 123456), 330)
+            @test labels[end] == "120000"
+            @test 58.9 <= colors_scale_pixel_width(labels; title = nothing) <= 75
+        end
+
+        # A `Log10Base` color bar has our own ticks, with the scale's suffix.
+        nested_test("colors_scale_log10") do
+            labels = colors_scale_tick_labels(
+                ScaleConfiguration(; log_base = Log10Base, percent = true),
+                Range(; minimum = 0, maximum = 3),
+                350,
+            )
+            @test labels == ["1%", "2%", "5%", "10%", "20%", "50%", "100%", "200%", "500%", "1k%"]
+        end
+
+        nested_test("colors_scale_single") do
+            @test colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 2, maximum = 2), 330) == ["2"]
+            @test colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 2.5, maximum = 2.5), 330) == ["2.5"]
+        end
+
+        nested_test("colors_scale_title") do
+            @test 125.2 <= colors_scale_pixel_width(["1"]; title = "A long color bar title") <= 127
+        end
+    end
+
     # The widths of texts drawn by Kaleido, with their kerning.
     nested_test("text_width") do
         nested_test("empty") do
