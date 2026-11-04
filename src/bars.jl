@@ -332,6 +332,7 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         values_orientation = graph.configuration.values_orientation,
         next_colors_scale_index,
         has_legend_only_traces,
+        next_legend_index = [0],
         annotations_data,
         annotation_size = graph.configuration.annotations,
         entries_hovers = entities_hovers(graph.data.bars),
@@ -991,6 +992,7 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         mirrored = graph.configuration.mirrored,
         next_colors_scale_index,
         has_legend_only_traces,
+        next_legend_index = [Int(show_in_legend)],
         annotations_data,
         annotation_size = graph.configuration.annotations,
         entries_hovers = entities_hovers(graph.data.bars),
@@ -1098,6 +1100,7 @@ function push_annotations_traces!(;
     mirrored::Bool = false,
     next_colors_scale_index::AbstractVector{<:Integer},
     has_legend_only_traces::AbstractVector{Bool},
+    next_legend_index::AbstractVector{<:Integer},
     annotations_data::AbstractVector{AnnotationData},
     annotation_size::AnnotationSize,
     entries_hovers::Maybe{AbstractVector{<:AbstractString}},
@@ -1122,6 +1125,7 @@ function push_annotations_traces!(;
             entries_hovers,
             next_colors_scale_index,
             has_legend_only_traces,
+            next_legend_index,
             mask,
             order,
             expanded_mask,
@@ -1147,6 +1151,7 @@ function push_annotation_traces!(;
     entries_hovers::Maybe{AbstractVector{<:AbstractString}},
     next_colors_scale_index::AbstractVector{<:Integer},
     has_legend_only_traces::AbstractVector{Bool},
+    next_legend_index::AbstractVector{<:Integer},
     mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
     order::Maybe{AbstractVector{<:Integer}},
     expanded_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
@@ -1165,17 +1170,14 @@ function push_annotation_traces!(;
 
     sub_graph = SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
 
-    if colors.show_in_legend && colors.colors_configuration.palette isa CategoricalColors
-        legend_group = "Annotation$(annotation_index)"
-        for (index, (value, color)) in enumerate(categorical_colors_dict(colors.colors_configuration.palette))  # NOJET
+    # Each categorical annotation is a Plotly legend of its own.
+    final_categorical_palette = colors.final_categorical_palette
+    if colors.show_in_legend && final_categorical_palette !== nothing
+        next_legend_index[1] += 1
+        legend = plotly_legend(next_legend_index[1])
+        for (value, color) in categorical_colors_dict(final_categorical_palette)
             has_legend_only_traces[1] = true
-            push_annotation_legend_trace!(;
-                traces,
-                color,
-                value,
-                legend_group,
-                legend_group_title = index == 1 ? annotation_title : nothing,
-            )
+            push_annotation_legend_trace!(; traces, color, value, legend)
         end
     end
 
@@ -1244,8 +1246,7 @@ function push_annotation_legend_trace!(;
     traces::Vector{GenericTrace},
     color::AbstractString,
     value::AbstractString,
-    legend_group::Maybe{AbstractString},
-    legend_group_title::Maybe{AbstractString},
+    legend::AbstractString,
 )::Nothing
     push!(
         traces,
@@ -1258,8 +1259,7 @@ function push_annotation_legend_trace!(;
             yaxis = "y99",
             name = value,
             marker_color = color,
-            legendgroup = legend_group,
-            legendgrouptitle_text = legend_group_title,
+            legend,
             showlegend = true,
         ),
     )
@@ -1321,12 +1321,35 @@ function bars_layout(;
         end
     end
 
+    # The legends are that of the series (if `has_legend`), then one per categorical annotation, in the order their
+    # traces were pushed.
     n_annotations = length(annotations_colors)
-    if n_annotations > 0
-        has_legend = has_legend || any([annotation_colors.show_in_legend for annotation_colors in annotations_colors])
+    annotations_data = displayed_annotations(graph.data.annotations, graph.data.annotations_order)
+    legends_titles = Maybe{AbstractString}[]
+    if has_legend
+        push!(legends_titles, nothing)
+    end
+    for (annotation_colors, annotation_data) in zip(annotations_colors, annotations_data)
+        if annotation_colors.show_in_legend && annotation_colors.final_categorical_palette !== nothing
+            push!(legends_titles, prefer_data(annotation_data.values.title, annotation_data.colors.title))
+        end
     end
 
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
+    layout = plotly_layout(
+        graph.configuration.figure;
+        title = graph.data.figure_title,
+        has_legend = !isempty(legends_titles),
+        has_hovers,
+        shapes,
+    )
+    for (legend_index, legend_title) in enumerate(legends_titles)
+        set_layout_legend!(
+            layout,
+            legend_index;
+            title = legend_title,
+            x = graph.configuration.figure.colors_scale_offsets[legend_index],
+        )
+    end
 
     value_axis_title = data_value_axis_title(graph)
     bar_axis = graph.configuration.bar_axis
@@ -1423,7 +1446,7 @@ function bars_layout(;
         end
     end
 
-    next_colors_scale_offset_index = [Int(has_legend)]
+    next_colors_scale_offset_index = [length(legends_titles)]
 
     # The bar axis is drawn against the 1st axis of the other direction, which is the 1st annotation when there is one.
     # That is where the names belong for any other graph - outside everything - but a mirrored pair puts its
@@ -1460,7 +1483,6 @@ function bars_layout(;
     end
 
     layout["annotations"] = plotly_annotations = []
-    annotations_data = displayed_annotations(graph.data.annotations, graph.data.annotations_order)
     for (annotation_index, annotation_colors) in enumerate(annotations_colors)
         annotation_data = annotations_data[annotation_index]
         sub_graph =

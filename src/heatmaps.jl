@@ -956,6 +956,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     )
 
     has_legend_only_traces = [false]
+    next_legend_index = [0]
 
     columns_annotations_colors = push_annotations_traces!(;
         traces,
@@ -965,6 +966,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = VerticalValues,
         next_colors_scale_index,
         has_legend_only_traces,
+        next_legend_index,
         annotations_data = columns_annotations_data,
         annotation_size = graph.configuration.columns.annotations,
         entries_hovers = entities_hovers(graph.data.columns.entities),
@@ -981,6 +983,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         values_orientation = HorizontalValues,
         next_colors_scale_index,
         has_legend_only_traces,
+        next_legend_index,
         annotations_data = rows_annotations_data,
         annotation_size = graph.configuration.rows.annotations,
         entries_hovers = entities_hovers(graph.data.rows.entities),
@@ -1035,20 +1038,35 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         columns_max_height = 0
     end
 
-    has_legend =
-        (
-            n_rows_annotations > 0 &&
-            any([annotation_colors.show_in_legend for annotation_colors in rows_annotations_colors])
-        ) || (
-            n_columns_annotations > 0 &&
-            any([annotation_colors.show_in_legend for annotation_colors in columns_annotations_colors])
-        )
+    # Each categorical annotation is a legend of its own, columns then rows, in the order their traces were pushed.
+    legends_titles = Maybe{AbstractString}[]
+    for (annotations_colors, annotations_data) in
+        ((columns_annotations_colors, columns_annotations_data), (rows_annotations_colors, rows_annotations_data))
+        for (annotation_colors, annotation_data) in zip(annotations_colors, annotations_data)
+            if annotation_colors.show_in_legend && annotation_colors.final_categorical_palette !== nothing
+                push!(legends_titles, prefer_data(annotation_data.values.title, annotation_data.colors.title))
+            end
+        end
+    end
     has_hovers =
         graph.data.cells.hovers !== nothing ||
         entities_hovers(graph.data.rows.entities) !== nothing ||
         entities_hovers(graph.data.columns.entities) !== nothing
 
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers)
+    layout = plotly_layout(
+        graph.configuration.figure;
+        title = graph.data.figure_title,
+        has_legend = !isempty(legends_titles),
+        has_hovers,
+    )
+    for (legend_index, legend_title) in enumerate(legends_titles)
+        set_layout_legend!(
+            layout,
+            legend_index;
+            title = legend_title,
+            x = graph.configuration.figure.colors_scale_offsets[legend_index],
+        )
+    end
 
     rows_names = graph.data.rows.entities.names
     expanded_rows_names = expand_vector(rows_names, rows_order, expanded_rows_mask, "")
@@ -1104,7 +1122,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         is_zeroable = false,
     )
 
-    next_colors_scale_offset_index = [Int(has_legend)]
+    next_colors_scale_offset_index = [length(legends_titles)]
 
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;

@@ -23,6 +23,7 @@ export plotly_axis_value
 export plotly_axis_values
 export plotly_figure
 export plotly_layout
+export plotly_legend
 export plotly_line_dash
 export plotly_sub_graph_axes
 export plotly_sub_graph_domain
@@ -38,6 +39,7 @@ export scale_axis_values
 export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
+export set_layout_legend!
 export set_layout_twin_log_axis!
 export shared_values_title
 export sizes_legend_entries
@@ -453,8 +455,7 @@ end
         shapes::Maybe{AbstractVector{Shape}} = nothing,
     )::Layout
 
-Create a Plotly `Layout` object. If `has_legend`, the legend is placed at the 1st of the `colors_scale_offsets` of the
-`figure_configuration`.
+Create a Plotly `Layout` object. If `has_legend`, the legends are shown; each is set by [`set_layout_legend!`](@ref).
 """
 function plotly_layout(
     figure_configuration::FigureConfiguration;
@@ -466,8 +467,6 @@ function plotly_layout(
     return Layout(;  # NOJET
         title = plotly_title(title),
         showlegend = has_legend,
-        legend_x = has_legend ? figure_configuration.colors_scale_offsets[1] : nothing,
-        legend_itemdoubleclick = has_legend ? false : nothing,
         legend_tracegroupgap = 0,
         hoverlabel_align = has_hovers ? "left" : nothing,
         shapes,
@@ -485,6 +484,28 @@ function plotly_layout(
         plot_bgcolor = figure_configuration.background_color,
         paper_bgcolor = figure_configuration.paper_color,
     )
+end
+
+"""
+    plotly_legend(index::Integer)::String
+
+The name of the Plotly legend of an `index`: `legend` for 1, and `legend2`, `legend3`, etc. for the rest. A trace is
+shown in a legend by giving this name as its `legend`.
+"""
+function plotly_legend(index::Integer)::String
+    return index == 1 ? "legend" : "legend$(index)"
+end
+
+"""
+    set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString}, x::Real)::Nothing
+
+Set the Plotly legend of an `index` (see [`plotly_legend`](@ref)) in a `layout`, with its `title`, at the paper `x`
+coordinate.
+"""
+function set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString}, x::Real)::Nothing
+    layout[plotly_legend(index)] =
+        Dict(:title => plotly_title(title), :x => x, :itemdoubleclick => false, :tracegroupgap => 0)
+    return nothing
 end
 
 """
@@ -2939,12 +2960,14 @@ end
             Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}},
         }
         final_colors_range::Maybe{Range}
+        final_categorical_palette::Maybe{CategoricalColors} = nothing
         scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
         show_in_legend::Bool
         show_scale::Bool
     end
 
-Colors data after applying the configuration.
+Colors data after applying the configuration. The `final_categorical_palette` is the categorical palette of
+categorical colors, either as configured or (for [`AutomaticColors`](@ref)) as picked automatically.
 """
 @kwdef mutable struct ConfiguredColors
     colors_title::Maybe{AbstractString}
@@ -2955,6 +2978,7 @@ Colors data after applying the configuration.
     }
     final_colors_values::Maybe{Union{AbstractVector{<:AbstractString}, AbstractVector{<:Real}, AbstractMatrix{<:Real}}}
     final_colors_range::Maybe{Range}
+    final_categorical_palette::Maybe{CategoricalColors} = nothing
     scaled_colors_palette::Maybe{AbstractVector{<:Tuple{Real, AbstractString}}}
     show_in_legend::Bool
     show_scale::Bool
@@ -2989,6 +3013,7 @@ function configured_colors(;
     colors_scale_index = nothing
     final_colors_range = nothing
     final_colors_values = nothing
+    final_categorical_palette = nothing
     show_in_legend = false
     show_scale = false
 
@@ -3005,6 +3030,7 @@ function configured_colors(;
         end
 
         if palette isa CategoricalColors
+            final_categorical_palette = palette
             empty_value_color = get(categorical_colors_dict(palette), "", NO_COLOR)
             final_colors_values = [
                 if !prefer_data(mask, index, true)
@@ -3060,6 +3086,7 @@ function configured_colors(;
         original_color_values,
         final_colors_values,
         final_colors_range,
+        final_categorical_palette,
         scaled_colors_palette,
         show_in_legend,
         show_scale,

@@ -589,7 +589,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
 
     validate_graph_selection(graph)
 
-    has_legend = false
+    n_legends = 0
     n_colors_scales = 0
     for (colors_configuration, colors_values) in (
         (graph.configuration.points.colors, graph.data.points.colors.vector),
@@ -598,7 +598,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
     )
         if colors_configuration.legend.show
             if colors_configuration.palette isa CategoricalColors || colors_values isa AbstractVector{<:AbstractString}
-                has_legend = true
+                n_legends += 1
             else
                 n_colors_scales += 1
             end
@@ -610,7 +610,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         (graph.configuration.points.sizes, graph.configuration.borders.sizes, graph.configuration.edges.sizes)
     )
 
-    if Int(has_legend) + n_colors_scales + n_sizes_legends > length(graph.configuration.figure.colors_scale_offsets)
+    if n_legends + n_colors_scales + n_sizes_legends > length(graph.configuration.figure.colors_scale_offsets)
         text =  # UNTESTED
             "insufficient number of graph.configuration.figure.colors_scale_offsets: " *
             "$(length(graph.configuration.figure.colors_scale_offsets))\n" *
@@ -618,8 +618,8 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
         if n_sizes_legends > 0  # UNTESTED
             text *= "\nand the shown sizes legends: $(n_sizes_legends)"  # UNTESTED
         end
-        if has_legend  # UNTESTED
-            text *= "\nfollowing a legend"  # UNTESTED
+        if n_legends > 0  # UNTESTED
+            text *= "\nfollowing the legends: $(n_legends)"  # UNTESTED
         end
         throw(ArgumentError(text))  # UNTESTED
     end
@@ -697,6 +697,7 @@ end
 @kwdef mutable struct ConfiguredScatters
     colors::ConfiguredColors
     show_in_legend::Bool
+    legend::Maybe{AbstractString} = nothing
     legend_group::AbstractString
     pixel_size::Maybe{Real}
     pixel_sizes::Maybe{AbstractVector{<:Real}}
@@ -854,6 +855,15 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         order = graph.data.edges.entities.order,
     )
 
+    # Each categorical colors legend is a Plotly legend of its own.
+    n_legends = 0
+    for configured in (configured_points, configured_borders, configured_edges)
+        if configured.show_in_legend
+            n_legends += 1
+            configured.legend = plotly_legend(n_legends)
+        end
+    end
+
     edges_points = graph.data.edges.points
     if edges_points !== nothing && !graph.configuration.edges_over_points
         push_edge_traces!(; traces, graph, scaled_points_xs, scaled_points_ys, configured_edges)
@@ -909,21 +919,33 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         is_plotly_log = true,
     )
 
-    has_legend =
-        configured_points.show_in_legend || configured_borders.show_in_legend || configured_edges.show_in_legend
     has_hovers = points_hovers !== nothing || entities_hovers(graph.data.edges.entities) !== nothing
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
         scaled_ys_range = scaled_points_ys.range,
         shapes,
-        has_legend,
+        has_legend = n_legends > 0,
         has_hovers,
     )
 
     set_layout_selection!(layout, graph)
 
-    next_colors_scale_offset_index = [Int(has_legend)]
+    # The categorical legends take the first offsets, before the color scales and the legends of sizes.
+    legend_index = 0
+    next_colors_scale_offset_index = [0]
+    for configured in (configured_points, configured_borders, configured_edges)
+        if configured.legend !== nothing
+            legend_index += 1
+            set_layout_legend!(
+                layout,
+                legend_index;
+                title = configured.colors.colors_title,
+                x = graph.configuration.figure.colors_scale_offsets[next_colors_scale_offset_index[1] + 1],
+            )
+            next_colors_scale_offset_index[1] += 1
+        end
+    end
 
     for configured in (configured_points, configured_borders, configured_edges)
         if configured.colors.colors_scale_index !== nothing
@@ -941,9 +963,8 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         end
     end
 
-    # The categorical colors are in the Plotly legend 1, and each legend of sizes is a Plotly legend of its own.
+    # Each legend of sizes is a Plotly legend of its own, after the categorical ones.
     reference_pixel_size = prefer_data(configured_points.pixel_size, graph.configuration.points.sizes.smallest)
-    legend_index = 1
     for (kind, configured) in ((:points, configured_points), (:borders, configured_borders), (:edges, configured_edges))
         if configured.sizes_legend_entries !== nothing
             legend_index += 1
@@ -1094,7 +1115,6 @@ function push_edge_traces!(;
     edges_points = edges.points
     @assert edges_points !== nothing
     seen_names = Set{AbstractString}()
-    legend_group_title = configured_edges.colors.colors_title
 
     edges_indices = prefer_data(configured_edges.order, 1:length(edges_points))
 
@@ -1137,7 +1157,7 @@ function push_edge_traces!(;
                 name = prefer_data(edges_names, edge_index, nothing),
                 mode = "lines",
                 legendgroup = show_in_legend ? legend_group : nothing,
-                legendgrouptitle_text = show_in_legend ? legend_group_title : nothing,
+                legend = show_in_legend ? configured_edges.legend : nothing,
                 showlegend = show_in_legend,
                 coloraxis = plotly_axis("color", configured_edges.colors.colors_scale_index),
             )
@@ -1147,7 +1167,6 @@ function push_edge_traces!(;
                 edge_trace[:hovertemplate] = "%{text}<extra></extra>"
             end
             push!(traces, edge_trace)
-            legend_group_title = nothing
         end
     end
 
@@ -1165,8 +1184,6 @@ function push_points_traces!(;
         configured_points.colors.colors_configuration.palette isa CategoricalColors ||
         configured_points.colors.colors_configuration.palette isa AutomaticColors
     )
-        is_first = true
-
         colors_masks = Union{AbstractVector{Bool}, BitVector}[]
         colors_names = AbstractString[]
         colors = Maybe{AbstractString}[]
@@ -1224,9 +1241,7 @@ function push_points_traces!(;
                     name = colors_names[color_index],
                     color = colors[color_index],
                     legend_group_suffix = colors_names[color_index],
-                    is_first,
                 )
-                is_first = false
             end
         end
     else
@@ -1258,7 +1273,6 @@ function push_points_trace!(;
     name::Maybe{AbstractString},
     color::Maybe{Union{AbstractString, AbstractVector{<:Real}, AbstractVector{<:AbstractString}}},
     legend_group_suffix::Maybe{AbstractString} = nothing,
-    is_first = true,
 )::Nothing
     order = configured_points.order
 
@@ -1294,7 +1308,7 @@ function push_points_trace!(;
             marker_coloraxis = plotly_axis("color", configured_points.colors.colors_scale_index),
             marker_showscale = configured_points.colors.show_scale,
             legendgroup = show_in_legend ? legend_group : nothing,
-            legendgrouptitle_text = show_in_legend && is_first ? configured_points.colors.colors_title : nothing,
+            legend = show_in_legend ? configured_points.legend : nothing,
             showlegend = show_in_legend,
             name = name,
             hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
@@ -2083,6 +2097,10 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         has_hovers,
     )
 
+    if graph.configuration.legend.show
+        set_layout_legend!(layout, 1; title = nothing, x = graph.configuration.figure.colors_scale_offsets[1])
+    end
+
     return plotly_figure(traces, layout)
 end
 
@@ -2242,9 +2260,7 @@ function push_line_trace!(;
     line_style::Maybe{LineStyle},
     name::Maybe{AbstractString} = nothing,
     legend_group::Maybe{AbstractString} = nothing,
-    legend_group_title::Maybe{AbstractString} = nothing,
     show_in_legend::Bool = false,
-    is_first = true,
     mode::AbstractString,
     points_size::Maybe{Real},
     points_color::Maybe{AbstractString},
@@ -2262,7 +2278,6 @@ function push_line_trace!(;
             marker_size = points_size,
             marker_color = points_color,
             legendgroup = show_in_legend ? legend_group : nothing,
-            legendgrouptitle_text = show_in_legend && is_first ? legend_group_title : nothing,
             showlegend = show_in_legend,
             name = name,
             mode,

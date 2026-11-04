@@ -1007,6 +1007,9 @@ function distribution_layout(;
     end
 
     layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
+    if has_legend
+        set_layout_legend!(layout, 1; title = nothing, x = graph.configuration.figure.colors_scale_offsets[1])
+    end
 
     # Plotly computes the distributions (bins, densities, quartiles) from the values it is given, so it must be given
     # the scaled (log) values even when showing the ticks of the real values.

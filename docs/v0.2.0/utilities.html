@@ -533,13 +533,20 @@ validate_colors(
         Union{AbstractVector{&lt;:AbstractString}, AbstractVector{&lt;:Real}, AbstractMatrix{&lt;:Real}},
     }
     final_colors_range::Maybe{Range}
+    final_categorical_palette::Maybe{CategoricalColors} = nothing
     scaled_colors_palette::Maybe{AbstractVector{&lt;:Tuple{Real, AbstractString}}}
     show_in_legend::Bool
     show_scale::Bool
 end
 </code>
 </pre>
-<p>Colors data after applying the configuration.
+<p>Colors data after applying the configuration. The 
+<code>final_categorical_palette
+</code> is the categorical palette of categorical colors, either as configured or (for 
+<a href="common.html#SomeGraphs.Common.AutomaticColors">
+<code>AutomaticColors
+</code>
+</a>) as picked automatically.
 </p>
 </div>
 </section>
@@ -1159,11 +1166,77 @@ end
 <code>Layout
 </code> object. If 
 <code>has_legend
-</code>, the legend is placed at the 1st of the 
-<code>colors_scale_offsets
-</code> of the 
-<code>figure_configuration
+</code>, the legends are shown; each is set by 
+<a href="utilities.html#SomeGraphs.Utilities.set_layout_legend!">
+<code>set_layout_legend!
+</code>
+</a>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.plotly_legend">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.plotly_legend">
+<code>SomeGraphs.Utilities.plotly_legend
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">plotly_legend(index::Integer)::String
+</code>
+</pre>
+<p>The name of the Plotly legend of an 
+<code>index
+</code>: 
+<code>legend
+</code> for 1, and 
+<code>legend2
+</code>, 
+<code>legend3
+</code>, etc. for the rest. A trace is shown in a legend by giving this name as its 
+<code>legend
 </code>.
+</p>
+</div>
+</section>
+</details>
+</article>
+<article>
+<details class="docstring" open="true">
+<summary id="SomeGraphs.Utilities.set_layout_legend!">
+<a class="docstring-binding" href="#SomeGraphs.Utilities.set_layout_legend!">
+<code>SomeGraphs.Utilities.set_layout_legend!
+</code>
+</a> — 
+<span class="docstring-category">Function
+</span>
+</summary>
+<section>
+<div>
+<pre>
+<code class="language-julia hljs">set_layout_legend!(layout::Layout, index::Integer; title::Maybe{AbstractString}, x::Real)::Nothing
+</code>
+</pre>
+<p>Set the Plotly legend of an 
+<code>index
+</code> (see 
+<a href="utilities.html#SomeGraphs.Utilities.plotly_legend">
+<code>plotly_legend
+</code>
+</a>) in a 
+<code>layout
+</code>, with its 
+<code>title
+</code>, at the paper 
+<code>x
+</code> coordinate.
 </p>
 </div>
 </section>
@@ -2172,6 +2245,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 </a>
 </li>
 <li>
+<a href="utilities.html#SomeGraphs.Utilities.plotly_legend">
+<code>SomeGraphs.Utilities.plotly_legend
+</code>
+</a>
+</li>
+<li>
 <a href="utilities.html#SomeGraphs.Utilities.plotly_line_dash">
 <code>SomeGraphs.Utilities.plotly_line_dash
 </code>
@@ -2252,6 +2331,12 @@ prefer_data(data_values::Maybe{AbstractVector}, index::Integer, configuration_va
 <li>
 <a href="utilities.html#SomeGraphs.Utilities.set_layout_colorscale!">
 <code>SomeGraphs.Utilities.set_layout_colorscale!
+</code>
+</a>
+</li>
+<li>
+<a href="utilities.html#SomeGraphs.Utilities.set_layout_legend!">
+<code>SomeGraphs.Utilities.set_layout_legend!
 </code>
 </a>
 </li>
