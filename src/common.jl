@@ -1562,6 +1562,7 @@ end
         width::Maybe{Integer} = nothing
         height::Maybe{Real} = nothing
         column::Maybe{Integer} = nothing
+        order::Maybe{Real} = nothing
     end
 
 Configure the legend (or color scale) of something shown in a graph. It is shown only if `show` is set. The other fields
@@ -1570,12 +1571,18 @@ control its place in the side panel to the right of the graph, and can only be s
 The `width` is in pixels. By default it is computed from the legend's content. The `height` is a fraction of the
 plot's height. The `column` is the index of the side panel's column the legend is placed in, where 1 is the column next
 to the plot. By default the legends are packed into columns automatically.
+
+The legends of a column are placed from the top by their `order`. By default this is 1 for a categorical legend, 2 for
+a color scale and 3 for a legend of sizes, and legends of the same `order` keep the order of the graph's parts. For
+example, an `order` of 0 places a legend at the top of its column, and 1.5 between the categorical legends and the color
+scales.
 """
 @kwdef mutable struct LegendConfiguration <: Validated
     show::Bool = false
     width::Maybe{Integer} = nothing
     height::Maybe{Real} = nothing
     column::Maybe{Integer} = nothing
+    order::Maybe{Real} = nothing
 end
 
 function visit_graph_parts(visitor::Function, part::LegendConfiguration, visited::Base.IdSet)::Nothing
@@ -1588,6 +1595,7 @@ function Validations.validate(context::ValidationContext, legend_configuration::
         ("width", legend_configuration.width),
         ("height", legend_configuration.height),
         ("column", legend_configuration.column),
+        ("order", legend_configuration.order),
     )
         if value !== nothing && !legend_configuration.show
             throw(ArgumentError("can't specify $(location(context)).$(field) w/o $(location(context)).show"))
@@ -1613,6 +1621,13 @@ function Validations.validate(context::ValidationContext, legend_configuration::
     if legend_configuration.column !== nothing
         validate_in(context, "column") do
             validate_is_at_least(context, legend_configuration.column, 1)
+            return nothing
+        end
+    end
+
+    if legend_configuration.order !== nothing
+        validate_in(context, "order") do
+            validate_is_finite(context, legend_configuration.order)
             return nothing
         end
     end

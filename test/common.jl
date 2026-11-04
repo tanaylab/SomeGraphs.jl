@@ -190,6 +190,7 @@ nested_test("common") do
             legend.width = 100
             legend.height = 0.5
             legend.column = 2
+            legend.order = 0.5
             return validate(context, legend)
         end
 

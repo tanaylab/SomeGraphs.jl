@@ -339,6 +339,89 @@ nested_test("utilities") do
         end
     end
 
+    # The parts of the side panel are packed into columns with the least waste.
+    nested_test("pack_side_panel_parts") do
+        SidePanelPart = SomeGraphs.Utilities.SidePanelPart
+        pack_side_panel_parts = SomeGraphs.Utilities.pack_side_panel_parts
+        columns_of(places) = [place.column for place in places]
+        part(; width, height, column = nothing, order = 1) = SidePanelPart(; width, height, column, order)
+
+        nested_test("empty") do
+            places, width = pack_side_panel_parts(SidePanelPart[]; horizontal_gap = 10, vertical_gap = 0.05)
+            @test isempty(places)
+            @test width == 0
+        end
+
+        nested_test("single") do
+            places, width =
+                pack_side_panel_parts([part(; width = 50, height = 0.3)]; horizontal_gap = 10, vertical_gap = 0.05)
+            @test columns_of(places) == [1]
+            @test places[1].x_offset == 10
+            @test places[1].y_top == 1
+            @test width == 60
+        end
+
+        # Two parts which fit in one column waste less there.
+        nested_test("shared") do
+            parts = [part(; width = 60, height = 0.45), part(; width = 60, height = 0.45)]
+            places, width = pack_side_panel_parts(parts; horizontal_gap = 10, vertical_gap = 0.05)
+            @test columns_of(places) == [1, 1]
+            @test [place.y_top for place in places] ≈ [1, 0.5]
+            @test width == 70
+        end
+
+        # The parts of a column are stacked from the top by their order.
+        nested_test("order") do
+            parts = [part(; width = 60, height = 0.45, order = 2), part(; width = 60, height = 0.45, order = 1)]
+            places, _ = pack_side_panel_parts(parts; horizontal_gap = 10, vertical_gap = 0.05)
+            @test columns_of(places) == [1, 1]
+            @test [place.y_top for place in places] ≈ [0.5, 1]
+        end
+
+        # The columns without pins are ordered by the smallest order of their parts.
+        nested_test("columns_order") do
+            parts = [part(; width = 60, height = 0.5, order = 2), part(; width = 40, height = 0.5, order = 1)]
+            places, width = pack_side_panel_parts(parts; horizontal_gap = 10, vertical_gap = 0.05)
+            @test columns_of(places) == [2, 1]
+            @test [place.x_offset for place in places] == [60, 10]
+            @test width == 120
+        end
+
+        # Parts which don't fit in one column are in two.
+        nested_test("separate") do
+            parts = [part(; width = 60, height = 0.5), part(; width = 40, height = 0.5)]
+            places, width = pack_side_panel_parts(parts; horizontal_gap = 10, vertical_gap = 0.05)
+            @test columns_of(places) == [1, 2]
+            @test [place.x_offset for place in places] == [10, 80]
+            @test width == 120
+        end
+
+        # Of the splits with the same total waste, the most even one wins.
+        nested_test("even") do
+            parts = [part(; width = 10, height = 0.3) for _ in 1:4]
+            places, width = pack_side_panel_parts(parts; horizontal_gap = 0, vertical_gap = 0)
+            @test columns_of(places) == [1, 1, 2, 2]
+            @test width == 20
+        end
+
+        # An empty column takes no space.
+        nested_test("pinned") do
+            parts = [part(; width = 50, height = 0.3), part(; width = 30, height = 0.3, column = 2)]
+            places, width = pack_side_panel_parts(parts; horizontal_gap = 10, vertical_gap = 0.05)
+            @test columns_of(places) == [2, 2]
+            @test [place.x_offset for place in places] == [10, 10]
+            @test width == 60
+        end
+
+        # Too many parts are packed by placing the tallest first, each in the first column with room.
+        nested_test("many") do
+            parts = [part(; width = 10, height = 0.3) for _ in 1:13]
+            places, width = pack_side_panel_parts(parts; horizontal_gap = 0, vertical_gap = 0)
+            @test columns_of(places) == [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5]
+            @test width == 50
+        end
+    end
+
     # The widths of texts drawn by Kaleido, with their kerning.
     nested_test("text_width") do
         nested_test("empty") do

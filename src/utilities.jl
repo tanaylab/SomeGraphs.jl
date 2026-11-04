@@ -826,6 +826,242 @@ function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tupl
     return (ticks_values, ticks_labels)
 end
 
+# A part of the side panel (a legend or a color bar), before it is placed: its `width` in pixels, its `height` as a
+# fraction of the plot's height, the (1-based) `column` it is pinned to (if any), and its `order` in its column (from
+# the top; ties keep the order of the parts).
+@kwdef struct SidePanelPart
+    width::Real
+    height::Real
+    column::Maybe{Integer} = nothing
+    order::Real
+end
+
+# Where a part of the side panel is placed: its (1-based) `column`, the `x_offset` in pixels from the plot's right edge
+# to its left edge, and the paper `y_top` fraction of its top.
+@kwdef struct SidePanelPlace
+    column::Int
+    x_offset::Float64
+    y_top::Float64
+end
+
+# The most parts of the side panel for which every split of them into columns is searched.
+const SIDE_PANEL_EXACT_PARTS = 12
+
+# How much floating point noise is ignored when comparing layouts and heights.
+const SIDE_PANEL_EPSILON = 1e-9
+
+# Pack the `parts` of the side panel into columns, and return the place of each part (in the same order) and the width
+# of the whole panel in pixels. Each non-empty column takes the `horizontal_gap` (pixels) and the width of its widest
+# part; an empty column (left by the pins) takes no space. The parts of a column, with the `vertical_gap` (a fraction of
+# the plot's height) between them, fit in its height (unless pinned there). They are placed from the top, by their
+# `order`. The columns without pinned parts are placed from the left by the smallest `order` of their parts. The split
+# into columns has the least total wasted area (the narrowest panel), then the least sum of squared waste per column
+# (the most even), then the fewest columns. It is found by searching every split, unless there are too many parts, and
+# then by placing the tallest parts first, each in the first column with room.
+function pack_side_panel_parts(
+    parts::AbstractVector{SidePanelPart};
+    horizontal_gap::Real,
+    vertical_gap::Real,
+)::Tuple{Vector{SidePanelPlace}, Float64}
+    if isempty(parts)
+        return (SidePanelPlace[], 0.0)
+    end
+
+    if length(parts) <= SIDE_PANEL_EXACT_PARTS
+        column_per_part = best_side_panel_columns(parts, vertical_gap)
+    else
+        column_per_part = first_fit_side_panel_columns(parts, vertical_gap)
+    end
+
+    order_side_panel_columns!(column_per_part, parts)
+    return side_panel_places(parts, column_per_part, horizontal_gap, vertical_gap)
+end
+
+# Order the columns which hold no pinned part from left to right by the smallest `order` of their parts (ties by their
+# first part). They take the places of these columns between the pinned ones.
+function order_side_panel_columns!(
+    column_per_part::AbstractVector{<:Integer},
+    parts::AbstractVector{SidePanelPart},
+)::Nothing
+    pinned_columns = Set(part.column for part in parts if part.column !== nothing)
+    free_columns = sort([column for column in unique(column_per_part) if !(column in pinned_columns)])
+    keys_of_free_columns = [
+        (
+            minimum(part.order for (part, part_column) in zip(parts, column_per_part) if part_column == column),
+            findfirst(==(column), column_per_part),
+        ) for column in free_columns
+    ]
+    ordered_free_columns = free_columns[sortperm(keys_of_free_columns)]
+    new_column_per_old_column = Dict(zip(ordered_free_columns, free_columns))
+    column_per_part .= [get(new_column_per_old_column, column, column) for column in column_per_part]
+    return nothing
+end
+
+# The columns of the pinned parts (and zero for the others), and how many columns they take.
+function pinned_side_panel_columns(parts::AbstractVector{SidePanelPart})::Tuple{Vector{Int}, Int}
+    column_per_part = [part.column === nothing ? 0 : Int(part.column) for part in parts]
+    return (column_per_part, maximum(column_per_part))
+end
+
+# The height of a column holding parts of these `heights` with the `vertical_gap` between them.
+function side_panel_column_height(heights::AbstractVector{<:Real}, vertical_gap::Real)::Float64
+    return isempty(heights) ? 0.0 : sum(heights) + vertical_gap * (length(heights) - 1)
+end
+
+# The ranking of a split into columns: the total wasted area, the sum of the squared waste per column, and the number of
+# (non-empty) columns, to be minimized in this order.
+function side_panel_ranking(
+    parts::AbstractVector{SidePanelPart},
+    column_per_part::AbstractVector{<:Integer},
+)::Tuple{Float64, Float64, Int}
+    total_waste = 0.0
+    total_squared_waste = 0.0
+    n_columns = 0
+    for column in unique(column_per_part)
+        column_parts = parts[column_per_part .== column]
+        column_width = maximum(part.width for part in column_parts)
+        waste = column_width - sum(part.width * part.height for part in column_parts)
+        total_waste += waste
+        total_squared_waste += waste^2
+        n_columns += 1
+    end
+    return (total_waste, total_squared_waste, n_columns)
+end
+
+# Whether the `ranking` is better than the `best_ranking` (ignoring floating point noise).
+function is_better_side_panel_ranking(ranking::Tuple, best_ranking::Maybe{Tuple})::Bool
+    if best_ranking === nothing
+        return true
+    end
+    for (value, best_value) in zip(ranking, best_ranking)
+        if value < best_value - SIDE_PANEL_EPSILON
+            return true
+        elseif value > best_value + SIDE_PANEL_EPSILON
+            return false
+        end
+    end
+    return false
+end
+
+# The state of the search for the best split of the parts of the side panel into columns: the column of each part so
+# far (zero for an unplaced one), and the best split found so far with its ranking.
+mutable struct SidePanelSearch
+    parts::AbstractVector{SidePanelPart}
+    vertical_gap::Float64
+    unpinned_indices::Vector{Int}
+    total_area::Float64
+    column_per_part::Vector{Int}
+    best_column_per_part::Maybe{Vector{Int}}
+    best_ranking::Maybe{Tuple{Float64, Float64, Int}}
+end
+
+# The column of each part in the best split, searching every split.
+function best_side_panel_columns(parts::AbstractVector{SidePanelPart}, vertical_gap::Real)::Vector{Int}
+    column_per_part, n_pinned_columns = pinned_side_panel_columns(parts)
+    search = SidePanelSearch(
+        parts,
+        vertical_gap,
+        findall(==(0), column_per_part),
+        sum(part.width * part.height for part in parts),
+        column_per_part,
+        nothing,
+        nothing,
+    )
+    search_side_panel_columns!(search, 1, n_pinned_columns)
+    best_column_per_part = search.best_column_per_part
+    @assert best_column_per_part !== nothing
+    return best_column_per_part
+end
+
+# Place the unpinned parts from the `next_unpinned` one on, given the `n_columns` used so far. Each goes in turn into
+# any column with room for it, or into a new column after the last.
+function search_side_panel_columns!(search::SidePanelSearch, next_unpinned::Integer, n_columns::Integer)::Nothing
+    parts = search.parts
+    column_per_part = search.column_per_part
+
+    # Adding parts never narrows a column, so the waste of the columns so far is a lower bound of the final waste.
+    best_ranking = search.best_ranking
+    if best_ranking !== nothing
+        partial_width = sum(
+            maximum(part.width for (part, part_column) in zip(parts, column_per_part) if part_column == column) for
+            column in unique(column_per_part) if column != 0;
+            init = 0.0,
+        )
+        if partial_width - search.total_area > best_ranking[1] + SIDE_PANEL_EPSILON
+            return nothing
+        end
+    end
+
+    if next_unpinned > length(search.unpinned_indices)
+        ranking = side_panel_ranking(parts, column_per_part)
+        if is_better_side_panel_ranking(ranking, search.best_ranking)
+            search.best_ranking = ranking
+            search.best_column_per_part = copy(column_per_part)
+        end
+        return nothing
+    end
+
+    part_index = search.unpinned_indices[next_unpinned]
+    for column in 1:(n_columns + 1)
+        heights = [parts[index].height for index in eachindex(parts) if column_per_part[index] == column]
+        push!(heights, parts[part_index].height)
+        if side_panel_column_height(heights, search.vertical_gap) <= 1 + SIDE_PANEL_EPSILON
+            column_per_part[part_index] = column
+            search_side_panel_columns!(search, next_unpinned + 1, max(n_columns, column))
+            column_per_part[part_index] = 0
+        end
+    end
+    return nothing
+end
+
+# The column of each part, placing the tallest unpinned parts first, each in the first column with room for it.
+function first_fit_side_panel_columns(parts::AbstractVector{SidePanelPart}, vertical_gap::Real)::Vector{Int}
+    column_per_part, n_columns = pinned_side_panel_columns(parts)
+    unpinned_indices = findall(==(0), column_per_part)
+    sort!(unpinned_indices; by = index -> -parts[index].height, alg = MergeSort)
+    for part_index in unpinned_indices
+        for column in 1:(n_columns + 1)
+            heights = [parts[index].height for index in eachindex(parts) if column_per_part[index] == column]
+            push!(heights, parts[part_index].height)
+            if side_panel_column_height(heights, vertical_gap) <= 1 + SIDE_PANEL_EPSILON
+                column_per_part[part_index] = column
+                n_columns = max(n_columns, column)
+                break
+            end
+        end
+    end
+    return column_per_part
+end
+
+# The place of each part given its column, and the width of the whole panel.
+function side_panel_places(
+    parts::AbstractVector{SidePanelPart},
+    column_per_part::AbstractVector{<:Integer},
+    horizontal_gap::Real,
+    vertical_gap::Real,
+)::Tuple{Vector{SidePanelPlace}, Float64}
+    x_offset_per_column = Dict{Int, Float64}()
+    panel_width = 0.0
+    for column in sort(unique(column_per_part))
+        x_offset_per_column[column] = panel_width + horizontal_gap
+        panel_width +=
+            horizontal_gap +
+            maximum(part.width for (part, part_column) in zip(parts, column_per_part) if part_column == column)
+    end
+
+    # The parts of each column are stacked from the top by their `order` (the sort is stable, so ties keep their order).
+    y_top_per_column = Dict(column => 1.0 for column in keys(x_offset_per_column))
+    places = Vector{SidePanelPlace}(undef, length(parts))
+    for part_index in sort(collect(eachindex(parts)); by = index -> parts[index].order, alg = MergeSort)
+        column = column_per_part[part_index]
+        places[part_index] =
+            SidePanelPlace(; column, x_offset = x_offset_per_column[column], y_top = y_top_per_column[column])
+        y_top_per_column[column] -= parts[part_index].height + vertical_gap
+    end
+
+    return (places, panel_width)
+end
+
 """
     plotly_figure(trace::GenericTrace, layout::Layout)::PlotlyFigure
     plotly_figure(traces::AbstractVector{<:GenericTrace}, layout::Layout)::PlotlyFigure
