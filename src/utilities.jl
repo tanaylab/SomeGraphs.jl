@@ -800,10 +800,8 @@ function set_layout_colorscale!(;
         @assert ticks_range !== nothing
         colorbar = Dict{Symbol, Any}(:title => plotly_title(title))
         if colors_configuration.scale.log_base === Log10Base
-            ticks_values, ticks_labels = log10_colors_scale_ticks(
-                ticks_range,
-                colors_scale_pixel_length(colors_configuration, figure_configuration),
-            )
+            ticks_values, ticks_labels =
+                log10_plotly_ticks(ticks_range, colors_scale_n_ticks(colors_configuration, figure_configuration))
             ticks_suffix = axis_ticks_suffix(colors_configuration.scale)
             colorbar[:tickmode] = "array"
             colorbar[:tickvals] = ticks_values
@@ -832,16 +830,15 @@ end
 # Plotly aims at a tick per this many pixels along a vertical axis.
 const PLOTLY_VERTICAL_PIXELS_PER_TICK = 40
 
-# The ticks of the color bar of a `Log10Base` color scale, whose (log) values are in the `scaled_range`, and which is
-# `pixel_length` long: the log values of the ticks, and their labels, which show the real values (with SI suffixes).
-# They are chosen the way plotly.js 4.1.1 chooses the ticks of a vertical log axis (`calcTicks` and `autoTicks`), from
-# the same candidates as the legend of sizes.
-function log10_colors_scale_ticks(scaled_range::Range, pixel_length::Real)::Tuple{Vector{Float64}, Vector{String}}
+# The ticks of a `Log10Base` scale whose (log) values are in the `scaled_range`, when Plotly aims at `n_ticks` ticks:
+# the log values of the ticks, and their labels, which show the real values (with SI suffixes). They are chosen the way
+# plotly.js 4.1.1 chooses the ticks of a log axis (`calcTicks` and `autoTicks`), from the same candidates as the legend
+# of sizes. We give these ticks to the color bar of a `Log10Base` color scale.
+function log10_plotly_ticks(scaled_range::Range, n_ticks::Real)::Tuple{Vector{Float64}, Vector{String}}
     scaled_minimum = scaled_range.minimum
     scaled_maximum = scaled_range.maximum
     decades = scaled_maximum - scaled_minimum
-    n_ticks = clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
-    rough_step = decades / n_ticks
+    rough_step = decades / Float64(n_ticks)  # In `Float64` like Plotly, which matters at the thresholds.
     are_digits = false
 
     if decades == 0
@@ -1189,16 +1186,16 @@ function plain_ticks_affix(affix::Maybe{AbstractString})::String
     return affix === nothing ? "" : replace(affix, r"<[^>]*>" => "")
 end
 
-# The tick labels of a Plotly color bar of a `scale` whose (scaled) values are in the `scaled_range`, and which is
-# `pixel_length` long, as far as their widths are concerned. For a `Log10Base` scale these are the ticks we give it. For
-# the rest, Plotly picks the ticks of a linear axis (a step of 2, 5 or 10 times a power of 10, for about a tick per 40
-# pixels), and each label is the wider of its plain and its SI form, since the form Plotly picks isn't known. Negative
-# values have Plotly's minus sign.
-function colors_scale_tick_labels(scale::ScaleConfiguration, scaled_range::Range, pixel_length::Real)::Vector{String}
+# The tick labels Plotly draws for a `scale` whose (scaled) values are in the `scaled_range`, when it aims at `n_ticks`
+# ticks, as far as their widths are concerned. This holds for a color bar and for an axis. For a `Log10Base` scale they
+# follow Plotly's rules for a log axis (see `log10_plotly_ticks`). For the rest, Plotly picks the ticks of a linear axis
+# (a step of 2, 5 or 10 times a power of 10), and each label is the wider of its plain and its SI form, since the form
+# Plotly picks isn't known. Negative values have Plotly's minus sign.
+function plotly_tick_labels(scale::ScaleConfiguration, scaled_range::Range, n_ticks::Real)::Vector{String}
     suffix = plain_ticks_affix(axis_ticks_suffix(scale))
 
     if scale.log_base === Log10Base
-        return [label * suffix for label in log10_colors_scale_ticks(scaled_range, pixel_length)[2]]
+        return [label * suffix for label in log10_plotly_ticks(scaled_range, n_ticks)[2]]
     end
 
     prefix = plain_ticks_affix(axis_ticks_prefix(scale))
@@ -1207,8 +1204,7 @@ function colors_scale_tick_labels(scale::ScaleConfiguration, scaled_range::Range
         values = [Float64(scaled_range.minimum)]
         places = single_value_places(scaled_range.minimum)
     else
-        n_ticks = clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
-        rough_step = span / n_ticks
+        rough_step = span / Float64(n_ticks)  # In `Float64` like Plotly, which matters at the thresholds.
         power = floor(Int, log10(rough_step))
         multiplier = rough_step / exp10(power)
         step = (multiplier < 2 ? 2 : multiplier < 5 ? 5 : 10) * exp10(power)
@@ -1229,6 +1225,98 @@ function colors_scale_tick_labels(scale::ScaleConfiguration, scaled_range::Range
     return labels
 end
 
+# The width in pixels of the widest tick label Plotly could draw on an axis of the `scale` whose (scaled) values are in
+# the `scaled_range`, whatever the axis' length. Plotly aims at between 5 and 10 ticks (one per 40 pixels of a vertical
+# axis, or 80 of a horizontal one, clamped to 4..9, plus 1). Every step it can pick for a count in that range, it also
+# picks for a whole count, so trying those covers them all.
+function axis_ticks_max_pixels_width(scale::ScaleConfiguration, scaled_range::Range)::Float64
+    return maximum(
+        tick_label_pixel_width(label) for n_ticks in 5:10 for label in plotly_tick_labels(scale, scaled_range, n_ticks)
+    )
+end
+
+# How far a label reaches from its tick, in pixels: `depth` away from the axis, and `before` and `after` the tick
+# along the axis (left and right of an x tick, above and below a y tick).
+@kwdef struct LabelExtent
+    depth::Float64
+    before::Float64
+    after::Float64
+end
+
+# The extent of a label `width` pixels wide and `height` tall, drawn at the `screen_angle` (between -90 and 90) beside
+# an axis (vertical if `is_vertical_axis`), anchored at its tick the way Plotly anchors tick labels. A horizontal or
+# vertical label is centered on its tick. A label which rises to the right (a negative angle) ends at its tick, so it
+# hangs to the left of an x tick and below a y tick. One which falls to the right starts at its tick, so it hangs to the
+# right of an x tick and above a y tick.
+function rotated_label_extent(; width::Real, height::Real, screen_angle::Real, is_vertical_axis::Bool)::LabelExtent
+    @assert -90 <= screen_angle <= 90
+    cosine = abs(cosd(screen_angle))
+    sine = abs(sind(screen_angle))
+    box_width = width * cosine + height * sine
+    box_height = width * sine + height * cosine
+
+    if is_vertical_axis
+        depth = box_width
+        along = box_height
+    else
+        depth = box_height
+        along = box_width
+    end
+
+    if -90 < screen_angle < 0
+        before, after = is_vertical_axis ? (0.0, along) : (along, 0.0)
+    elseif 0 < screen_angle < 90
+        before, after = is_vertical_axis ? (along, 0.0) : (0.0, along)
+    else
+        before = after = along / 2
+    end
+
+    return LabelExtent(; depth, before, after)
+end
+
+# How far the content beyond the plot area reaches on each side, in pixels (before the margins and the side panel).
+@kwdef struct SidesContent
+    left::Float64 = 0
+    right::Float64 = 0
+    top::Float64 = 0
+    bottom::Float64 = 0
+end
+
+# How far a group of labels reaches beyond the plot area: labels at most `width` wide and `height` tall at the
+# `screen_angle`, beside a vertical (left) or horizontal (bottom) axis, `gap` pixels from it, followed by a title
+# `title_height` tall (0 for none) `standoff` pixels beyond the labels. A label may be at either end of the axis, so it
+# overhangs into both neighbouring sides.
+function labels_sides_content(;
+    width::Real,
+    height::Real,
+    screen_angle::Real,
+    is_vertical_axis::Bool,
+    gap::Real,
+    title_height::Real = 0,
+    standoff::Real = 0,
+)::SidesContent
+    extent = rotated_label_extent(; width, height, screen_angle, is_vertical_axis)
+    depth = gap + extent.depth
+    if title_height > 0
+        depth += standoff + title_height
+    end
+    if is_vertical_axis
+        return SidesContent(; left = depth, top = extent.before, bottom = extent.after)
+    else
+        return SidesContent(; bottom = depth, left = extent.before, right = extent.after)
+    end
+end
+
+# The content of all the `sides_contents`: on each side, the farthest any of them reaches.
+function combined_sides_content(sides_contents::AbstractVector{SidesContent})::SidesContent
+    return SidesContent(;
+        left = maximum(content.left for content in sides_contents; init = 0.0),
+        right = maximum(content.right for content in sides_contents; init = 0.0),
+        top = maximum(content.top for content in sides_contents; init = 0.0),
+        bottom = maximum(content.bottom for content in sides_contents; init = 0.0),
+    )
+end
+
 # The default order in a column of the side panel of each kind of part (see `LegendConfiguration`).
 const CATEGORICAL_LEGEND_ORDER = 1  # NOLINT
 const COLORS_SCALE_ORDER = 2
@@ -1247,13 +1335,15 @@ function plot_pixel_height(figure_configuration::FigureConfiguration)::Float64
            figure_configuration.margins.bottom
 end
 
-# The length in pixels of the color bar of a `colors_configuration`.
-function colors_scale_pixel_length(
+# The number of ticks Plotly aims at on the color bar of the `colors_configuration` (from its length in pixels).
+function colors_scale_n_ticks(
     colors_configuration::ColorsConfiguration,
     figure_configuration::FigureConfiguration,
 )::Float64
-    return prefer_data(colors_configuration.legend.height, COLORS_SCALE_DEFAULT_HEIGHT) *
-           plot_pixel_height(figure_configuration)
+    pixel_length =
+        prefer_data(colors_configuration.legend.height, COLORS_SCALE_DEFAULT_HEIGHT) *
+        plot_pixel_height(figure_configuration)
+    return clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
 end
 
 # The side panel item of a Plotly `legend` of entries with these `labels` and the `title` (if any), configured by the
@@ -1293,10 +1383,10 @@ function colors_scale_side_panel_item(;
     figure_configuration::FigureConfiguration,
 )::SidePanelItem
     legend_configuration = colors_configuration.legend
-    tick_labels = colors_scale_tick_labels(
+    tick_labels = plotly_tick_labels(
         colors_configuration.scale,
         ticks_range,
-        colors_scale_pixel_length(colors_configuration, figure_configuration),
+        colors_scale_n_ticks(colors_configuration, figure_configuration),
     )
     part = SidePanelPart(;
         width = something(legend_configuration.width, colors_scale_pixel_width(tick_labels; title)),

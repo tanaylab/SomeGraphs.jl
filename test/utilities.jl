@@ -321,37 +321,37 @@ nested_test("utilities") do
     end
 
     # The ticks of a `Log10Base` color bar follow Plotly's rule for a vertical log axis.
-    nested_test("log10_colors_scale_ticks") do
-        log10_colors_scale_ticks = SomeGraphs.Utilities.log10_colors_scale_ticks
+    nested_test("log10_plotly_ticks") do
+        log10_plotly_ticks = SomeGraphs.Utilities.log10_plotly_ticks
 
         nested_test("single") do
-            values, labels = log10_colors_scale_ticks(Range(; minimum = 2, maximum = 2), 350)
+            values, labels = log10_plotly_ticks(Range(; minimum = 2, maximum = 2), 9.75)
             @test values == [2.0]
             @test labels == ["100"]
         end
 
         nested_test("powers") do
-            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 9), 350)
+            values, labels = log10_plotly_ticks(Range(; minimum = 0, maximum = 9), 9.75)
             @test values == collect(0.0:9.0)
             @test labels == ["1", "10", "100", "1k", "10k", "100k", "1M", "10M", "100M", "1G"]
         end
 
         nested_test("125") do
-            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 3), 350)
+            values, labels = log10_plotly_ticks(Range(; minimum = 0, maximum = 3), 9.75)
             @test values ≈ log10.([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000])
             small(digit) = SomeGraphs.Utilities.minor_log_tick_label(digit)
             @test labels == ["1", small(2), small(5), "10", small(2), small(5), "100", small(2), small(5), "1k"]
         end
 
         nested_test("digits") do
-            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 1.5), 100)
+            values, labels = log10_plotly_ticks(Range(; minimum = 0, maximum = 1.5), 5)
             @test values ≈ log10.([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30])
             small(digit) = SomeGraphs.Utilities.minor_log_tick_label(digit)
             @test labels == ["1", [small(digit) for digit in 2:9]..., "10", small(2), small(3)]
         end
 
         nested_test("linear") do
-            values, labels = log10_colors_scale_ticks(Range(; minimum = 0, maximum = 0.5), 350)
+            values, labels = log10_plotly_ticks(Range(; minimum = 0, maximum = 0.5), 9.75)
             @test values ≈ log10.(collect(1.0:0.2:3.0))
             @test labels == ["1.0", "1.2", "1.4", "1.6", "1.8", "2.0", "2.2", "2.4", "2.6", "2.8", "3.0"]
         end
@@ -445,7 +445,7 @@ nested_test("utilities") do
         legend_pixel_width = SomeGraphs.Utilities.legend_pixel_width
         legend_pixel_height = SomeGraphs.Utilities.legend_pixel_height
         colors_scale_pixel_width = SomeGraphs.Utilities.colors_scale_pixel_width
-        colors_scale_tick_labels = SomeGraphs.Utilities.colors_scale_tick_labels
+        plotly_tick_labels = SomeGraphs.Utilities.plotly_tick_labels
 
         nested_test("legend_width") do
             @test 142 <= legend_pixel_width(["Population of cells", "B"]; title = nothing) <= 143
@@ -461,42 +461,117 @@ nested_test("utilities") do
         end
 
         nested_test("colors_scale_unit") do
-            labels = colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 0, maximum = 1), 330)
+            labels = plotly_tick_labels(ScaleConfiguration(), Range(; minimum = 0, maximum = 1), 9.25)
             @test labels == ["0.0", "0.2", "0.4", "0.6", "0.8", "1.0"]
             @test 47.8 <= colors_scale_pixel_width(labels; title = nothing) <= 50
         end
 
         nested_test("colors_scale_negative") do
-            labels = colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = -3, maximum = 3), 330)
+            labels = plotly_tick_labels(ScaleConfiguration(), Range(; minimum = -3, maximum = 3), 9.25)
             @test labels == ["−3", "−2", "−1", "0", "1", "2", "3"]
             @test 45 <= colors_scale_pixel_width(labels; title = nothing) <= 47
         end
 
         # Plotly shows "120k", but the estimate doesn't know it would, so it takes the wider "120000".
         nested_test("colors_scale_large") do
-            labels = colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 0, maximum = 123456), 330)
+            labels = plotly_tick_labels(ScaleConfiguration(), Range(; minimum = 0, maximum = 123456), 9.25)
             @test labels[end] == "120000"
             @test 58.9 <= colors_scale_pixel_width(labels; title = nothing) <= 75
         end
 
         # A `Log10Base` color bar has our own ticks, with the scale's suffix.
         nested_test("colors_scale_log10") do
-            labels = colors_scale_tick_labels(
+            labels = plotly_tick_labels(
                 ScaleConfiguration(; log_base = Log10Base, percent = true),
                 Range(; minimum = 0, maximum = 3),
-                350,
+                9.75,
             )
             small(digit) = SomeGraphs.Utilities.minor_log_tick_label(digit) * "%"
             @test labels == ["1%", small(2), small(5), "10%", small(2), small(5), "100%", small(2), small(5), "1k%"]
         end
 
         nested_test("colors_scale_single") do
-            @test colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 2, maximum = 2), 330) == ["2"]
-            @test colors_scale_tick_labels(ScaleConfiguration(), Range(; minimum = 2.5, maximum = 2.5), 330) == ["2.5"]
+            @test plotly_tick_labels(ScaleConfiguration(), Range(; minimum = 2, maximum = 2), 9.25) == ["2"]
+            @test plotly_tick_labels(ScaleConfiguration(), Range(; minimum = 2.5, maximum = 2.5), 9.25) == ["2.5"]
         end
 
         nested_test("colors_scale_title") do
             @test 125.2 <= colors_scale_pixel_width(["1"]; title = "A long color bar title") <= 127
+        end
+
+        # An axis may get any count of ticks, so its widest label is the widest of all of them.
+        nested_test("axis_ticks") do
+            axis_ticks_max_pixels_width = SomeGraphs.Utilities.axis_ticks_max_pixels_width
+            widest(labels) = maximum(text_width.(labels))
+
+            nested_test("counts") do
+                scaled_range = Range(; minimum = 0, maximum = 2.5)
+                @test plotly_tick_labels(ScaleConfiguration(), scaled_range, 5) == ["0", "1", "2"]
+                labels = plotly_tick_labels(ScaleConfiguration(), scaled_range, 10)
+                @test labels == ["0.0", "0.5", "1.0", "1.5", "2.0", "2.5"]
+                @test axis_ticks_max_pixels_width(ScaleConfiguration(), scaled_range) == widest(labels)
+            end
+
+            nested_test("large") do
+                scaled_range = Range(; minimum = 0, maximum = 123456)
+                @test axis_ticks_max_pixels_width(ScaleConfiguration(), scaled_range) == widest(["100000", "120000"])
+            end
+        end
+
+        # A label of 111 by 10 pixels, which Kaleido drew 111 by 10 at 0 (centered on its tick), 10 by 111 at ±90, and
+        # 83 by 81 at ±45 (ending or starting at its tick, though its ink reaches up to 3 pixels past it).
+        nested_test("rotated_label_extent") do
+            rotated_label_extent = SomeGraphs.Utilities.rotated_label_extent
+            function extent(screen_angle, is_vertical_axis)
+                return rotated_label_extent(; width = 111, height = 10, screen_angle, is_vertical_axis)
+            end
+            slanted = (111 + 10) * sqrt(0.5)
+
+            nested_test("x") do
+                @test extent(0, false) == SomeGraphs.Utilities.LabelExtent(; depth = 10, before = 55.5, after = 55.5)
+                @test extent(-90, false) == SomeGraphs.Utilities.LabelExtent(; depth = 111, before = 5, after = 5)
+                rising = extent(-45, false)
+                @test rising.depth ≈ slanted
+                @test rising.before ≈ slanted
+                @test rising.after == 0
+                @test extent(45, false).after ≈ slanted
+            end
+
+            nested_test("y") do
+                @test extent(0, true) == SomeGraphs.Utilities.LabelExtent(; depth = 111, before = 5, after = 5)
+                @test extent(90, true) == SomeGraphs.Utilities.LabelExtent(; depth = 10, before = 55.5, after = 55.5)
+                rising = extent(-45, true)
+                @test rising.depth ≈ slanted
+                @test rising.before == 0
+                @test rising.after ≈ slanted
+                @test extent(45, true).before ≈ slanted
+            end
+        end
+
+        # Each group of labels reaches its own side, and overhangs into the two sides next to it.
+        nested_test("sides_content") do
+            SidesContent = SomeGraphs.Utilities.SidesContent
+            labels_sides_content = SomeGraphs.Utilities.labels_sides_content
+            combined_sides_content = SomeGraphs.Utilities.combined_sides_content
+
+            x_content = labels_sides_content(;
+                width = 40,
+                height = 10,
+                screen_angle = 0,
+                is_vertical_axis = false,
+                gap = 5,
+                title_height = 12,
+                standoff = 10,
+            )
+            @test x_content == SidesContent(; left = 20, right = 20, bottom = 5 + 10 + 10 + 12)
+
+            y_content =
+                labels_sides_content(; width = 60, height = 10, screen_angle = 0, is_vertical_axis = true, gap = 1)
+            @test y_content == SidesContent(; left = 1 + 60, top = 5, bottom = 5)
+
+            @test combined_sides_content([x_content, y_content]) ==
+                  SidesContent(; left = 61, right = 20, top = 5, bottom = 37)
+            @test combined_sides_content(SidesContent[]) == SidesContent()
         end
     end
 
