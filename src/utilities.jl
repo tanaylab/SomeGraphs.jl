@@ -524,16 +524,21 @@ end
 Convert the axis-relative `ticks_angle` (0 = parallel to the axis, ±90 = perpendicular) to the screen angle used by
 Plotly's `tickangle` (0 = horizontal). A vertical axis is parallel when standing the text up (bottom-to-top, -90). A
 `nothing` angle keeps the labels horizontal, the readable orientation for numbers regardless of the axis direction.
+
+The screen angle is always between -90 and 90, so the text is never upside down. A label of a vertical axis at a
+negative `ticks_angle` lies on the same line it would at `ticks_angle - 90`, but reads the other way.
 """
 function axis_screen_ticks_angle(::Nothing, ::Bool)::Real
     return 0
 end
 
 function axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
-    if is_vertical_axis
-        return ticks_angle - 90
-    else
+    if !is_vertical_axis
         return ticks_angle
+    elseif ticks_angle < 0
+        return ticks_angle + 90
+    else
+        return ticks_angle - 90
     end
 end
 

@@ -529,7 +529,9 @@ end
 <a href="common.html#SomeGraphs.Common.AxisConfiguration">
 <code>AxisConfiguration
 </code>
-</a>).
+</a>). The titles of the other side&#39;s annotations line up with these labels, so they follow a set 
+<code>ticks_angle
+</code> too. By default, a title below an annotation stands up, so the titles of neighbouring annotations don&#39;t overlap.
 </p>
 <p>The layout of the side is an order, and optionally a tree for the dendogram. The 
 <code>tree_source
@@ -1289,12 +1291,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='fpHAAbMI9c' class='' style=';'>
+<div id='QQVnzAYvuO' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("fpHAAbMI9c")
+    const PLOT = document.getElementById("QQVnzAYvuO")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A\u003cbr>X","A\u003cbr>Y","A\u003cbr>Z"],["B\u003cbr>X","B\u003cbr>Y","B\u003cbr>Z"],["C\u003cbr>X","C\u003cbr>Y","C\u003cbr>Z"],["D\u003cbr>X","D\u003cbr>Y","D\u003cbr>Z"]],"z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"font":{"family":"Lato, sans-serif"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1325,12 +1327,12 @@ using PlotlyDocumenter
 to_documenter(flipped.fig)
 </code>
 </pre>
-<div id='JgyLT162iC' class='' style=';'>
+<div id='tNGHH2BpXG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("JgyLT162iC")
+    const PLOT = document.getElementById("tNGHH2BpXG")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X\u003cbr>A","X\u003cbr>B","X\u003cbr>C","X\u003cbr>D"],["Y\u003cbr>A","Y\u003cbr>B","Y\u003cbr>C","Y\u003cbr>D"],["Z\u003cbr>A","Z\u003cbr>B","Z\u003cbr>C","Z\u003cbr>D"]],"z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"font":{"family":"Lato, sans-serif"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1361,12 +1363,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='RtpI5mUeob' class='' style=';'>
+<div id='omPr3E6mBd' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("RtpI5mUeob")
+    const PLOT = document.getElementById("omPr3E6mBd")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["X\u003cbr>A","X\u003cbr>B","X\u003cbr>C","X\u003cbr>D"],["Y\u003cbr>A","Y\u003cbr>B","Y\u003cbr>C","Y\u003cbr>D"],["Z\u003cbr>A","Z\u003cbr>B","Z\u003cbr>C","Z\u003cbr>D"]],"z":[[4.0,1.0,5.0],[3.0,2.0,4.0],[2.0,3.0,3.0],[1.0,4.0,2.0]],"transpose":true,"x":[1,2,3,4]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"font":{"family":"Lato, sans-serif"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1409,12 +1411,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='CqVF337JVW' class='' style=';'>
+<div id='htIyup23in' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("CqVF337JVW")
+    const PLOT = document.getElementById("htIyup23in")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0],[5.0,4.0,3.0,2.0]],"text":[["A\u003cbr>X","A\u003cbr>Y","A\u003cbr>Z"],["B\u003cbr>X","B\u003cbr>Y","B\u003cbr>Z"],["C\u003cbr>X","C\u003cbr>Y","C\u003cbr>Z"],["D\u003cbr>X","D\u003cbr>Y","D\u003cbr>Z"]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["black","darkgray","lightgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","customdata":["X","Y","Z"],"orientation":"v","hovertemplate":"%{customdata}\u003cextra>\u003c/extra>","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","customdata":["A","B","C","D"],"yaxis":"y2","orientation":"h","hovertemplate":"%{customdata}\u003cextra>\u003c/extra>","x":[1.0,1.0,1.0,1.0]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,1.0],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,1.0],"ticktext":["X","Y","Z"]},"font":{"family":"Lato, sans-serif"},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1459,12 +1461,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='m4O0g7MA8k' class='' style=';'>
+<div id='Xkz5sgF35t' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("m4O0g7MA8k")
+    const PLOT = document.getElementById("Xkz5sgF35t")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4],"type":"heatmap","name":"","yaxis":"y2","z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[1.0,2.0,3.0,4.0]],"text":[["A\u003cbr>Z","A\u003cbr>X","A\u003cbr>Y"],["B\u003cbr>Z","B\u003cbr>X","B\u003cbr>Y"],["C\u003cbr>Z","C\u003cbr>X","C\u003cbr>Y"],["D\u003cbr>Z","D\u003cbr>X","D\u003cbr>Y"]],"transpose":true,"x":[1,2,3]},{"showlegend":false,"marker":{"color":["lightgray","black","darkgray"]},"xaxis":"x2","y":[1.0,1.0,1.0],"type":"bar","name":"is_special","customdata":["Z","X","Y"],"orientation":"v","hovertemplate":"%{customdata}\u003cextra>\u003c/extra>","x":["1","2","3"]},{"showlegend":false,"marker":{"color":[1.0,0.5,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4"],"type":"bar","name":"score","customdata":["A","B","C","D"],"yaxis":"y2","orientation":"h","hovertemplate":"%{customdata}\u003cextra>\u003c/extra>","x":[1.0,1.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,3.0,3.0,4.0,4.0,null,1.5,1.5,3.5,3.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,2.0,2.0,0.0,null,2.0,5.2915025,5.2915025,0.0,null],"type":"scatter","name":"","yaxis":"y3","x":[1.0,1.0,2.0,2.0,null,1.5,1.5,3.0,3.0,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,5.2915025],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"hoverlabel":{"align":"left"},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"domain":[0.055,0.7999999999999999],"ticktext":["Z","X","Y"]},"font":{"family":"Lato, sans-serif"},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1511,12 +1513,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='ue2QV8M607' class='' style=';'>
+<div id='2rGtIAeTAG' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("ue2QV8M607")
+    const PLOT = document.getElementById("2rGtIAeTAG")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","xaxis":"x2","y":[1,2,3,4,5],"type":"heatmap","name":"","yaxis":"y2","z":[[4.0,3.0,null,2.0,1.0],[null,null,null,null,null],[5.0,4.0,null,3.0,2.0],[1.0,2.0,null,3.0,4.0]],"text":[["A\u003cbr>X","","A\u003cbr>Z","A\u003cbr>Y"],["B\u003cbr>X","","B\u003cbr>Z","B\u003cbr>Y"],["","","",""],["C\u003cbr>X","","C\u003cbr>Z","C\u003cbr>Y"],["D\u003cbr>X","","D\u003cbr>Z","D\u003cbr>Y"]],"transpose":true,"x":[1,2,3,4]},{"showlegend":false,"marker":{"color":["black","white","lightgray","darkgray"]},"xaxis":"x2","y":[1.0,0.0,1.0,1.0],"type":"bar","name":"is_special","customdata":["X","","Z","Y"],"orientation":"v","hovertemplate":"%{customdata}\u003cextra>\u003c/extra>","x":["1","2","3","4"]},{"showlegend":false,"marker":{"color":[1.0,0.5,null,0.0,1.0],"coloraxis":"coloraxis2"},"y":["1","2","3","4","5"],"type":"bar","name":"score","customdata":["A","B","","C","D"],"yaxis":"y2","orientation":"h","hovertemplate":"%{customdata}\u003cextra>\u003c/extra>","x":[1.0,1.0,0.0,1.0,1.0]},{"showlegend":false,"mode":"lines","xaxis":"x3","line":{"color":"black"},"y":[1.0,1.0,2.0,2.0,null,4.0,4.0,5.0,5.0,null,1.5,1.5,4.5,4.5,null],"type":"scatter","name":"","yaxis":"y2","x":[0.0,1.7320508,1.7320508,0.0,null,0.0,1.7320508,1.7320508,0.0,null,1.7320508,4.8989797,4.8989797,1.7320508,null]},{"showlegend":false,"mode":"lines","xaxis":"x2","line":{"color":"black"},"y":[0.0,4.8989797,4.8989797,0.0,null,0.0,4.8989797,4.8989797,4.8989797,null],"type":"scatter","name":"","yaxis":"y3","x":[3.0,3.0,4.0,4.0,null,1.0,1.0,3.5,3.5,null]}], "layout": {"showlegend":false,"coloraxis2":{"showscale":false},"xaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"paper_bgcolor":"white","bargap":0,"template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"yaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"yaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5],"range":[0.5,5.5],"domain":[0.055,0.7999999999999999],"ticktext":["A","B","","C","D"]},"yaxis":{"showgrid":false,"showticklabels":false,"range":[0.0,1.0],"domain":[0.0,0.05]},"xaxis3":{"showgrid":false,"showticklabels":false,"range":[0.0,4.8989797],"domain":[0.8,1.0]},"hoverlabel":{"align":"left"},"xaxis2":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"domain":[0.055,0.7999999999999999],"ticktext":["X","","Z","Y"]},"font":{"family":"Lato, sans-serif"},"annotations":[{"yanchor":"middle","xanchor":"right","y":0.5,"yref":"y domain","showarrow":false,"text":"is_special","xref":"x domain","x":0},{"yanchor":"top","xanchor":"center","y":0,"yref":"y domain","showarrow":false,"text":"score","xref":"x domain","textangle":-90,"x":0.5}],"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1554,12 +1556,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='nF570QSFqT' class='' style=';'>
+<div id='v7QaP3QMYp' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("nF570QSFqT")
+    const PLOT = document.getElementById("v7QaP3QMYp")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3,4],"type":"heatmap","name":"","text":[["A\u003cbr>W","A\u003cbr>U","","A\u003cbr>V","","A\u003cbr>Z","","A\u003cbr>X","A\u003cbr>Y"],["B\u003cbr>W","B\u003cbr>U","","B\u003cbr>V","","B\u003cbr>Z","","B\u003cbr>X","B\u003cbr>Y"],["C\u003cbr>W","C\u003cbr>U","","C\u003cbr>V","","C\u003cbr>Z","","C\u003cbr>X","C\u003cbr>Y"],["D\u003cbr>W","D\u003cbr>U","","D\u003cbr>V","","D\u003cbr>Z","","D\u003cbr>X","D\u003cbr>Y"]],"z":[[5.0,4.0,3.0,2.0],[4.0,3.0,2.0,1.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[1.0,2.0,3.0,4.0],[null,null,null,null],[2.0,3.0,4.0,5.0],[4.0,3.0,2.0,1.0]],"transpose":true,"x":[1,2,3,4,5,6,7,8,9]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4,5,6,7,8,9],"range":[0.5,9.5],"ticktext":["W","U","","V","","Z","","X","Y"]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3,4],"range":[0.5,4.5],"ticktext":["A","B","C","D"]},"font":{"family":"Lato, sans-serif"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 
@@ -1597,12 +1599,12 @@ using PlotlyDocumenter
 to_documenter(graph.fig)
 </code>
 </pre>
-<div id='LWy3gl8gF6' class='' style=';'>
+<div id='PQ20DbWJ4N' class='' style=';'>
 </div>
 
 <script type="module">
     import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
-    const PLOT = document.getElementById("LWy3gl8gF6")
+    const PLOT = document.getElementById("PQ20DbWJ4N")
     const plot_obj = {"data": [{"coloraxis":"coloraxis","y":[1,2,3],"type":"heatmap","name":"","text":[["A\u003cbr>X","A\u003cbr>Y","A\u003cbr>Z"],["C\u003cbr>X","C\u003cbr>Y","C\u003cbr>Z"],["D\u003cbr>X","D\u003cbr>Y","D\u003cbr>Z"]],"z":[[4.0,2.0,1.0],[1.0,3.0,4.0],[5.0,3.0,2.0]],"transpose":true,"x":[1,2,3]}], "layout": {"showlegend":false,"coloraxis":{"cmin":1.0,"cmax":5.0,"showscale":false},"xaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["X","Y","Z"]},"paper_bgcolor":"white","template":{"layout":{},"data":{}},"legend":{"tracegroupgap":0},"hoverlabel":{"align":"left"},"yaxis":{"showgrid":false,"showticklabels":true,"tickvals":[1,2,3],"range":[0.5,3.5],"ticktext":["A","C","D"]},"font":{"family":"Lato, sans-serif"},"plot_bgcolor":"white","margin":{"l":50,"b":50,"autoexpand":false,"r":50,"t":50}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
     Plotly.newPlot(PLOT, plot_obj)
 

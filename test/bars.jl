@@ -293,6 +293,12 @@ nested_test("bars") do
                         return nothing
                     end
 
+                    nested_test("ticks_angle") do
+                        graph.configuration.value_axis.ticks_angle = 45
+                        test_html(graph, "bars.$(orientation_name).continuous.ticks_angle.html")
+                        return nothing
+                    end
+
                     # The title falls back to the one in the colors, so this is the same graph as above.
                     nested_test("colors_title") do
                         graph.data.annotations[1].values.title = nothing

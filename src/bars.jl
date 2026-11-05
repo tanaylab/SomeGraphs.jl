@@ -1516,6 +1516,7 @@ function bars_layout(;
             values_sub_graph = sub_graph,
             values_orientation = graph.configuration.values_orientation,
             title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
+            ticks_angle = graph.configuration.value_axis.ticks_angle,
         )
         set_layout_axis!(
             layout,
@@ -1557,21 +1558,40 @@ function push_plotly_annotation!(;
     values_sub_graph::Maybe{SubGraph} = nothing,
     values_orientation::ValuesOrientation,
     title::Maybe{AbstractString},
+    ticks_angle::Maybe{Real},
 )::Nothing
     if title !== nothing
         xaxis_index, _, yaxis_index, _ = plotly_sub_graph_axes(; values_sub_graph, basis_sub_graph, values_orientation)
-        if values_orientation == VerticalValues
+        # The label lines up with the tick labels of the vertical axis (left of a horizontal strip) or of the horizontal
+        # axis (below a vertical strip), so it is rotated and anchored like them. Unless its `ticks_angle` is set, the
+        # label below a vertical strip stands up, so labels of narrow strips side by side don't overlap.
+        is_vertical_axis = values_orientation == VerticalValues
+        if ticks_angle === nothing
+            screen_angle = is_vertical_axis ? 0 : -90
+        else
+            screen_angle = axis_screen_ticks_angle(ticks_angle, is_vertical_axis)
+        end
+        textangle = screen_angle != 0 ? screen_angle : nothing
+        if is_vertical_axis
             x = 0
             y = 0.5
             xanchor = "right"
-            yanchor = "middle"
-            textangle = nothing
+            yanchor = slanted_label_anchor(
+                screen_angle;
+                negative_anchor = "top",
+                positive_anchor = "bottom",
+                straight_anchor = "middle",
+            )
         else
             x = 0.5
             y = 0
-            xanchor = "center"
+            xanchor = slanted_label_anchor(
+                screen_angle;
+                negative_anchor = "right",
+                positive_anchor = "left",
+                straight_anchor = "center",
+            )
             yanchor = "top"
-            textangle = -90
         end
         push!(
             plotly_annotations,
@@ -1588,6 +1608,25 @@ function push_plotly_annotation!(;
             ),
         )
         return nothing
+    end
+end
+
+# The anchor of a label at the `screen_angle` (clockwise): the `negative_anchor` for a label whose line rises to the
+# right (e.g. -45), the `positive_anchor` for one which falls to the right (e.g. 45), and the `straight_anchor` for a
+# horizontal or vertical one.
+function slanted_label_anchor(
+    screen_angle::Real;
+    negative_anchor::AbstractString,
+    positive_anchor::AbstractString,
+    straight_anchor::AbstractString,
+)::AbstractString
+    @assert -90 <= screen_angle <= 90
+    if -90 < screen_angle < 0
+        return negative_anchor
+    elseif 0 < screen_angle < 90
+        return positive_anchor
+    else
+        return straight_anchor
     end
 end
 

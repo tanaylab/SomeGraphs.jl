@@ -23,6 +23,16 @@ nested_test("utilities") do
         @test layout[:margin][:autoexpand] === false
     end
 
+    nested_test("axis_screen_ticks_angle") do
+        @test axis_screen_ticks_angle(nothing, true) == 0
+        @test axis_screen_ticks_angle(-45, false) == -45
+        @test axis_screen_ticks_angle(0, true) == -90
+        @test axis_screen_ticks_angle(45, true) == -45
+        @test axis_screen_ticks_angle(90, true) == 0
+        @test axis_screen_ticks_angle(-45, true) == 45
+        @test axis_screen_ticks_angle(-90, true) == 0
+    end
+
     nested_test("plotly_axis_value") do
         @test plotly_axis_value(ScaleConfiguration(), nothing; is_plotly_log = false) === nothing
     end

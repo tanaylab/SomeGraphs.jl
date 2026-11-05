@@ -154,7 +154,9 @@ Configure one side (the rows or the columns) of a heatmap. The `title` is shown 
 The entries are labelled by their names from the [`HeatmapSideData`](@ref), if they have any. Set `show_ticks` to
 `false` to leave them unlabelled, which is what a side holding thousands of entries wants; the names are still the
 first line of each hover. By default the labels are shown horizontally, and `ticks_angle` rotates them (relative to the
-axis, as in [`AxisConfiguration`](@ref)).
+axis, as in [`AxisConfiguration`](@ref)). The titles of the other side's annotations line up with these labels, so they
+follow a set `ticks_angle` too. By default, a title below an annotation stands up, so the titles of neighbouring
+annotations don't overlap.
 
 The layout of the side is an order, and optionally a tree for the dendogram. The `tree_source` says where the tree comes
 from (see [`TreeSource`](@ref)) and the `order_source` says where the order comes from (see [`OrderSource`](@ref)). A
@@ -1161,6 +1163,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         annotation_size,
         dendogram_size,
         max_height,
+        ticks_angle,
     ) in (
         (
             "y",
@@ -1170,6 +1173,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             graph.configuration.columns.annotations,
             graph.configuration.columns.dendogram_size,
             columns_max_height,
+            graph.configuration.rows.ticks_angle,
         ),
         (
             "x",
@@ -1179,6 +1183,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
             graph.configuration.rows.annotations,
             graph.configuration.rows.dendogram_size,
             rows_max_height,
+            graph.configuration.columns.ticks_angle,
         ),
     )
         n_annotations = 0
@@ -1199,6 +1204,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
                     values_sub_graph = sub_graph,
                     values_orientation,
                     title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
+                    ticks_angle,
                 )
                 set_layout_axis!(
                     layout,

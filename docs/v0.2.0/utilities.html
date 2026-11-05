@@ -1383,6 +1383,12 @@ axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Real
 <code>nothing
 </code> angle keeps the labels horizontal, the readable orientation for numbers regardless of the axis direction.
 </p>
+<p>The screen angle is always between -90 and 90, so the text is never upside down. A label of a vertical axis at a negative 
+<code>ticks_angle
+</code> lies on the same line it would at 
+<code>ticks_angle - 90
+</code>, but reads the other way.
+</p>
 </div>
 </section>
 </details>

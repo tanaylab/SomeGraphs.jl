@@ -656,7 +656,8 @@ The `show_ticks` and/or `show_grid` can be disabled for a cleaner (though less i
 the grid lines are shown in `lightgrey`. The `ticks_angle` rotates the tick labels and is measured relative to the axis
 (between -90 and 90): 0 keeps the text parallel to the axis and ±90 stands it perpendicular, positive being clockwise.
 By default (`nothing`) the labels are horizontal, which is the readable orientation for numbers regardless of the axis
-direction.
+direction. The titles of the annotations next to the tick labels (in a bars graph) follow a set `ticks_angle`. By
+default, a title below an annotation stands up, so the titles of neighbouring annotations don't overlap.
 
 If `title` is specified, it will be shown next to the axis. However, in some cases the correct title depends on the data
 set, so you can override this in the data.

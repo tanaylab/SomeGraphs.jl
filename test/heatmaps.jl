@@ -630,6 +630,29 @@ nested_test("heatmaps") do
             return nothing
         end
 
+        nested_test("ticks_angle") do
+            nested_test("straight") do
+                graph.configuration.rows.ticks_angle = 90
+                graph.configuration.columns.ticks_angle = 0
+                test_html(graph, "heatmap.annotations.ticks_angle.straight.html")
+                return nothing
+            end
+
+            nested_test("rising") do
+                graph.configuration.rows.ticks_angle = 45
+                graph.configuration.columns.ticks_angle = -45
+                test_html(graph, "heatmap.annotations.ticks_angle.rising.html")
+                return nothing
+            end
+
+            nested_test("falling") do
+                graph.configuration.rows.ticks_angle = -45
+                graph.configuration.columns.ticks_angle = 45
+                test_html(graph, "heatmap.annotations.ticks_angle.falling.html")
+                return nothing
+            end
+        end
+
         nested_test("empty") do
             graph.data.rows.annotations[1].values.vector = ["yes", "", "no"]
 
