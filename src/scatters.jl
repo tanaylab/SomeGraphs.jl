@@ -890,6 +890,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     )
 
     has_hovers = points_hovers !== nothing || entities_hovers(graph.data.edges.entities) !== nothing
+    sides_content = SidesContent()
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
@@ -897,6 +898,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
         shapes,
         has_legend = n_legends > 0,
         has_hovers,
+        sides_content,
     )
 
     set_layout_selection!(layout, graph)
@@ -918,6 +920,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                     legend_configuration = configured.colors.colors_configuration.legend,
                     default_order = CATEGORICAL_LEGEND_ORDER,
                     figure_configuration,
+                    sides_content,
                 ),
             )
         end
@@ -935,6 +938,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                 show_scale = configured.colors.show_scale,
                 figure_configuration,
                 side_panel_items,
+                sides_content,
             )
         end
     end
@@ -959,12 +963,14 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                     legend_configuration = sizes_configuration.legend,
                     default_order = SIZES_LEGEND_ORDER,
                     figure_configuration,
+                    sides_content,
                 ),
             )
         end
     end
 
-    place_side_panel!(layout, figure_configuration, side_panel_items)
+    place_side_panel!(layout, figure_configuration, side_panel_items; sides_content)
+    set_layout_margins!(layout, figure_configuration, sides_content)
     return plotly_figure(traces, layout)
 end
 
@@ -1504,6 +1510,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         is_plotly_log = true,
     )
 
+    sides_content = SidesContent()
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
@@ -1511,7 +1518,9 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         shapes,
         has_legend = false,
         has_hovers = hovers !== nothing,
+        sides_content,
     )
+    set_layout_margins!(layout, graph.configuration.figure, sides_content)
 
     return plotly_figure(traces, layout)
 end
@@ -2066,6 +2075,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         is_plotly_log = true,
     )
 
+    sides_content = SidesContent()
     layout = scatters_layout(;
         graph,
         scaled_xs_range,
@@ -2073,6 +2083,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         shapes,
         has_legend = graph.configuration.legend.show,
         has_hovers,
+        sides_content,
     )
 
     if graph.configuration.legend.show
@@ -2084,9 +2095,11 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
             legend_configuration = graph.configuration.legend,
             default_order = CATEGORICAL_LEGEND_ORDER,
             figure_configuration = graph.configuration.figure,
+            sides_content,
         )
-        place_side_panel!(layout, graph.configuration.figure, [item])
+        place_side_panel!(layout, graph.configuration.figure, [item]; sides_content)
     end
+    set_layout_margins!(layout, graph.configuration.figure, sides_content)
 
     return plotly_figure(traces, layout)
 end
@@ -2301,8 +2314,16 @@ function scatters_layout(;
     shapes::AbstractVector{Shape},
     has_legend::Bool,
     has_hovers::Bool = false,
+    sides_content::SidesContent,
 )::Layout
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
+    layout = plotly_layout(
+        graph.configuration.figure;
+        sides_content,
+        title = graph.data.figure_title,
+        has_legend,
+        has_hovers,
+        shapes,
+    )
 
     x_axis_title, y_axis_title = data_axes_titles(graph)
 
@@ -2310,6 +2331,7 @@ function scatters_layout(;
         layout,
         "xaxis",
         graph.configuration.x_axis;
+        sides_content,
         title = prefer_data(x_axis_title, graph.configuration.x_axis.title),
         range = scaled_xs_range,
         is_plotly_log = true,
@@ -2319,6 +2341,7 @@ function scatters_layout(;
         layout,
         "yaxis",
         graph.configuration.y_axis;
+        sides_content,
         title = prefer_data(y_axis_title, graph.configuration.y_axis.title),
         range = scaled_ys_range,
         is_plotly_log = true,

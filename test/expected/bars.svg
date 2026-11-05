@@ -3,16 +3,16 @@
 <defs id="id-1">
 <g class="clips">
 <clipPath id="id-2" class="plotclip">
-<rect width="600" height="350"/>
+<rect width="571" height="338"/>
 </clipPath>
 <clipPath class="axesclip" id="id-3">
-<rect x="50" y="0" width="600" height="450"/>
+<rect x="79" y="0" width="571" height="450"/>
 </clipPath>
 <clipPath class="axesclip" id="id-4">
-<rect x="0" y="50" width="700" height="350"/>
+<rect x="0" y="56" width="700" height="338"/>
 </clipPath>
 <clipPath class="axesclip" id="id-5">
-<rect x="50" y="50" width="600" height="350"/>
+<rect x="79" y="56" width="571" height="338"/>
 </clipPath>
 </g>
 <g class="gradients"/>
@@ -36,16 +36,16 @@
 <g class="gridlayer">
 <g class="x"/>
 <g class="y">
-<path class="ygrid crisp" transform="translate(0,396.57)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,339.38)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,225)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,167.81)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,110.62)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
-<path class="ygrid crisp" transform="translate(0,53.43)" d="M50,0h600" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,390.69)" d="M79,0h571" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,335.46)" d="M79,0h571" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,225)" d="M79,0h571" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,169.76999999999998)" d="M79,0h571" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,114.53999999999999)" d="M79,0h571" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="ygrid crisp" transform="translate(0,59.31)" d="M79,0h571" style="stroke: rgb(211, 211, 211); stroke-opacity: 1; stroke-width: 1px;"/>
 </g>
 </g>
 <g class="zerolinelayer">
-<path class="yzl zl crisp" transform="translate(0,282.19)" d="M50,0h600" style="stroke: rgb(68, 68, 68); stroke-opacity: 1; stroke-width: 1px;"/>
+<path class="yzl zl crisp" transform="translate(0,280.23)" d="M79,0h571" style="stroke: rgb(68, 68, 68); stroke-opacity: 1; stroke-width: 1px;"/>
 </g>
 <g class="layer-between">
 <g class="shapelayer"/>
@@ -58,21 +58,21 @@
 <g class="yaxislayer-below"/>
 <g class="overaxes-below"/>
 <g class="overplot">
-<g class="xy" transform="translate(50,50)" clip-path="url(#id-2)">
+<g class="xy" transform="translate(79,56)" clip-path="url(#id-2)">
 <g class="barlayer mlayer">
 <g class="trace bars" style="opacity: 1;">
 <g class="points">
 <g class="point">
-<path d="M1.5,232.19V346.57H148.5V232.19Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+<path d="M1.43,224.23V334.69H141.32V224.23Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 <g class="point">
 <path d="M0,0Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 <g class="point">
-<path d="M301.5,232.19V117.81H448.5V232.19Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+<path d="M286.93,224.23V113.77H426.82V224.23Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 <g class="point">
-<path d="M451.5,232.19V3.43H598.5V232.19Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
+<path d="M429.68,224.23V3.31H569.57V224.23Z" style="vector-effect: none; opacity: 1; stroke-width: 0px; fill: rgb(31, 119, 180); fill-opacity: 1;"/>
 </g>
 </g>
 </g>
@@ -86,31 +86,31 @@
 <g class="xaxislayer-above"/>
 <g class="yaxislayer-above">
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" transform="translate(0,396.57)" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;">
+<text text-anchor="end" x="78" y="4.199999999999999" transform="translate(0,390.69)" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;">
 −1</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,339.38)">
+<text text-anchor="end" x="78" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,335.46)">
 −0.5</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,282.19)">
+<text text-anchor="end" x="78" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,280.23)">
 0</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,225)">
+<text text-anchor="end" x="78" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,225)">
 0.5</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,167.81)">
+<text text-anchor="end" x="78" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,169.76999999999998)">
 1</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,110.62)">
+<text text-anchor="end" x="78" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,114.53999999999999)">
 1.5</text>
 </g>
 <g class="ytick">
-<text text-anchor="end" x="49" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,53.43)">
+<text text-anchor="end" x="78" y="4.199999999999999" style="font-family: Lato, sans-serif; font-size: 12px; fill: rgb(68, 68, 68); fill-opacity: 1; white-space: pre;" transform="translate(0,59.31)">
 2</text>
 </g>
 </g>

@@ -24,8 +24,15 @@ import ..Common.categorical_colors_dict
 import ..Common.is_categorical_axis
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
+import ..Utilities.AXIS_TITLE_STANDOFF
 import ..Utilities.CATEGORICAL_LEGEND_ORDER
+import ..Utilities.PLOTLY_ANNOTATION_PADDING
+import ..Utilities.PLOTLY_AXIS_TITLE_FONT_SIZE
+import ..Utilities.PLOTLY_TICK_LABEL_FONT_SIZE
+import ..Utilities.PLOTLY_X_TICK_LABELS_GAP
+import ..Utilities.PLOTLY_Y_TICK_LABELS_GAP
 import ..Utilities.SidePanelItem
+import ..Utilities.add_labels!
 import ..Utilities.categorical_legend_labels
 import ..Utilities.legend_side_panel_item
 import ..Validations.Maybe
@@ -1354,28 +1361,15 @@ function bars_layout(;
         end
     end
 
+    sides_content = SidesContent()
     layout = plotly_layout(
         figure_configuration;
+        sides_content,
         title = graph.data.figure_title,
         has_legend = !isempty(legends),
         has_hovers,
         shapes,
     )
-    side_panel_items = SidePanelItem[]
-    for (legend_index, (legend_title, legend_labels, legend_configuration)) in enumerate(legends)
-        set_layout_legend!(layout, legend_index; title = legend_title)
-        push!(
-            side_panel_items,
-            legend_side_panel_item(;
-                legend = plotly_legend(legend_index),
-                labels = legend_labels,
-                title = legend_title,
-                legend_configuration,
-                default_order = CATEGORICAL_LEGEND_ORDER,
-                figure_configuration,
-            ),
-        )
-    end
 
     value_axis_title = data_value_axis_title(graph)
     bar_axis = graph.configuration.bar_axis
@@ -1426,6 +1420,7 @@ function bars_layout(;
             layout,
             plotly_axis(value_axis_letter, axis_index),
             graph.configuration.value_axis;
+            sides_content,
             title = prefer_data(value_axis_title, graph.configuration.value_axis.title),
             range = scaled_values_range,
             domain = plotly_sub_graph_domain(
@@ -1453,6 +1448,7 @@ function bars_layout(;
                 layout,
                 plotly_axis(value_axis_letter, axis_index),
                 graph.configuration.value_axis;
+                sides_content,
                 title,
                 range = specific_scaled_ranges[value_axis_position],
                 domain = plotly_sub_graph_domain(
@@ -1482,15 +1478,83 @@ function bars_layout(;
     end
 
     show_tick_names = has_tick_names && bar_axis.show_ticks
-    bar_axis_screen_ticks_angle = axis_screen_ticks_angle(bar_axis.ticks_angle, bar_axis_letter == "y")
+    is_vertical_bar_axis = bar_axis_letter == "y"
+    bar_axis_screen_ticks_angle = axis_screen_ticks_angle(bar_axis.ticks_angle, is_vertical_bar_axis)
 
-    layout["$(bar_axis_letter)axis"] = Dict(
+    bar_axis_title = plotly_title(bar_axis.title)
+    if bar_axis_title !== nothing
+        bar_axis_title[:standoff] = AXIS_TITLE_STANDOFF
+    end
+    layout["$(bar_axis_letter)axis"] = Dict{Symbol, Any}(
         :showgrid => false,
         :showticklabels => show_tick_names,
         :tickangle => (show_tick_names && bar_axis_screen_ticks_angle != 0) ? bar_axis_screen_ticks_angle : nothing,
-        :title => plotly_title(bar_axis.title),
+        :title => bar_axis_title,
+        :automargin => true,
         :anchor => bar_axis_anchor,
     )
+
+    bars_names = graph.data.bars.names
+    if show_tick_names && bars_names !== nothing
+        labels_width =
+            maximum(text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for name in bars_names; init = 0.0)
+        labels_height = PLOTLY_TICK_LABEL_FONT_SIZE
+        labels_gap = is_vertical_bar_axis ? PLOTLY_Y_TICK_LABELS_GAP : PLOTLY_X_TICK_LABELS_GAP
+    else
+        labels_width = labels_height = labels_gap = 0
+    end
+    add_labels!(
+        sides_content;
+        width = labels_width,
+        height = labels_height,
+        screen_angle = bar_axis_screen_ticks_angle,
+        is_vertical_axis = is_vertical_bar_axis,
+        gap = labels_gap,
+        title_height = bar_axis.title === nothing ? 0 : PLOTLY_AXIS_TITLE_FONT_SIZE,
+        standoff = AXIS_TITLE_STANDOFF,
+    )
+
+    layout["annotations"] = plotly_annotations = []
+    for (annotation_index, annotation_data) in enumerate(annotations_data)
+        sub_graph =
+            SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
+        push_plotly_annotation!(;
+            plotly_annotations,
+            values_sub_graph = sub_graph,
+            values_orientation = graph.configuration.values_orientation,
+            title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
+            ticks_angle = graph.configuration.value_axis.ticks_angle,
+            sides_content,
+        )
+        set_layout_axis!(
+            layout,
+            plotly_axis(value_axis_letter, annotation_index),
+            graph.configuration.value_axis;
+            sides_content,
+            range = Range(; minimum = 0, maximum = 1),
+            domain = plotly_sub_graph_domain(sub_graph),
+            is_tick_axis = false,
+            is_zeroable = false,
+        )
+    end
+
+    # The fractions of the side panel's parts are of the plot's area, which is known only from here on.
+    side_panel_items = SidePanelItem[]
+    for (legend_index, (legend_title, legend_labels, legend_configuration)) in enumerate(legends)
+        set_layout_legend!(layout, legend_index; title = legend_title)
+        push!(
+            side_panel_items,
+            legend_side_panel_item(;
+                legend = plotly_legend(legend_index),
+                labels = legend_labels,
+                title = legend_title,
+                legend_configuration,
+                default_order = CATEGORICAL_LEGEND_ORDER,
+                figure_configuration,
+                sides_content,
+            ),
+        )
+    end
 
     if colors !== nothing && colors.colors_scale_index !== nothing
         set_layout_colorscale!(;
@@ -1503,30 +1567,11 @@ function bars_layout(;
             show_scale = colors.show_scale,
             figure_configuration,
             side_panel_items,
+            sides_content,
         )
     end
 
-    layout["annotations"] = plotly_annotations = []
-    for (annotation_index, annotation_colors) in enumerate(annotations_colors)
-        annotation_data = annotations_data[annotation_index]
-        sub_graph =
-            SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
-        push_plotly_annotation!(;
-            plotly_annotations,
-            values_sub_graph = sub_graph,
-            values_orientation = graph.configuration.values_orientation,
-            title = prefer_data(annotation_data.values.title, annotation_data.colors.title),
-            ticks_angle = graph.configuration.value_axis.ticks_angle,
-        )
-        set_layout_axis!(
-            layout,
-            plotly_axis(value_axis_letter, annotation_index),
-            graph.configuration.value_axis;
-            range = Range(; minimum = 0, maximum = 1),
-            domain = plotly_sub_graph_domain(sub_graph),
-            is_tick_axis = false,
-            is_zeroable = false,
-        )
+    for (annotation_colors, annotation_data) in zip(annotations_colors, annotations_data)
         if annotation_colors.colors_scale_index !== nothing
             set_layout_colorscale!(;
                 layout,
@@ -1539,6 +1584,7 @@ function bars_layout(;
                 show_scale = annotation_colors.show_scale,
                 figure_configuration,
                 side_panel_items,
+                sides_content,
             )
         end
     end
@@ -1548,7 +1594,8 @@ function bars_layout(;
         layout["yaxis99"] = Dict(:domain => [0, 0.001], :showgrid => false, :showticklabels => false)
     end
 
-    place_side_panel!(layout, figure_configuration, side_panel_items)
+    place_side_panel!(layout, figure_configuration, side_panel_items; sides_content)
+    set_layout_margins!(layout, figure_configuration, sides_content)
     return layout
 end
 
@@ -1559,6 +1606,7 @@ function push_plotly_annotation!(;
     values_orientation::ValuesOrientation,
     title::Maybe{AbstractString},
     ticks_angle::Maybe{Real},
+    sides_content::SidesContent,
 )::Nothing
     if title !== nothing
         xaxis_index, _, yaxis_index, _ = plotly_sub_graph_axes(; values_sub_graph, basis_sub_graph, values_orientation)
@@ -1572,6 +1620,14 @@ function push_plotly_annotation!(;
             screen_angle = axis_screen_ticks_angle(ticks_angle, is_vertical_axis)
         end
         textangle = screen_angle != 0 ? screen_angle : nothing
+        add_labels!(
+            sides_content;
+            width = text_width(title; font_size = PLOTLY_TICK_LABEL_FONT_SIZE),
+            height = PLOTLY_TICK_LABEL_FONT_SIZE,
+            screen_angle,
+            is_vertical_axis,
+            gap = PLOTLY_ANNOTATION_PADDING,
+        )
         if is_vertical_axis
             x = 0
             y = 0.5

@@ -150,8 +150,17 @@ nested_test("bars") do
 
             nested_test("names") do
                 graph.data.bars.names = ["Foo", "Bar", "Baz", "Vaz"]
-                test_html(graph, "bars.$(orientation_name).names.html")
-                return nothing
+
+                nested_test("()") do
+                    test_html(graph, "bars.$(orientation_name).names.html")
+                    return nothing
+                end
+
+                nested_test("title") do
+                    graph.configuration.bar_axis.title = "Bars"
+                    test_html(graph, "bars.$(orientation_name).names.title.html")
+                    return nothing
+                end
             end
 
             nested_test("hovers") do

@@ -19,7 +19,8 @@ nested_test("utilities") do
 
     # The margins don't grow, and Plotly is told so by a real boolean.
     nested_test("plotly_layout") do
-        layout = plotly_layout(FigureConfiguration(); title = nothing, has_legend = false)
+        layout =
+            plotly_layout(FigureConfiguration(); sides_content = SidesContent(), title = nothing, has_legend = false)
         @test layout[:margin][:autoexpand] === false
     end
 
@@ -550,11 +551,13 @@ nested_test("utilities") do
 
         # Each group of labels reaches its own side, and overhangs into the two sides next to it.
         nested_test("sides_content") do
-            SidesContent = SomeGraphs.Utilities.SidesContent
-            labels_sides_content = SomeGraphs.Utilities.labels_sides_content
-            combined_sides_content = SomeGraphs.Utilities.combined_sides_content
+            add_labels! = SomeGraphs.Utilities.add_labels!
+            sides_content = SomeGraphs.Utilities.SidesContent()
+            sides(content) = (; content.left, content.right, content.top, content.bottom)
+            @test sides(sides_content) == (; left = 0, right = 0, top = 0, bottom = 0)
 
-            x_content = labels_sides_content(;
+            add_labels!(
+                sides_content;
                 width = 40,
                 height = 10,
                 screen_angle = 0,
@@ -563,15 +566,10 @@ nested_test("utilities") do
                 title_height = 12,
                 standoff = 10,
             )
-            @test x_content == SidesContent(; left = 20, right = 20, bottom = 5 + 10 + 10 + 12)
+            @test sides(sides_content) == (; left = 20, right = 20, top = 0, bottom = 5 + 10 + 10 + 12)
 
-            y_content =
-                labels_sides_content(; width = 60, height = 10, screen_angle = 0, is_vertical_axis = true, gap = 1)
-            @test y_content == SidesContent(; left = 1 + 60, top = 5, bottom = 5)
-
-            @test combined_sides_content([x_content, y_content]) ==
-                  SidesContent(; left = 61, right = 20, top = 5, bottom = 37)
-            @test combined_sides_content(SidesContent[]) == SidesContent()
+            add_labels!(sides_content; width = 60, height = 10, screen_angle = 0, is_vertical_axis = true, gap = 1)
+            @test sides(sides_content) == (; left = 1 + 60, right = 20, top = 5, bottom = 37)
         end
     end
 

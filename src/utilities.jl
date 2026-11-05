@@ -41,8 +41,10 @@ export scale_size_values
 export set_layout_axis!
 export set_layout_colorscale!
 export set_layout_legend!
+export set_layout_margins!
 export set_layout_twin_log_axis!
 export shared_values_title
+export SidesContent
 export sizes_legend_entries
 export SizesLegendEntry
 export SubGraph
@@ -448,8 +450,35 @@ function validate_values(
 end
 
 """
+    @kwdef mutable struct SidesContent
+        left::Float64 = 0
+        right::Float64 = 0
+        top::Float64 = 0
+        bottom::Float64 = 0
+    end
+
+How far the content beyond the plot's area reaches on each side, in pixels. This is the tick labels, the titles of the
+axes and of the figure, the titles of the annotations, and the side panel. A graph makes one of these for its layout.
+Each part of the layout grows each side to the farthest it reaches. Each margin is then the content of its side plus
+the configured margin (see [`set_layout_margins!`](@ref)).
+"""
+@kwdef mutable struct SidesContent
+    left::Float64 = 0
+    right::Float64 = 0
+    top::Float64 = 0
+    bottom::Float64 = 0
+end
+
+# The font size Plotly uses for the figure's title. Its box is as tall as its font size.
+const PLOTLY_FIGURE_TITLE_FONT_SIZE = 17
+
+# The pixels between the figure's title and the plot's area.
+const FIGURE_TITLE_GAP = 10
+
+"""
     plotly_layout(
         figure_configuration::FigureConfiguration;
+        sides_content::SidesContent,
         title::Maybe{AbstractString},
         has_legend::Bool,
         has_hovers::Bool = false,
@@ -457,16 +486,30 @@ end
     )::Layout
 
 Create a Plotly `Layout` object. If `has_legend`, the legends are shown; each is set by [`set_layout_legend!`](@ref).
+
+The `title` (if any) is drawn below the top of the figure, separated from it by the top margin (see
+[`MarginsConfiguration`](@ref)). It is added to the `sides_content`. The margins themselves are set by
+[`set_layout_margins!`](@ref).
 """
 function plotly_layout(
     figure_configuration::FigureConfiguration;
+    sides_content::SidesContent,
     title::Maybe{AbstractString},
     has_legend::Bool,
     has_hovers::Bool = false,
     shapes::Maybe{AbstractVector{Shape}} = nothing,
 )::Layout
+    plotly_figure_title = plotly_title(title)
+    if plotly_figure_title !== nothing
+        plotly_figure_title[:yref] = "container"
+        plotly_figure_title[:y] = 1
+        plotly_figure_title[:yanchor] = "top"
+        plotly_figure_title[:pad] = Dict(:t => figure_configuration.margins.top)
+        sides_content.top = max(sides_content.top, PLOTLY_FIGURE_TITLE_FONT_SIZE + FIGURE_TITLE_GAP)
+    end
+
     layout = Layout(;  # NOJET
-        title = plotly_title(title),
+        title = plotly_figure_title,
         showlegend = has_legend,
         legend_tracegroupgap = 0,
         hoverlabel_align = has_hovers ? "left" : nothing,
@@ -482,9 +525,9 @@ function plotly_layout(
         paper_bgcolor = figure_configuration.paper_color,
     )
 
-    # The margins are exactly as given (the right one is widened for the side panel, see `place_side_panel!`), so the
-    # plot's area is known. They replace PlotlyBase's default margins, a `Dict` of integers, into which `false` would be
-    # converted to 0, which isn't a boolean for Plotly.
+    # The margins are exactly as computed (see `set_layout_margins!`), so the plot's area is known. They replace
+    # PlotlyBase's default margins, a `Dict` of integers, into which `false` would be converted to 0, which isn't a
+    # boolean for Plotly.
     layout.fields[:margin] = Dict{Symbol, Any}(
         :l => figure_configuration.margins.left,
         :r => figure_configuration.margins.right,
@@ -542,13 +585,31 @@ function axis_screen_ticks_angle(ticks_angle::Real, is_vertical_axis::Bool)::Rea
     end
 end
 
+# The font sizes Plotly uses for tick labels and for axis titles. A label's box is as tall as its font size.
+const PLOTLY_TICK_LABEL_FONT_SIZE = 12  # NOLINT
+const PLOTLY_AXIS_TITLE_FONT_SIZE = 14  # NOLINT
+
+# How far Plotly draws tick labels from a horizontal (x) or a vertical (y) axis, in pixels. In Kaleido's renders, their
+# ink started 3 to 7 pixels below an x axis, and ended 1 to 5 pixels left of a y axis.
+const PLOTLY_X_TICK_LABELS_GAP = 7  # NOLINT
+const PLOTLY_Y_TICK_LABELS_GAP = 5  # NOLINT
+
+# How far the text of a Plotly annotation is from its anchor, in pixels: its default `borderpad` plus `borderwidth`
+# (not measured).
+const PLOTLY_ANNOTATION_PADDING = 2  # NOLINT
+
+# The pixels between an axis' tick labels and its title.
+const AXIS_TITLE_STANDOFF = 10  # NOLINT
+
 """
     set_layout_axis!(
         layout::Layout,
         axis::Maybe{AbstractString},
         axis_configuration::AxisConfiguration;
+        sides_content::SidesContent,
         title::Maybe{AbstractString} = nothing,
         range::Maybe{Range} = nothing,
+        labels_range::Maybe{Range} = range,
         ticks_labels::Maybe{AbstractVector{<:AbstractString}} = nothing,
         ticks_values::Maybe{AbstractVector{<:Real}} = nothing,
         domain::Maybe{AbstractVector{<:Real}} = nothing,
@@ -569,13 +630,20 @@ Unless `is_zeroable`, the zero line is left to Plotly (otherwise, it is shown fo
 If `is_plotly_log`, a `Log10Base` axis is a Plotly log axis, which picks its own ticks for the real (not log) values.
 The coordinates on such an axis must be given by [`plotly_axis_values`](@ref). The `range` is still the scaled (log)
 range.
+
+The axis' tick labels and title are added to the `sides_content`, which the margins are computed from. The labels are
+the `ticks_labels`, or else the widest Plotly could pick for the `labels_range`. This is the `range` by default. When
+Plotly picks the range itself (no `range`), it must be given as the widest range Plotly may pick. Plotly draws the title
+just beyond the labels.
 """
 function set_layout_axis!(
     layout::Layout,
     axis::Maybe{AbstractString},
     axis_configuration::AxisConfiguration;
+    sides_content::SidesContent,
     title::Maybe{AbstractString} = nothing,
     range::Maybe{Range} = nothing,
+    labels_range::Maybe{Range} = range,
     ticks_labels::Maybe{AbstractVector{<:AbstractString}} = nothing,
     ticks_values::Maybe{AbstractVector{<:Real}} = nothing,
     domain::Maybe{AbstractVector{<:Real}} = nothing,
@@ -587,10 +655,44 @@ function set_layout_axis!(
     @assert axis !== nothing
     show_ticks = is_tick_axis && axis_configuration.show_ticks
     is_log_axis = is_plotly_log && axis_configuration.scale.log_base === Log10Base
-    screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, startswith(axis, "y"))
+    is_vertical_axis = startswith(axis, "y")
+    screen_ticks_angle = axis_screen_ticks_angle(axis_configuration.ticks_angle, is_vertical_axis)
+
+    if show_ticks
+        if ticks_labels !== nothing
+            labels_width = maximum(
+                text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels;
+                init = 0.0,
+            )
+        else
+            @assert labels_range !== nothing
+            labels_width = axis_ticks_max_pixels_width(axis_configuration.scale, labels_range)
+        end
+        labels_height = PLOTLY_TICK_LABEL_FONT_SIZE
+        labels_gap = is_vertical_axis ? PLOTLY_Y_TICK_LABELS_GAP : PLOTLY_X_TICK_LABELS_GAP
+    else
+        labels_width = labels_height = labels_gap = 0
+    end
+    add_labels!(
+        sides_content;
+        width = labels_width,
+        height = labels_height,
+        screen_angle = screen_ticks_angle,
+        is_vertical_axis,
+        gap = labels_gap,
+        title_height = title === nothing ? 0 : PLOTLY_AXIS_TITLE_FONT_SIZE,
+        standoff = AXIS_TITLE_STANDOFF,
+    )
+
+    plotly_axis_title = plotly_title(title)
+    if plotly_axis_title !== nothing
+        plotly_axis_title[:standoff] = AXIS_TITLE_STANDOFF
+    end
+
     # Plotly runs an axis backwards when its range is given in descending order.
     layout[axis] = Dict(
-        :title => plotly_title(title),
+        :title => plotly_axis_title,
+        :automargin => true,
         :type => is_log_axis ? "log" : nothing,
         :range => if range === nothing
             nothing
@@ -624,6 +726,7 @@ end
         title::Maybe{AbstractString},
         range::Range,
         n_cross_axes::Integer = 1,
+        sides_content::SidesContent,
     )::Nothing
 
 Add the 1st Plotly `letter` axis in a `layout` for a `Log10Base` `axis_configuration`, for traces that must be given
@@ -633,7 +736,7 @@ would compute it from the real values on a Plotly log axis.
 The 1st axis is a hidden linear axis, which the traces use. A twin Plotly log axis (at the `twin_index`) is drawn over
 it, with the same range, so it shows the ticks of the real values. Plotly only draws an axis (and its grid) in the
 sub-graphs where a trace uses it, so this also pushes an empty trace to the `traces` for each of the `n_cross_axes` of
-the other letter.
+the other letter. The twin axis' labels and title are added to the `sides_content` (see [`set_layout_axis!`](@ref)).
 """
 function set_layout_twin_log_axis!(;
     layout::Layout,
@@ -644,18 +747,19 @@ function set_layout_twin_log_axis!(;
     title::Maybe{AbstractString},
     range::Range,
     n_cross_axes::Integer = 1,
+    sides_content::SidesContent,
 )::Nothing
     @assert axis_configuration.scale.log_base === Log10Base
     @assert letter in ("x", "y")
     other_letter = letter == "x" ? "y" : "x"
 
     axis = plotly_axis(letter, 1)
-    set_layout_axis!(layout, axis, axis_configuration; range, is_tick_axis = false)  # NOJET
+    set_layout_axis!(layout, axis, axis_configuration; sides_content, range, is_tick_axis = false)  # NOJET
     layout[axis][:showgrid] = false
     layout[axis][:gridcolor] = nothing
 
     twin_axis = plotly_axis(letter, twin_index)
-    set_layout_axis!(layout, twin_axis, axis_configuration; title, range, is_plotly_log = true)  # NOJET
+    set_layout_axis!(layout, twin_axis, axis_configuration; sides_content, title, range, is_plotly_log = true)
     layout[twin_axis][:overlaying] = letter
     # Plotly gives an overlaying axis the ticks of the axis it overlays, unless told to pick its own.
     layout[twin_axis][:tickmode] = "auto"
@@ -754,6 +858,7 @@ end
         show_scale::Bool,
         figure_configuration::FigureConfiguration,
         side_panel_items::AbstractVector{SidePanelItem},
+        sides_content::SidesContent,
     )::Nothing
 
 Set a `colorscale` in a Plotly `layout`, as specified by a `colors_configuration`. A shown scale is a color bar, which
@@ -762,6 +867,9 @@ is pushed to the `side_panel_items` to be placed by [`place_side_panel!`](@ref).
 A Plotly color bar shows the ticks of its (scaled) values. For a `Log10Base` scale these are the log values, so a shown
 `Log10Base` scale gets its own ticks instead, which show the real values. They are chosen in the `ticks_range`, which
 must be given, the way Plotly chooses the ticks of a log axis.
+
+A color bar's length is a fraction of the plot's area, so its ticks depend on the plot's height. This must therefore be
+called after everything above and below the plot's area was added to the `sides_content`.
 """
 function set_layout_colorscale!(;
     layout::Layout,
@@ -774,6 +882,7 @@ function set_layout_colorscale!(;
     show_scale::Bool,
     figure_configuration::FigureConfiguration,
     side_panel_items::AbstractVector{SidePanelItem},
+    sides_content::SidesContent,
 )::Nothing
     if colors_configuration.palette isa CategoricalColors
         @assert false
@@ -800,8 +909,10 @@ function set_layout_colorscale!(;
         @assert ticks_range !== nothing
         colorbar = Dict{Symbol, Any}(:title => plotly_title(title))
         if colors_configuration.scale.log_base === Log10Base
-            ticks_values, ticks_labels =
-                log10_plotly_ticks(ticks_range, colors_scale_n_ticks(colors_configuration, figure_configuration))
+            ticks_values, ticks_labels = log10_plotly_ticks(
+                ticks_range,
+                colors_scale_n_ticks(colors_configuration, figure_configuration, sides_content),
+            )
             ticks_suffix = axis_ticks_suffix(colors_configuration.scale)
             colorbar[:tickmode] = "array"
             colorbar[:tickvals] = ticks_values
@@ -812,7 +923,14 @@ function set_layout_colorscale!(;
         end
         push!(
             side_panel_items,
-            colors_scale_side_panel_item(; color_axis, colors_configuration, ticks_range, title, figure_configuration),
+            colors_scale_side_panel_item(;
+                color_axis,
+                colors_configuration,
+                ticks_range,
+                title,
+                figure_configuration,
+                sides_content,
+            ),
         )
     end
 
@@ -1274,19 +1392,12 @@ function rotated_label_extent(; width::Real, height::Real, screen_angle::Real, i
     return LabelExtent(; depth, before, after)
 end
 
-# How far the content beyond the plot area reaches on each side, in pixels (before the margins and the side panel).
-@kwdef struct SidesContent
-    left::Float64 = 0
-    right::Float64 = 0
-    top::Float64 = 0
-    bottom::Float64 = 0
-end
-
-# How far a group of labels reaches beyond the plot area: labels at most `width` wide and `height` tall at the
-# `screen_angle`, beside a vertical (left) or horizontal (bottom) axis, `gap` pixels from it, followed by a title
-# `title_height` tall (0 for none) `standoff` pixels beyond the labels. A label may be at either end of the axis, so it
-# overhangs into both neighbouring sides.
-function labels_sides_content(;
+# Grow the `sides_content` to hold a group of labels: at most `width` wide and `height` tall at the `screen_angle`,
+# beside a vertical (left) or horizontal (bottom) axis, `gap` pixels from it, followed by a title `title_height` tall
+# (0 for none) `standoff` pixels beyond the labels. A label may be at either end of the axis, so it overhangs into both
+# neighbouring sides.
+function add_labels!(
+    sides_content::SidesContent;
     width::Real,
     height::Real,
     screen_angle::Real,
@@ -1294,27 +1405,22 @@ function labels_sides_content(;
     gap::Real,
     title_height::Real = 0,
     standoff::Real = 0,
-)::SidesContent
+)::Nothing
     extent = rotated_label_extent(; width, height, screen_angle, is_vertical_axis)
     depth = gap + extent.depth
     if title_height > 0
         depth += standoff + title_height
     end
     if is_vertical_axis
-        return SidesContent(; left = depth, top = extent.before, bottom = extent.after)
+        sides_content.left = max(sides_content.left, depth)
+        sides_content.top = max(sides_content.top, extent.before)
+        sides_content.bottom = max(sides_content.bottom, extent.after)
     else
-        return SidesContent(; bottom = depth, left = extent.before, right = extent.after)
+        sides_content.bottom = max(sides_content.bottom, depth)
+        sides_content.left = max(sides_content.left, extent.before)
+        sides_content.right = max(sides_content.right, extent.after)
     end
-end
-
-# The content of all the `sides_contents`: on each side, the farthest any of them reaches.
-function combined_sides_content(sides_contents::AbstractVector{SidesContent})::SidesContent
-    return SidesContent(;
-        left = maximum(content.left for content in sides_contents; init = 0.0),
-        right = maximum(content.right for content in sides_contents; init = 0.0),
-        top = maximum(content.top for content in sides_contents; init = 0.0),
-        bottom = maximum(content.bottom for content in sides_contents; init = 0.0),
-    )
+    return nothing
 end
 
 # The default order in a column of the side panel of each kind of part (see `LegendConfiguration`).
@@ -1330,19 +1436,21 @@ const COLORS_SCALE_DEFAULT_HEIGHT = 0.5
 const LEGEND_TITLE_Y_SHIFT = -5
 
 # The height in pixels of the plot's area: the figure's height (or Plotly's default), less the top and bottom margins.
-function plot_pixel_height(figure_configuration::FigureConfiguration)::Float64
+# These are the configured margins plus the `sides_content` above and below the plot's area, which must be complete.
+function plot_pixel_height(figure_configuration::FigureConfiguration, sides_content::SidesContent)::Float64
     return prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - figure_configuration.margins.top -
-           figure_configuration.margins.bottom
+           sides_content.top - figure_configuration.margins.bottom - sides_content.bottom
 end
 
 # The number of ticks Plotly aims at on the color bar of the `colors_configuration` (from its length in pixels).
 function colors_scale_n_ticks(
     colors_configuration::ColorsConfiguration,
     figure_configuration::FigureConfiguration,
+    sides_content::SidesContent,
 )::Float64
     pixel_length =
         prefer_data(colors_configuration.legend.height, COLORS_SCALE_DEFAULT_HEIGHT) *
-        plot_pixel_height(figure_configuration)
+        plot_pixel_height(figure_configuration, sides_content)
     return clamp(pixel_length / PLOTLY_VERTICAL_PIXELS_PER_TICK, 4, 9) + 1
 end
 
@@ -1355,9 +1463,11 @@ function legend_side_panel_item(;
     legend_configuration::Maybe{LegendConfiguration} = nothing,
     default_order::Real,
     figure_configuration::FigureConfiguration,
+    sides_content::SidesContent,
 )::SidePanelItem
     natural_height =
-        legend_pixel_height(length(labels); has_title = title !== nothing) / plot_pixel_height(figure_configuration)
+        legend_pixel_height(length(labels); has_title = title !== nothing) /
+        plot_pixel_height(figure_configuration, sides_content)
     part = SidePanelPart(;
         width = something(
             legend_configuration === nothing ? nothing : legend_configuration.width,
@@ -1381,12 +1491,13 @@ function colors_scale_side_panel_item(;
     ticks_range::Range,
     title::Maybe{AbstractString},
     figure_configuration::FigureConfiguration,
+    sides_content::SidesContent,
 )::SidePanelItem
     legend_configuration = colors_configuration.legend
     tick_labels = plotly_tick_labels(
         colors_configuration.scale,
         ticks_range,
-        colors_scale_n_ticks(colors_configuration, figure_configuration),
+        colors_scale_n_ticks(colors_configuration, figure_configuration, sides_content),
     )
     part = SidePanelPart(;
         width = something(legend_configuration.width, colors_scale_pixel_width(tick_labels; title)),
@@ -1401,12 +1512,13 @@ end
     place_side_panel!(
         layout::Layout,
         figure_configuration::FigureConfiguration,
-        items::AbstractVector{SidePanelItem},
+        items::AbstractVector{SidePanelItem};
+        sides_content::SidesContent,
     )::Nothing
 
 Place the legends and color bars of the `items` in the side panel to the right of the plot, as described in
-[`FigureConfiguration`](@ref), and widen the right margin of the `layout` to hold it. This must be called after
-everything else was added to the `layout`.
+[`FigureConfiguration`](@ref), and add its width to the right of the `sides_content`. This must be called after
+everything else was added to the `layout`, and before [`set_layout_margins!`](@ref).
 
 Plotly can't place a legend at a pixel offset, so a legend is anchored at the plot's right edge, with its entries
 indented to its column, and a transparent background. Plotly doesn't indent the legend's title, so this is drawn as
@@ -1415,7 +1527,8 @@ a text label above the legend's (transparent) title. A color bar is placed at it
 function place_side_panel!(
     layout::Layout,
     figure_configuration::FigureConfiguration,
-    items::AbstractVector{SidePanelItem},
+    items::AbstractVector{SidePanelItem};
+    sides_content::SidesContent,
 )::Nothing
     if isempty(items)
         return nothing
@@ -1424,9 +1537,9 @@ function place_side_panel!(
     places, panel_width = pack_side_panel_parts(
         [item.part for item in items];
         horizontal_gap = figure_configuration.legends_gap,
-        vertical_gap = figure_configuration.legends_gap / plot_pixel_height(figure_configuration),
+        vertical_gap = figure_configuration.legends_gap / plot_pixel_height(figure_configuration, sides_content),
     )
-    layout[:margin][:r] = figure_configuration.margins.right + ceil(Int, panel_width)
+    sides_content.right = max(sides_content.right, panel_width)
 
     if !haskey(layout.fields, :annotations)
         layout[:annotations] = []
@@ -1477,6 +1590,29 @@ function place_side_panel!(
         end
     end
 
+    return nothing
+end
+
+"""
+    set_layout_margins!(
+        layout::Layout,
+        figure_configuration::FigureConfiguration,
+        sides_content::SidesContent,
+    )::Nothing
+
+Set each margin of the `layout` to how far the `sides_content` reaches on that side, plus that side's margin in the
+`figure_configuration`. This must be called last, when the `sides_content` is complete.
+"""
+function set_layout_margins!(
+    layout::Layout,
+    figure_configuration::FigureConfiguration,
+    sides_content::SidesContent,
+)::Nothing
+    margins = figure_configuration.margins
+    layout[:margin][:l] = margins.left + ceil(Int, sides_content.left)
+    layout[:margin][:r] = margins.right + ceil(Int, sides_content.right)
+    layout[:margin][:t] = margins.top + ceil(Int, sides_content.top)
+    layout[:margin][:b] = margins.bottom + ceil(Int, sides_content.bottom)
     return nothing
 end
 
@@ -2952,7 +3088,7 @@ function plotly_title(::Nothing)::Nothing
 end
 
 function plotly_title(title::AbstractString)::AbstractDict
-    return Dict(:text => title)
+    return Dict{Symbol, Any}(:text => title)
 end
 
 """

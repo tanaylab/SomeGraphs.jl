@@ -33,8 +33,14 @@ import ..Common.is_categorical_axis
 import ..Common.is_default_axis
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
+import ..Utilities.AXIS_TITLE_STANDOFF
 import ..Utilities.CATEGORICAL_LEGEND_ORDER
+import ..Utilities.PLOTLY_ANNOTATION_PADDING
+import ..Utilities.PLOTLY_AXIS_TITLE_FONT_SIZE
+import ..Utilities.PLOTLY_TICK_LABEL_FONT_SIZE
+import ..Utilities.add_labels!
 import ..Utilities.legend_side_panel_item
+import ..Utilities.rotated_label_extent
 import ..Validations.Maybe
 
 """
@@ -806,6 +812,22 @@ function histogram_density_histnorm(
     end
 end
 
+# The widest range Plotly may pick for a histogram's density axis, for estimating its labels: up to the `n_values`
+# (the most values in one distribution), or up to 1 or 100 when the counts are fractions or percents.
+function histogram_density_labels_range(
+    configuration::Union{DistributionGraphConfiguration, DistributionsGraphConfiguration},
+    n_values::Integer,
+)::Range
+    histnorm = histogram_density_histnorm(configuration)
+    if histnorm == "percent"
+        return Range(; minimum = 0, maximum = 100)
+    elseif histnorm == "probability"
+        return Range(; minimum = 0, maximum = 1)
+    else
+        return Range(; minimum = 0, maximum = n_values)
+    end
+end
+
 function distribution_trace(;
     values::AbstractVector{<:Real},
     hovers::Maybe{AbstractVector{<:AbstractString}},
@@ -1016,18 +1038,15 @@ function distribution_layout(;
         end
     end
 
-    layout = plotly_layout(graph.configuration.figure; title = graph.data.figure_title, has_legend, has_hovers, shapes)
-    if has_legend
-        set_layout_legend!(layout, 1; title = nothing)
-        item = legend_side_panel_item(;
-            legend = plotly_legend(1),
-            labels = legend_labels,
-            title = nothing,
-            default_order = CATEGORICAL_LEGEND_ORDER,
-            figure_configuration = graph.configuration.figure,
-        )
-        place_side_panel!(layout, graph.configuration.figure, [item])
-    end
+    sides_content = SidesContent()
+    layout = plotly_layout(
+        graph.configuration.figure;
+        sides_content,
+        title = graph.data.figure_title,
+        has_legend,
+        has_hovers,
+        shapes,
+    )
 
     # Plotly computes the distributions (bins, densities, quartiles) from the values it is given, so it must be given
     # the scaled (log) values even when showing the ticks of the real values.
@@ -1041,12 +1060,14 @@ function distribution_layout(;
             title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
             range = scaled_values_range,
             n_cross_axes = n_sub_graphs,
+            sides_content,
         )
     else
         set_layout_axis!(
             layout,
             "$(value_axis_letter)axis",
             graph.configuration.value_axis;
+            sides_content,
             title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
             range = scaled_values_range,
         )
@@ -1078,6 +1099,7 @@ function distribution_layout(;
                 layout,
                 "$(density_axis_letter)axis",
                 density_axis;
+                sides_content,
                 title = prefer_data(graph.data.distribution.name, density_axis.title),
                 range = cumulative_range,
             )
@@ -1139,6 +1161,7 @@ function distribution_layout(;
                     layout,
                     plotly_axis(density_axis_letter, index; force = true),
                     density_axis;
+                    sides_content,
                     title = distributions_gap === nothing ? graph.data.density_axis_title : nothing,
                     range = cumulative_range,
                     domain = plotly_sub_graph_domain(
@@ -1164,12 +1187,21 @@ function distribution_layout(;
                     layout,
                     "$(density_axis_letter)axis",
                     density_axis;
+                    sides_content,
                     title = prefer_data(graph.data.distribution.name, density_axis.title),
                     range = density_range,
+                    labels_range = histogram_density_labels_range(
+                        graph.configuration,
+                        length(displayed_values(graph.data.distribution)),
+                    ),
                 )
             else
-                layout["$(density_axis_letter)axis"] =
-                    Dict(:showticklabels => false, :title => plotly_title(graph.data.distribution.name))
+                set_layout_tickless_density_axis!(
+                    layout,
+                    "$(density_axis_letter)axis";
+                    title = graph.data.distribution.name,
+                    sides_content,
+                )
             end
 
         elseif graph isa DistributionsGraph
@@ -1181,8 +1213,13 @@ function distribution_layout(;
                 density_range = Range(; minimum = density_axis.scale.minimum, maximum = density_axis.scale.maximum)
             end
 
-            n_distributions = length(displayed_distributions(graph))
+            distributions = graph.data.distributions[displayed_distributions(graph)]
+            n_distributions = length(distributions)
             distributions_gap = graph.configuration.distributions_gap
+            labels_range = histogram_density_labels_range(
+                graph.configuration,
+                maximum(length(displayed_values(distribution)) for distribution in distributions; init = 0),
+            )
 
             if distributions_gap === nothing
                 if is_histogram
@@ -1190,12 +1227,18 @@ function distribution_layout(;
                         layout,
                         "$(density_axis_letter)axis",
                         density_axis;
+                        sides_content,
                         title = graph.data.density_axis_title,
                         range = density_range,
+                        labels_range,
                     )
                 else
-                    layout["$(density_axis_letter)axis"] =
-                        Dict(:showticklabels => false, :title => plotly_title(graph.data.density_axis_title))
+                    set_layout_tickless_density_axis!(
+                        layout,
+                        "$(density_axis_letter)axis";
+                        title = graph.data.density_axis_title,
+                        sides_content,
+                    )
                 end
             else
                 for index in 1:n_distributions
@@ -1204,9 +1247,18 @@ function distribution_layout(;
                         SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
                     )
                     if is_histogram
-                        set_layout_axis!(layout, axis, density_axis; title = nothing, range = density_range, domain)
+                        set_layout_axis!(
+                            layout,
+                            axis,
+                            density_axis;
+                            sides_content,
+                            title = nothing,
+                            range = density_range,
+                            labels_range,
+                            domain,
+                        )
                     else
-                        layout[axis] = Dict{Symbol, Any}(:showticklabels => false, :title => nothing, :domain => domain)
+                        set_layout_tickless_density_axis!(layout, axis; title = nothing, sides_content, domain)
                     end
                 end
             end
@@ -1215,14 +1267,62 @@ function distribution_layout(;
         end
     end
 
-    maybe_push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter)
+    maybe_push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter, sides_content)
+
+    if has_legend
+        set_layout_legend!(layout, 1; title = nothing)
+        item = legend_side_panel_item(;
+            legend = plotly_legend(1),
+            labels = legend_labels,
+            title = nothing,
+            default_order = CATEGORICAL_LEGEND_ORDER,
+            figure_configuration = graph.configuration.figure,
+            sides_content,
+        )
+        place_side_panel!(layout, graph.configuration.figure, [item]; sides_content)
+    end
+    set_layout_margins!(layout, graph.configuration.figure, sides_content)
 
     return layout
 end
 
+# Set the Plotly density `axis` of a distribution style which shows no density ticks (anything but a histogram), with
+# its `title` (if any), and add the title to the `sides_content`.
+function set_layout_tickless_density_axis!(
+    layout::Layout,
+    axis::AbstractString;
+    title::Maybe{AbstractString},
+    sides_content::SidesContent,
+    domain::Maybe{AbstractVector{<:Real}} = nothing,
+)::Nothing
+    plotly_axis_title = plotly_title(title)
+    if plotly_axis_title !== nothing
+        plotly_axis_title[:standoff] = AXIS_TITLE_STANDOFF
+    end
+    layout[axis] =
+        Dict{Symbol, Any}(:showticklabels => false, :title => plotly_axis_title, :automargin => true, :domain => domain)
+    add_labels!(
+        sides_content;
+        width = 0,
+        height = 0,
+        screen_angle = 0,
+        is_vertical_axis = startswith(axis, "y"),
+        gap = 0,
+        title_height = title === nothing ? 0 : PLOTLY_AXIS_TITLE_FONT_SIZE,
+        standoff = AXIS_TITLE_STANDOFF,
+    )
+    return nothing
+end
+
 # The cross-series name annotations only apply to a gapped multiple-distributions graph; a single distribution graph has
 # none.
-function maybe_push_series_annotations!(::Layout, ::DistributionGraph, ::AbstractString, ::AbstractString)::Nothing
+function maybe_push_series_annotations!(
+    ::Layout,
+    ::DistributionGraph,
+    ::AbstractString,
+    ::AbstractString,
+    ::SidesContent,
+)::Nothing
     return nothing
 end
 
@@ -1231,9 +1331,10 @@ function maybe_push_series_annotations!(
     graph::DistributionsGraph,
     value_axis_letter::AbstractString,
     density_axis_letter::AbstractString,
+    sides_content::SidesContent,
 )::Nothing
     if graph.configuration.distributions_gap !== nothing
-        push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter)
+        push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter, sides_content)
     end
     return nothing
 end
@@ -1247,6 +1348,7 @@ function push_series_annotations!(
     graph::DistributionsGraph,
     value_axis_letter::AbstractString,
     density_axis_letter::AbstractString,
+    sides_content::SidesContent,
 )::Nothing
     configuration = graph.configuration
     series_axis = configuration.series_axis
@@ -1309,21 +1411,38 @@ function push_series_annotations!(
         graph.data.series_axis_title,
         prefer_data(graph.data.density_axis_title, prefer_data(series_axis.title, configuration.density_axis.title)),
     )
+    if series_axis.show_ticks
+        names_width = maximum(
+            text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for
+            name in distributions_names if name !== nothing;
+            init = 0.0,
+        )
+        names_height = PLOTLY_TICK_LABEL_FONT_SIZE
+        names_gap = PLOTLY_ANNOTATION_PADDING
+    else
+        names_width = names_height = names_gap = 0
+    end
+    names_depth =
+        names_gap + rotated_label_extent(;
+            width = names_width,
+            height = names_height,
+            screen_angle,
+            is_vertical_axis = !is_vertical_values,
+        ).depth
+    add_labels!(
+        sides_content;
+        width = names_width,
+        height = names_height,
+        screen_angle,
+        is_vertical_axis = !is_vertical_values,
+        gap = names_gap,
+        title_height = series_title === nothing ? 0 : PLOTLY_TICK_LABEL_FONT_SIZE,
+        standoff = AXIS_TITLE_STANDOFF,
+    )
+
     if series_title !== nothing
-        # Place the title past the names (anchored to the same plot edge, shifted out so its automargin push is the
-        # outermost one and Plotly reserves room for the title beyond the names). Plotly measures the rendered names but
-        # we can't, so estimate their extent perpendicular to the series axis from the longest name, the (default ~12px)
-        # tick font, and the rotation: a name perpendicular to the axis takes its full length, a parallel one one line.
-        font_size = 12
-        if series_axis.show_ticks
-            longest_name = maximum((name === nothing ? 0 : length(name) for name in distributions_names); init = 0)
-            names_radians = series_angle * pi / 180
-            names_extent =
-                longest_name * 0.6 * font_size * abs(sin(names_radians)) + font_size * abs(cos(names_radians))
-        else
-            names_extent = 0
-        end
-        names_clearance = names_extent + font_size + 5
+        # The title is a text label (in the default 12 pixels font), placed past the names.
+        names_clearance = names_depth + AXIS_TITLE_STANDOFF + PLOTLY_TICK_LABEL_FONT_SIZE
         if is_vertical_values
             push!(
                 plotly_annotations,

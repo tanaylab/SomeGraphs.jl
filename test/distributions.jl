@@ -431,6 +431,13 @@ nested_test("distribution") do
         end
     end
 
+    # The name titles the density axis, which has no ticks unless this is a histogram.
+    nested_test("name") do
+        graph.data.distribution.name = "Foo"
+        test_html(graph, "distribution.name.html")
+        return nothing
+    end
+
     nested_test("cumulative") do
         for name in ("fractions", "percents", "counts")
             test_distributions(graph, "distribution", "cumulative.$(name)", name) do
