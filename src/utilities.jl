@@ -451,22 +451,40 @@ end
 
 """
     @kwdef mutable struct SidesContent
+        least_plot_width::Float64
+        least_plot_height::Float64
         left::Float64 = 0
         right::Float64 = 0
         top::Float64 = 0
         bottom::Float64 = 0
     end
 
+    SidesContent(figure_configuration::FigureConfiguration)
+
 How far the content beyond the plot's area reaches on each side, in pixels. This is the tick labels, the titles of the
 axes and of the figure, the titles of the annotations, and the side panel. A graph makes one of these for its layout.
 Each part of the layout grows each side to the farthest it reaches. Each margin is then the content of its side plus
 the configured margin (see [`set_layout_margins!`](@ref)).
+
+A label near an end of its axis may reach past that end, into the side next to it. How far it is from that end is
+bounded from below by the `least_plot_width` and `least_plot_height` of the plot's area. Made from a
+`figure_configuration`, these are half the figure's width and height, or half of Plotly's default size (700 by 450
+pixels) when the figure doesn't set them.
 """
 @kwdef mutable struct SidesContent
+    least_plot_width::Float64
+    least_plot_height::Float64
     left::Float64 = 0
     right::Float64 = 0
     top::Float64 = 0
     bottom::Float64 = 0
+end
+
+function SidesContent(figure_configuration::FigureConfiguration)::SidesContent
+    return SidesContent(;
+        least_plot_width = prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH) / 2,
+        least_plot_height = prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) / 2,
+    )
 end
 
 # The font size Plotly uses for the figure's title. Its box is as tall as its font size.
@@ -660,22 +678,29 @@ function set_layout_axis!(
 
     if show_ticks
         if ticks_labels !== nothing
-            labels_width = maximum(
-                text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels;
-                init = 0.0,
-            )
+            # Plotly shows the labels only at their values, and the range places these.
+            @assert ticks_values !== nothing && labels_range !== nothing && labels_range.maximum > labels_range.minimum
+            labels_widths = [text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels]
+            labels_positions = (ticks_values .- labels_range.minimum) ./ (labels_range.maximum - labels_range.minimum)
         else
             @assert labels_range !== nothing
-            labels_width = axis_ticks_max_pixels_width(axis_configuration.scale, labels_range)
+            labels_widths, labels_positions = axis_ticks_candidates(axis_configuration.scale, labels_range)
         end
+        if is_reversed
+            labels_positions = 1 .- labels_positions
+        end
+        domain_start, domain_end = domain === nothing ? (0, 1) : (domain[1], domain[2])
+        labels_positions = domain_start .+ labels_positions .* (domain_end - domain_start)
         labels_height = PLOTLY_TICK_LABEL_FONT_SIZE
         labels_gap = is_vertical_axis ? PLOTLY_Y_TICK_LABELS_GAP : PLOTLY_X_TICK_LABELS_GAP
     else
-        labels_width = labels_height = labels_gap = 0
+        labels_widths = labels_positions = Float64[]
+        labels_height = labels_gap = 0
     end
     add_labels!(
         sides_content;
-        width = labels_width,
+        widths = labels_widths,
+        positions = labels_positions,
         height = labels_height,
         screen_angle = screen_ticks_angle,
         is_vertical_axis,
@@ -1304,16 +1329,21 @@ function plain_ticks_affix(affix::Maybe{AbstractString})::String
     return affix === nothing ? "" : replace(affix, r"<[^>]*>" => "")
 end
 
-# The tick labels Plotly draws for a `scale` whose (scaled) values are in the `scaled_range`, when it aims at `n_ticks`
-# ticks, as far as their widths are concerned. This holds for a color bar and for an axis. For a `Log10Base` scale they
-# follow Plotly's rules for a log axis (see `log10_plotly_ticks`). For the rest, Plotly picks the ticks of a linear axis
-# (a step of 2, 5 or 10 times a power of 10), and each label is the wider of its plain and its SI form, since the form
-# Plotly picks isn't known. Negative values have Plotly's minus sign.
-function plotly_tick_labels(scale::ScaleConfiguration, scaled_range::Range, n_ticks::Real)::Vector{String}
+# The ticks Plotly draws for a `scale` whose (scaled) values are in the `scaled_range`, when it aims at `n_ticks` ticks:
+# their scaled values, and their labels as far as their widths are concerned. This holds for a color bar and for an
+# axis. For a `Log10Base` scale they follow Plotly's rules for a log axis (see `log10_plotly_ticks`). For the rest,
+# Plotly picks the ticks of a linear axis (a step of 2, 5 or 10 times a power of 10), and each label is the wider of its
+# plain and its SI form, since the form Plotly picks isn't known. Negative values have Plotly's minus sign.
+function plotly_ticks(
+    scale::ScaleConfiguration,
+    scaled_range::Range,
+    n_ticks::Real,
+)::Tuple{Vector{Float64}, Vector{String}}
     suffix = plain_ticks_affix(axis_ticks_suffix(scale))
 
     if scale.log_base === Log10Base
-        return [label * suffix for label in log10_plotly_ticks(scaled_range, n_ticks)[2]]
+        log10_values, log10_labels = log10_plotly_ticks(scaled_range, n_ticks)
+        return (log10_values, [label * suffix for label in log10_labels])
     end
 
     prefix = plain_ticks_affix(axis_ticks_prefix(scale))
@@ -1340,17 +1370,29 @@ function plotly_tick_labels(scale::ScaleConfiguration, scaled_range::Range, n_ti
         label = text_width(si) > text_width(plain) ? si : plain
         push!(labels, prefix * replace(label, "-" => "−") * suffix)
     end
-    return labels
+    return (Float64.(values), labels)
 end
 
-# The width in pixels of the widest tick label Plotly could draw on an axis of the `scale` whose (scaled) values are in
-# the `scaled_range`, whatever the axis' length. Plotly aims at between 5 and 10 ticks (one per 40 pixels of a vertical
-# axis, or 80 of a horizontal one, clamped to 4..9, plus 1). Every step it can pick for a count in that range, it also
-# picks for a whole count, so trying those covers them all.
-function axis_ticks_max_pixels_width(scale::ScaleConfiguration, scaled_range::Range)::Float64
-    return maximum(
-        tick_label_pixel_width(label) for n_ticks in 5:10 for label in plotly_tick_labels(scale, scaled_range, n_ticks)
-    )
+# The labels of the ticks Plotly draws (see `plotly_ticks`).
+function plotly_tick_labels(scale::ScaleConfiguration, scaled_range::Range, n_ticks::Real)::Vector{String}
+    return plotly_ticks(scale, scaled_range, n_ticks)[2]
+end
+
+# Every tick label Plotly could draw on an axis of the `scale` whose (scaled) values are in the `scaled_range`, whatever
+# the axis' length: the width of each in pixels, and its position as a fraction of the range (0 at its minimum). Plotly
+# aims at between 5 and 10 ticks (one per 40 pixels of a vertical axis, or 80 of a horizontal one, clamped to 4..9,
+# plus 1). Every step it can pick for a count in that range, it also picks for a whole count, so trying those covers
+# them all.
+function axis_ticks_candidates(scale::ScaleConfiguration, scaled_range::Range)::Tuple{Vector{Float64}, Vector{Float64}}
+    span = scaled_range.maximum - scaled_range.minimum
+    widths = Float64[]
+    positions = Float64[]
+    for n_ticks in 5:10
+        values, labels = plotly_ticks(scale, scaled_range, n_ticks)
+        append!(widths, tick_label_pixel_width.(labels))
+        append!(positions, span == 0 ? fill(0.5, length(values)) : (values .- scaled_range.minimum) ./ span)
+    end
+    return (widths, positions)
 end
 
 # How far a label reaches from its tick, in pixels: `depth` away from the axis, and `before` and `after` the tick
@@ -1392,13 +1434,15 @@ function rotated_label_extent(; width::Real, height::Real, screen_angle::Real, i
     return LabelExtent(; depth, before, after)
 end
 
-# Grow the `sides_content` to hold a group of labels: at most `width` wide and `height` tall at the `screen_angle`,
-# beside a vertical (left) or horizontal (bottom) axis, `gap` pixels from it, followed by a title `title_height` tall
-# (0 for none) `standoff` pixels beyond the labels. A label may be at either end of the axis, so it overhangs into both
-# neighbouring sides.
+# Grow the `sides_content` to hold a group of labels beside a vertical (left) or horizontal (bottom) axis: each of the
+# `widths` wide, at its position (a fraction of the plot's area, 0 at its bottom or left end), all `height` tall at the
+# `screen_angle`, `gap` pixels from the axis, followed by a title `title_height` tall (0 for none) `standoff` pixels
+# beyond them. A label near an end of the axis may reach past it, into the side next to it, by its reach along the axis
+# less its distance from that end (see `SidesContent`).
 function add_labels!(
     sides_content::SidesContent;
-    width::Real,
+    widths::AbstractVector{<:Real},
+    positions::AbstractVector{<:Real},
     height::Real,
     screen_angle::Real,
     is_vertical_axis::Bool,
@@ -1406,19 +1450,33 @@ function add_labels!(
     title_height::Real = 0,
     standoff::Real = 0,
 )::Nothing
-    extent = rotated_label_extent(; width, height, screen_angle, is_vertical_axis)
-    depth = gap + extent.depth
+    @assert length(widths) == length(positions)
+    least_length = is_vertical_axis ? sides_content.least_plot_height : sides_content.least_plot_width
+    depth = 0.0
+    before = 0.0
+    after = 0.0
+    for (width, position) in zip(widths, positions)
+        extent = rotated_label_extent(; width, height, screen_angle, is_vertical_axis)
+        depth = max(depth, extent.depth)
+        # Before the tick is to its left on an x axis, and above it on a y axis, where the axis runs up from 0.
+        before_distance = (is_vertical_axis ? 1 - position : position) * least_length
+        after_distance = (is_vertical_axis ? position : 1 - position) * least_length
+        before = max(before, extent.before - before_distance)
+        after = max(after, extent.after - after_distance)
+    end
+
+    depth += gap
     if title_height > 0
         depth += standoff + title_height
     end
     if is_vertical_axis
         sides_content.left = max(sides_content.left, depth)
-        sides_content.top = max(sides_content.top, extent.before)
-        sides_content.bottom = max(sides_content.bottom, extent.after)
+        sides_content.top = max(sides_content.top, before)
+        sides_content.bottom = max(sides_content.bottom, after)
     else
         sides_content.bottom = max(sides_content.bottom, depth)
-        sides_content.left = max(sides_content.left, extent.before)
-        sides_content.right = max(sides_content.right, extent.after)
+        sides_content.left = max(sides_content.left, before)
+        sides_content.right = max(sides_content.right, after)
     end
     return nothing
 end

@@ -1361,7 +1361,7 @@ function bars_layout(;
         end
     end
 
-    sides_content = SidesContent()
+    sides_content = SidesContent(figure_configuration)
     layout = plotly_layout(
         figure_configuration;
         sides_content,
@@ -1494,18 +1494,23 @@ function bars_layout(;
         :anchor => bar_axis_anchor,
     )
 
+    # The bars may be in any order, so each place may hold the widest name.
     bars_names = graph.data.bars.names
     if show_tick_names && bars_names !== nothing
-        labels_width =
-            maximum(text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for name in bars_names; init = 0.0)
+        n_bars = length(bars_names)
+        widest = maximum(text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for name in bars_names; init = 0.0)
+        labels_widths = fill(widest, n_bars)
+        labels_positions = ((1:n_bars) .- 0.5) ./ n_bars
         labels_height = PLOTLY_TICK_LABEL_FONT_SIZE
         labels_gap = is_vertical_bar_axis ? PLOTLY_Y_TICK_LABELS_GAP : PLOTLY_X_TICK_LABELS_GAP
     else
-        labels_width = labels_height = labels_gap = 0
+        labels_widths = labels_positions = Float64[]
+        labels_height = labels_gap = 0
     end
     add_labels!(
         sides_content;
-        width = labels_width,
+        widths = labels_widths,
+        positions = labels_positions,
         height = labels_height,
         screen_angle = bar_axis_screen_ticks_angle,
         is_vertical_axis = is_vertical_bar_axis,
@@ -1620,9 +1625,12 @@ function push_plotly_annotation!(;
             screen_angle = axis_screen_ticks_angle(ticks_angle, is_vertical_axis)
         end
         textangle = screen_angle != 0 ? screen_angle : nothing
+        # The label is at the middle of its annotation, along the values axis.
+        domain = something(values_sub_graph === nothing ? nothing : plotly_sub_graph_domain(values_sub_graph), [0, 1])
         add_labels!(
             sides_content;
-            width = text_width(title; font_size = PLOTLY_TICK_LABEL_FONT_SIZE),
+            widths = [text_width(title; font_size = PLOTLY_TICK_LABEL_FONT_SIZE)],
+            positions = [(domain[1] + domain[2]) / 2],
             height = PLOTLY_TICK_LABEL_FONT_SIZE,
             screen_angle,
             is_vertical_axis,

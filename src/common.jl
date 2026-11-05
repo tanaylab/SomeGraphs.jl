@@ -422,21 +422,22 @@ function flip_axes!(::Graph)::Graph end  # NOJET
 
 """
     @kwdef mutable struct MarginsConfiguration <: Validated
-        left::Int = 50
-        bottom::Int = 50
-        right::Int = 50
-        top::Int = 50
+        left::Int = 10
+        bottom::Int = 10
+        right::Int = 10
+        top::Int = 10
     end
 
-Configure the margins of the graph. Sizes are in pixels (1/96th of an inch). Plotly is uncapable of automatically
-adjusting the margins to adapt to tick labels, so you may have to tweak this manually to avoid clipping or reduce wasted
-white space. In the 21st century. Sigh.
+Configure the margins of the graph. Sizes are in pixels (1/96th of an inch). Each margin is the space beyond what lies
+on its side of the plot's area: the tick labels and titles of the axes, the titles of the annotations, the figure's
+title (above) and the side panel (to the right). The space these take is estimated from their texts, for the widest
+labels Plotly may draw. If an estimate falls short and something is clipped, increase that side's margin.
 """
 @kwdef mutable struct MarginsConfiguration <: Validated
-    left::Int = 50
-    bottom::Int = 50
-    right::Int = 50
-    top::Int = 50
+    left::Int = 10
+    bottom::Int = 10
+    right::Int = 10
+    top::Int = 10
 end
 
 function visit_graph_parts(visitor::Function, part::MarginsConfiguration, visited::Base.IdSet)::Nothing

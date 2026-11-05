@@ -1068,7 +1068,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         entities_hovers(graph.data.rows.entities) !== nothing ||
         entities_hovers(graph.data.columns.entities) !== nothing
 
-    sides_content = SidesContent()
+    sides_content = SidesContent(figure_configuration)
     layout = plotly_layout(
         figure_configuration;
         sides_content,

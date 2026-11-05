@@ -1038,7 +1038,7 @@ function distribution_layout(;
         end
     end
 
-    sides_content = SidesContent()
+    sides_content = SidesContent(graph.configuration.figure)
     layout = plotly_layout(
         graph.configuration.figure;
         sides_content,
@@ -1303,7 +1303,8 @@ function set_layout_tickless_density_axis!(
         Dict{Symbol, Any}(:showticklabels => false, :title => plotly_axis_title, :automargin => true, :domain => domain)
     add_labels!(
         sides_content;
-        width = 0,
+        widths = Float64[],
+        positions = Float64[],
         height = 0,
         screen_angle = 0,
         is_vertical_axis = startswith(axis, "y"),
@@ -1411,27 +1412,38 @@ function push_series_annotations!(
         graph.data.series_axis_title,
         prefer_data(graph.data.density_axis_title, prefer_data(series_axis.title, configuration.density_axis.title)),
     )
+    names_widths = Float64[]
+    names_positions = Float64[]
     if series_axis.show_ticks
-        names_width = maximum(
-            text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for
-            name in distributions_names if name !== nothing;
-            init = 0.0,
-        )
+        for (index, name) in enumerate(distributions_names)
+            if name !== nothing
+                # Each name is at the middle of its distribution's sub-graph.
+                domain = something(
+                    plotly_sub_graph_domain(
+                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = configuration.distributions_gap),
+                    ),
+                    [0, 1],
+                )
+                push!(names_widths, text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE))
+                push!(names_positions, (domain[1] + domain[2]) / 2)
+            end
+        end
         names_height = PLOTLY_TICK_LABEL_FONT_SIZE
         names_gap = PLOTLY_ANNOTATION_PADDING
     else
-        names_width = names_height = names_gap = 0
+        names_height = names_gap = 0
     end
     names_depth =
         names_gap + rotated_label_extent(;
-            width = names_width,
+            width = maximum(names_widths; init = 0.0),
             height = names_height,
             screen_angle,
             is_vertical_axis = !is_vertical_values,
         ).depth
     add_labels!(
         sides_content;
-        width = names_width,
+        widths = names_widths,
+        positions = names_positions,
         height = names_height,
         screen_angle,
         is_vertical_axis = !is_vertical_values,

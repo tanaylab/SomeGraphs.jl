@@ -19,8 +19,9 @@ nested_test("utilities") do
 
     # The margins don't grow, and Plotly is told so by a real boolean.
     nested_test("plotly_layout") do
-        layout =
-            plotly_layout(FigureConfiguration(); sides_content = SidesContent(), title = nothing, has_legend = false)
+        figure_configuration = FigureConfiguration()
+        sides_content = SidesContent(figure_configuration)
+        layout = plotly_layout(figure_configuration; sides_content, title = nothing, has_legend = false)
         @test layout[:margin][:autoexpand] === false
     end
 
@@ -500,9 +501,9 @@ nested_test("utilities") do
             @test 125.2 <= colors_scale_pixel_width(["1"]; title = "A long color bar title") <= 127
         end
 
-        # An axis may get any count of ticks, so its widest label is the widest of all of them.
+        # An axis may get any count of ticks, so its candidate labels are those of all of them, each at its position.
         nested_test("axis_ticks") do
-            axis_ticks_max_pixels_width = SomeGraphs.Utilities.axis_ticks_max_pixels_width
+            axis_ticks_candidates = SomeGraphs.Utilities.axis_ticks_candidates
             widest(labels) = maximum(text_width.(labels))
 
             nested_test("counts") do
@@ -510,12 +511,16 @@ nested_test("utilities") do
                 @test plotly_tick_labels(ScaleConfiguration(), scaled_range, 5) == ["0", "1", "2"]
                 labels = plotly_tick_labels(ScaleConfiguration(), scaled_range, 10)
                 @test labels == ["0.0", "0.5", "1.0", "1.5", "2.0", "2.5"]
-                @test axis_ticks_max_pixels_width(ScaleConfiguration(), scaled_range) == widest(labels)
+                widths, positions = axis_ticks_candidates(ScaleConfiguration(), scaled_range)
+                @test maximum(widths) == widest(labels)
+                @test extrema(positions) == (0, 1)
+                @test 0.8 in positions
             end
 
             nested_test("large") do
                 scaled_range = Range(; minimum = 0, maximum = 123456)
-                @test axis_ticks_max_pixels_width(ScaleConfiguration(), scaled_range) == widest(["100000", "120000"])
+                widths, _ = axis_ticks_candidates(ScaleConfiguration(), scaled_range)
+                @test maximum(widths) == widest(["100000", "120000"])
             end
         end
 
@@ -549,16 +554,18 @@ nested_test("utilities") do
             end
         end
 
-        # Each group of labels reaches its own side, and overhangs into the two sides next to it.
+        # Each group of labels reaches its own side. A label near an end of its axis overhangs into the side next to it,
+        # by its reach less its distance from that end, for a plot's area at least half the figure (here 200 by 100).
         nested_test("sides_content") do
             add_labels! = SomeGraphs.Utilities.add_labels!
-            sides_content = SomeGraphs.Utilities.SidesContent()
+            sides_content = SidesContent(FigureConfiguration(; width = 400, height = 200))
             sides(content) = (; content.left, content.right, content.top, content.bottom)
             @test sides(sides_content) == (; left = 0, right = 0, top = 0, bottom = 0)
 
             add_labels!(
                 sides_content;
-                width = 40,
+                widths = [40, 40],
+                positions = [0, 1],
                 height = 10,
                 screen_angle = 0,
                 is_vertical_axis = false,
@@ -568,8 +575,27 @@ nested_test("utilities") do
             )
             @test sides(sides_content) == (; left = 20, right = 20, top = 0, bottom = 5 + 10 + 10 + 12)
 
-            add_labels!(sides_content; width = 60, height = 10, screen_angle = 0, is_vertical_axis = true, gap = 1)
-            @test sides(sides_content) == (; left = 1 + 60, right = 20, top = 5, bottom = 37)
+            add_labels!(
+                sides_content;
+                widths = [60],
+                positions = [0.25],
+                height = 10,
+                screen_angle = 0,
+                is_vertical_axis = false,
+                gap = 5,
+            )
+            @test sides(sides_content) == (; left = 20, right = 20, top = 0, bottom = 37)
+
+            add_labels!(
+                sides_content;
+                widths = [60],
+                positions = [0.5],
+                height = 10,
+                screen_angle = 0,
+                is_vertical_axis = true,
+                gap = 1,
+            )
+            @test sides(sides_content) == (; left = 1 + 60, right = 20, top = 0, bottom = 37)
         end
     end
 

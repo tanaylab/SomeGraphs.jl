@@ -890,7 +890,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
     )
 
     has_hovers = points_hovers !== nothing || entities_hovers(graph.data.edges.entities) !== nothing
-    sides_content = SidesContent()
+    sides_content = SidesContent(graph.configuration.figure)
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
@@ -1510,7 +1510,7 @@ function Common.graph_to_figure(graph::LineGraph)::PlotlyFigure
         is_plotly_log = true,
     )
 
-    sides_content = SidesContent()
+    sides_content = SidesContent(graph.configuration.figure)
     layout = scatters_layout(;
         graph,
         scaled_xs_range = scaled_points_xs.range,
@@ -2075,7 +2075,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         is_plotly_log = true,
     )
 
-    sides_content = SidesContent()
+    sides_content = SidesContent(graph.configuration.figure)
     layout = scatters_layout(;
         graph,
         scaled_xs_range,

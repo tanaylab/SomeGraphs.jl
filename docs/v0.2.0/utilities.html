@@ -1154,11 +1154,15 @@ end
 <div>
 <pre>
 <code class="language-julia hljs">@kwdef mutable struct SidesContent
+    least_plot_width::Float64
+    least_plot_height::Float64
     left::Float64 = 0
     right::Float64 = 0
     top::Float64 = 0
     bottom::Float64 = 0
 end
+
+SidesContent(figure_configuration::FigureConfiguration)
 </code>
 </pre>
 <p>How far the content beyond the plot&#39;s area reaches on each side, in pixels. This is the tick labels, the titles of the axes and of the figure, the titles of the annotations, and the side panel. A graph makes one of these for its layout. Each part of the layout grows each side to the farthest it reaches. Each margin is then the content of its side plus the configured margin (see 
@@ -1166,6 +1170,14 @@ end
 <code>set_layout_margins!
 </code>
 </a>).
+</p>
+<p>A label near an end of its axis may reach past that end, into the side next to it. How far it is from that end is bounded from below by the 
+<code>least_plot_width
+</code> and 
+<code>least_plot_height
+</code> of the plot&#39;s area. Made from a 
+<code>figure_configuration
+</code>, these are half the figure&#39;s width and height, or half of Plotly&#39;s default size (700 by 450 pixels) when the figure doesn&#39;t set them.
 </p>
 </div>
 </section>
