@@ -579,7 +579,7 @@ nested_test("series_bars") do
 
         nested_test("gap") do
             graph.configuration.stacking = StackValues
-            graph.configuration.series_gap = 0.05
+            graph.configuration.series_gap = 20
             @test_throws chomp("""
                                ArgumentError: can't specify both graph.configuration.stacking
                                and graph.configuration.series_gap
@@ -630,18 +630,18 @@ nested_test("series_bars") do
             end
 
             nested_test("size") do
-                graph.configuration.series_gap = 0.1
-                graph.configuration.annotations.size = 0.9
-                graph.configuration.annotations.gap = 0.8
+                graph.configuration.series_gap = 40
+                graph.configuration.annotations.size = 360
+                graph.configuration.annotations.gap = 320
                 @test_throws chomp("""
                                    ArgumentError: no space left in the value axis
                                    number of graphs: 2
-                                   with gap between graphs: 0.1 (total: 0.1)
+                                   with gap between graphs: 40 (total: 40)
                                    number of annotations: 1
-                                   with gap between annotations: 0.8 (total: 0.8)
-                                   with size of each annotation: 0.9 (total: 0.9)
-                                   the total overhead: 1.8
-                                   is not less than: 1
+                                   with gap between annotations: 320 (total: 320)
+                                   with size of each annotation: 360 (total: 360)
+                                   the total overhead: 720
+                                   is not less than the axis length: 430.0
                                    """) validate(ValidationContext(["graph"]), graph)
             end
         end
@@ -669,7 +669,7 @@ nested_test("series_bars") do
             graph.data.series[1].values.title = "Values"
             graph.data.series[1].name = "Foo"
             graph.data.series[2].name = "Bar"
-            graph.configuration.series_gap = 0.01
+            graph.configuration.series_gap = 4
             @test_throws chomp(
                 """
                 ArgumentError: can't specify both graph.data.series[*].values.title and graph.data.series[*].name
@@ -733,7 +733,7 @@ nested_test("series_bars") do
                     end
 
                     nested_test("gap") do
-                        graph.configuration.series_gap = 0.05
+                        graph.configuration.series_gap = 20
 
                         nested_test("()") do
                             test_html(graph, "series_bars.$(orientation_name).mirrored.pairs.gap.html")
@@ -800,7 +800,7 @@ nested_test("series_bars") do
             end
 
             nested_test("gap") do
-                graph.configuration.series_gap = 0.05
+                graph.configuration.series_gap = 20
 
                 nested_test("()") do
                     test_html(graph, "series_bars.$(orientation_name).gap.html")

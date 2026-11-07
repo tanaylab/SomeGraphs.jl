@@ -141,8 +141,8 @@ graph = heatmap_graph(;
         ],
     ),
 )
-graph.configuration.rows.dendogram_size = 0.2
-graph.configuration.columns.dendogram_size = 0.2
+graph.configuration.rows.dendogram_size = 80
+graph.configuration.columns.dendogram_size = 80
 using PlotlyDocumenter
 to_documenter(graph.fig)
 ```
@@ -176,8 +176,8 @@ graph = heatmap_graph(;
         arrangement = ArrangementData(; groups = VectorValuesData(["L", "M", "M"])),
     ),
 )
-graph.configuration.rows.dendogram_size = 0.2
-graph.configuration.columns.dendogram_size = 0.2
+graph.configuration.rows.dendogram_size = 80
+graph.configuration.columns.dendogram_size = 80
 using PlotlyDocumenter
 to_documenter(graph.fig)
 ```

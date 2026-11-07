@@ -34,6 +34,7 @@ import ..Utilities.PLOTLY_Y_TICK_LABELS_GAP
 import ..Utilities.SidePanelItem
 import ..Utilities.add_labels!
 import ..Utilities.categorical_legend_labels
+import ..Utilities.configured_plot_pixel_size
 import ..Utilities.legend_side_panel_item
 import ..Utilities.two_passes_layout
 import ..Validations.Maybe
@@ -270,10 +271,12 @@ function Common.validate_graph(graph::BarsGraph)::Nothing
         graph.configuration.value_axis,
     )
 
+    plot_pixel_width, plot_pixel_height = configured_plot_pixel_size(graph.configuration.figure)
     validate_axis_sizes(;
         axis_name = "value",
         annotation_size = graph.configuration.annotations,
         n_annotations = length(displayed_annotations(graph.data.annotations, graph.data.annotations_order)),
+        pixel_length = graph.configuration.values_orientation == VerticalValues ? plot_pixel_height : plot_pixel_width,
     )
 
     return nothing
@@ -378,7 +381,7 @@ end
         values_orientation::ValuesOrientation = VerticalValues
         bars::BarsConfiguration = BarsConfiguration()
         annotations::AnnotationSize = AnnotationSize()
-        series_gap::Maybe{Real} = nothing
+        series_gap::Maybe{Integer} = nothing
         stacking::Maybe{Stacking} = nothing
         mirrored::Bool = false
     end
@@ -388,9 +391,9 @@ Configure a graph for showing multiple series of bars.
 This is similar to [`BarsGraphConfiguration`](@ref), without the `colors` and `value_bands` (the colors of the bars are
 those of their series), and with an optional `stacking` for stacking the bars of the different series on top of each
 other. Alternatively, specifying a `series_gap` will plot each series in its own separate sub-graph; stacking can't be
-combined with a `series_gap`. The `series_gap` is specified as a fraction of the used graph size, which must be less
-than one. If zero the graphs will be adjacent. If neither is specified, then the bars will be shown in groups (adjacent
-to each other) with the `bars.gap` between the groups. Stacking can't be combined with a log `value_axis`.
+combined with a `series_gap`. The `series_gap` is in pixels. If zero the graphs will be adjacent. If neither is
+specified, then the bars will be shown in groups (adjacent to each other) with the `bars.gap` between the groups.
+Stacking can't be combined with a log `value_axis`.
 
 The `value_axis` always shows zero, which is where a bar is measured from, however far from it the values are - so the
 bars show their sizes rather than their differences. Setting an explicit `value_axis.scale.minimum` (or `maximum`)
@@ -409,7 +412,7 @@ Without a `series_gap` all the pairs share the same two value axes and are shown
     values_orientation::ValuesOrientation = VerticalValues
     bars::BarsConfiguration = BarsConfiguration()
     annotations::AnnotationSize = AnnotationSize()
-    series_gap::Maybe{Real} = nothing
+    series_gap::Maybe{Integer} = nothing
     stacking::Maybe{Stacking} = nothing
     mirrored::Bool = false
 end
@@ -427,8 +430,7 @@ function Validations.validate(context::ValidationContext, configuration::SeriesB
     validate_field(context, "annotations", configuration.annotations)
 
     validate_in(context, "series_gap") do
-        validate_is_at_least(context, configuration.series_gap, 0)
-        return validate_is_below(context, configuration.series_gap, 1)
+        return validate_is_at_least(context, configuration.series_gap, 0)
     end
 
     if configuration.stacking !== nothing && configuration.series_gap !== nothing
@@ -741,12 +743,14 @@ function Common.validate_graph(graph::SeriesBarsGraph)::Nothing
         )
     end
 
+    plot_pixel_width, plot_pixel_height = configured_plot_pixel_size(graph.configuration.figure)
     validate_axis_sizes(;
         axis_name = "value",
         graphs_gap = graph.configuration.series_gap,
         n_graphs = arrangement.n_axes,
         annotation_size = graph.configuration.annotations,
         n_annotations = length(displayed_annotations(graph.data.annotations, graph.data.annotations_order)),
+        pixel_length = graph.configuration.values_orientation == VerticalValues ? plot_pixel_height : plot_pixel_width,
     )
 
     return nothing
@@ -1319,10 +1323,12 @@ function bars_layout(;
     colors::Maybe{ConfiguredColors} = nothing,
     annotations_colors::AbstractVector{ConfiguredColors},
     has_legend_only_traces::AbstractVector{Bool},
-    plot_pixel_width::Real,  # NOLINT
-    plot_pixel_height::Real,  # NOLINT
+    plot_pixel_width::Real,
+    plot_pixel_height::Real,
 )::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
+    # The sub-graphs and annotations are placed along the value axis.
+    pixel_length = graph.configuration.values_orientation == VerticalValues ? plot_pixel_height : plot_pixel_width
 
     if specific_scaled_ranges !== nothing
         specific_scaled_ranges = [
@@ -1440,7 +1446,7 @@ function bars_layout(;
             title = prefer_data(value_axis_title, graph.configuration.value_axis.title),
             range = scaled_values_range,
             domain = plotly_sub_graph_domain(
-                SubGraph(; index = 1, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size),
+                SubGraph(; index = 1, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size, pixel_length),
             ),
             is_plotly_log = true,
         )
@@ -1475,6 +1481,7 @@ function bars_layout(;
                         mirrored,
                         n_annotations,
                         annotation_size,
+                        pixel_length,
                     ),
                 ),
                 # Mirrored, the 1st axis of each pair grows away from the shared bar axis, which is to its right.
@@ -1537,8 +1544,15 @@ function bars_layout(;
 
     layout["annotations"] = plotly_annotations = []
     for (annotation_index, annotation_data) in enumerate(annotations_data)
-        sub_graph =
-            SubGraph(; index = -annotation_index, n_graphs, graphs_gap, mirrored, n_annotations, annotation_size)
+        sub_graph = SubGraph(;
+            index = -annotation_index,
+            n_graphs,
+            graphs_gap,
+            mirrored,
+            n_annotations,
+            annotation_size,
+            pixel_length,
+        )
         push_plotly_annotation!(;
             plotly_annotations,
             values_sub_graph = sub_graph,

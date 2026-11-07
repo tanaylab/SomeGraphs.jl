@@ -115,7 +115,7 @@ nested_test("heatmaps") do
                     7 6 5;
                     8 9 10;
                 ]))
-                graph.configuration.rows.dendogram_size = 0.1
+                graph.configuration.rows.dendogram_size = 40
 
                 nested_test("explicit") do
                     graph.configuration.rows.tree_source = SameTree
@@ -299,7 +299,7 @@ nested_test("heatmaps") do
             nested_test("hclust") do
                 nested_test("missing") do
                     graph.configuration.columns.tree_source = GivenTree
-                    graph.configuration.columns.dendogram_size = 0.1
+                    graph.configuration.columns.dendogram_size = 40
                     @test_throws chomp("""
                                        must specify heatmap graph.data.columns.arrangement.hclust
                                        for graph.configuration.columns.tree_source: GivenTree
@@ -704,8 +704,8 @@ nested_test("heatmaps") do
 
         nested_test("dendogram") do
             graph.configuration.rows.order_source = OptimalTreeReorder
-            graph.configuration.rows.dendogram_size = 0.2
-            graph.configuration.columns.dendogram_size = 0.2
+            graph.configuration.rows.dendogram_size = 80
+            graph.configuration.columns.dendogram_size = 80
 
             nested_test("()") do
                 test_html(graph, "heatmap.annotations.dendogram.html")
@@ -765,8 +765,8 @@ nested_test("heatmaps") do
             nested_test("dendogram") do
                 graph.data.rows.entities.order = [1, 3, 2]
                 graph.data.columns.entities.order = [1, 3, 2, 4]
-                graph.configuration.rows.dendogram_size = 0.2
-                graph.configuration.columns.dendogram_size = 0.2
+                graph.configuration.rows.dendogram_size = 80
+                graph.configuration.columns.dendogram_size = 80
                 graph.configuration.columns.tree_source = ClusteredTree
                 return test_html(graph, "heatmap.reorder.dendogram.html")
             end
@@ -850,8 +850,8 @@ nested_test("heatmaps") do
 
         nested_test("dendogram") do
             graph.configuration.rows.order_source = OptimalTreeReorder
-            graph.configuration.rows.dendogram_size = 0.2
-            graph.configuration.columns.dendogram_size = 0.2
+            graph.configuration.rows.dendogram_size = 80
+            graph.configuration.columns.dendogram_size = 80
 
             nested_test("()") do
                 test_html(graph, "heatmap.hclust.dendogram.html")
@@ -1005,7 +1005,7 @@ nested_test("heatmaps") do
         # The clustering sees all the columns, hidden ones included; only the drawn tree is pruned.
         nested_test("dendogram") do
             graph.configuration.columns.order_source = OptimalTreeReorder
-            graph.configuration.columns.dendogram_size = 0.2
+            graph.configuration.columns.dendogram_size = 80
 
             nested_test("()") do
                 graph.data.columns.entities.mask = [true, false, true, true]
@@ -1138,7 +1138,7 @@ nested_test("heatmaps") do
             tree = hclust(distances)
 
             nested_test("dendogram") do
-                graph.configuration.columns.dendogram_size = 0.1
+                graph.configuration.columns.dendogram_size = 40
                 @test graph.placement.columns.order in ([1, 3, 2, 4], [4, 2, 3, 1])
                 @test graph.placement.columns.hclust.order == graph.placement.columns.order
                 return nothing
@@ -1146,7 +1146,7 @@ nested_test("heatmaps") do
 
             nested_test("order+dendogram") do
                 graph.data.columns.entities.order = [2, 1, 4, 3]
-                graph.configuration.columns.dendogram_size = 0.1
+                graph.configuration.columns.dendogram_size = 40
                 @test graph.placement.columns.order == [2, 1, 4, 3]
                 @test graph.placement.columns.hclust.order == [2, 1, 4, 3]
                 return nothing
@@ -1172,7 +1172,7 @@ nested_test("heatmaps") do
             nested_test("clustered+order") do
                 graph.data.columns.entities.order = [4, 3, 2, 1]
                 graph.configuration.columns.tree_source = ClusteredTree
-                graph.configuration.columns.dendogram_size = 0.1
+                graph.configuration.columns.dendogram_size = 40
                 @test graph.placement.columns.order == [4, 2, 3, 1]
                 @test graph.placement.columns.hclust.order == [4, 2, 3, 1]
                 return nothing
@@ -1180,7 +1180,7 @@ nested_test("heatmaps") do
 
             nested_test("slanted+dendogram") do
                 graph.configuration.columns.order_source = SlantedOrder
-                graph.configuration.columns.dendogram_size = 0.1
+                graph.configuration.columns.dendogram_size = 40
                 @test graph.placement.columns.hclust.order == graph.placement.columns.order
                 return nothing
             end
@@ -1188,8 +1188,8 @@ nested_test("heatmaps") do
             nested_test("same") do
                 graph.data.entries.matrix = Float32[0 5 1; 0 5 1; 0 5 1]
                 graph.configuration.rows.order_source = SameOrder
-                graph.configuration.rows.dendogram_size = 0.1
-                graph.configuration.columns.dendogram_size = 0.1
+                graph.configuration.rows.dendogram_size = 40
+                graph.configuration.columns.dendogram_size = 40
 
                 nested_test("tree") do
                     @test graph.placement.rows.order == graph.placement.columns.order
@@ -1286,7 +1286,7 @@ nested_test("heatmaps") do
         base.configuration.columns.tree_source = ClusteredTree
         base.configuration.columns.order_source = OptimalTreeReorder
         base.configuration.columns.linkage = CompleteLinkage
-        base.configuration.columns.dendogram_size = 0.1
+        base.configuration.columns.dendogram_size = 40
 
         other = heatmap_graph(; entries = MatrixValuesData(Float32[9 8 7 6; 5 4 3 2; 1 0 1 0]))
 
@@ -1300,7 +1300,7 @@ nested_test("heatmaps") do
             @test other.data.columns.entities.names !== base.data.columns.entities.names
             @test other.data.columns.annotations[1].values.vector == [1, 2, 3, 4]
             @test other.data.columns.annotations[1] !== base.data.columns.annotations[1]
-            @test other.configuration.columns.dendogram_size == 0.1
+            @test other.configuration.columns.dendogram_size == 40
 
             # The inputs which computed the placement of the base have no effect on the other, so they are cleared. The
             # groups are drawn as gaps, so they are kept; the subgroups only constrained the clustering.

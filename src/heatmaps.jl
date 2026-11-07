@@ -56,6 +56,7 @@ import ..Common.visit_graph_fields
 import ..Utilities.CATEGORICAL_LEGEND_ORDER
 import ..Utilities.SidePanelItem
 import ..Utilities.categorical_legend_labels
+import ..Utilities.configured_plot_pixel_size
 import ..Utilities.legend_side_panel_item
 import ..Utilities.two_passes_layout
 import ..Validations.Maybe
@@ -145,7 +146,7 @@ end
         groups_gap::Maybe{Integer} = 1
         subgroups_gap::Maybe{Integer} = nothing
         total_gaps_fraction::Maybe{Real} = 1 / 20
-        dendogram_size::Maybe{Real} = nothing
+        dendogram_size::Maybe{Integer} = nothing
         dendogram_line::LineConfiguration = LineConfiguration()
     end
 
@@ -237,8 +238,7 @@ specified by names is laid out by the clustering. Numbering both levels therefor
 their (group, subgroup) pair, and numbering just the groups keeps the groups in a fixed order while clustering the
 subgroups inside each of them.
 
-If you specify `dendogram_size`, the tree (see above) is shown to the side of the data. The size is specified in the
-usual inconvenient units (fractions of the total graph size) because Plotly.
+If you specify `dendogram_size`, the tree (see above) is shown to the side of the data. The size is in pixels.
 
 If a dendogram tree is shown, the `dendogram_line` can be used to control it. The default color is black. The
 `is_filled` field shouldn't be set as it has no meaning here.
@@ -256,7 +256,7 @@ If a dendogram tree is shown, the `dendogram_line` can be used to control it. Th
     groups_gap::Maybe{Integer} = 1
     subgroups_gap::Maybe{Integer} = nothing
     total_gaps_fraction::Maybe{Real} = 1 / 20
-    dendogram_size::Maybe{Real} = nothing
+    dendogram_size::Maybe{Integer} = nothing
     dendogram_line::LineConfiguration = LineConfiguration()
 end
 
@@ -680,18 +680,23 @@ function Common.validate_graph(graph::HeatmapGraph)::Nothing
         graph.configuration.entries.colors,
     )
 
+    # The annotations and the dendogram of the columns are stacked along the vertical axis, and those of the rows along
+    # the horizontal one.
+    plot_pixel_width, plot_pixel_height = configured_plot_pixel_size(graph.configuration.figure)
     validate_axis_sizes(;
         axis_name = "columns",
         annotation_size = graph.configuration.columns.annotations,
         n_annotations = length(side_annotations(graph.data.columns)),
-        dendogram_size = graph.configuration.rows.dendogram_size,
+        dendogram_size = graph.configuration.columns.dendogram_size,
+        pixel_length = plot_pixel_height,
     )
 
     validate_axis_sizes(;
         axis_name = "rows",
         annotation_size = graph.configuration.rows.annotations,
         n_annotations = length(side_annotations(graph.data.rows)),
-        dendogram_size = graph.configuration.columns.dendogram_size,
+        dendogram_size = graph.configuration.rows.dendogram_size,
+        pixel_length = plot_pixel_width,
     )
 
     rows_sources = side_sources(graph.data.rows, graph.configuration.rows)
@@ -1093,8 +1098,8 @@ function heatmap_layout(;
     rows_max_height::Real,
     columns_max_height::Real,
     has_legend_only_traces::AbstractVector{Bool},
-    plot_pixel_width::Real,  # NOLINT
-    plot_pixel_height::Real,  # NOLINT
+    plot_pixel_width::Real,
+    plot_pixel_height::Real,
 )::Layout
     n_rows_annotations = length(rows_annotations_data)
     n_columns_annotations = length(columns_annotations_data)
@@ -1155,6 +1160,7 @@ function heatmap_layout(;
                 n_annotations = n_columns_annotations,
                 annotation_size = graph.configuration.columns.annotations,
                 dendogram_size = graph.configuration.columns.dendogram_size,
+                pixel_length = plot_pixel_height,
             ),
         ),
         is_zeroable = false,
@@ -1183,6 +1189,7 @@ function heatmap_layout(;
                 n_annotations = n_rows_annotations,
                 annotation_size = graph.configuration.rows.annotations,
                 dendogram_size = graph.configuration.rows.dendogram_size,
+                pixel_length = plot_pixel_width,
             ),
         ),
         is_zeroable = false,
@@ -1198,6 +1205,7 @@ function heatmap_layout(;
         dendogram_size,
         max_height,
         ticks_angle,
+        pixel_length,
     ) in (
         (
             "y",
@@ -1208,6 +1216,7 @@ function heatmap_layout(;
             graph.configuration.columns.dendogram_size,
             columns_max_height,
             graph.configuration.rows.ticks_angle,
+            plot_pixel_height,
         ),
         (
             "x",
@@ -1218,6 +1227,7 @@ function heatmap_layout(;
             graph.configuration.rows.dendogram_size,
             rows_max_height,
             graph.configuration.columns.ticks_angle,
+            plot_pixel_width,
         ),
     )
         n_annotations = 0
@@ -1232,6 +1242,7 @@ function heatmap_layout(;
                     n_annotations,
                     annotation_size,
                     dendogram_size,
+                    pixel_length,
                 )
                 push_plotly_annotation!(;
                     plotly_annotations,
@@ -1270,6 +1281,7 @@ function heatmap_layout(;
                         n_annotations,
                         annotation_size,
                         dendogram_size,
+                        pixel_length,
                     ),
                 ),
                 is_tick_axis = false,

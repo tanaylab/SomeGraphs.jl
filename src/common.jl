@@ -2164,16 +2164,17 @@ end
 
 """
     @kwdef mutable struct AnnotationSize <: Validated
-        size::AbstractFloat = 0.05
-        gap::AbstractFloat = 0.005
+        size::Integer = 16
+        gap::Integer = 2
     end
 
-Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the heatmap itself. The
-sizes are in the usual inconvenient units (fraction of the overall graph size), because Plotly.
+Specify the sizes of annotations shown to the side of an axis, with a gap between each other and the graph itself, in
+pixels. By default, an annotation is as tall as its title (a 12 pixels font with 2 pixels of padding on each side), and
+the gap is a hairline, so the annotations read as one block.
 """
 @kwdef mutable struct AnnotationSize <: Validated
-    size::AbstractFloat = 0.05
-    gap::AbstractFloat = 0.005
+    size::Integer = 16
+    gap::Integer = 2
 end
 
 function visit_graph_parts(visitor::Function, part::AnnotationSize, visited::Base.IdSet)::Nothing
@@ -2183,15 +2184,11 @@ end
 
 function Validations.validate(context::ValidationContext, annotation_size::AnnotationSize)::Nothing
     validate_in(context, "size") do
-        validate_is_above(context, annotation_size.size, 0)
-        validate_is_below(context, annotation_size.size, 1)
-        return nothing
+        return validate_is_above(context, annotation_size.size, 0)
     end
 
     validate_in(context, "gap") do
-        validate_is_at_least(context, annotation_size.gap, 0)
-        validate_is_below(context, annotation_size.gap, 1)
-        return nothing
+        return validate_is_at_least(context, annotation_size.gap, 0)
     end
 
     return nothing

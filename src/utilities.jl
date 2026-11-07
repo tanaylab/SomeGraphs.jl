@@ -1692,17 +1692,26 @@ function set_layout_margins!(
     return nothing
 end
 
+# The size of the plot's area in pixels which the configured margins leave in the figure (or in Plotly's default size),
+# before the margins grow to hold the content of their sides: its width and its height.
+function configured_plot_pixel_size(figure_configuration::FigureConfiguration)::Tuple{Float64, Float64}
+    margins = figure_configuration.margins
+    return (
+        prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH) - margins.left - margins.right,
+        prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - margins.top - margins.bottom,
+    )
+end
+
 # Build a layout twice: first for the plot's size which the configured margins leave in the figure (or in Plotly's
 # default size), only to find the final margins; then for the plot's size which these margins leave, which is the
 # layout to use. The `build_layout` takes the plot's width and height in pixels.
 function two_passes_layout(build_layout::Function, figure_configuration::FigureConfiguration)::Layout
-    figure_width = prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH)
-    figure_height = prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT)
-    margins = figure_configuration.margins
-    first_layout =
-        build_layout(figure_width - margins.left - margins.right, figure_height - margins.top - margins.bottom)
+    first_layout = build_layout(configured_plot_pixel_size(figure_configuration)...)
     margin = first_layout[:margin]
-    return build_layout(figure_width - margin[:l] - margin[:r], figure_height - margin[:t] - margin[:b])
+    return build_layout(
+        prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH) - margin[:l] - margin[:r],
+        prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT) - margin[:t] - margin[:b],
+    )
 end
 
 """
@@ -3296,11 +3305,12 @@ end
     @kwdef struct SubGraph
         index::Integer
         n_graphs::Integer
-        graphs_gap::Maybe{AbstractFloat}
+        graphs_gap::Maybe{Real}
         mirrored::Bool = false
         n_annotations::Integer = 0
         annotation_size::Maybe{AnnotationSize} = nothing
         dendogram_size::Maybe{Real} = nothing
+        pixel_length::Maybe{Real} = nothing
     end
 
 Identify one sub-graph out of a set of `n_graphs` adjacent graphs along some axis. If the `index` is 1, this is the 1st
@@ -3316,15 +3326,20 @@ This also supports `n_annotations` (of the other axis) with `annotation_size` (a
 negative, it is the (negated) index of an annotation (of the other axis).
 
 If the `index` is 0, this is the dendogram graph (of the other axis) with `dendogram_size` (along this axis).
+
+The `graphs_gap`, `annotation_size` and `dendogram_size` are in pixels. The `pixel_length` is the length of the plot's
+area along this axis, in pixels, which turns them into fractions of the axis. It must be given to compute the
+sub-graph's domain.
 """
 @kwdef struct SubGraph
     index::Integer
     n_graphs::Integer
-    graphs_gap::Maybe{AbstractFloat}
+    graphs_gap::Maybe{Real}
     mirrored::Bool = false
     n_annotations::Integer = 0
     annotation_size::Maybe{AnnotationSize} = nothing
     dendogram_size::Maybe{Real} = nothing
+    pixel_length::Maybe{Real} = nothing
 end
 
 # The number of gaps between the sub-graphs. Mirrored, the gap is only between the pairs, so there is one less gap than
@@ -3342,28 +3357,34 @@ end
 # should be the graph itself.
 const MAX_OVERHEAD_FRACTION = 1 / 3
 
-# The size of each annotation, the gap following it, and the gap between the sub-graphs; if together they would take
-# more than `MAX_OVERHEAD_FRACTION` of the axis, they are all scaled down to fit.
-function sub_graph_overhead_sizes(sub_graph::SubGraph)::NTuple{3, Float64}
+# The size of each annotation, the gap following it, the gap between the sub-graphs, and the size of the dendogram (0
+# if none), as fractions of the axis; if together they would take more than `MAX_OVERHEAD_FRACTION` of the axis, they
+# are all scaled down to fit.
+function sub_graph_overhead_sizes(sub_graph::SubGraph)::NTuple{4, Float64}
+    pixel_length = sub_graph.pixel_length
+    @assert pixel_length !== nothing
     if sub_graph.annotation_size === nothing
         annotation_size = annotation_gap = 0.0
     else
-        annotation_size = Float64(sub_graph.annotation_size.size)
-        annotation_gap = Float64(sub_graph.annotation_size.gap)
+        annotation_size = sub_graph.annotation_size.size / pixel_length
+        annotation_gap = sub_graph.annotation_size.gap / pixel_length
     end
-    graphs_gap = Float64(prefer_data(sub_graph.graphs_gap, 0))
+    graphs_gap = prefer_data(sub_graph.graphs_gap, 0) / pixel_length
+    dendogram_size = prefer_data(sub_graph.dendogram_size, 0) / pixel_length
 
     overhead =
         sub_graph.n_annotations * (annotation_size + annotation_gap) +
-        n_sub_graph_gaps(sub_graph.n_graphs, sub_graph.mirrored) * graphs_gap
+        n_sub_graph_gaps(sub_graph.n_graphs, sub_graph.mirrored) * graphs_gap +
+        dendogram_size
     if overhead > MAX_OVERHEAD_FRACTION
         scale = MAX_OVERHEAD_FRACTION / overhead  # UNTESTED
         annotation_size *= scale  # UNTESTED
         annotation_gap *= scale  # UNTESTED
         graphs_gap *= scale  # UNTESTED
+        dendogram_size *= scale  # UNTESTED
     end
 
-    return (annotation_size, annotation_gap, graphs_gap)
+    return (annotation_size, annotation_gap, graphs_gap, dendogram_size)
 end
 
 """
@@ -3386,7 +3407,7 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
         return nothing
     end
 
-    annotation_size, annotation_gap, graphs_gap = sub_graph_overhead_sizes(sub_graph)
+    annotation_size, annotation_gap, graphs_gap, dendogram_size = sub_graph_overhead_sizes(sub_graph)
 
     annotations_size = (annotation_gap + annotation_size) * sub_graph.n_annotations
 
@@ -3409,9 +3430,7 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
         if is_spine
             graphs_total_size -= annotations_size
         end
-        if sub_graph.dendogram_size !== nothing
-            graphs_total_size -= sub_graph.dendogram_size
-        end
+        graphs_total_size -= dendogram_size
         graph_size = graphs_total_size / n_graphs
 
         # Mirrored, only the pairs before this sub-graph contribute a gap; otherwise every sub-graph before it does.
@@ -3441,7 +3460,7 @@ function plotly_sub_graph_domain(sub_graph::SubGraph)::Maybe{AbstractVector{<:Ab
 
     else
         @assert sub_graph.dendogram_size !== nothing
-        start_graph_offset = 1 - sub_graph.dendogram_size
+        start_graph_offset = 1 - dendogram_size
         end_graph_offset = 1
     end
 
@@ -3461,9 +3480,13 @@ end
         annotation_size::AnnotationSize,
         n_annotations::Integer,
         dendogram_size::Maybe{Real} = nothing,
+        pixel_length::Real,
     )::Nothing
 
-Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations.
+Verify there is at least some space left for the actual graph after leaving space for gaps and/or annotations. These
+are in pixels, and the `pixel_length` is the most the axis may have: the length which the configured margins leave in
+the figure (see [`MarginsConfiguration`](@ref)). The margins grow to hold the content of their sides, so the axis may
+end up shorter; the layout then scales the gaps, annotations and dendogram down to at most a third of the axis.
 """
 function validate_axis_sizes(;
     axis_name::AbstractString,
@@ -3472,6 +3495,7 @@ function validate_axis_sizes(;
     annotation_size::AnnotationSize,
     n_annotations::Integer,
     dendogram_size::Maybe{Real} = nothing,
+    pixel_length::Real,
 )::Nothing
     if graphs_gap === nothing
         graph_gaps_overhead = 0
@@ -3483,7 +3507,7 @@ function validate_axis_sizes(;
     annotations_sizes_overhead = n_annotations * annotation_size.size
 
     if dendogram_size === nothing
-        dendogram_size_overhead = 0.0
+        dendogram_size_overhead = 0
     else
         dendogram_size_overhead = dendogram_size
     end
@@ -3491,7 +3515,7 @@ function validate_axis_sizes(;
     total_overhead_size =
         graph_gaps_overhead + annotations_gaps_overhead + annotations_sizes_overhead + dendogram_size_overhead
 
-    if total_overhead_size >= 1
+    if total_overhead_size >= pixel_length
         text = "no space left in the $(axis_name) axis"
         if graph_gaps_overhead > 0
             text *=
@@ -3507,7 +3531,7 @@ function validate_axis_sizes(;
         if dendogram_size !== nothing
             text *= "\ndendogram size: $(dendogram_size_overhead)"  # UNTESTED
         end
-        text *= "\nthe total overhead: $(total_overhead_size)" * "\nis not less than: 1"
+        text *= "\nthe total overhead: $(total_overhead_size)" * "\nis not less than the axis length: $(pixel_length)"
         throw(ArgumentError(text))
     end
 

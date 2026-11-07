@@ -256,7 +256,7 @@ end
         value_bands::BandsConfiguration = BandsConfiguration()
         density_axis::AxisConfiguration = AxisConfiguration()
         series_axis::AxisConfiguration = AxisConfiguration()
-        distributions_gap::Maybe{Real} = 0.05
+        distributions_gap::Maybe{Integer} = 10
     end
 
 Configure a graph for showing multiple distributions.
@@ -267,9 +267,8 @@ inner density axis is titled by the `density_axis_title` of the data. With a gap
 title of the cross-series names axis instead, so it can't be combined with a `series_axis.title`.
 
 If `distributions_gap` is set to `nothing`, overlay the distributions on top of each other; this can't be done for the
-box styles. Otherwise, the distributions are plotted next to each other, with the `distributions_gap` specified as a
-fraction of the used graph size. If zero the graphs will be adjacent, if 1 then the gaps will be the same size as the
-graphs.
+box styles. Otherwise, the distributions are plotted next to each other, with the `distributions_gap` between them, in
+pixels. If zero the graphs will be adjacent.
 
 When there is a gap, the `series_axis` configures the cross-series names axis (the per-series names shown next to the
 sub-graphs). Only its `show_ticks` (whether to show the names), `ticks_angle` (by default the names are shown parallel
@@ -283,7 +282,7 @@ gap, the `series_axis` must be left at its default.
     value_bands::BandsConfiguration = BandsConfiguration()
     density_axis::AxisConfiguration = AxisConfiguration()
     series_axis::AxisConfiguration = AxisConfiguration()
-    distributions_gap::Maybe{Real} = 0.05
+    distributions_gap::Maybe{Integer} = 10
 end
 
 function Common.visit_graph_parts(
@@ -1022,10 +1021,13 @@ function distribution_layout(;
     implicit_values_range::MaybeRange,
     legend_labels::AbstractVector{<:AbstractString},
     has_hovers::Bool,
-    plot_pixel_width::Real,  # NOLINT
-    plot_pixel_height::Real,  # NOLINT
+    plot_pixel_width::Real,
+    plot_pixel_height::Real,
 )::Layout
     has_legend = !isempty(legend_labels)
+    # The distributions are placed along the density axis.
+    pixel_length =
+        graph.configuration.distribution.values_orientation == VerticalValues ? plot_pixel_width : plot_pixel_height
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
 
     shapes = Shape[]
@@ -1197,7 +1199,7 @@ function distribution_layout(;
                     title = distributions_gap === nothing ? graph.data.density_axis_title : nothing,
                     range = cumulative_range,
                     domain = plotly_sub_graph_domain(
-                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
+                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap, pixel_length),
                     ),
                 )
             end
@@ -1276,7 +1278,7 @@ function distribution_layout(;
                 for index in 1:n_distributions
                     axis = plotly_axis(density_axis_letter, index; force = true)
                     domain = plotly_sub_graph_domain(
-                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap),
+                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = distributions_gap, pixel_length),
                     )
                     if is_histogram
                         set_layout_axis!(
@@ -1299,7 +1301,7 @@ function distribution_layout(;
         end
     end
 
-    maybe_push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter, sides_content)
+    maybe_push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter, sides_content, pixel_length)
 
     if has_legend
         set_layout_legend!(layout, 1; title = nothing)
@@ -1355,6 +1357,7 @@ function maybe_push_series_annotations!(
     ::AbstractString,
     ::AbstractString,
     ::SidesContent,
+    ::Real,
 )::Nothing
     return nothing
 end
@@ -1365,9 +1368,10 @@ function maybe_push_series_annotations!(
     value_axis_letter::AbstractString,
     density_axis_letter::AbstractString,
     sides_content::SidesContent,
+    pixel_length::Real,
 )::Nothing
     if graph.configuration.distributions_gap !== nothing
-        push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter, sides_content)
+        push_series_annotations!(layout, graph, value_axis_letter, density_axis_letter, sides_content, pixel_length)
     end
     return nothing
 end
@@ -1382,6 +1386,7 @@ function push_series_annotations!(
     value_axis_letter::AbstractString,
     density_axis_letter::AbstractString,
     sides_content::SidesContent,
+    pixel_length::Real,
 )::Nothing
     configuration = graph.configuration
     series_axis = configuration.series_axis
@@ -1452,7 +1457,12 @@ function push_series_annotations!(
                 # Each name is at the middle of its distribution's sub-graph.
                 domain = something(
                     plotly_sub_graph_domain(
-                        SubGraph(; index, n_graphs = n_distributions, graphs_gap = configuration.distributions_gap),
+                        SubGraph(;
+                            index,
+                            n_graphs = n_distributions,
+                            graphs_gap = configuration.distributions_gap,
+                            pixel_length,
+                        ),
                     ),
                     [0, 1],
                 )
