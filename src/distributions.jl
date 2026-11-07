@@ -41,6 +41,7 @@ import ..Utilities.PLOTLY_TICK_LABEL_FONT_SIZE
 import ..Utilities.add_labels!
 import ..Utilities.legend_side_panel_item
 import ..Utilities.rotated_label_extent
+import ..Utilities.two_passes_layout
 import ..Validations.Maybe
 
 """
@@ -727,13 +728,24 @@ function Common.graph_to_figure(graph::DistributionGraph)::PlotlyFigure
     )
     collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
 
-    layout = distribution_layout(;
-        graph,
-        traces,
-        implicit_values_range,
-        legend_labels = String[],
-        has_hovers = hovers !== nothing,
-    )
+    if graph.configuration.value_axis.scale.log_base === Log10Base
+        push_twin_log_axis_traces!(
+            traces;
+            letter = graph.configuration.distribution.values_orientation == VerticalValues ? "y" : "x",
+            twin_index = 2,
+        )
+    end
+
+    layout = two_passes_layout(graph.configuration.figure) do plot_pixel_width, plot_pixel_height
+        return distribution_layout(;
+            graph,
+            implicit_values_range,
+            legend_labels = String[],
+            has_hovers = hovers !== nothing,
+            plot_pixel_width,
+            plot_pixel_height,
+        )
+    end
     return plotly_figure(traces, layout)
 end
 
@@ -781,7 +793,28 @@ function Common.graph_to_figure(graph::DistributionsGraph)::PlotlyFigure
         collect_hidden_values_range!(implicit_values_range, graph.configuration.value_axis, distribution)
     end
 
-    layout = distribution_layout(; graph, traces, implicit_values_range, legend_labels, has_hovers)
+    if graph.configuration.value_axis.scale.log_base === Log10Base
+        push_twin_log_axis_traces!(
+            traces;
+            letter = graph.configuration.distribution.values_orientation == VerticalValues ? "y" : "x",
+            twin_index = 2,
+            n_cross_axes = graph.configuration.distributions_gap === nothing ? 1 : n_distributions,
+        )
+    end
+
+    # Rebound, so the closure doesn't box it.
+    layout = let has_hovers = has_hovers
+        two_passes_layout(graph.configuration.figure) do plot_pixel_width, plot_pixel_height
+            return distribution_layout(;
+                graph,
+                implicit_values_range,
+                legend_labels,
+                has_hovers,
+                plot_pixel_width,
+                plot_pixel_height,
+            )
+        end
+    end
     return plotly_figure(traces, layout)
 end
 
@@ -986,10 +1019,11 @@ end
 
 function distribution_layout(;
     graph::Union{DistributionGraph, DistributionsGraph},
-    traces::AbstractVector{GenericTrace},
     implicit_values_range::MaybeRange,
     legend_labels::AbstractVector{<:AbstractString},
     has_hovers::Bool,
+    plot_pixel_width::Real,  # NOLINT
+    plot_pixel_height::Real,  # NOLINT
 )::Layout
     has_legend = !isempty(legend_labels)
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
@@ -1053,13 +1087,11 @@ function distribution_layout(;
     if graph.configuration.value_axis.scale.log_base === Log10Base
         set_layout_twin_log_axis!(;
             layout,
-            traces,
             letter = value_axis_letter,
             twin_index = 2,
             axis_configuration = graph.configuration.value_axis,
             title = prefer_data(value_axis_title(graph), graph.configuration.value_axis.title),
             range = scaled_values_range,
-            n_cross_axes = n_sub_graphs,
             sides_content,
         )
     else

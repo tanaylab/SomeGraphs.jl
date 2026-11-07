@@ -41,6 +41,7 @@ SomeGraphs.Utilities.axis_ticks_suffix
 SomeGraphs.Utilities.axis_screen_ticks_angle
 SomeGraphs.Utilities.set_layout_axis!
 SomeGraphs.Utilities.set_layout_twin_log_axis!
+SomeGraphs.Utilities.push_twin_log_axis_traces!
 SomeGraphs.Utilities.set_layout_colorscale!
 SomeGraphs.Utilities.plotly_line_dash
 SomeGraphs.Utilities.SubGraph

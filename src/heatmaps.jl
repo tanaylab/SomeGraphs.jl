@@ -57,6 +57,7 @@ import ..Utilities.CATEGORICAL_LEGEND_ORDER
 import ..Utilities.SidePanelItem
 import ..Utilities.categorical_legend_labels
 import ..Utilities.legend_side_panel_item
+import ..Utilities.two_passes_layout
 import ..Validations.Maybe
 
 """
@@ -1044,6 +1045,60 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
         columns_max_height = 0
     end
 
+    # Rebound, so the closure doesn't box them.
+    layout = let rows_max_height = rows_max_height, columns_max_height = columns_max_height
+        two_passes_layout(graph.configuration.figure) do plot_pixel_width, plot_pixel_height
+            return heatmap_layout(;
+                graph,
+                colors,
+                rows_order,
+                columns_order,
+                expanded_rows_mask,
+                expanded_columns_mask,
+                n_expanded_rows,
+                n_expanded_columns,
+                xaxis_index,
+                yaxis_index,
+                rows_annotations_data,
+                columns_annotations_data,
+                rows_annotations_colors,
+                columns_annotations_colors,
+                rows_max_height,
+                columns_max_height,
+                has_legend_only_traces,
+                plot_pixel_width,
+                plot_pixel_height,
+            )
+        end
+    end
+
+    return plotly_figure(traces, layout)
+end
+
+function heatmap_layout(;
+    graph::HeatmapGraph,
+    colors::ConfiguredColors,
+    rows_order::AbstractVector{<:Integer},
+    columns_order::AbstractVector{<:Integer},
+    expanded_rows_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    expanded_columns_mask::Maybe{Union{BitVector, AbstractVector{Bool}}},
+    n_expanded_rows::Integer,
+    n_expanded_columns::Integer,
+    xaxis_index::Maybe{Integer},
+    yaxis_index::Maybe{Integer},
+    rows_annotations_data::AbstractVector{AnnotationData},
+    columns_annotations_data::AbstractVector{AnnotationData},
+    rows_annotations_colors::AbstractVector{ConfiguredColors},
+    columns_annotations_colors::AbstractVector{ConfiguredColors},
+    rows_max_height::Real,
+    columns_max_height::Real,
+    has_legend_only_traces::AbstractVector{Bool},
+    plot_pixel_width::Real,  # NOLINT
+    plot_pixel_height::Real,  # NOLINT
+)::Layout
+    n_rows_annotations = length(rows_annotations_data)
+    n_columns_annotations = length(columns_annotations_data)
+
     # The side panel holds one legend per categorical annotation (columns then rows, in the order their traces were
     # pushed), then the color scales.
     figure_configuration = graph.configuration.figure
@@ -1291,7 +1346,7 @@ function Common.graph_to_figure(graph::HeatmapGraph)::PlotlyFigure
     place_side_panel!(layout, figure_configuration, side_panel_items; sides_content)
     set_layout_margins!(layout, figure_configuration, sides_content)
 
-    return plotly_figure(traces, layout)
+    return layout
 end
 
 # Whether the clustering of a side leaves out its hidden entries. A given tree covers all of them, so it is used as is.

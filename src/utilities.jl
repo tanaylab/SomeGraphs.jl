@@ -32,6 +32,7 @@ export plotly_title
 export prefer_data
 export push_diagonal_bands_shapes
 export push_horizontal_bands_shapes
+export push_twin_log_axis_traces!
 export push_vertical_bands_shapes
 export Range
 export range_values
@@ -744,13 +745,11 @@ end
 """
     set_layout_twin_log_axis!(;
         layout::Layout,
-        traces::AbstractVector{GenericTrace},
         letter::AbstractString,
         twin_index::Integer,
         axis_configuration::AxisConfiguration,
         title::Maybe{AbstractString},
         range::Range,
-        n_cross_axes::Integer = 1,
         sides_content::SidesContent,
     )::Nothing
 
@@ -759,24 +758,21 @@ the scaled (log) values. This is needed when Plotly computes something from the 
 would compute it from the real values on a Plotly log axis.
 
 The 1st axis is a hidden linear axis, which the traces use. A twin Plotly log axis (at the `twin_index`) is drawn over
-it, with the same range, so it shows the ticks of the real values. Plotly only draws an axis (and its grid) in the
-sub-graphs where a trace uses it, so this also pushes an empty trace to the `traces` for each of the `n_cross_axes` of
-the other letter. The twin axis' labels and title are added to the `sides_content` (see [`set_layout_axis!`](@ref)).
+it, with the same range, so it shows the ticks of the real values. Plotly only draws it where a trace uses it (see
+[`push_twin_log_axis_traces!`](@ref)). The twin axis' labels and title are added to the `sides_content` (see
+[`set_layout_axis!`](@ref)).
 """
 function set_layout_twin_log_axis!(;
     layout::Layout,
-    traces::AbstractVector{GenericTrace},
     letter::AbstractString,
     twin_index::Integer,
     axis_configuration::AxisConfiguration,
     title::Maybe{AbstractString},
     range::Range,
-    n_cross_axes::Integer = 1,
     sides_content::SidesContent,
 )::Nothing
     @assert axis_configuration.scale.log_base === Log10Base
     @assert letter in ("x", "y")
-    other_letter = letter == "x" ? "y" : "x"
 
     axis = plotly_axis(letter, 1)
     set_layout_axis!(layout, axis, axis_configuration; sides_content, range, is_tick_axis = false)  # NOJET
@@ -789,7 +785,29 @@ function set_layout_twin_log_axis!(;
     # Plotly gives an overlaying axis the ticks of the axis it overlays, unless told to pick its own.
     layout[twin_axis][:tickmode] = "auto"
     layout[twin_axis][:side] = letter == "x" ? "bottom" : "left"
+    return nothing
+end
 
+"""
+    push_twin_log_axis_traces!(
+        traces::AbstractVector{GenericTrace};
+        letter::AbstractString,
+        twin_index::Integer,
+        n_cross_axes::Integer = 1,
+    )::Nothing
+
+Push to the `traces` an empty trace on the twin Plotly log axis (see [`set_layout_twin_log_axis!`](@ref)) for each of
+the `n_cross_axes` of the other letter, since Plotly only draws an axis (and its grid) in the sub-graphs where a trace
+uses it.
+"""
+function push_twin_log_axis_traces!(
+    traces::AbstractVector{GenericTrace};
+    letter::AbstractString,
+    twin_index::Integer,
+    n_cross_axes::Integer = 1,
+)::Nothing
+    @assert letter in ("x", "y")
+    other_letter = letter == "x" ? "y" : "x"
     for cross_axis_index in 1:n_cross_axes
         push!(
             traces,
@@ -1672,6 +1690,19 @@ function set_layout_margins!(
     layout[:margin][:t] = margins.top + ceil(Int, sides_content.top)
     layout[:margin][:b] = margins.bottom + ceil(Int, sides_content.bottom)
     return nothing
+end
+
+# Build a layout twice: first for the plot's size which the configured margins leave in the figure (or in Plotly's
+# default size), only to find the final margins; then for the plot's size which these margins leave, which is the
+# layout to use. The `build_layout` takes the plot's width and height in pixels.
+function two_passes_layout(build_layout::Function, figure_configuration::FigureConfiguration)::Layout
+    figure_width = prefer_data(figure_configuration.width, PLOTLY_DEFAULT_WIDTH)
+    figure_height = prefer_data(figure_configuration.height, PLOTLY_DEFAULT_HEIGHT)
+    margins = figure_configuration.margins
+    first_layout =
+        build_layout(figure_width - margins.left - margins.right, figure_height - margins.top - margins.bottom)
+    margin = first_layout[:margin]
+    return build_layout(figure_width - margin[:l] - margin[:r], figure_height - margin[:t] - margin[:b])
 end
 
 """

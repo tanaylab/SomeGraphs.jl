@@ -35,6 +35,7 @@ import ..Utilities.SidePanelItem
 import ..Utilities.add_labels!
 import ..Utilities.categorical_legend_labels
 import ..Utilities.legend_side_panel_item
+import ..Utilities.two_passes_layout
 import ..Validations.Maybe
 
 """
@@ -351,16 +352,20 @@ function Common.graph_to_figure(graph::BarsGraph)::PlotlyFigure
         order = masked_values(collect(1:n_bars), mask, order),
     )
 
-    layout = bars_layout(;
-        graph,
-        has_tick_names = graph.data.bars.names !== nothing,
-        series_legend_labels = String[],
-        has_hovers = hovers !== nothing,
-        implicit_values_range,
-        colors,
-        annotations_colors,
-        has_legend_only_traces,
-    )
+    layout = two_passes_layout(graph.configuration.figure) do plot_pixel_width, plot_pixel_height
+        return bars_layout(;
+            graph,
+            has_tick_names = graph.data.bars.names !== nothing,
+            series_legend_labels = String[],
+            has_hovers = hovers !== nothing,
+            implicit_values_range,
+            colors,
+            annotations_colors,
+            has_legend_only_traces,
+            plot_pixel_width,
+            plot_pixel_height,
+        )
+    end
 
     return plotly_figure(traces, layout)
 end
@@ -1011,23 +1016,32 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
         order = masked_values(collect(1:n_bars), shared_mask, shared_order),
     )
 
-    layout = bars_layout(;
-        graph,
-        has_tick_names = graph.data.bars.names !== nothing,
-        series_legend_labels = if show_in_legend
-            [
-                name for name in (graph.data.series[series_index].name for series_index in series_indices) if
-                name !== nothing
-            ]
-        else
-            String[]
-        end,
-        has_hovers,
-        implicit_values_range,
-        specific_scaled_ranges,
-        annotations_colors,
-        has_legend_only_traces,
-    )
+    series_legend_labels = if show_in_legend
+        [name for name in (graph.data.series[series_index].name for series_index in series_indices) if name !== nothing]
+    else
+        String[]
+    end
+    # Rebound, so the closure doesn't box them.
+    layout =
+        let has_hovers = has_hovers,
+            implicit_values_range = implicit_values_range,
+            specific_scaled_ranges = specific_scaled_ranges
+
+            two_passes_layout(graph.configuration.figure) do plot_pixel_width, plot_pixel_height
+                return bars_layout(;
+                    graph,
+                    has_tick_names = graph.data.bars.names !== nothing,
+                    series_legend_labels,
+                    has_hovers,
+                    implicit_values_range,
+                    specific_scaled_ranges,
+                    annotations_colors,
+                    has_legend_only_traces,
+                    plot_pixel_width,
+                    plot_pixel_height,
+                )
+            end
+        end
 
     return plotly_figure(traces, layout)
 end
@@ -1305,6 +1319,8 @@ function bars_layout(;
     colors::Maybe{ConfiguredColors} = nothing,
     annotations_colors::AbstractVector{ConfiguredColors},
     has_legend_only_traces::AbstractVector{Bool},
+    plot_pixel_width::Real,  # NOLINT
+    plot_pixel_height::Real,  # NOLINT
 )::Layout
     scaled_values_range = final_scaled_range(implicit_values_range, graph.configuration.value_axis)
 
