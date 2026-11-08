@@ -34,10 +34,12 @@ import ..Common.categorical_colors_dict
 import ..Common.validate_entities_order
 import ..Common.visit_graph_fields
 import ..Utilities.CATEGORICAL_LEGEND_ORDER
+import ..Utilities.FAR_TRACE_RANGE_SPANS
 import ..Utilities.Maybe
 import ..Utilities.SIZES_LEGEND_ORDER
 import ..Utilities.SidePanelItem
 import ..Utilities.categorical_legend_labels
+import ..Utilities.far_range
 import ..Utilities.legend_side_panel_item
 
 """
@@ -2225,7 +2227,8 @@ end
 
 # The Plotly fill mode for filling a line down to the bottom of the Y axis. Plotly's `tozeroy` fills down to zero, which
 # is the bottom of a Plotly log axis, but is the scaled value of 1 on a `Log2Base` axis. There we push an invisible
-# baseline trace at the bottom of the axis, and fill down to it instead.
+# baseline trace far below the bottom of the axis, and fill down to it instead, so the fill reaches the plot's bottom
+# even if the axis is widened.
 function fill_to_bottom_mode!(;
     traces::AbstractVector{GenericTrace},
     y_axis::AxisConfiguration,
@@ -2233,11 +2236,13 @@ function fill_to_bottom_mode!(;
     scaled_ys_range::Range,
 )::AbstractString
     if is_fill_baseline_needed(y_axis)
+        far_scaled_ys_range =
+            far_range(scaled_ys_range, y_axis.scale; is_plotly_log = true, spans = FAR_TRACE_RANGE_SPANS)
         push!(
             traces,
             scatter(;
                 x = plotly_values(scaled_points_xs, scaled_points_xs.values),
-                y = fill(scaled_ys_range.minimum, length(scaled_points_xs.values)),
+                y = fill(far_scaled_ys_range.minimum, length(scaled_points_xs.values)),
                 mode = "lines",
                 line_width = 0,
                 hoverinfo = "skip",

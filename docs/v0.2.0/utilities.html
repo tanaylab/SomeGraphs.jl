@@ -1972,7 +1972,9 @@ end
 </p>
 <p>The bands stretch across the whole of the 
 <code>cross_ref
-</code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them.
+</code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them. The low and high fills reach far past the 
+<code>scaled_values_range
+</code>, so they reach the plot&#39;s edges even if the axis is widened.
 </p>
 <p>If 
 <code>is_plotly_log
@@ -2015,7 +2017,9 @@ end
 </p>
 <p>The bands stretch across the whole of the 
 <code>cross_ref
-</code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them.
+</code> axis. When the graph is split into sub-graphs, push the bands once per sub-graph, using each one&#39;s own axis, so they do not stretch across the gaps between them. The low and high fills reach far past the 
+<code>scaled_values_range
+</code>, so they reach the plot&#39;s edges even if the axis is widened.
 </p>
 <p>If 
 <code>is_plotly_log
@@ -2053,7 +2057,11 @@ end
 )::Nothing
 </code>
 </pre>
-<p>Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+<p>Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly. The lines and fills reach far past the 
+<code>x_scaled_values_range
+</code> and 
+<code>y_scaled_values_range
+</code>, so they reach the plot&#39;s edges even if the axes are widened.
 </p>
 <p>If 
 <code>is_plotly_log

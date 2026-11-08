@@ -2551,6 +2551,37 @@ function plotly_line_dash(line_style::LineStyle)::Maybe{AbstractString}
     end
 end
 
+# How many spans of a range the far range extends past each of its ends.
+const FAR_RANGE_SPANS = 1000
+
+# How many spans of a range the far range of a trace extends past each of its ends. Plotly moves the points of a trace
+# line which are more than 20 plot sizes off the plot, which skews a fill down to them, and the plot shows at least
+# the range.
+const FAR_TRACE_RANGE_SPANS = 10  # NOLINT
+
+# The largest exponent of a far range on a Plotly log axis, whose values are given as 10 to the exponent (computed as a
+# `Float32`, like the range).
+const FAR_RANGE_LOG10_EXPONENT = 37
+
+# The `range` extended far past both its ends by `spans` spans, so shapes (or traces) reaching them still reach the
+# plot's edges when Plotly widens the axis or the user zooms out. On a Plotly log axis it is clamped to the exponents a
+# `Float32` can hold, even if the `range` itself reaches past them.
+function far_range(
+    range::Range,
+    scale_configuration::ScaleConfiguration;
+    is_plotly_log::Bool,
+    spans::Integer = FAR_RANGE_SPANS,
+)::Range
+    span = range.maximum - range.minimum
+    minimum = range.minimum - spans * span
+    maximum = range.maximum + spans * span
+    if is_plotly_log && scale_configuration.log_base === Log10Base
+        minimum = clamp(minimum, -FAR_RANGE_LOG10_EXPONENT, FAR_RANGE_LOG10_EXPONENT)
+        maximum = clamp(maximum, -FAR_RANGE_LOG10_EXPONENT, FAR_RANGE_LOG10_EXPONENT)
+    end
+    return Range(; minimum, maximum)
+end
+
 """
     push_vertical_bands_shapes(
         shapes::AbstractVector{Shape},
@@ -2566,7 +2597,8 @@ end
 Push shapes for plotting vertical bands. These shapes need to be places in the layout and not the traces because Plotly.
 
 The bands stretch across the whole of the `cross_ref` axis. When the graph is split into sub-graphs, push the bands
-once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them.
+once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them. The low and high
+fills reach far past the `scaled_values_range`, so they reach the plot's edges even if the axis is widened.
 
 If `is_plotly_log`, the coordinates are for a Plotly log axis (see [`plotly_axis_value`](@ref)).
 """
@@ -2583,6 +2615,8 @@ function push_vertical_bands_shapes(
     function plotly_value(scaled_value::Real)::Real
         return plotly_axis_value(axis_configuration.scale, scaled_value; is_plotly_log)
     end
+
+    far_scaled_values_range = far_range(scaled_values_range, axis_configuration.scale; is_plotly_log)
 
     scaled_low_offset =
         scale_axis_value(axis_configuration.scale, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
@@ -2625,7 +2659,7 @@ function push_vertical_bands_shapes(
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
                 layer = "below",
-                x0 = plotly_value(scaled_values_range.minimum),
+                x0 = plotly_value(far_scaled_values_range.minimum),
                 x1 = plotly_value(scaled_low_offset * bands_scale),
                 xref = "x",
                 y0 = 0,
@@ -2662,7 +2696,7 @@ function push_vertical_bands_shapes(
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
                 x0 = plotly_value(scaled_high_offset * bands_scale),
-                x1 = plotly_value(scaled_values_range.maximum),
+                x1 = plotly_value(far_scaled_values_range.maximum),
                 xref = "x",
                 y0 = 0,
                 y1 = 1,
@@ -2690,7 +2724,8 @@ Push shapes for plotting horizontal bands. These shapes need to be placed in the
 Plotly.
 
 The bands stretch across the whole of the `cross_ref` axis. When the graph is split into sub-graphs, push the bands
-once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them.
+once per sub-graph, using each one's own axis, so they do not stretch across the gaps between them. The low and high
+fills reach far past the `scaled_values_range`, so they reach the plot's edges even if the axis is widened.
 
 If `is_plotly_log`, the coordinates are for a Plotly log axis (see [`plotly_axis_value`](@ref)).
 """
@@ -2707,6 +2742,8 @@ function push_horizontal_bands_shapes(
     function plotly_value(scaled_value::Real)::Real
         return plotly_axis_value(axis_configuration.scale, scaled_value; is_plotly_log)
     end
+
+    far_scaled_values_range = far_range(scaled_values_range, axis_configuration.scale; is_plotly_log)
 
     scaled_low_offset =
         scale_axis_value(axis_configuration.scale, prefer_data(bands_data.low_offset, bands_configuration.low.offset))
@@ -2749,7 +2786,7 @@ function push_horizontal_bands_shapes(
                 fillcolor = fill_color(bands_configuration.low.line.color),
                 line_width = 0,
                 layer = "below",
-                y0 = plotly_value(scaled_values_range.minimum),
+                y0 = plotly_value(far_scaled_values_range.minimum),
                 y1 = plotly_value(scaled_low_offset * bands_scale),
                 yref = "y",
                 x0 = 0,
@@ -2786,7 +2823,7 @@ function push_horizontal_bands_shapes(
                 fillcolor = fill_color(bands_configuration.high.line.color),
                 line_width = 0,
                 y0 = plotly_value(scaled_high_offset * bands_scale),
-                y1 = plotly_value(scaled_values_range.maximum),
+                y1 = plotly_value(far_scaled_values_range.maximum),
                 yref = "y",
                 x0 = 0,
                 x1 = 1,
@@ -2817,6 +2854,8 @@ end
     )::Nothing
 
 Push shapes for plotting diagonal bands. These shapes need to be placed in the layout and not the traces because Plotly.
+The lines and fills reach far past the `x_scaled_values_range` and `y_scaled_values_range`, so they reach the plot's
+edges even if the axes are widened.
 
 If `is_plotly_log`, the coordinates are for Plotly log axes (see [`plotly_axis_value`](@ref)).
 """
@@ -2829,12 +2868,15 @@ function push_diagonal_bands_shapes(
     bands_configuration::BandsConfiguration;
     is_plotly_log::Bool = false,
 )::Nothing
+    far_x_scaled_values_range = far_range(x_scaled_values_range, axis_configuration.scale; is_plotly_log)
+    far_y_scaled_values_range = far_range(y_scaled_values_range, axis_configuration.scale; is_plotly_log)
+
     low_band_points = push_diagonal_bands_line(
         shapes,
         axis_configuration,
         is_plotly_log,
-        x_scaled_values_range,
-        y_scaled_values_range,
+        far_x_scaled_values_range,
+        far_y_scaled_values_range,
         bands_data.low_offset,
         bands_configuration.low,
     )
@@ -2842,8 +2884,8 @@ function push_diagonal_bands_shapes(
         shapes,
         axis_configuration,
         is_plotly_log,
-        x_scaled_values_range,
-        y_scaled_values_range,
+        far_x_scaled_values_range,
+        far_y_scaled_values_range,
         bands_data.middle_offset,
         bands_configuration.middle,
     )
@@ -2851,8 +2893,8 @@ function push_diagonal_bands_shapes(
         shapes,
         axis_configuration,
         is_plotly_log,
-        x_scaled_values_range,
-        y_scaled_values_range,
+        far_x_scaled_values_range,
+        far_y_scaled_values_range,
         bands_data.high_offset,
         bands_configuration.high,
     )
@@ -2862,8 +2904,8 @@ function push_diagonal_bands_shapes(
             shapes,
             axis_configuration,
             is_plotly_log,
-            x_scaled_values_range,
-            y_scaled_values_range,
+            far_x_scaled_values_range,
+            far_y_scaled_values_range,
             low_band_points,
             bands_configuration.low,
         )
@@ -2874,8 +2916,8 @@ function push_diagonal_bands_shapes(
             shapes,
             axis_configuration,
             is_plotly_log,
-            x_scaled_values_range,
-            y_scaled_values_range,
+            far_x_scaled_values_range,
+            far_y_scaled_values_range,
             low_band_points,
             high_band_points,
             bands_configuration.middle,
@@ -2887,8 +2929,8 @@ function push_diagonal_bands_shapes(
             shapes,
             axis_configuration,
             is_plotly_log,
-            x_scaled_values_range,
-            y_scaled_values_range,
+            far_x_scaled_values_range,
+            far_y_scaled_values_range,
             high_band_points,
             bands_configuration.high,
         )
