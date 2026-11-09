@@ -682,8 +682,9 @@ function set_layout_axis!(
             # Plotly shows the labels only at their values, and the range places these.
             @assert ticks_values !== nothing && labels_range !== nothing && labels_range.maximum > labels_range.minimum
             labels_widths =
-                Float64[text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels]
-            labels_positions = (ticks_values .- labels_range.minimum) ./ (labels_range.maximum - labels_range.minimum)
+                Float32[text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels]
+            labels_positions =
+                Float32.((ticks_values .- labels_range.minimum) ./ (labels_range.maximum - labels_range.minimum))
         else
             @assert labels_range !== nothing
             labels_widths, labels_positions = axis_ticks_candidates(axis_configuration.scale, labels_range)
@@ -691,12 +692,12 @@ function set_layout_axis!(
         if is_reversed
             labels_positions = 1 .- labels_positions
         end
-        domain_start, domain_end = domain === nothing ? (0, 1) : (domain[1], domain[2])
+        domain_start, domain_end = domain === nothing ? (0.0f0, 1.0f0) : (Float32(domain[1]), Float32(domain[2]))
         labels_positions = domain_start .+ labels_positions .* (domain_end - domain_start)
         labels_height = PLOTLY_TICK_LABEL_FONT_SIZE
         labels_gap = is_vertical_axis ? PLOTLY_Y_TICK_LABELS_GAP : PLOTLY_X_TICK_LABELS_GAP
     else
-        labels_widths = labels_positions = Float64[]
+        labels_widths = labels_positions = Float32[]
         labels_height = labels_gap = 0
     end
     add_labels!(
@@ -813,8 +814,8 @@ function push_twin_log_axis_traces!(
         push!(
             traces,
             scatter(;
-                x = Float64[],
-                y = Float64[],
+                x = Float32[],
+                y = Float32[],
                 Symbol("$(letter)axis") => plotly_axis(letter, twin_index; short = true),
                 Symbol("$(other_letter)axis") =>
                     plotly_axis(other_letter, cross_axis_index; short = true, force = true),
@@ -1073,14 +1074,15 @@ end
 # to its left edge, and the paper `y_top` fraction of its top.
 @kwdef struct SidePanelPlace
     column::Int
-    x_offset::Float64
-    y_top::Float64
+    x_offset::Float32
+    y_top::Float32
 end
 
 # The most parts of the side panel for which every split of them into columns is searched.
 const SIDE_PANEL_EXACT_PARTS = 12
 
-# How much floating point noise is ignored when comparing layouts and heights.
+# How much floating point noise is ignored when comparing layouts and heights. This is below `Float32`'s resolution, so
+# the packing computes its rankings and heights as `Float64` (scalars, which allocate nothing).
 const SIDE_PANEL_EPSILON = 1e-9
 
 # Pack the `parts` of the side panel into columns, and return the place of each part (in the same order) and the width
@@ -1273,7 +1275,7 @@ function side_panel_places(
     horizontal_gap::Real,
     vertical_gap::Real,
 )::Tuple{Vector{SidePanelPlace}, Float64}
-    x_offset_per_column = Dict{Int, Float64}()
+    x_offset_per_column = Dict{Int, Float32}()
     panel_width = 0.0
     for column in sort(unique(column_per_part))
         x_offset_per_column[column] = panel_width + horizontal_gap
@@ -1283,7 +1285,7 @@ function side_panel_places(
     end
 
     # The parts of each column are stacked from the top by their `order` (the sort is stable, so ties keep their order).
-    y_top_per_column = Dict(column => 1.0 for column in keys(x_offset_per_column))
+    y_top_per_column = Dict{Int, Float32}(column => 1 for column in keys(x_offset_per_column))
     places = Vector{SidePanelPlace}(undef, length(parts))
     for part_index in sort(collect(eachindex(parts)); by = index -> parts[index].order, alg = MergeSort)
         column = column_per_part[part_index]
@@ -1402,14 +1404,14 @@ end
 # aims at between 5 and 10 ticks (one per 40 pixels of a vertical axis, or 80 of a horizontal one, clamped to 4..9,
 # plus 1). Every step it can pick for a count in that range, it also picks for a whole count, so trying those covers
 # them all.
-function axis_ticks_candidates(scale::ScaleConfiguration, scaled_range::Range)::Tuple{Vector{Float64}, Vector{Float64}}
+function axis_ticks_candidates(scale::ScaleConfiguration, scaled_range::Range)::Tuple{Vector{Float32}, Vector{Float32}}
     span = scaled_range.maximum - scaled_range.minimum
-    widths = Float64[]
-    positions = Float64[]
+    widths = Float32[]
+    positions = Float32[]
     for n_ticks in 5:10
         values, labels = plotly_ticks(scale, scaled_range, n_ticks)
         append!(widths, tick_label_pixel_width.(labels))
-        append!(positions, span == 0 ? fill(0.5, length(values)) : (values .- scaled_range.minimum) ./ span)
+        append!(positions, span == 0 ? fill(0.5f0, length(values)) : (values .- scaled_range.minimum) ./ span)
     end
     return (widths, positions)
 end
@@ -2174,7 +2176,7 @@ function scale_size_values(
     scaled_values = scale_axis_values(scale_configuration, values; clamp = false)
     @assert scaled_values !== nothing
 
-    return Float64[pixel_size(sizes_mapping, scaled_value) for scaled_value in scaled_values]
+    return Float32[pixel_size(sizes_mapping, scaled_value) for scaled_value in scaled_values]
 end
 
 # How the scaled values of sizes map to pixel sizes, for a specific sizes data.
@@ -2362,12 +2364,13 @@ end
 # Whether the sizes of the entries of a `candidate` of the legend of sizes are distinct: each is at least 1 pixel more
 # than the previous one.
 function is_sizes_legend_distinct(sizes_mapping::SizesMapping, candidate::AbstractVector{Tuple{Float64, Int}})::Bool
-    pixel_sizes = Float64[pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
+    pixel_sizes = Float32[pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
     return minimum(diff(pixel_sizes)) >= SIZES_LEGEND_MINIMAL_PIXELS_GAP
 end
 
 # The candidate entries of the legend of sizes, from the finest to the coarsest. Each is a vector of the scaled values
-# of the entries, and the number of decimal places to show for each.
+# of the entries, and the number of decimal places to show for each. The values are `Float64`, like Plotly's ticks,
+# since their labels are printed from them.
 function sizes_legend_candidates(sizes_mapping::SizesMapping)::AbstractVector{<:AbstractVector{Tuple{Float64, Int}}}
     scale_configuration = sizes_mapping.sizes_configuration.scale
     scaled_minimum = sizes_mapping.scaled_minimum_value

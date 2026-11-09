@@ -504,7 +504,7 @@ nested_test("utilities") do
         # An axis may get any count of ticks, so its candidate labels are those of all of them, each at its position.
         nested_test("axis_ticks") do
             axis_ticks_candidates = SomeGraphs.Utilities.axis_ticks_candidates
-            widest(labels) = maximum(text_width.(labels))
+            widest(labels) = Float32(maximum(text_width.(labels)))
 
             nested_test("counts") do
                 scaled_range = Range(; minimum = 0, maximum = 2.5)
@@ -514,7 +514,7 @@ nested_test("utilities") do
                 widths, positions = axis_ticks_candidates(ScaleConfiguration(), scaled_range)
                 @test maximum(widths) == widest(labels)
                 @test extrema(positions) == (0, 1)
-                @test 0.8 in positions
+                @test 0.8f0 in positions
             end
 
             nested_test("large") do

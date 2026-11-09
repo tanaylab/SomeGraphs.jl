@@ -1338,8 +1338,8 @@ function set_layout_tickless_density_axis!(
         Dict{Symbol, Any}(:showticklabels => false, :title => plotly_axis_title, :automargin => true, :domain => domain)
     add_labels!(
         sides_content;
-        widths = Float64[],
-        positions = Float64[],
+        widths = Float32[],
+        positions = Float32[],
         height = 0,
         screen_angle = 0,
         is_vertical_axis = startswith(axis, "y"),
@@ -1451,8 +1451,8 @@ function push_series_annotations!(
         graph.data.series_axis_title,
         prefer_data(graph.data.density_axis_title, prefer_data(series_axis.title, configuration.density_axis.title)),
     )
-    names_widths = Float64[]
-    names_positions = Float64[]
+    names_widths = Float32[]
+    names_positions = Float32[]
     if series_axis.show_ticks
         for (index, name) in enumerate(distributions_names)
             if name !== nothing

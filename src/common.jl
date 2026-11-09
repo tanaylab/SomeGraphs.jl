@@ -918,7 +918,7 @@ function continuous_colors_scale(  # ONLY SEEMS UNTESTED
     colors::AbstractVector{S},
 )::AbstractVector{<:Tuple{<:Real, <:AbstractString}} where {S <: AbstractString}
     size = length(colors)
-    return Tuple{Float64, S}[(((index - 1) / (size - 1)), color) for (index, color) in enumerate(colors)]
+    return Tuple{Float32, S}[(((index - 1) / (size - 1)), color) for (index, color) in enumerate(colors)]
 end
 
 function reverse_colors_scale(palette::ContinuousColors)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}

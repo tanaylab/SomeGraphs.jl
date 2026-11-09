@@ -1235,7 +1235,7 @@ function push_annotation_traces!(;
         values = if expanded_mask !== nothing
             expanded_mask
         else
-            fill(1.0, order === nothing ? length(annotation_values) : length(order))
+            fill(1.0f0, order === nothing ? length(annotation_values) : length(order))
         end,
         value_axis = AxisConfiguration(;
             scale = ScaleConfiguration(; minimum = 0, maximum = 1),
@@ -1526,12 +1526,12 @@ function bars_layout(;
     if show_tick_names && bars_names !== nothing
         n_bars = length(bars_names)
         widest = maximum(text_width(name; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for name in bars_names; init = 0.0)
-        labels_widths = fill(widest, n_bars)
-        labels_positions = ((1:n_bars) .- 0.5) ./ n_bars
+        labels_widths = fill(Float32(widest), n_bars)
+        labels_positions = Float32.(((1:n_bars) .- 0.5) ./ n_bars)
         labels_height = PLOTLY_TICK_LABEL_FONT_SIZE
         labels_gap = is_vertical_bar_axis ? PLOTLY_Y_TICK_LABELS_GAP : PLOTLY_X_TICK_LABELS_GAP
     else
-        labels_widths = labels_positions = Float64[]
+        labels_widths = labels_positions = Float32[]
         labels_height = labels_gap = 0
     end
     add_labels!(

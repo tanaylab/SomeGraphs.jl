@@ -2481,7 +2481,7 @@ function points_density(
     points_ys::AbstractVector{<:Real},
 )::AbstractVector{<:AbstractFloat}
     itk = InterpKDE(kde((points_xs, points_ys)))  # NOJET
-    return Float64[itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
+    return Float32[itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
 end
 
 # The same selection with its X and Y swapped.
