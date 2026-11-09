@@ -1851,7 +1851,7 @@ end
 Scale a vector (or a matrix) of `values` according to the `scale_configuration`. This deals with log scales and percent
 scaling. By default, `clamp` the values to a specified explicit range. If `copy` we always return a copy of the data (so
 it can be safely modified further without impacting the original data). If the `values` are `nothing`, so is the
-result.
+result. Scaled (or copied) values are `Float32`; values which need no scaling (and no copy) are returned as given.
 """
 function scale_axis_values(
     ::ScaleConfiguration,
@@ -1875,7 +1875,8 @@ function scale_axis_values(
         return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
     else
         function scale(value)
-            return scale_axis_value(scale_configuration, value; clamp)
+            scaled_value = scale_axis_value(scale_configuration, value; clamp)
+            return scaled_value === nothing ? nothing : Float32(scaled_value)
         end
         return scale.(values)
     end
@@ -1894,7 +1895,8 @@ function scale_axis_values(
         return copy || eltype(values) <: Maybe{Integer} ? floatify.(values) : values
     else
         function scale(value)
-            return scale_axis_value(scale_configuration, value; clamp)
+            scaled_value = scale_axis_value(scale_configuration, value; clamp)
+            return scaled_value === nothing ? nothing : Float32(scaled_value)
         end
         return scale.(values)
     end
@@ -1946,8 +1948,8 @@ function floatify(::Nothing)::Nothing
     return nothing
 end
 
-function floatify(value::Real)::Float64
-    return Float64(value)
+function floatify(value::Real)::Float32
+    return Float32(value)
 end
 
 """
@@ -3762,7 +3764,7 @@ function configured_colors(;
         final_colors_values = scale_axis_values(colors_configuration.scale, colors_values)
         continuous_palette = colors_configuration.palette
         if continuous_palette isa ContinuousColors
-            color_palette_values = Float64[entry[1] for entry in continuous_palette]
+            color_palette_values = Float32[entry[1] for entry in continuous_palette]
             scaled_colors_palette_values = scale_axis_values(colors_configuration.scale, color_palette_values)
             @assert scaled_colors_palette_values !== nothing
             implicit_scaled_colors_range =  # NOJET
@@ -3775,7 +3777,7 @@ function configured_colors(;
             final_color_palette_values[1] = 0
             final_color_palette_values[end] = 1
             scaled_colors_palette = palette_with_values(
-                Tuple{Float64, fieldtype(eltype(continuous_palette), 2)},
+                Tuple{Float32, fieldtype(eltype(continuous_palette), 2)},
                 final_color_palette_values,
                 continuous_palette,
             )
