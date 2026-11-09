@@ -73,6 +73,7 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        same_scale::Bool = false
         points::ScattersConfiguration = ScattersConfiguration()
         borders::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
         edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
@@ -102,6 +103,11 @@ multiplicative (Y = X * offset), and the offset must be positive. This is a rare
 between flags, as switching between linear and log scales must be accompanied by patching the diagonal band offsets to
 match.
 
+If `same_scale` is set, one unit has the same length on both axes, also when the figure is resized interactively.
+Plotly keeps it by widening the range of an axis without an explicit range (only its computed side, if one bound is
+given), or else by shrinking the plot area along an axis with an explicit range (wasting space to the left, or at the
+bottom). Like `diagonal_bands`, this requires both axes to have the same `log_base` and `percent`.
+
 !!! note
 
     There is no `legend` here. Instead you probably want to show the `legend` of the colors and/or sizes of the
@@ -116,6 +122,7 @@ match.
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    same_scale::Bool = false
     points::ScattersConfiguration = ScattersConfiguration()
     borders::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
     edges::ScattersConfiguration = ScattersConfiguration(; sizes = SizesConfiguration(; smallest = 2, span = 8))
@@ -149,22 +156,29 @@ function Validations.validate(context::ValidationContext, configuration::PointsG
     if configuration.diagonal_bands.low.offset !== nothing ||
        configuration.diagonal_bands.middle.offset !== nothing ||
        configuration.diagonal_bands.high.offset !== nothing
-        if configuration.x_axis.scale.log_base != configuration.y_axis.scale.log_base
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
-                ),
-            )
-        end
-        if configuration.x_axis.scale.percent != configuration.y_axis.scale.percent
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
-                ),
-            )
-        end
+        validate_matching_scales("diagonal bands require", configuration.x_axis, configuration.y_axis)
     end
 
+    if configuration.same_scale
+        validate_matching_scales("same_scale requires", configuration.x_axis, configuration.y_axis)
+    end
+
+    return nothing
+end
+
+# Throw unless the `x_axis` and `y_axis` have the same `log_base` and `percent`, which the `feature` (e.g. "diagonal
+# bands require") needs.
+function validate_matching_scales(
+    feature::AbstractString,
+    x_axis::AxisConfiguration,
+    y_axis::AxisConfiguration,
+)::Nothing
+    if x_axis.scale.log_base != y_axis.scale.log_base
+        throw(ArgumentError("$(feature) graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)"))
+    end
+    if x_axis.scale.percent != y_axis.scale.percent
+        throw(ArgumentError("$(feature) graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)"))
+    end
     return nothing
 end
 
@@ -559,20 +573,7 @@ function Common.validate_graph(graph::PointsGraph)::Nothing
        graph.data.diagonal_bands.low_offset !== nothing ||
        graph.data.diagonal_bands.middle_offset !== nothing ||
        graph.data.diagonal_bands.high_offset !== nothing
-        if graph.configuration.x_axis.scale.log_base !== graph.configuration.y_axis.scale.log_base
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
-                ),
-            )
-        end
-        if graph.configuration.x_axis.scale.percent !== graph.configuration.y_axis.scale.percent
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
-                ),
-            )
-        end
+        validate_matching_scales("diagonal bands require", graph.configuration.x_axis, graph.configuration.y_axis)
     end
 
     validate_graph_bands(
@@ -1310,6 +1311,7 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        same_scale::Bool = false
         line::LineConfiguration = LineConfiguration()
         show_points::Bool = false
         points_size::Maybe{Real} = nothing
@@ -1321,13 +1323,14 @@ end
 
 Configure a graph for showing a single line.
 
-If `show_points` is set, each point is drawn, using the `points_size` and/or `points_color` if specified. The bands are
-similar to [`PointsGraphConfiguration`](@ref).
+If `show_points` is set, each point is drawn, using the `points_size` and/or `points_color` if specified. The bands and
+`same_scale` are similar to [`PointsGraphConfiguration`](@ref).
 """
 @kwdef mutable struct LineGraphConfiguration <: AbstractGraphConfiguration
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    same_scale::Bool = false
     line::LineConfiguration = LineConfiguration()
     show_points::Bool = false
     points_size::Maybe{Real} = nothing
@@ -1532,6 +1535,7 @@ end
         figure::FigureConfiguration = FigureConfiguration()
         x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
         y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+        same_scale::Bool = false
         line::LineConfiguration = LineConfiguration()
         show_points::Bool = false
         points_size::Maybe{Real} = nothing
@@ -1556,6 +1560,7 @@ the (scaled) values must not be negative.
     figure::FigureConfiguration = FigureConfiguration()
     x_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
     y_axis::AxisConfiguration = AxisConfiguration(; expand_fraction = 0.01)
+    same_scale::Bool = false
     line::LineConfiguration = LineConfiguration()
     show_points::Bool = false
     points_size::Maybe{Real} = nothing
@@ -1608,20 +1613,11 @@ function Validations.validate(
     if configuration.diagonal_bands.low.offset !== nothing ||
        configuration.diagonal_bands.middle.offset !== nothing ||
        configuration.diagonal_bands.high.offset !== nothing
-        if configuration.x_axis.scale.log_base != configuration.y_axis.scale.log_base
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
-                ),
-            )
-        end
-        if configuration.x_axis.scale.percent != configuration.y_axis.scale.percent
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
-                ),
-            )
-        end
+        validate_matching_scales("diagonal bands require", configuration.x_axis, configuration.y_axis)
+    end
+
+    if configuration.same_scale
+        validate_matching_scales("same_scale requires", configuration.x_axis, configuration.y_axis)
     end
 
     if configuration isa LinesGraphConfiguration &&
@@ -1857,20 +1853,7 @@ function Common.validate_graph(graph::Union{LineGraph, LinesGraph})::Nothing
        graph.data.diagonal_bands.low_offset !== nothing ||
        graph.data.diagonal_bands.middle_offset !== nothing ||
        graph.data.diagonal_bands.high_offset !== nothing
-        if graph.configuration.x_axis.scale.log_base !== graph.configuration.y_axis.scale.log_base
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)",
-                ),
-            )
-        end
-        if graph.configuration.x_axis.scale.percent !== graph.configuration.y_axis.scale.percent
-            throw(
-                ArgumentError(
-                    "diagonal bands require graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)",
-                ),
-            )
-        end
+        validate_matching_scales("diagonal bands require", graph.configuration.x_axis, graph.configuration.y_axis)
     end
 
     validate_graph_bands(
@@ -2352,7 +2335,55 @@ function scatters_layout(;
         is_plotly_log = true,
     )
 
+    if graph.configuration.same_scale
+        set_layout_same_scale!(layout, graph.configuration, scaled_xs_range, scaled_ys_range)
+    end
+
     return layout
+end
+
+# Make one unit the same length on both axes (see `same_scale`), by Plotly's scale constraints on the `layout` axes.
+function set_layout_same_scale!(
+    layout::Layout,
+    configuration::Union{PointsGraphConfiguration, LineGraphConfiguration, LinesGraphConfiguration},
+    scaled_xs_range::Range,
+    scaled_ys_range::Range,
+)::Nothing
+    # An axis with an explicit range keeps it, and Plotly shrinks the plot area along it toward its high side. Otherwise
+    # Plotly autoranges it to exactly its computed range, and widens it as needed, keeping a given bound.
+    function constrain_axis(
+        plotly_axis::AbstractDict,
+        axis_configuration::AxisConfiguration,
+        scaled_range::Range;
+        low_toward::AbstractString,
+        high_toward::AbstractString,
+    )::Nothing
+        has_minimum = axis_configuration.scale.minimum !== nothing
+        has_maximum = axis_configuration.scale.maximum !== nothing
+        if has_minimum && has_maximum
+            plotly_axis[:constrain] = "domain"
+            plotly_axis[:constraintoward] = high_toward
+        else
+            low = plotly_axis_value(axis_configuration.scale, scaled_range.minimum; is_plotly_log = true)
+            high = plotly_axis_value(axis_configuration.scale, scaled_range.maximum; is_plotly_log = true)
+            plotly_axis[:range] = nothing
+            plotly_axis[:autorange] = true
+            plotly_axis[:autorangeoptions] = Dict(:include => [low, high], :clipmin => low, :clipmax => high)
+            plotly_axis[:constrain] = "range"
+            if has_minimum
+                plotly_axis[:constraintoward] = low_toward
+            elseif has_maximum
+                plotly_axis[:constraintoward] = high_toward
+            end
+        end
+        return nothing
+    end
+
+    constrain_axis(layout[:xaxis], configuration.x_axis, scaled_xs_range; low_toward = "left", high_toward = "right")
+    constrain_axis(layout[:yaxis], configuration.y_axis, scaled_ys_range; low_toward = "bottom", high_toward = "top")
+    layout[:yaxis][:scaleanchor] = "x"
+    layout[:yaxis][:scaleratio] = 1
+    return nothing
 end
 
 """

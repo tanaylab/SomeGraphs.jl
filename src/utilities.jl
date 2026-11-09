@@ -1796,10 +1796,10 @@ default, `clamp` the values to a specified explicit range.
 function scale_axis_value(scale_configuration::ScaleConfiguration, value::Real; clamp::Bool = true)::Float64
     if clamp
         if scale_configuration.minimum !== nothing && value < scale_configuration.minimum
-            value = scale_configuration.minimum  # UNTESTED
+            value = scale_configuration.minimum
         end
         if scale_configuration.maximum !== nothing && value > scale_configuration.maximum  # NOJET
-            value = scale_configuration.maximum  # UNTESTED
+            value = scale_configuration.maximum
         end
     end
 

@@ -18,6 +18,28 @@ nested_test("points") do
     nested_test("invalid") do
         context = ValidationContext(["graph"])
 
+        nested_test("same_scale") do
+            graph.configuration.same_scale = true
+
+            nested_test("log_base") do
+                graph.configuration.x_axis.scale.log_base = Log10Base
+                @test_throws "ArgumentError: same_scale requires " *
+                             "graph.configuration.(x_axis.scale.log_base == y_axis.scale.log_base)" validate(
+                    context,
+                    graph,
+                )
+            end
+
+            nested_test("percent") do
+                graph.configuration.y_axis.scale.percent = true
+                @test_throws "ArgumentError: same_scale requires " *
+                             "graph.configuration.(x_axis.scale.percent == y_axis.scale.percent)" validate(
+                    context,
+                    graph,
+                )
+            end
+        end
+
         nested_test("!values") do
             graph.data.x.vector = nothing
             @test_throws "ArgumentError: must specify graph.data.x.vector" validate(context, graph)
@@ -335,6 +357,43 @@ nested_test("points") do
                 test_html(graph, "points.diagonal.right.fill.html")
                 return nothing
             end
+        end
+    end
+
+    nested_test("same_scale") do
+        graph.configuration.same_scale = true
+
+        nested_test("()") do
+            test_html(graph, "points.same_scale.html")
+            return nothing
+        end
+
+        nested_test("explicit") do
+            graph.configuration.x_axis.scale.minimum = 20
+            graph.configuration.x_axis.scale.maximum = 80
+            test_html(graph, "points.same_scale.explicit.html")
+            return nothing
+        end
+
+        nested_test("minimum") do
+            graph.configuration.y_axis.scale.minimum = -10
+            test_html(graph, "points.same_scale.minimum.html")
+            return nothing
+        end
+
+        nested_test("maximum") do
+            graph.configuration.x_axis.scale.maximum = 120
+            test_html(graph, "points.same_scale.maximum.html")
+            return nothing
+        end
+
+        nested_test("log10") do
+            graph.configuration.x_axis.scale.log_base = Log10Base
+            graph.configuration.x_axis.scale.log_regularization = 1
+            graph.configuration.y_axis.scale.log_base = Log10Base
+            graph.configuration.y_axis.scale.log_regularization = 1
+            test_html(graph, "points.same_scale.log10.html")
+            return nothing
         end
     end
 
@@ -1048,6 +1107,12 @@ nested_test("line") do
         @test points_entities(graph) === graph.data.points
     end
 
+    nested_test("same_scale") do
+        graph.configuration.same_scale = true
+        test_html(graph, "line.same_scale.html")
+        return nothing
+    end
+
     nested_test("flip_axes") do
         x, y = graph.data.x, graph.data.y
         flipped = flip_axes(graph)
@@ -1243,6 +1308,12 @@ nested_test("lines") do
             LineData(; x = VectorValuesData([0, 90]), y = VectorValuesData([50, 0])),
         ],
     )
+
+    nested_test("same_scale") do
+        graph.configuration.same_scale = true
+        test_html(graph, "lines.same_scale.html")
+        return nothing
+    end
 
     nested_test("flip_axes") do
         x, y = graph.data.lines[1].x, graph.data.lines[1].y
