@@ -681,7 +681,8 @@ function set_layout_axis!(
         if ticks_labels !== nothing
             # Plotly shows the labels only at their values, and the range places these.
             @assert ticks_values !== nothing && labels_range !== nothing && labels_range.maximum > labels_range.minimum
-            labels_widths = [text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels]
+            labels_widths =
+                Float64[text_width(label; font_size = PLOTLY_TICK_LABEL_FONT_SIZE) for label in ticks_labels]
             labels_positions = (ticks_values .- labels_range.minimum) ./ (labels_range.maximum - labels_range.minimum)
         else
             @assert labels_range !== nothing
@@ -1021,7 +1022,7 @@ function log10_plotly_ticks(scaled_range::Range, n_ticks::Real)::Tuple{Vector{Fl
         places = max(0, -floor(Int, log10(step)))
         first_index = ceil(Int, linear_minimum / step - 1e-9)
         last_index = floor(Int, linear_maximum / step + 1e-9)
-        chosen = [(log10(index * step), places) for index in first_index:last_index]
+        chosen = Tuple{Float64, Int}[(log10(index * step), places) for index in first_index:last_index]
 
     else
         # Every digit, or only 1, 2 and 5, in each decade.
@@ -1030,7 +1031,7 @@ function log10_plotly_ticks(scaled_range::Range, n_ticks::Real)::Tuple{Vector{Fl
     end
 
     scale_configuration = ScaleConfiguration(; log_base = Log10Base)
-    ticks_values = [scaled_value for (scaled_value, _) in chosen]
+    ticks_values = Float64[scaled_value for (scaled_value, _) in chosen]
     ticks_labels = String[]
     for (scaled_value, places) in chosen
         # As Plotly does, digits other than the powers of 10 are labeled by just the digit, in a smaller font.
@@ -1112,12 +1113,12 @@ end
 # Order the columns which hold no pinned part from left to right by the smallest `order` of their parts (ties by their
 # first part). They take the places of these columns between the pinned ones.
 function order_side_panel_columns!(
-    column_per_part::AbstractVector{<:Integer},
+    column_per_part::AbstractVector{C},
     parts::AbstractVector{SidePanelPart},
-)::Nothing
+)::Nothing where {C <: Integer}
     pinned_columns = Set(part.column for part in parts if part.column !== nothing)
-    free_columns = sort([column for column in unique(column_per_part) if !(column in pinned_columns)])
-    keys_of_free_columns = [
+    free_columns = sort(C[column for column in unique(column_per_part) if !(column in pinned_columns)])
+    keys_of_free_columns = Tuple{Real, Int}[
         (
             minimum(part.order for (part, part_column) in zip(parts, column_per_part) if part_column == column),
             findfirst(==(column), column_per_part),
@@ -1125,13 +1126,13 @@ function order_side_panel_columns!(
     ]
     ordered_free_columns = free_columns[sortperm(keys_of_free_columns)]
     new_column_per_old_column = Dict(zip(ordered_free_columns, free_columns))
-    column_per_part .= [get(new_column_per_old_column, column, column) for column in column_per_part]
+    column_per_part .= C[get(new_column_per_old_column, column, column) for column in column_per_part]
     return nothing
 end
 
 # The columns of the pinned parts (and zero for the others), and how many columns they take.
 function pinned_side_panel_columns(parts::AbstractVector{SidePanelPart})::Tuple{Vector{Int}, Int}
-    column_per_part = [part.column === nothing ? 0 : Int(part.column) for part in parts]
+    column_per_part = Int[part.column === nothing ? 0 : Int(part.column) for part in parts]
     return (column_per_part, maximum(column_per_part))
 end
 
@@ -1235,7 +1236,7 @@ function search_side_panel_columns!(search::SidePanelSearch, next_unpinned::Inte
 
     part_index = search.unpinned_indices[next_unpinned]
     for column in 1:(n_columns + 1)
-        heights = [parts[index].height for index in eachindex(parts) if column_per_part[index] == column]
+        heights = Real[parts[index].height for index in eachindex(parts) if column_per_part[index] == column]
         push!(heights, parts[part_index].height)
         if side_panel_column_height(heights, search.vertical_gap) <= 1 + SIDE_PANEL_EPSILON
             column_per_part[part_index] = column
@@ -1253,7 +1254,7 @@ function first_fit_side_panel_columns(parts::AbstractVector{SidePanelPart}, vert
     sort!(unpinned_indices; by = index -> -parts[index].height, alg = MergeSort)
     for part_index in unpinned_indices
         for column in 1:(n_columns + 1)
-            heights = [parts[index].height for index in eachindex(parts) if column_per_part[index] == column]
+            heights = Real[parts[index].height for index in eachindex(parts) if column_per_part[index] == column]
             push!(heights, parts[part_index].height)
             if side_panel_column_height(heights, vertical_gap) <= 1 + SIDE_PANEL_EPSILON
                 column_per_part[part_index] = column
@@ -1361,7 +1362,7 @@ function plotly_ticks(
 
     if scale.log_base === Log10Base
         log10_values, log10_labels = log10_plotly_ticks(scaled_range, n_ticks)
-        return (log10_values, [label * suffix for label in log10_labels])
+        return (log10_values, String[label * suffix for label in log10_labels])
     end
 
     prefix = plain_ticks_affix(axis_ticks_prefix(scale))
@@ -1377,7 +1378,7 @@ function plotly_ticks(
         places = max(0, -floor(Int, log10(step)))
         first_index = ceil(Int, scaled_range.minimum / step - 1e-9)
         last_index = floor(Int, scaled_range.maximum / step + 1e-9)
-        values = [index * step for index in first_index:last_index]
+        values = Float64[index * step for index in first_index:last_index]
     end
 
     si_scale = ScaleConfiguration(; log_base = Log10Base)
@@ -1611,7 +1612,7 @@ function place_side_panel!(
     end
 
     places, panel_width = pack_side_panel_parts(
-        [item.part for item in items];
+        SidePanelPart[item.part for item in items];
         horizontal_gap = figure_configuration.legends_gap,
         vertical_gap = figure_configuration.legends_gap / plot_pixel_height(figure_configuration, sides_content),
     )
@@ -2173,7 +2174,7 @@ function scale_size_values(
     scaled_values = scale_axis_values(scale_configuration, values; clamp = false)
     @assert scaled_values !== nothing
 
-    return [pixel_size(sizes_mapping, scaled_value) for scaled_value in scaled_values]
+    return Float64[pixel_size(sizes_mapping, scaled_value) for scaled_value in scaled_values]
 end
 
 # How the scaled values of sizes map to pixel sizes, for a specific sizes data.
@@ -2331,7 +2332,8 @@ function sizes_legend_entries(
         chosen = [(sizes_mapping.scaled_minimum_value, places), (sizes_mapping.scaled_maximum_value, places)]
     end
 
-    entries = [sizes_legend_entry(sizes_mapping, scaled_value, places) for (scaled_value, places) in chosen]
+    entries =
+        SizesLegendEntry[sizes_legend_entry(sizes_mapping, scaled_value, places) for (scaled_value, places) in chosen]
 
     if sizes_mapping.is_minimum_clamped
         clamp_sizes_legend_end!(;
@@ -2360,7 +2362,7 @@ end
 # Whether the sizes of the entries of a `candidate` of the legend of sizes are distinct: each is at least 1 pixel more
 # than the previous one.
 function is_sizes_legend_distinct(sizes_mapping::SizesMapping, candidate::AbstractVector{Tuple{Float64, Int}})::Bool
-    pixel_sizes = [pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
+    pixel_sizes = Float64[pixel_size(sizes_mapping, scaled_value) for (scaled_value, _) in candidate]
     return minimum(diff(pixel_sizes)) >= SIZES_LEGEND_MINIMAL_PIXELS_GAP
 end
 
@@ -2377,7 +2379,10 @@ function sizes_legend_candidates(sizes_mapping::SizesMapping)::AbstractVector{<:
             return log10_candidates(scaled_minimum, scaled_maximum)
         end
         linear_candidates = linear_candidates_of(exp10(scaled_minimum), exp10(scaled_maximum))
-        return [[(log10(value), places) for (value, places) in candidate] for candidate in linear_candidates]
+        return Vector{Tuple{Float64, Int}}[
+            Tuple{Float64, Int}[(log10(value), places) for (value, places) in candidate] for
+            candidate in linear_candidates
+        ]
     else
         # Linear steps of the scaled values: the values themselves, or the log values of a `Log2Base` scale.
         return linear_candidates_of(scaled_minimum, scaled_maximum)
@@ -2401,7 +2406,7 @@ function linear_candidates_of(
                 return candidates
             end
             places = max(0, -power)
-            push!(candidates, [(index * step, places) for index in first_index:last_index])
+            push!(candidates, Tuple{Float64, Int}[(index * step, places) for index in first_index:last_index])
         end
         power += 1
     end
@@ -2418,7 +2423,7 @@ function log10_candidates(
     last_power = ceil(Int, scaled_maximum)
 
     for multipliers in ((1, 2, 3, 4, 5, 6, 7, 8, 9), (1, 2, 5))
-        candidate = [
+        candidate = Tuple{Float64, Int}[
             (log10(multiplier) + power, max(0, -power)) for power in first_power:last_power for
             multiplier in multipliers if scaled_minimum - 1e-9 <= log10(multiplier) + power <= scaled_maximum + 1e-9
         ]
@@ -2426,7 +2431,7 @@ function log10_candidates(
     end
 
     for powers_step in Iterators.countfrom(1)
-        candidate = [
+        candidate = Tuple{Float64, Int}[
             (Float64(power), max(0, -power)) for power in first_power:last_power if
             power % powers_step == 0 && scaled_minimum - 1e-9 <= power <= scaled_maximum + 1e-9
         ]
@@ -3267,7 +3272,14 @@ function displayed_annotations(
     annotations::AbstractVector{AnnotationData},
     order::Maybe{AbstractVector{<:Integer}},
 )::AbstractVector{AnnotationData}
-    return [annotations[index] for index in prefer_data(order, 1:length(annotations)) if annotations[index].is_shown]
+    return AnnotationData[
+        annotations[index] for index in prefer_data(order, 1:length(annotations)) if annotations[index].is_shown
+    ]
+end
+
+# The indices of the `parts` which are `is_shown`, in the order of the `ordered_indices`.
+function shown_indices(ordered_indices::AbstractVector{T}, parts::AbstractVector)::Vector{T} where {T <: Integer}
+    return T[index for index in ordered_indices if parts[index].is_shown]
 end
 
 """
@@ -3717,23 +3729,23 @@ function configured_colors(;
         # color values directly (unlike scatters, which draw one trace per category and let Plotly pick) get valid color
         # names.
         palette = if colors_configuration.palette isa AutomaticColors
-            categorical_palette([color for color in colors_values if color != ""])
+            categorical_palette(non_empty_strings(colors_values))  # NOJET
         else
             colors_configuration.palette
         end
 
         if palette isa CategoricalColors
             final_categorical_palette = palette
-            empty_value_color = get(categorical_colors_dict(palette), "", NO_COLOR)
-            final_colors_values = [
-                if !prefer_data(mask, index, true)
-                    NO_COLOR
-                elseif color == ""
-                    empty_value_color
-                else
-                    palette[color]
-                end for (index, color) in enumerate(colors_values)
-            ]
+            palette_dict = categorical_colors_dict(palette)
+            empty_value_color = get(palette_dict, "", NO_COLOR)
+            @assert !(mask isa AbstractMatrix)
+            final_colors_values = categorical_final_colors(
+                Union{String, valtype(palette_dict)},
+                palette,
+                colors_values,
+                empty_value_color,
+                mask,
+            )
         else
             @assert palette === nothing
             final_colors_values = colors_values
@@ -3759,9 +3771,11 @@ function configured_colors(;
             final_color_palette_values = (scaled_colors_palette_values .- implicit_scaled_colors_range.minimum) ./ scale
             final_color_palette_values[1] = 0
             final_color_palette_values[end] = 1
-            scaled_colors_palette = [
-                (final_value, entry[2]) for (final_value, entry) in zip(final_color_palette_values, continuous_palette)
-            ]
+            scaled_colors_palette = palette_with_values(
+                Tuple{Float64, fieldtype(eltype(continuous_palette), 2)},
+                final_color_palette_values,
+                continuous_palette,
+            )
         else
             ranged_values = range_values(colors_configuration.scale, final_colors_values, mask)
             # Validation rejects non-finite data, so reaching here means some validation was skipped or is incomplete.
@@ -3786,11 +3800,43 @@ function configured_colors(;
     )
 end
 
+# The `strings` which are not empty.
+function non_empty_strings(strings::AbstractVector{S})::Vector{S} where {S <: AbstractString}
+    return S[value for value in strings if value != ""]
+end
+
+# The final color of each of the `colors_values`, as a vector of `T`: no color if the `mask` hides it, the
+# `empty_value_color` if it is empty, and its color in the `palette` otherwise.
+function categorical_final_colors(
+    ::Type{T},
+    palette::CategoricalColors,
+    colors_values::AbstractVector{<:AbstractString},
+    empty_value_color::AbstractString,
+    mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
+)::Vector{T} where {T <: AbstractString}
+    return T[if !prefer_data(mask, index, true)
+        NO_COLOR
+    elseif color == ""
+        empty_value_color
+    else
+        palette[color]
+    end for (index, color) in enumerate(colors_values)]
+end
+
+# The `values` paired with the colors of the entries of the `palette`, as a vector of `T`.
+function palette_with_values(
+    ::Type{T},
+    values::AbstractVector{<:Real},
+    palette::ContinuousColors,
+)::Vector{T} where {T <: Tuple}
+    return T[(value, entry[2]) for (value, entry) in zip(values, palette)]
+end
+
 # The labels of the entries of the categorical legend of some `colors`: their categories, except the empty one.
 function categorical_legend_labels(colors::ConfiguredColors)::Vector{String}
     palette = colors.final_categorical_palette
     @assert palette !== nothing
-    return [String(name) for name in keys(categorical_colors_dict(palette)) if name != ""]
+    return String[String(name) for name in keys(categorical_colors_dict(palette)) if name != ""]
 end
 
 end  # module

@@ -586,7 +586,7 @@ function Validations.validate(context::ValidationContext, data::SeriesBarsGraphD
         length(data.annotations),
     )
 
-    shared_values_title(context, "series", "values", [series.values for series in data.series])
+    shared_values_title(context, "series", "values", VectorValuesData[series.values for series in data.series])
 
     return nothing
 end
@@ -681,7 +681,7 @@ function series_value_axis_title(graph::SeriesBarsGraph)::Maybe{AbstractString}
         ValidationContext(["graph.data"]),
         "series",
         "values",
-        [series.values for series in graph.data.series],
+        VectorValuesData[series.values for series in graph.data.series],
     )
 end
 
@@ -1021,7 +1021,10 @@ function Common.graph_to_figure(graph::SeriesBarsGraph)::PlotlyFigure
     )
 
     series_legend_labels = if show_in_legend
-        [name for name in (graph.data.series[series_index].name for series_index in series_indices) if name !== nothing]
+        String[
+            name for
+            name in (graph.data.series[series_index].name for series_index in series_indices) if name !== nothing
+        ]
     else
         String[]
     end
@@ -1079,7 +1082,7 @@ function push_bar_trace!(;
     collect_range!(implicit_values_range, scaled_values)
 
     if names === nothing
-        names = [string(index) for index in 1:length(scaled_values)]
+        names = String[string(index) for index in 1:length(scaled_values)]
     end
 
     plotly_values = plotly_axis_values(value_axis.scale, scaled_values; is_plotly_log = true)
@@ -1217,8 +1220,9 @@ function push_annotation_traces!(;
         end
     end
 
-    @assert colors.final_colors_values !== nothing
-    if eltype(colors.final_colors_values) <: AbstractString
+    final_colors_values = colors.final_colors_values
+    @assert final_colors_values isa AbstractVector
+    if eltype(final_colors_values) <: AbstractString
         gap_color = "white"
     else
         # `missing` (serialized as JSON `null`) rather than `NaN`, which the JSON writer used by `to_html` rejects.
@@ -1240,7 +1244,7 @@ function push_annotation_traces!(;
         ),
         basis_sub_graph,
         values_orientation,
-        color = expand_vector(colors.final_colors_values, order, expanded_mask, gap_color),
+        color = expand_vector(final_colors_values, order, expanded_mask, gap_color),
         hovers = expand_vector(entries_hovers, order, expanded_mask, ""),
         names = expand_vector(names, order, expanded_mask, ""),
         name = annotation_title,
@@ -1331,7 +1335,7 @@ function bars_layout(;
     pixel_length = graph.configuration.values_orientation == VerticalValues ? plot_pixel_height : plot_pixel_width
 
     if specific_scaled_ranges !== nothing
-        specific_scaled_ranges = [
+        specific_scaled_ranges = Range[
             final_scaled_range(specific_scaled_range, graph.configuration.value_axis) for
             specific_scaled_range in specific_scaled_ranges
         ]

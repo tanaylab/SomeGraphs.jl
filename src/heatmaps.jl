@@ -1380,7 +1380,7 @@ function shown_side_data(
     order = side.entities.order
     if order !== nothing
         shown_positions = cumsum(mask)
-        order = [shown_positions[index] for index in order if mask[index]]
+        order = Int[shown_positions[index] for index in order if mask[index]]
     end
 
     arrange_by = side.arrangement.arrange_by
@@ -1644,12 +1644,12 @@ end
 # The entries of a side which are shown, in the order they are shown in: the order of the data without the hidden
 # entries, reversed if the `origin` places the first entry at the far end of the axis.
 function displayed_order(
-    order::AbstractVector{<:Integer},
+    order::AbstractVector{T},
     mask::Maybe{Union{AbstractVector{Bool}, BitVector}},
     is_reversed::Bool,
-)::AbstractVector{<:Integer}
+)::AbstractVector{<:Integer} where {T <: Integer}
     if mask !== nothing
-        order = [index for index in order if mask[index]]
+        order = T[index for index in order if mask[index]]
     end
     return is_reversed ? reverse(order) : order
 end
@@ -1693,7 +1693,7 @@ function displayed_hclust(clusters::Hclust, mask::Union{AbstractVector{Bool}, Bi
         end
     end
 
-    pruned_order = [shown_positions[index] for index in clusters.order if mask[index]]
+    pruned_order = Int[shown_positions[index] for index in clusters.order if mask[index]]
 
     return Hclust(permutedims(reshape(pruned_merges, 2, :)), pruned_heights, pruned_order, clusters.linkage)
 end

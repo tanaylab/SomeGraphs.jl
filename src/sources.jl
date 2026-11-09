@@ -1560,7 +1560,7 @@ are shown in.
 function fill_annotations!(target::HeatmapSide, source::HeatmapSide)::Nothing
     target_data = side_data(target)
     source_data = side_data(source)
-    target_data.annotations = [deepcopy(annotation) for annotation in source_data.annotations]
+    target_data.annotations = AnnotationData[deepcopy(annotation) for annotation in source_data.annotations]
     target_data.annotations_order = copy_or_nothing(source_data.annotations_order)
     return nothing
 end
@@ -1672,7 +1672,7 @@ function reset_side_placement! end
 # anything else is converted. Converted strings are a dense array even if the values are sparse, since `SparseArrays`
 # doesn't support strings (a broadcast would keep the values' sparse type).
 function hover_strings(value_per_entry::AbstractArray, hover_format::Function)::AbstractArray{<:AbstractString}
-    return [hover_format(value) for value in value_per_entry]
+    return String[hover_format(value) for value in value_per_entry]
 end
 
 function hover_strings(value_per_entry::AbstractArray{<:AbstractString}, ::Nothing)::AbstractArray{<:AbstractString}
@@ -1680,7 +1680,7 @@ function hover_strings(value_per_entry::AbstractArray{<:AbstractString}, ::Nothi
 end
 
 function hover_strings(value_per_entry::AbstractArray{<:Real}, ::Nothing)::AbstractArray{<:AbstractString}
-    return [string(value) for value in value_per_entry]
+    return String[string(value) for value in value_per_entry]
 end
 
 # The `sinks` as a collection: a single sink (or a whole graph) on its own. A collection is asserted rather than typed,

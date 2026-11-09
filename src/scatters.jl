@@ -41,6 +41,7 @@ import ..Utilities.SidePanelItem
 import ..Utilities.categorical_legend_labels
 import ..Utilities.far_range
 import ..Utilities.legend_side_panel_item
+import ..Utilities.shown_indices
 
 """
     @kwdef mutable struct ScattersConfiguration <: Validated
@@ -107,6 +108,9 @@ If `same_scale` is set, one unit has the same length on both axes, also when the
 Plotly keeps it by widening the range of an axis without an explicit range (only its computed side, if one bound is
 given), or else by shrinking the plot area along an axis with an explicit range (wasting space to the left, or at the
 bottom). Like `diagonal_bands`, this requires both axes to have the same `log_base` and `percent`.
+
+A point outside an explicit `minimum` or `maximum` of an axis is drawn at the edge, as an arrow pointing toward its real
+place.
 
 !!! note
 
@@ -643,10 +647,14 @@ function validate_selection_coordinate(
     return nothing
 end
 
+# Whether (and how) a value was clamped into the axis' explicit range.
+@enum Clamping NotClamped ClampedToMinimum ClampedToMaximum
+
 @kwdef struct ScaledData
     scale_configuration::ScaleConfiguration
     values::AbstractVector{<:Real}
     range::Range
+    clamping_per_value::Maybe{AbstractVector{Clamping}} = nothing
 end
 
 # The scaled values of an axis, and their range (which covers the hidden values too, unless the axis says otherwise).
@@ -659,7 +667,35 @@ function scaled_data(
     ranged_values = range_values(axis_configuration.scale, scaled_values, mask)
     implicit_scaled_range = Range(; minimum = minimum(ranged_values), maximum = maximum(ranged_values))
     scaled_range = final_scaled_range(implicit_scaled_range, axis_configuration)
-    return ScaledData(; scale_configuration = axis_configuration.scale, values = scaled_values, range = scaled_range)
+    explicit_minimum = axis_configuration.scale.minimum
+    explicit_maximum = axis_configuration.scale.maximum
+    clamping_per_value = Clamping[if explicit_minimum !== nothing && value < explicit_minimum
+        ClampedToMinimum
+    elseif explicit_maximum !== nothing && value > explicit_maximum
+        ClampedToMaximum
+    else
+        NotClamped
+    end for value in values]
+    return ScaledData(;
+        scale_configuration = axis_configuration.scale,
+        values = scaled_values,
+        range = scaled_range,
+        clamping_per_value,
+    )
+end
+
+# The angle (degrees, clockwise from up) of the arrow of a point clamped by its `x_clamping` and/or `y_clamping`.
+function clamped_arrow_angle(x_clamping::Clamping, y_clamping::Clamping)::Float32  # ONLY SEEMS UNTESTED
+    function direction(clamping::Clamping)::Float32
+        if clamping == ClampedToMinimum
+            return -1
+        elseif clamping == ClampedToMaximum
+            return 1
+        else
+            return 0
+        end
+    end
+    return atand(direction(x_clamping), direction(y_clamping))
 end
 
 # The Plotly coordinates of (some of) the scaled values.
@@ -765,7 +801,7 @@ function set_layout_selection!(layout::Layout, graph::PointsGraph)::Nothing
             ),
         ]
     elseif polygon !== nothing
-        path = "M " * join(["$(plotly_x(x)),$(plotly_y(y))" for (x, y) in polygon], " L ") * " Z"  # NOJET
+        path = "M " * join(String["$(plotly_x(x)),$(plotly_y(y))" for (x, y) in polygon], " L ") * " Z"  # NOJET
         layout[:selections] = [Dict(:type => "path", :xref => "x", :yref => "y", :path => path)]
     end
 
@@ -961,7 +997,7 @@ function Common.graph_to_figure(graph::PointsGraph)::PlotlyFigure
                 side_panel_items,
                 legend_side_panel_item(;
                     legend = plotly_legend(legend_index),
-                    labels = [entry.label for entry in entries],
+                    labels = String[entry.label for entry in entries],
                     title = configured.sizes_title,
                     legend_configuration = sizes_configuration.legend,
                     default_order = SIZES_LEGEND_ORDER,
@@ -1185,7 +1221,9 @@ function push_points_traces!(;
         palette = configured_points.colors.colors_configuration.palette
         if palette isa AutomaticColors
             # The categories are the (unique) keys, in order of appearance, and the colors are picked automatically.
-            name_color_pairs = [(name, nothing) for name in unique(configured_points.colors.original_color_values)]
+            name_color_pairs = Tuple{AbstractString, Nothing}[
+                (name, nothing) for name in unique(configured_points.colors.original_color_values)
+            ]
         else
             name_color_pairs = collect(categorical_colors_dict(palette))  # NOJET
         end
@@ -1263,45 +1301,89 @@ function push_points_trace!(;
 )::Nothing
     order = configured_points.order
 
-    if color isa AbstractVector
-        color = masked_values(color, mask, order)
-    end
-
-    if legend_group_suffix === nothing
-        legend_group = configured_points.legend_group
+    # Assigned once, so the closure below doesn't box it.
+    legend_group = if legend_group_suffix === nothing
+        configured_points.legend_group
     else
-        legend_group = "$(configured_points.legend_group) $(legend_group_suffix)"
+        "$(configured_points.legend_group) $(legend_group_suffix)"
     end
 
-    hovers = masked_values(points_hovers, mask, order)
+    show_in_legend = configured_points.colors.show_in_legend
 
     # The (1-based) index of the entity of each point of the trace, so a selection can be mapped back to the entities.
     n_points = length(scaled_points_xs.values)
-    indices = masked_values(collect(1:n_points), mask, order)
 
-    show_in_legend = configured_points.colors.show_in_legend
-    push!(
-        traces,
-        scatter(;
-            x = plotly_values(scaled_points_xs, masked_values(scaled_points_xs.values, mask, order)),
-            y = plotly_values(scaled_points_ys, masked_values(scaled_points_ys.values, mask, order)),
-            customdata = indices,
+    x_clamping_per_point = scaled_points_xs.clamping_per_value
+    y_clamping_per_point = scaled_points_ys.clamping_per_value
+    @assert x_clamping_per_point !== nothing && y_clamping_per_point !== nothing
+    is_clamped_per_point = (x_clamping_per_point .!= NotClamped) .| (y_clamping_per_point .!= NotClamped)
+    if mask !== nothing
+        is_clamped_per_point .&= mask
+    end
+
+    # A trace of the points of the `part_mask`. The clamped points are drawn as arrows pointing toward their real place,
+    # and are left out of the legend, which shows the symbol of a trace's first point.
+    function part_trace(part_mask::Maybe{Union{AbstractVector{Bool}, BitVector}}, is_clamped::Bool)::GenericTrace
+        hovers = masked_values(points_hovers, part_mask, order)
+        if is_clamped
+            angles = masked_values(clamped_arrow_angle.(x_clamping_per_point, y_clamping_per_point), part_mask, order)
+        else
+            angles = nothing
+        end
+        return scatter(;
+            x = plotly_values(scaled_points_xs, masked_values(scaled_points_xs.values, part_mask, order)),
+            y = plotly_values(scaled_points_ys, masked_values(scaled_points_ys.values, part_mask, order)),
+            customdata = masked_values(collect(1:n_points), part_mask, order),
             text = hovers,
             marker_size = prefer_data(
-                masked_values(configured_points.pixel_sizes, mask, order),
+                masked_values(configured_points.pixel_sizes, part_mask, order),
                 configured_points.pixel_size,
             ),
-            marker_color = prefer_data(color, configured_points.colors.colors_configuration.fixed),
+            marker_color = prefer_data(
+                color isa AbstractVector ? masked_values(color, part_mask, order) : color,
+                configured_points.colors.colors_configuration.fixed,
+            ),
+            marker_symbol = is_clamped ? "arrow-up" : nothing,
+            marker_angle = angles,
             marker_coloraxis = plotly_axis("color", configured_points.colors.colors_scale_index),
-            marker_showscale = configured_points.colors.show_scale,
+            marker_showscale = is_clamped ? false : configured_points.colors.show_scale,
             legendgroup = show_in_legend ? legend_group : nothing,
-            legend = show_in_legend ? configured_points.legend : nothing,
-            showlegend = show_in_legend,
+            legend = show_in_legend && !is_clamped ? configured_points.legend : nothing,
+            showlegend = show_in_legend && !is_clamped,
             name = name,
             hovertemplate = hovers === nothing ? nothing : "%{text}<extra></extra>",
             mode = "markers",
-        ),
-    )
+        )
+    end
+
+    if !any(is_clamped_per_point)
+        push!(traces, part_trace(mask, false))
+    else
+        unclamped_mask = .!is_clamped_per_point
+        if mask !== nothing
+            unclamped_mask .&= mask
+        end
+        if any(unclamped_mask) || !show_in_legend
+            push!(traces, part_trace(unclamped_mask, false))
+        else
+            # All the points are clamped, so the legend entry is a trace of its own, with no points.
+            push!(
+                traces,
+                scatter(;
+                    x = [missing],
+                    y = [missing],
+                    marker_size = configured_points.pixel_size,
+                    marker_color = prefer_data(color, configured_points.colors.colors_configuration.fixed),
+                    legendgroup = legend_group,
+                    legend = configured_points.legend,
+                    showlegend = true,
+                    name = name,
+                    mode = "markers",
+                ),
+            )
+        end
+        push!(traces, part_trace(is_clamped_per_point, true))
+    end
 
     return nothing
 end
@@ -1742,8 +1824,8 @@ function Validations.validate(context::ValidationContext, data::LinesGraphData):
         return nothing
     end
 
-    shared_values_title(context, "lines", "x", [line.x for line in data.lines])
-    shared_values_title(context, "lines", "y", [line.y for line in data.lines])
+    shared_values_title(context, "lines", "x", VectorValuesData[line.x for line in data.lines])
+    shared_values_title(context, "lines", "y", VectorValuesData[line.y for line in data.lines])
 
     return nothing
 end
@@ -1894,8 +1976,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
     validate(ValidationContext(["graph"]), graph)
 
     lines = graph.data.lines
-    lines_indices =
-        [line_index for line_index in prefer_data(graph.data.order, 1:length(lines)) if lines[line_index].is_shown]
+    lines_indices = shown_indices(prefer_data(graph.data.order, 1:length(lines)), lines)
 
     # The hidden points are collected into the ranges here; the shown ones below, after the stacking (if any) unified
     # them. Stacked, the Y range is that of the totals, which the hidden points are not part of.
@@ -2075,7 +2156,7 @@ function Common.graph_to_figure(graph::LinesGraph)::PlotlyFigure
         set_layout_legend!(layout, 1; title = nothing)
         item = legend_side_panel_item(;
             legend = plotly_legend(1),
-            labels = [line.name for line in graph.data.lines if line.is_shown && line.name !== nothing],
+            labels = AbstractString[line.name for line in graph.data.lines if line.is_shown && line.name !== nothing],
             title = nothing,
             legend_configuration = graph.configuration.legend,
             default_order = CATEGORICAL_LEGEND_ORDER,
@@ -2290,8 +2371,8 @@ function data_axes_titles(graph::LinesGraph)::Tuple{Maybe{AbstractString}, Maybe
     context = ValidationContext(["graph.data"])
     lines = graph.data.lines
     return (
-        shared_values_title(context, "lines", "x", [line.x for line in lines]),
-        shared_values_title(context, "lines", "y", [line.y for line in lines]),
+        shared_values_title(context, "lines", "x", VectorValuesData[line.x for line in lines]),
+        shared_values_title(context, "lines", "y", VectorValuesData[line.y for line in lines]),
     )
 end
 
@@ -2400,7 +2481,7 @@ function points_density(
     points_ys::AbstractVector{<:Real},
 )::AbstractVector{<:AbstractFloat}
     itk = InterpKDE(kde((points_xs, points_ys)))  # NOJET
-    return [itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
+    return Float64[itk.itp(point_x, point_y) for (point_x, point_y) in zip(points_xs, points_ys)]
 end
 
 # The same selection with its X and Y swapped.
@@ -2411,10 +2492,17 @@ function flipped_selection(selection::SelectionData)::SelectionData
         x_minimum, x_maximum, y_minimum, y_maximum = box
         return SelectionData(; box = (y_minimum, y_maximum, x_minimum, x_maximum))
     elseif polygon !== nothing
-        return SelectionData(; polygon = [(y, x) for (x, y) in polygon])
+        vertex_type = eltype(polygon)
+        flipped_vertex_type = Tuple{fieldtype(vertex_type, 2), fieldtype(vertex_type, 1)}
+        return SelectionData(; polygon = flipped_polygon(flipped_vertex_type, polygon))
     else
         return SelectionData()
     end
+end
+
+# The `polygon` with the X and Y of each of its vertices swapped, as a vector of `T`.
+function flipped_polygon(::Type{T}, polygon::AbstractVector{<:Tuple{Real, Real}})::Vector{T} where {T <: Tuple}
+    return T[(y, x) for (x, y) in polygon]
 end
 
 function Common.flip_axes(graph::PointsGraph)::PointsGraph
@@ -2477,7 +2565,7 @@ function Common.flip_axes(graph::LinesGraph)::LinesGraph
     return LinesGraph(
         LinesGraphData(;
             figure_title = graph.data.figure_title,
-            lines = [
+            lines = LineData[
                 LineData(;
                     x = line.y,
                     y = line.x,

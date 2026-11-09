@@ -397,6 +397,17 @@ nested_test("points") do
         end
     end
 
+    nested_test("clamped") do
+        graph.configuration.x_axis.scale.minimum = 20
+        graph.configuration.x_axis.scale.maximum = 80
+        graph.configuration.y_axis.scale.maximum = 60
+        graph.configuration.points.colors.palette = Dict("Foo" => "red", "Bar" => "green", "Baz" => "blue")
+        graph.configuration.points.colors.legend.show = true
+        graph.data.points.colors.vector = ["Baz", "Foo", "Foo", "Bar", "Bar", "Foo", "Bar", "Foo", "Bar", "Foo", "Baz"]
+        test_html(graph, "points.clamped.html")
+        return nothing
+    end
+
     nested_test("log") do
         for (log_name, log_base) in (("log10", Log10Base), ("log2", Log2Base))
             nested_test(log_name) do

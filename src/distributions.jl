@@ -41,6 +41,7 @@ import ..Utilities.PLOTLY_TICK_LABEL_FONT_SIZE
 import ..Utilities.add_labels!
 import ..Utilities.legend_side_panel_item
 import ..Utilities.rotated_label_extent
+import ..Utilities.shown_indices
 import ..Utilities.two_passes_layout
 import ..Validations.Maybe
 
@@ -593,7 +594,7 @@ function value_axis_title(graph::DistributionsGraph)::Maybe{AbstractString}
         ValidationContext(["graph.data"]),
         "distributions",
         "values",
-        [distribution.values for distribution in graph.data.distributions],
+        VectorValuesData[distribution.values for distribution in graph.data.distributions],
     )
 end
 
@@ -601,7 +602,7 @@ end
 # drawn in (that is, reordered by the `order`, skipping the ones that are not `is_shown`).
 function displayed_distributions(graph::DistributionsGraph)::AbstractVector{<:Integer}
     distributions = graph.data.distributions
-    return [index for index in prefer_data(graph.data.order, 1:length(distributions)) if distributions[index].is_shown]
+    return shown_indices(prefer_data(graph.data.order, 1:length(distributions)), distributions)
 end
 
 # The values of a distribution which are actually drawn (that is, not masked).
@@ -1163,7 +1164,7 @@ function distribution_layout(;
             _, is_normalized, is_percent = cumulative_density_flags(graph.configuration)
 
             distributions = graph.data.distributions[displayed_distributions(graph)]
-            counts = [length(displayed_values(distribution)) for distribution in distributions]
+            counts = Int[length(displayed_values(distribution)) for distribution in distributions]
             distributions_gap = graph.configuration.distributions_gap
             if distributions_gap === nothing
                 n_distributions = 1
@@ -1390,8 +1391,9 @@ function push_series_annotations!(
 )::Nothing
     configuration = graph.configuration
     series_axis = configuration.series_axis
-    distributions_names =
-        [distribution.name for distribution in graph.data.distributions[displayed_distributions(graph)]]
+    distributions_names = Maybe{AbstractString}[
+        distribution.name for distribution in graph.data.distributions[displayed_distributions(graph)]
+    ]
     n_distributions = length(distributions_names)
     is_vertical_values = configuration.distribution.values_orientation == VerticalValues
 

@@ -915,14 +915,21 @@ the colors at all.
 struct AutomaticColors end
 
 function continuous_colors_scale(  # ONLY SEEMS UNTESTED
-    colors::AbstractVector{<:AbstractString},
-)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
+    colors::AbstractVector{S},
+)::AbstractVector{<:Tuple{<:Real, <:AbstractString}} where {S <: AbstractString}
     size = length(colors)
-    return [(((index - 1) / (size - 1)), color) for (index, color) in enumerate(colors)]
+    return Tuple{Float64, S}[(((index - 1) / (size - 1)), color) for (index, color) in enumerate(colors)]
 end
 
 function reverse_colors_scale(palette::ContinuousColors)::AbstractVector{<:Tuple{<:Real, <:AbstractString}}
-    return reverse!([(1 - value, color) for (value, color) in palette])
+    entry_type = eltype(palette)
+    reversed_entry_type = Tuple{promote_type(Int, fieldtype(entry_type, 1)), fieldtype(entry_type, 2)}
+    return reverse!(reversed_values_colors_scale(reversed_entry_type, palette))
+end
+
+# The entries of the `palette` with each value replaced by one minus it, as a vector of `T`.
+function reversed_values_colors_scale(::Type{T}, palette::ContinuousColors)::Vector{T} where {T <: Tuple}
+    return T[(1 - value, color) for (value, color) in palette]
 end
 
 function zero_colors_scale(
@@ -1494,11 +1501,16 @@ function categorical_palette(values::AbstractSet{<:AbstractString}, palette::Abs
     return categorical_palette(values, ensure_cached_scale(ValidationContext(["categorical_palette"]), palette))
 end
 
-function categorical_palette(values::AbstractSet{<:AbstractString}, palette::ContinuousColors)::CategoricalColors
+function categorical_palette(
+    values::AbstractSet{K},
+    palette::ContinuousColors,
+)::CategoricalColors where {K <: AbstractString}
     scale = 1 / length(values)
-    return OrderedDict([
-        value => interpolate_color(palette, index * scale) for (index, value) in enumerate(sort!(collect(values)))
-    ])
+    return OrderedDict(
+        Pair{K, String}[
+            value => interpolate_color(palette, index * scale) for (index, value) in enumerate(sort!(collect(values)))
+        ],
+    )
 end
 
 function interpolate_color(palette::ContinuousColors, value::Real)::AbstractString
@@ -1837,7 +1849,7 @@ function Validations.validate(
     if palette isa ContinuousColors
         validate_vector_is_not_empty(context, "palette", palette)
 
-        values = [entry[1] for entry in palette]
+        values = palette_values(fieldtype(eltype(palette), 1), palette)
         for (index, (low_value, high_value)) in enumerate(zip(values[1:(end - 1)], values[2:end]))
             if low_value > high_value
                 throw(
@@ -1900,6 +1912,11 @@ function Validations.validate(
     end
 
     @assert false
+end
+
+# The value of each entry of the `palette`, as a vector of `T`.
+function palette_values(::Type{T}, palette::ContinuousColors)::Vector{T} where {T <: Real}
+    return T[entry[1] for entry in palette]
 end
 
 """
